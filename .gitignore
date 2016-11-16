@@ -1,0 +1,16 @@
+#username password files
+db_user_password
+
+#dojo installs and updated
+www/dojo-install-version
+www/dojo
+www/dijit
+www/dojox
+www/jsPlumb
+www/util
+
+#OS specific files
+.DS_Store
+*.swp
+*.jar
+Thumbs.db
