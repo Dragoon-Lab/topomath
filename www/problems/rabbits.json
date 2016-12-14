@@ -1,0 +1,96 @@
+{
+	"authorModelNodes": [
+		{
+			"ID": "id1",
+			"variable": "The number of rabbits in the population",
+			"description": "Population of rabbits",
+			"type": "quantity",
+			"accumulator": true,
+			"units": "rabbits",
+			"inputs": [{"ID": "id4"}, {"ID": "id5"}],
+			"value": 24,
+			"attemptCount": {
+			},
+			"position": [{
+				"x": 500,
+				"y": 200
+			}, {
+				"x": 550,
+				"y": 200
+			}],
+			"status": {}
+		},
+		{
+			"ID": "id2",
+			"variable": "Birth Probability",
+			"description": "The number of additional rabbits per year per rabbit",
+			"type": "quantity",
+			"accumulator": false,
+			"units": "1/year",
+			"inputs": [{"ID": "id4"}],
+			"value": 0.1,
+			"attemptCount": {
+			},
+			"position": [{
+				"x": 600,
+				"y": 200
+			}],
+			"status": {}
+		},
+		{
+			"ID": "id3",
+			"variable": "Births",
+			"description": "The number of rabbits born per year",
+			"type": "quantity",
+			"accumulator": false,
+			"units": "1/year",
+			"inputs": [{"ID": "id4"}, {"ID": "id5"}],
+			"value": 0.3,
+			"attemptCount": {
+			},
+			"position": [{
+				"x": 650,
+				"y": 200
+			}],
+			"status": {}
+		},
+		{
+			"ID": "id4",
+			"variable": "",
+			"description": "The number of births is the number of rabbits times the birth probability",
+			"type": "equation",
+			"accumulator": false,
+			"eqation": "id3 = id1 * id2",
+			"units": "",
+			"inputs": [{"ID": "id1"},{"ID": "id2"},{"ID": "id3"}],
+			"value": "",
+			"attemptCount": {
+			},
+			"position": [{
+				"x": 650,
+				"y": 200
+			}],
+			"status": {}
+		},
+		{
+			"ID": "id5",
+			"variable": "",
+			"description": "The number os rabbits increase by the number of births each year",
+			"type": "equation",
+			"accumulator": false,
+			"eqation": "id1 = id1 + id3",
+			"units": "",
+			"inputs": [{"ID": "id1"},{"ID": "id3"}],
+			"value": "",
+			"attemptCount": {
+			},
+			"position": [{
+				"x": 650,
+				"y": 200
+			}],
+			"status": {}
+		}
+	],
+	"studentModelNodes": [],
+}
+

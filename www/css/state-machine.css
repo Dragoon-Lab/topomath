@@ -1,0 +1,103 @@
+.equation1 {
+	border: 3px;
+	border-style: solid;
+	border-color: green;
+	padding: 10px 2px;
+	text-align: center;
+	width: 200px;
+	height: auto;
+	margin-bottom: 20px;
+}
+
+.equation2 {
+	border: 3px;
+	border-style: dashed;
+	border-color: grey;
+	padding: 10px 2px;
+	text-align: center;
+	width: 175px;
+	height: auto;
+	margin-bottom: 20px;
+}
+
+.equation3 {
+	border: 3px;
+	border-style: dotted;
+	border-color: red;
+	padding: 10px 2px;
+	text-align: center;
+	width: 225px;
+	height: auto;
+	margin-bottom: 20px;
+}
+
+.equation4 {
+	border: 3px;
+	border-style: solid;
+	border-color: red;
+	padding: 10px 2px;
+	text-align: center;
+	width: 150px;
+	height: auto;
+	margin-bottom: 20px;
+}
+
+.quantity1{
+	border: 3px solid;
+	border-radius: 22px;
+	padding: 10px 2px;
+	text-align: center;
+	width: 200px;
+	height: auto;
+	margin-bottom: 20px;
+}
+
+.quantity2{
+	border: 3px solid;
+	border-radius: 22px;
+	border-color: red;
+	padding: 10px 2px;
+	text-align: center;
+	width: 150px;
+	height: auto;
+	margin-bottom: 20px;
+}
+
+
+.quantity3{
+	border: 3px dashed;
+	border-radius: 22px;
+	border-color: lightgreen;
+	padding: 10px 2px;
+	text-align: center;
+	width: 225px;
+	height: auto;
+	margin-bottom: 20px;
+}
+
+
+.quantity4{
+	border: 3px dotted;
+	border-radius: 22px;
+	padding: 10px 2px;
+	text-align: center;
+	width: 175px;
+	height: auto;
+	margin-bottom: 20px;
+}
+
+
+.circle{
+	width: 100px;
+	height: 100px;
+	border: 3px solid;
+	border-radius: 60px;
+	border-color: grey;
+	background-color: grey;
+	color: white;
+	text-align: center;
+}
+
+.circle-text{
+	padding: 10px;
+}
