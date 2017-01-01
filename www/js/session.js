@@ -37,7 +37,15 @@ define([
 		},
 
 		getModel: function(params){
-			return "";
-		},
+			return xhr.get(this.path + "task_fetcher.php", {
+				query: params,
+				handlerAs: "json"
+			}).then(lang.hitch(this, function(model_object){
+				console.log("model object received", model_object);
+				return model_object;
+			}), lang.hitch(this, function(err){
+				console.log("no model found", err);
+			}));
+		}
 	});
 });

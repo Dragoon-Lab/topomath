@@ -1,103 +1,114 @@
-.equation1 {
-	border: 3px;
-	border-style: solid;
-	border-color: green;
-	padding: 10px 2px;
+.equation {
+	position: absolute;
+	border: 3px solid black;
+	padding: 5px 2px;
+	box-shadow: 2px 2px 19px #e0e0e0;
+	-o-box-shadow: 2px 2px 19px #e0e0e0;
+	-webkit-box-shadow: 2px 2px 19px #e0e0e0;
+	-moz-box-shadow: 2px 2px 19px #e0e0e0;
+	opacity:0.8;
+	filter:alpha(opacity=80);
+	cursor: move;
+	font-size: 11px;
 	text-align: center;
-	width: 200px;
+	vertical-align: middle;
+	width: 100px;
 	height: auto;
-	margin-bottom: 20px;
+	max-height: 48px;
+	-webkit-transition:background-color 0.25s ease-in;
+	-moz-transition:background-color 0.25s ease-in;
+	transition:background-color 0.25s ease-in;
 }
 
-.equation2 {
-	border: 3px;
-	border-style: dashed;
-	border-color: grey;
-	padding: 10px 2px;
-	text-align: center;
-	width: 175px;
-	height: auto;
-	margin-bottom: 20px;
-}
-
-.equation3 {
-	border: 3px;
-	border-style: dotted;
-	border-color: red;
-	padding: 10px 2px;
-	text-align: center;
-	width: 225px;
-	height: auto;
-	margin-bottom: 20px;
-}
-
-.equation4 {
-	border: 3px;
-	border-style: solid;
-	border-color: red;
-	padding: 10px 2px;
-	text-align: center;
-	width: 150px;
-	height: auto;
-	margin-bottom: 20px;
-}
-
-.quantity1{
+.quantity {
 	border: 3px solid;
-	border-radius: 22px;
-	padding: 10px 2px;
+	/*
+	* apparently giving high radius gives a capsule shape
+	* http://stackoverflow.com/questions/18794947
+	* this seems to be a hack leaving it just in case it is needed
+	*/
+	border-radius: 500px;
+	/*border-radius: 10%/50%; this is height dependent*/
+	padding: 5px 2px;
 	text-align: center;
-	width: 200px;
+	width: 100px;
 	height: auto;
-	margin-bottom: 20px;
+	max-height: 48px;
+	box-shadow: 2px 2px 19px #e0e0e0;
+	-o-box-shadow: 2px 2px 19px #e0e0e0;
+	-webkit-box-shadow: 2px 2px 19px #e0e0e0;
+	-moz-box-shadow: 2px 2px 19px #e0e0e0;
+	opacity:0.8;
+	filter:alpha(opacity=80);
+	cursor: move;
+	font-size: 11px;
+	text-align: center;
+	vertical-align: middle;
+	-webkit-transition:background-color 0.25s ease-in;
+	-moz-transition:background-color 0.25s ease-in;
+	transition:background-color 0.25s ease-in;
 }
 
-.quantity2{
-	border: 3px solid;
-	border-radius: 22px;
-	border-color: red;
-	padding: 10px 2px;
-	text-align: center;
-	width: 150px;
+.equationWrapper, .quantityWrapper {
+	overflow: hidden!important;
+	-ms-text-overflow:ellipsis;
+	text-overflow:ellipsis;
+	width: 100%;
 	height: auto;
-	margin-bottom: 20px;
+	display: -webkit-box;
+	display: -moz-box;
+	display: -o-box;
+	-webkit-box-orient: vertical;
+	-moz-box-orient: vertical;
+	-o-box-orient: vertical;
+	-webkit-line-clamp: 4;
+	-moz-line-clamp: 4;
+	-o-line-clamp: 4;
+	line-height: 11px;        /* fallback */
+	max-height: 44px;
 }
-
-
-.quantity3{
-	border: 3px dashed;
-	border-radius: 22px;
-	border-color: lightgreen;
-	padding: 10px 2px;
-	text-align: center;
-	width: 225px;
-	height: auto;
-	margin-bottom: 20px;
-}
-
-
-.quantity4{
-	border: 3px dotted;
-	border-radius: 22px;
-	padding: 10px 2px;
-	text-align: center;
-	width: 175px;
-	height: auto;
-	margin-bottom: 20px;
-}
-
 
 .circle{
-	width: 100px;
-	height: 100px;
-	border: 3px solid;
-	border-radius: 60px;
-	border-color: grey;
+	width: 60px;
+	height: 60px;
+	border: 3px solid black;
+	border-radius: 50%;
 	background-color: grey;
 	color: white;
 	text-align: center;
+	vertical-align: middle;
 }
 
-.circle-text{
+/*.circleWrapper{
 	padding: 10px;
+}*/
+
+/* css for path color and end point color for node structure for model UI*/
+path {
+	cursor:pointer;
+	pointer-events: visiblestroke;
+	stroke:rgb(92, 150, 188);
+	stroke-width: 2px;
+}
+
+.ep {
+	position:absolute;
+	bottom: 37%;
+	right: 5px;
+	width:1em;
+	height:1em;
+	background-color:orange;
+	cursor:pointer;
+	box-shadow: 0px 0px 2px black;
+	-webkit-transition:-webkit-box-shadow 0.25s ease-in;
+	-moz-transition:-moz-box-shadow 0.25s ease-in;
+	transition:box-shadow 0.25s ease-in;
+}
+
+.ep:hover {
+	box-shadow: 0px 0px 6px black;
+}
+
+circle{
+	fill: rgb(92, 150, 188);
 }

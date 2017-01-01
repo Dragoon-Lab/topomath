@@ -2,13 +2,16 @@
 	"authorModelNodes": [
 		{
 			"ID": "id1",
-			"variable": "The number of rabbits in the population",
-			"description": "Population of rabbits",
+			"variable": "Rabbits",
+			"description": "The number of rabbits in the population",
 			"type": "quantity",
 			"accumulator": true,
 			"units": "rabbits",
-			"inputs": [{"ID": "id4"}, {"ID": "id5"}],
+			"links": "",
+			"equation": "",
 			"value": 24,
+			"root": true,
+			"genus": "required",
 			"attemptCount": {
 			},
 			"position": [{
@@ -27,8 +30,11 @@
 			"type": "quantity",
 			"accumulator": false,
 			"units": "1/year",
-			"inputs": [{"ID": "id4"}],
-			"value": 0.1,
+			"links": "",
+			"equation": "",
+			"value": 0.3,
+			"root": false,
+			"genus": "required",
 			"attemptCount": {
 			},
 			"position": [{
@@ -44,8 +50,11 @@
 			"type": "quantity",
 			"accumulator": false,
 			"units": "1/year",
-			"inputs": [{"ID": "id4"}, {"ID": "id5"}],
-			"value": 0.3,
+			"links": "",
+			"equation": "",
+			"value": "",
+			"root": false,
+			"genus": "required",
 			"attemptCount": {
 			},
 			"position": [{
@@ -60,10 +69,12 @@
 			"description": "The number of births is the number of rabbits times the birth probability",
 			"type": "equation",
 			"accumulator": false,
-			"eqation": "id3 = id1 * id2",
+			"equation": "id3 = id1 * id2",
 			"units": "",
-			"inputs": [{"ID": "id1"},{"ID": "id2"},{"ID": "id3"}],
+			"links": [{"ID": "id1"},{"ID": "id2"},{"ID": "id3"}],
 			"value": "",
+			"root": false,
+			"genus": "required",
 			"attemptCount": {
 			},
 			"position": [{
@@ -78,10 +89,12 @@
 			"description": "The number os rabbits increase by the number of births each year",
 			"type": "equation",
 			"accumulator": false,
-			"eqation": "id1 = id1 + id3",
+			"equation": "id1 = id1 + id3",
 			"units": "",
-			"inputs": [{"ID": "id1"},{"ID": "id3"}],
+			"links": [{"ID": "id1"},{"ID": "id1_initial"},{"ID": "id3"}],
 			"value": "",
+			"root": false,
+			"genus": "required",
 			"attemptCount": {
 			},
 			"position": [{
