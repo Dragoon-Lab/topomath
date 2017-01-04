@@ -8,9 +8,9 @@ define([
 				this.y = this.beginY;
 				this.model = {
 					taskName: name,
-					authoredNodes: [],
-					studentNodes: []
-				}
+					authorModelNodes: [],
+					studentModelNodes: []
+				};
 				obj.active = (mode == "AUTHOR") ? obj.authored : obj.student;
 			},
 
@@ -18,11 +18,12 @@ define([
 			beginY: 100,
 			nodeWidth: 200,
 			nodeHeight: 100,
+			initialNodeString: "initial",
 			loadModel: function(_model){
 				// Summary: loads a model object;
-				//      allows Dragoon to load a pre-defined program or to load a users saved work
+				//      allows TopoMath to load a pre-defined program or to load a users saved work
 				//      Sets id for next node.
-				this.model = model;
+				this.model = _model;
 
 				/*
 				 We use ids of the form "id"+integer.  This loops through
@@ -38,31 +39,18 @@ define([
 							largest = n;
 					}
 				};
-				array.forEach(this.given.getNodes(), intID);
+				array.forEach(this.authored.getNodes(), intID);
 				array.forEach(this.student.getNodes(), intID);
 				this._ID = largest + 1;
 
-				var schemas = this.active.getSchemas();
-				var largestSID = 0;
-				if(schemas){
-					array.forEach(schemas, function(schema){
-						if(schema.ID.length >= 6 && schema.ID.slice(0, 6) == "schema"){
-							var n = parseInt(schema.ID.slice(6));
-							if(n && n > largestSID)
-								largestSID = n;
-						}
-					});
-				}
-				this._SID = largestSID + 1;
-
 				/*
-				 Sanity test that all given model IDs, node names,
+				 Sanity test that all authored model IDs, node names,
 				 and descriptions are distinct, if they are defined.
 				 */
 				var ids = {}, names = {}, descriptions = {};
 				var duplicateDescription = [];
 				var duplicateName = [];
-				array.forEach(this.given.getNodes(), function(node){
+				array.forEach(this.authored.getNodes(), function(node){
 					if(node.ID in ids){
 						throw new Error("Duplicate node id " + node.id);
 					}
@@ -72,7 +60,7 @@ define([
 					if(node.description in descriptions){
 						var duplicateNodeId = descriptions[node.description];
 						duplicateDescription[node.ID] = node.name;
-						duplicateDescription[duplicateNodeId] = this.given.getName(duplicateNodeId);
+						duplicateDescription[duplicateNodeId] = this.authored.getName(duplicateNodeId);
 					}
 
 					ids[node.ID] = true;
@@ -97,6 +85,7 @@ define([
 				//          Should only be used for debugging.
 				return JSON.stringify(this.model, null, 4);
 			},
+
 		};
 
 		var both = {
@@ -145,6 +134,10 @@ define([
 				var node = this.getNode(id);
 				return node && node.genus;
 			},
+			getColor: function(/*string*/ id){
+				var node = this.getNode(id);
+				return node && node.color;
+			},
 			isAccumulator: function(/* string */ id){
 				var node = this.getNode(id);
 				return node && node.accumulator;
@@ -172,11 +165,14 @@ define([
 				// Summary: sets the "X" and "Y" values of a node's position
 				this.getNode(id).position = positionObject;
 			},
+			getInitialNodeString: function(){
+				return obj.initialNodeString;
+			}
 		};
 
-		var obj.authored = lang.mixin({
+		obj.authored = lang.mixin({
 			getNodes: function(){
-				return obj.model.authoredNodes;
+				return obj.model.authorModelNodes;
 			},
 			getName: function(/*string*/ id){
 				// Summary: returns the name of a node matching the student model.
@@ -185,8 +181,8 @@ define([
 				return node && node.variable;
 			},
 			getNodeIDByName: function(/*string*/ name){
-				// Summary: returns the id of a node matching the given name from the
-				//          given or extra nodes.  If none is found, return null.
+				// Summary: returns the id of a node matching the authored name from the
+				//          authored or extra nodes.  If none is found, return null.
 				var id;
 				var gotIt = array.some(this.getNodes(), function(node){
 					id = node.ID;
@@ -195,8 +191,8 @@ define([
 				return gotIt ? id : null;
 			},
 			getNodeIDByDescription: function(/*string*/ description){
-				// Summary: returns the id of a node matching the given description from the
-				//          given or extra nodes.  If none is found, return null.
+				// Summary: returns the id of a node matching the authored description from the
+				//          authored or extra nodes.  If none is found, return null.
 				var id;
 				var gotIt = array.some(this.getNodes(), function(node){
 					id = node.ID;
@@ -255,13 +251,19 @@ define([
 			},
 			setAccumulator: function(/*string*/ id, /*bool*/ isAccumulator){
 				this.getNode(id).accumulator = isAccumulator;
+			},
+			setColor: function(/*string*/ id, /*string*/ color){
+				this.getNode(id).color = color;
 			}
 		}, both);
 
-		var obj.student = lang.mixin({
+		obj.student = lang.mixin({
 			getNodes: function(){
-				return obj.model.studentNodes;
+				return obj.model.studentModelNodes;
 			}
 		}, both);
+
+		obj.constructor.apply(obj, arguments);
+		return obj;
 	};
 });

@@ -1,6 +1,7 @@
 define([
+	"dojo/_base/array",
 	"parser/parser"
-], function(Parser){
+], function(array, Parser){
 	return {
 		parse: function(equation){
 			return Parser.parse(equation);
@@ -17,6 +18,7 @@ define([
 		*/
 		convert: function(subModel, equation){
 			var eqs = equation.split(this.equalto);
+			var expressions = [];
 
 			try{
 				array.forEach(eqs, function(eq, count){

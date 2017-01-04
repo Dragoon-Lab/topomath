@@ -62,6 +62,7 @@
 			require([
 				"dojo/parser",
 				"dijit/layout/BorderContainer",
+				"dijit/layout/ContentPane",
 				"topomath" // Load up TopoMath itself
 			]);
 		});

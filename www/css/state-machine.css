@@ -1,7 +1,7 @@
 .equation {
 	position: absolute;
 	border: 3px solid black;
-	padding: 5px 2px;
+	padding: 4px 7px;
 	box-shadow: 2px 2px 19px #e0e0e0;
 	-o-box-shadow: 2px 2px 19px #e0e0e0;
 	-webkit-box-shadow: 2px 2px 19px #e0e0e0;
@@ -22,6 +22,7 @@
 
 .quantity {
 	border: 3px solid;
+	position: absolute;
 	/*
 	* apparently giving high radius gives a capsule shape
 	* http://stackoverflow.com/questions/18794947
@@ -29,7 +30,7 @@
 	*/
 	border-radius: 500px;
 	/*border-radius: 10%/50%; this is height dependent*/
-	padding: 5px 2px;
+	padding: 4px 7px;
 	text-align: center;
 	width: 100px;
 	height: auto;

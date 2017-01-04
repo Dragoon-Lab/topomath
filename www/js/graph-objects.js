@@ -1,7 +1,7 @@
 define([
 	"dojo/_base/array",
 	"dojo/_base/lang",
-	"./equation"
+	"./equation",
 	"jsPlumb/jsPlumb"
 ], function(array, lang, expression){
 	return {
@@ -33,7 +33,7 @@ define([
 					break;
 				case "equation":
 					var eq = model.getEquation(nodeID);
-					nodeString.value = eq ? expression.convert(eq) : "";
+					nodeString.value = eq ? expression.convert(model, eq) : "";
 					break;
 				case "quantity":
 					var nodeName = model.getVariable(nodeID);
@@ -42,7 +42,7 @@ define([
 					initial = typeof(initial) == "number" ? initial : "";
 					//create initial value node only if the accumulator property is set to true
 					//and initial value is a number
-					if(model.getAccumulator(nodeID) && initial){
+					if(model.isAccumulator(nodeID) && initial){
 						nodeString.initial = "initial " + nodeName + " : " + initial;
 						createInitial = true;
 					} else if(initial) {
@@ -50,10 +50,10 @@ define([
 					}
 					break;
 			}
-			html[0] = '<div id='+nodeID+'Label class = "bubble"><div class="'+ type +'Wrapper"><div class = "'+type+'"<strong class = "nodeContent">' + nodeString.value + '</strong></div></div></div>';
+			html[0] = '<div id='+nodeID+'Label class = "bubble"><div class="'+ type +'Wrapper"><strong class = "nodeContent">' + nodeString.value + '</strong></div></div>';
 
 			if(createInitial){
-				html[1] = '<div id='+nodeID+'LabelInitial class = "bubble"><div class="'+ type +'Wrapper"><div class = "'+type+'"<strong class = "nodeContent">' + nodeString.initial + '</strong></div></div></div>';
+				html[1] = '<div id='+nodeID+'LabelInitial class = "bubble"><div class="'+ type +'Wrapper"><strong class = "nodeContent">' + nodeString.initial + '</strong></div></div>';
 			}
 
 			return html;

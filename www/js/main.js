@@ -9,11 +9,11 @@ define([
 		'u': 'temp',
 		'p': 'rabbits',
 		'm': 'AUTHOR',
-		's': 'temp-section',
-		'f': 'temp-folder'
+		's': 'temp-section'
 	};
 	var session = sess(query);
-	var _model = new model(query.m, query.p)
+	var _model = new model(query.m, query.p);
+	console.log(_model);
 	session.getModel(query).then(function(solutionGraph){
 		if(solutionGraph){
 			try{
@@ -24,9 +24,9 @@ define([
 		} else {
 			throw Error("something went wrong");
 		}
-	});
 
-	ready(function(){
-		var dm = new drawModel(_model.active);
+		ready(function(){
+			var dm = new drawModel(_model.active);
+		});
 	});
 });
