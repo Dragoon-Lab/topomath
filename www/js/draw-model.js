@@ -128,7 +128,7 @@ define([
 
 		getNextColor: function(isBackground){
 			var index = isBackground ? this._backgroundColor++ : this._borderColor--;
-			if(isBackground && index >= this._color.length){
+			if(isBackground && index >= this._colors.length){
 				console.error("need more colors, last color returned");
 				index--;
 			} else if(!isBackground && index < 0){
