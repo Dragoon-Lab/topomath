@@ -23,6 +23,7 @@ define([
 
 		constructor: function(model){
 			this._model = model;
+			this._borderColor = this._colors.length - 1;
 			this.connectorUI = {
 				endpoint: ["Dot", {radius: 2}],
 				endpointStyle: {fill: "#5c96bc"}
@@ -34,9 +35,8 @@ define([
 			});
 
 			this._instance = instance;
-			this._model = model;
 			var vertices = [];
-			var temp = []
+			var temp = [];
 			vertices = array.map(model.getNodes(), function(node){
 				temp = temp.concat(this.addNode(node));
 				return temp;
@@ -131,9 +131,11 @@ define([
 			if(isBackground && index >= this._colors.length){
 				console.error("need more colors, last color returned");
 				index--;
+				this._backgroundColor = 0;
 			} else if(!isBackground && index < 0){
 				console.error("need more colors, last color returned");
 				index++;
+				this._borderColor = this._colors.length - 1;
 			}
 			var color = this._colors[index];
 			return color;

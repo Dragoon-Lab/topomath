@@ -32,6 +32,6 @@ $dbuser = chop(fgets($fh));
 $dbpass = chop(fgets($fh));
 $dbname = chop(fgets($fh));
 if(strlen($dbname)==0){
-	$dbname='laits_devel';
+	$dbname='topomath_devel';
 }
 fclose($fh);
