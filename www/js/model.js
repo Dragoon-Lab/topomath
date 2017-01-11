@@ -174,7 +174,7 @@ define([
 			},
 		};
 
-		var obj.authored = lang.mixin({
+		obj["authored"] = lang.mixin({
 			getNodes: function(){
 				return obj.model.authoredNodes;
 			},
@@ -258,7 +258,7 @@ define([
 			}
 		}, both);
 
-		var obj.student = lang.mixin({
+		 obj["student"] = lang.mixin({
 			getNodes: function(){
 				return obj.model.studentNodes;
 			}

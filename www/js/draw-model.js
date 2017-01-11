@@ -19,7 +19,7 @@ define([
 		_borderColor: 0,
 		_backgroundColor: 0,
 		connectorUI: {
-			endpoint: {"Dot", radius: 2},
+			endpoint: {"Dot": 1, radius: 2},
 			endpointStyle: {fill: "#5c96bc"}
 		},
 
@@ -105,7 +105,7 @@ define([
 			// node properties default case
 			var obj = {
 				backgroundColor: "DarkGray",
-				obj.borderColor: "black"
+				borderColor: "black"
 			};
 			var type = node.type;
 			if(type && type == "equation"){
