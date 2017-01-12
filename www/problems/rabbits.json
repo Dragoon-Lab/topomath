@@ -1,0 +1,114 @@
+{
+	"authorModelNodes": [
+		{
+			"ID": "id1",
+			"variable": "Rabbits",
+			"description": "The number of rabbits in the population",
+			"type": "quantity",
+			"accumulator": true,
+			"units": "rabbits",
+			"links": "",
+			"equation": "",
+			"value": 24,
+			"root": true,
+			"genus": "required",
+			"color": "",
+			"attemptCount": {
+			},
+			"position": [{
+				"x": 500,
+				"y": 200
+			}, {
+				"x": 350,
+				"y": 400
+			}],
+			"status": {}
+		},
+		{
+			"ID": "id2",
+			"variable": "Birth Probability",
+			"description": "The number of additional rabbits per year per rabbit",
+			"type": "quantity",
+			"accumulator": false,
+			"units": "1/year",
+			"links": "",
+			"equation": "",
+			"value": 0.3,
+			"root": false,
+			"genus": "required",
+			"color": "",
+			"attemptCount": {
+			},
+			"position": [{
+				"x": 700,
+				"y": 100
+			}],
+			"status": {}
+		},
+		{
+			"ID": "id3",
+			"variable": "Births",
+			"description": "The number of rabbits born per year",
+			"type": "quantity",
+			"accumulator": false,
+			"units": "1/year",
+			"links": "",
+			"equation": "",
+			"value": "",
+			"root": false,
+			"genus": "required",
+			"color": "",
+			"attemptCount": {
+			},
+			"position": [{
+				"x": 850,
+				"y": 250
+			}],
+			"status": {}
+		},
+		{
+			"ID": "id4",
+			"variable": "",
+			"description": "The number of births is the number of rabbits times the birth probability",
+			"type": "equation",
+			"accumulator": false,
+			"equation": "id3 = id1 * id2",
+			"units": "",
+			"links": [{"ID": "id1"},{"ID": "id2"},{"ID": "id3"}],
+			"value": "",
+			"root": false,
+			"genus": "required",
+			"color": "",
+			"attemptCount": {
+			},
+			"position": [{
+				"x": 700,
+				"y": 200
+			}],
+			"status": {}
+		},
+		{
+			"ID": "id5",
+			"variable": "",
+			"description": "The number os rabbits increase by the number of births each year",
+			"type": "equation",
+			"accumulator": false,
+			"equation": "id1 = id1 + id3",
+			"units": "",
+			"links": [{"ID": "id1"},{"ID": "id1_initial"},{"ID": "id3"}],
+			"value": "",
+			"root": false,
+			"genus": "required",
+			"color": "",
+			"attemptCount": {
+			},
+			"position": [{
+				"x": 650,
+				"y": 400
+			}],
+			"status": {}
+		}
+	],
+	"studentModelNodes": []
+}
+
