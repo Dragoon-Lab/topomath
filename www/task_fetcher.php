@@ -11,10 +11,14 @@ $problem = mysqli_real_escape_string($mysqli, $_REQUEST['p'])
 $problem = strlen($problem) > 50 ? substr($problem, 0, 50) : $problem;
 
 //user, section, mode and folder are mandatory for fetching model from db
-$user = (!empty($_REQUEST['u']) ? mysqli_real_escape_string($mysqli, $_REQUEST['u']) : '');
-$mode = (!empty($_REQUEST['m']) ? mysqli_real_escape_string($mysqli, $_REQUEST['m']) : '');
-$section = (!empty($_REQUEST['s']) ? mysqli_real_escape_string($mysqli, $_REQUEST['s']) : '');
-$folder = (!empty($_REQUEST['f']) ? mysqli_real_escape_string($mysqli, $_REQUEST['f']) : '');
+((isset($_REQUEST['u']) && !empty($_REQUEST['u'])) ?
+	($user = mysqli_real_escape_string($mysqli, $_REQUEST['u'])) : ($user = ''));
+((isset($_REQUEST['m']) && !empty($_REQUEST['m'])) ?
+	($mode = mysqli_real_escape_string($mysqli, $_REQUEST['m'])) : ($mode = ''));
+$section = ((isset($_REQUEST['s']) && !empty($_REQUEST['s'])) ?
+			mysqli_real_escape_string($mysqli, $_REQUEST['s']) : '');
+$folder = ((isset($_REQUEST['f']) && !empty($_REQUEST['f'])) ?
+			mysqli_real_escape_string($mysqli, $_REQUEST['f']) : '');
 
 /*
 * Author mode logic is to get a problem from the database.
@@ -46,13 +50,13 @@ if($mode == "AUTHOR"){
 	else
 		$query = sprintf(get_query('problem_without_folder_fetch'), $user, $mode, $section, $problem);
 }
-get_model($query);
+get_model($mysqli, $query);
 
 //no previous data was found, that means there is no old work in database
 //check if it is non published problem (with a folder) for the problem under the AUTHOR mode
 if($folder != "" && $section != ""){
 	$query = sprintf(get_query('problem_without_user_fetch'), "AUTHOR", $section, $problem, $folder);
-	get_model($query);
+	get_model($mysqli, $query);
 	// it came here that means no data was found as get_model has an exit statement
 	$statusCode=204;
 	if(function_exists('http_response_code'))
@@ -93,7 +97,7 @@ function get_query($type){
 	return $query[$type];
 }
 
-function get_model($graph){
+function get_model($mysqli, $query){
 	$result = $mysqli->query($query);
 	if($row = $result->fetch_row()){
 		header("Content-type: application/json");

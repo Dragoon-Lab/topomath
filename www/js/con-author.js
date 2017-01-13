@@ -114,7 +114,7 @@ define([
 			selectModel.on('Change', lang.hitch(this, function(){
 					return this.disableHandlers || this.handleSelectModel.apply(this, arguments);
 			}));
-			var givenEquation = registry.byId("givenEquationBox");
+			var givenEquation = registry.byId("setName2");
 			givenEquation.on('Change', lang.hitch(this, function(){
 					return this.disableHandlers || this.handleGivenEquation.apply(this, arguments);
 			}));
@@ -122,12 +122,6 @@ define([
 			var OKEditorButton = registry.byId("OKEditorButton");
 			OKEditorButton.on('click', lang.hitch(this, function(){
 				return this.disableHandlers || this.handleOKButton.apply(this, arguments);
-			}));
-
-			var topoNodeSelectDoneButton = registry.byId("topoNodeSelectDone");
-			topoNodeSelectDoneButton.on("click", lang.hitch(this, function(){
-				this.showNodeEditor("id1");
-				console.log("opening");
 			}));
 
 			this.handleErrorMessage(); //binds a function to Display Error message if expression is cleared.

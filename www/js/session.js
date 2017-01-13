@@ -1,7 +1,8 @@
 define([
 	"dojo/_base/declare", 
-	"dojo/request/xhr"
-], function(declare, xhr){
+	"dojo/request/xhr",
+	"dojo/_base/lang"
+], function(declare, xhr, lang){
 	// Summary:
 	//          Loads and saves sessions and sets up logging
 	// Description:
@@ -39,7 +40,7 @@ define([
 		getModel: function(params){
 			return xhr.get(this.path + "task_fetcher.php", {
 				query: params,
-				handlerAs: "json"
+				handleAs: "json"
 			}).then(lang.hitch(this, function(model_object){
 				console.log("model object received", model_object);
 				return model_object;

@@ -51,7 +51,7 @@ define([
 	return declare(null, {
 		_model: null,
 		_nodeEditor: null, // node-editor object- will be used for populating fields
-		_prenodeEditor: null,
+		_nodeEditor2: null,
 		/*
 		 * When opening the node editor, we need to populate the controls without
 		 * evaluating those changes.
@@ -66,7 +66,12 @@ define([
 		genericControlMap: {
 			type: "typeId",
 			initial: "initialValue",
-			equation: "equationBox"
+			equation: "setName2",
+		},
+		genericDivMap: {
+			initial: "initialValueDiv",
+			units: "unitDiv",
+			equation: "expressionDiv"
 		},
 		// A list of all widgets.  (The constructor mixes this with controlMap)
 		widgetMap: {
@@ -92,7 +97,7 @@ define([
 			// after widgets are set up.
 			//if(this.activityConfig.get("showNodeEditor")){
 			ready(this, this._setUpNodeEditor);
-			ready(this, this._setUpPreNodeEditor);
+			//ready(this, this._setUpPreNodeEditor);
 			ready(this, this._initHandles);
 			//}
 			//this.nodeConnections = [];
@@ -101,24 +106,6 @@ define([
 		// A stub for connecting routine to draw new node.
 		addNode: function(node, autoflag){
 			console.log("Node Editor calling addNode() for ", node.id);
-		},
-
-		// A list of common controls of student and author
-		genericControlMap: {
-			type: "typeId",
-			initial: "initialValue",
-			equation: "equationBox",
-			explanation:"explanationButton"
-		},
-		genericDivMap: {
-			initial: "initialValueDiv",
-			units: "unitDiv",
-			equation: "expressionDiv"
-		},
-		// A list of all widgets.  (The constructor mixes this with controlMap)
-		widgetMap: {
-			message: 'messageBox',
-			crisisAlert: 'crisisAlertMessage'
 		},
 
 		_initCrisisAlert: function(){
@@ -144,16 +131,12 @@ define([
 			});
 		},
 
-		_setUpPreNodeEditor: function(){
-			// get Node Editor widget from tree
-			this._prenodeEditor = registry.byId('prenodeeditor');
-			this._prenodeEditor.set("display", "block");
-		},
-
 		_setUpNodeEditor: function(){
 			// get Node Editor widget from tree
 			this._nodeEditor = registry.byId('nodeeditor');
 			this._nodeEditor.set("display", "block");
+			this._nodeEditor2 = registry.byId('nodeeditor2');
+			this._nodeEditor2.set("display", "block");
 		},
 
 		//set up event handling with UI components
@@ -256,10 +239,12 @@ define([
 			array.forEach(buttons, function(button){
 				var w = registry.byId(button + 'Button');
 				if(!w){
+					/* logging will be added later
 					this.logging.clientLog("assert", {
 						message: "button not found, button id : "+button,
 						functionTag: '_initHandles'
 					});
+					*/
 				}
 				var handler = this[button + 'Handler'];
 				if(!handler){
@@ -269,15 +254,6 @@ define([
 						functionTag: '_initHandles'
 					}); */
 				}
-				w.on('click', lang.hitch(this, handler));
-				/*	When the equation box is enabled/disabled also do the same
-				 for this button */
-				equationWidget.watch("disabled", function(attr, oldValue, newValue){
-					if (w.id!=="explanationButton") {
-						// console.log("************* " + (newValue?"dis":"en") + "able " + button);
-						w.set("disabled", newValue);
-					}
-				});
 			}, this);
 
 			//undo background color on change
@@ -290,14 +266,6 @@ define([
 				}));
 			}, this);
 
-		},
-
-		//showPreNodeEditor
-		showPreNodeEditor: function(/*string*/ id){
-			//Checks if the current mode is COACHED mode and exit from node editor if all the modes are defined
-			console.log("showPreNodeEditor called for node ", id);
-			this.currentID = id; //moved using inside populateNodeEditorFields
-			this._prenodeEditor.show();
 		},
 		
 		//show node editor
@@ -319,6 +287,23 @@ define([
 			}));
 		},
 
+		showNodeEditor2: function(/*string*/ id){
+			//Checks if the current mode is COACHED mode and exit from node editor if all the modes are defined
+			console.log("showNodeEditor2 called for node ", id);
+			this.currentID = id; //moved using inside populateNodeEditorFields
+			//this.nodeStartAssessment();
+			this.disableHandlers = true;
+			this.initialControlSettings(id);
+			this.populateNodeEditorFields(id);
+
+			// Hide the value and expression controls in the node editor, depending on the type of node		
+			//var type=this._model.active.getType(this.currentID);
+			//this.adjustNodeEditor(type);
+
+			this._nodeEditor2.show().then(lang.hitch(this, function(){
+				this.disableHandlers = false;
+			}));
+		},
 		// Stub to be overwritten by student or author mode-specific method.
 		initialControlSettings: function(id){
 			console.error("initialControlSettings should be overwritten.");

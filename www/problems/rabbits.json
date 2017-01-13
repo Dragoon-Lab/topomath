@@ -12,14 +12,15 @@
 			"value": 24,
 			"root": true,
 			"genus": "required",
+			"color": "",
 			"attemptCount": {
 			},
 			"position": [{
 				"x": 500,
 				"y": 200
 			}, {
-				"x": 550,
-				"y": 200
+				"x": 350,
+				"y": 400
 			}],
 			"status": {}
 		},
@@ -35,11 +36,12 @@
 			"value": 0.3,
 			"root": false,
 			"genus": "required",
+			"color": "",
 			"attemptCount": {
 			},
 			"position": [{
-				"x": 600,
-				"y": 200
+				"x": 700,
+				"y": 100
 			}],
 			"status": {}
 		},
@@ -55,11 +57,12 @@
 			"value": "",
 			"root": false,
 			"genus": "required",
+			"color": "",
 			"attemptCount": {
 			},
 			"position": [{
-				"x": 650,
-				"y": 200
+				"x": 850,
+				"y": 250
 			}],
 			"status": {}
 		},
@@ -75,10 +78,11 @@
 			"value": "",
 			"root": false,
 			"genus": "required",
+			"color": "",
 			"attemptCount": {
 			},
 			"position": [{
-				"x": 650,
+				"x": 700,
 				"y": 200
 			}],
 			"status": {}
@@ -95,15 +99,16 @@
 			"value": "",
 			"root": false,
 			"genus": "required",
+			"color": "",
 			"attemptCount": {
 			},
 			"position": [{
 				"x": 650,
-				"y": 200
+				"y": 400
 			}],
 			"status": {}
 		}
 	],
-	"studentModelNodes": [],
+	"studentModelNodes": []
 }
 

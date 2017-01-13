@@ -8,6 +8,7 @@ www/dijit
 www/dojox
 www/jsPlumb
 www/util
+www/math-parser
 
 #OS specific files
 .DS_Store
