@@ -60,68 +60,73 @@ define([
 			ready(this, "initAuthorHandles");
 		},
 
-		resettableControls: ["name","description","initial","units","equation"],
+		resettableControls: ["variable","explanation","description","description2","initial","units","equation"],
 
 		controlMap: {
 			inputs: "setInput",
-			name: "setName",
+			variable: "setName",
+			explanation: "setName2",
 			description: "setDescription",
+			description2: "setDescription2",
 			kind: "selectKind",
 			units: "setUnits",
 			root: "markRootNode",
-			student: "setStudentNode",
-			modelType: "selectModel",
-			waveForm: "assignWaveFormButton",
-			nodeType: "typeId",
-			preNodeType: "topoNodeSelectDone"
+			dynamic: "markDynamicNode",
+			setStudentQty: "setStudentNode",
+			setStudentEq: "setStudentNode2"
 		},
 		authorControls: function(){
 			console.log("++++++++ Setting AUTHOR format in Node Editor.");
 			style.set('nameControl', 'display', 'block');
-			style.set('descriptionControlStudent', 'display', 'none');
 			style.set('descriptionControlAuthor', 'display', 'inline-block');
 			style.set('initialValueDiv', 'display', 'inline');
 			style.set('unitDiv', 'display', 'none');
 			style.set('setUnitsControl', 'display', 'inline');
 			style.set('setRootNode', 'display', 'block');
-			//style.set('expressionDiv', 'display', 'block');
+			style.set('expressionDiv', 'display', 'block');
 			style.set('inputControlAuthor', 'display', 'block');
-			style.set('inputControlStudent', 'display', 'none');
-			style.set('studentModelControl', 'display', 'inline-block');
-			style.set('editorLabel', 'display', 'block');
-			style.set('cancelEditorButton', 'display', 'block');
-			//style.set('assignButtonBox', 'display', 'block');
 		},
 		
 		initAuthorHandles: function(){
-			var name = registry.byId(this.controlMap.name);
-			name.on('Change', lang.hitch(this, function(){
-				return this.disableHandlers || this.handleName.apply(this, arguments);
+
+			var variable_name = registry.byId(this.controlMap.variable);
+			variable_name.on('Change', lang.hitch(this, function(){
+				return this.disableHandlers || this.handleVariableName.apply(this, arguments);
 			}));
+
+			var explanation_name = registry.byId(this.controlMap.explanation);
+			explanation_name.on('Change', lang.hitch(this, function(){
+				return this.disableHandlers || this.handleExplanationName.apply(this, arguments);
+			}));
+
 			var kind = registry.byId(this.controlMap.kind);
 			kind.on('Change', lang.hitch(this, function(){
 				return this.disableHandlers || this.handleKind.apply(this, arguments);
 			}));
-			var root = registry.byId(this.controlMap.root);
-			root.on('Change', lang.hitch(this, function(checked){
+
+			var root_check = registry.byId(this.controlMap.root);
+			root_check.on('Change', lang.hitch(this, function(checked){
 					return this.disableHandlers || this.handleRoot(checked);
 			}));
-			var setStudentNode = registry.byId(this.controlMap.student);
-			setStudentNode.on('Change', lang.hitch(this, function(checked){
-					return this.disableHandlers || this.handleSetStudentNode(checked);
+
+			var dynamic_check = registry.byId(this.controlMap.dynamic);
+			root_check.on('Change', lang.hitch(this, function(checked){
+					return this.disableHandlers || this.handleDynamic(checked);
 			}));
-			var selectModel = registry.byId(this.controlMap.modelType);
-			selectModel.on('Change', lang.hitch(this, function(){
-					return this.disableHandlers || this.handleSelectModel.apply(this, arguments);
+
+			var setStudentQtyNode = registry.byId(this.controlMap.setStudentQty);
+			setStudentQtyNode.on('Change', lang.hitch(this, function(checked){
+					return this.disableHandlers || this.handleSetStudentQtyNode(checked);
 			}));
+
+			var setStudentEqNode = registry.byId(this.controlMap.setStudentEq);
+			setStudentEqNode.on('Change', lang.hitch(this, function(checked){
+					return this.disableHandlers || this.handleSetStudentEqNode(checked);
+			}));
+
 			var givenEquation = registry.byId("setName2");
 			givenEquation.on('Change', lang.hitch(this, function(){
 					return this.disableHandlers || this.handleGivenEquation.apply(this, arguments);
-			}));
-
-			var OKEditorButton = registry.byId("OKEditorButton");
-			OKEditorButton.on('click', lang.hitch(this, function(){
-				return this.disableHandlers || this.handleOKButton.apply(this, arguments);
 			}));
 
 			this.handleErrorMessage(); //binds a function to Display Error message if expression is cleared.
@@ -129,8 +134,13 @@ define([
 		/*
 		 Handler for type selector
 		 */
-		handleName: function(name){
-			console.log("**************** in handleName ", name);
+		handleVariableName: function(name){
+			console.log("**************** in handle Variable Name ", name);
+
+		},
+
+		handleExplanationName: function(name){
+			console.log("**************** in handle Explanation Name ", name);
 
 		},
 
@@ -149,35 +159,38 @@ define([
 			console.log("**************** in handleKind ", kind);
 		},
 
-		handleDescription: function(description){
-			// Summary: Checks to see if the given description exists; if the
+		handleQuantityDescription: function(description){
+			// Summary: Checks to see if the given quantity node description exists; if the
+			//		description doesn't exist, it sets the description of the current node.
+		},
+
+		handleEquationDescription: function(description){
+			// Summary: Checks to see if the given equation node description exists; if the
 			//		description doesn't exist, it sets the description of the current node.
 		},
 		
-		explanationHandler:function(){ 
-		},
-
-		handleOKButton: function(){
-
-		},
-
 		handleRoot: function(root){
 			// Summary: Sets the current node to be parent node
 			console.log("********************* in handleRoot", root);
 		},
 
-		handleSetStudentNode: function(checked){
-			console.log("********************* in handleSelecetModel", checked);
+		handleDynamic: function(root){
+			// Summary: Sets the current node to be parent node
+			console.log("********************* in handleDynamic", root);
+		},
+
+		handleSetStudentQtyNode: function(checked){
+			console.log("********************* in handle set student quantity node", checked);
+		},
+
+		handleSetStudentEqNode: function(checked){
+			console.log("********************* in handle set student equation node", checked);
 		},
 
 		handleSelectModel: function(modelType){
 
 		},
 		
-		handleType: function(type){
-
-		},
-
 		handleUnits: function(units){
 			console.log("**************** in handleUnits ", units);
 
