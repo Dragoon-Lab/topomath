@@ -50,10 +50,21 @@ define([
 					}
 					break;
 			}
-			html[0] = '<div id='+nodeID+'Label class = "bubble"><div class="'+ type +'Wrapper"><strong class = "nodeContent">' + nodeString.value + '</strong></div></div>';
+			html[0] = '<div id="'+nodeID+'Label" class = "bubble"><div class="'+ type +'Wrapper"><strong class = "nodeContent">' + nodeString.value + '</strong></div></div>';
 
 			if(createInitial){
-				html[1] = '<div id='+nodeID+'LabelInitial class = "bubble"><div class="'+ type +'Wrapper"><strong class = "nodeContent">' + nodeString.initial + '</strong></div></div>';
+				html[1] = '<div id="'+nodeID+'LabelInitial" class = "bubble"><div class="'+ type +'Wrapper"><strong class = "nodeContent">' + nodeString.initial + '</strong></div></div>';
+			}
+
+			return html;
+		},
+
+		getNodeDescriptionHTML: function(model, nodeID){
+			var type = model.getType(nodeID);
+			var description = model.getDescription(nodeID);
+			var html = "";
+			if(type){
+				html = '<div id = "'+nodeID+'_description" class="'+type+'Description">'+description+'</div>';
 			}
 
 			return html;

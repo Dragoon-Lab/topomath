@@ -4,9 +4,11 @@ define([
 	"dojo/_base/lang",
 	"dojo/dom-attr",
 	"dojo/dom-construct",
+	"dojo/dom",
+	"dojo/dom-style",
 	"./graph-objects",
-	"jsPlumb/jsPlumb",
-], function(declare, array, lang, attr, domConstruct, graphObjects){
+	"jsPlumb/jsPlumb"
+], function(declare, array, lang, attr, domConstruct, dom, domStyle, graphObjects){
 	return declare(null, {
 		_instance: null,
 		_model: null,
@@ -76,7 +78,8 @@ define([
 			array.forEach(htmlStrings, function(html, count){
 				var idTag = node.ID;
 				if(count == 1)
-					idTag += "_initial"
+					idTag += "_" + this._model.getInitialNodeString();
+
 				vertices[count] = domConstruct.create("div", {
 					id: idTag,
 					"class": type,
@@ -90,6 +93,11 @@ define([
 				}, "statemachine-demo");
 			}, this);
 
+			var color = this._model.getColor(node.ID);
+			if(color){
+				this.addNodeDescription(node.ID);
+			}
+
 			array.forEach(vertices, function(vertex){
 				this.makeDraggable(vertex);
 			}, this);
@@ -98,7 +106,7 @@ define([
 		},
 
 		getNodeUIProperties: function(node){
-			// node properties default case
+			// node properties default case when type is circle
 			var obj = {
 				backgroundColor: "DarkGray",
 				borderColor: "black"
@@ -107,9 +115,11 @@ define([
 			if(type && type == "equation"){
 				obj.backgroundColor = this.getNextColor(true);
 				obj.borderColor = "black";
-			} else {
+				this._model.setColor(node.ID, obj.backgroundColor);
+			} else if (type && type == "quantity") {
 				obj.backgroundColor = "white";
 				obj.borderColor = this.getNextColor(false);
+				this._model.setColor(node.ID, obj.borderColor);
 			}
 
 			return obj;
@@ -156,7 +166,7 @@ define([
 		onMoveStart: function(){
 			this._counter = 0;
 		},
-		
+
 		onMove: function(mover){
 			this._counter++;
 		},
@@ -171,7 +181,7 @@ define([
 			}
 		},
 
-		onClickMoved: function(mover){
+		onClickMoved: function(){
 			// aspect.after handles and this is just a stub
 			// attached in main.js
 			console.log("on click move stub called");
@@ -209,5 +219,22 @@ define([
 				anchor: "Continuous"
 			});
 		},
+
+		addNodeDescription: function(ID){
+			var type = this._model.getType(ID);
+			var descriptionString = graphObjects.getNodeDescriptionHTML(this._model, ID);
+			var domID = ID + "_description";
+			if(type){
+				var descHTML = dom.byId(domID);
+				var parentDIV = type+"-description";
+				var replaceTag = descHTML ? "replace" : "last";
+				domConstruct.place(descriptionString, parentDIV, replaceTag);
+				debugger;
+				if(type == "equation")
+					domStyle.set(domID, "background-color", this._model.getColor(ID));
+				else
+					domStyle.set(domID, "border-color", this._model.getColor(ID));
+			}
+		}
 	});
 });

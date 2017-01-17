@@ -86,6 +86,30 @@
 /*.circleWrapper{
 	padding: 10px;
 }*/
+/*css for description on the side for model*/
+.equation-description-wrapper, .quantity-description-wrapper{
+	width: 210px;
+	height: 100%;
+	float: left;
+	text-align: center;
+}
+
+.clear{
+	clear: both;
+}
+
+.equationDescription, .quantityDescription{
+	width: 200px;
+	margin: 0 auto 1px auto;
+}
+
+.equationDescription{
+	border: 1px black solid;
+}
+
+.quantityDescription{
+	border: 3px solid;
+}
 
 /* css for path color and end point color for node structure for model UI*/
 path {

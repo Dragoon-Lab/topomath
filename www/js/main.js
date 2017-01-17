@@ -1,11 +1,13 @@
 define([
 	'dojo/ready',
 	'dojo/aspect',
+	'dojo/dom-geometry',
+	'dijit/registry',
 	'./session',
 	'./model',
 	'./equation',
 	'./draw-model'
-], function(ready, aspect, session, model, equation, drawModel){
+], function(ready, aspect, geometry, registry, session, model, equation, drawModel){
 	var query = {
 		'u': 'temp',
 		'p': 'rabbits',
@@ -31,7 +33,7 @@ define([
 
 			
 			/*********  below this part are the event handling *********/
-			aspect.after(drawModel, "onClickNoMove", function(mover){
+			aspect.after(dm, "onClickNoMove", function(mover){
 				if(mover.mouseButton != 2){
 					// show node editor only when it is not a right click
 					// TODO: attach node editor click
@@ -42,14 +44,16 @@ define([
 				}
 			}, true);
 
-			aspect.after(drawModel, "onClickMoved", function(mover){
+			aspect.after(dm, "onClickMoved", function(mover){
+				console.log("aspect after called ", mover);
 				var g = geometry.position(mover.node, true);
-				console.log("Update model coordinates for ", mover.node.id, g);
+				console.log("Update model coordinates for ", mover);
                 var scrollTop = document.getElementById("drawingPane").scrollTop;
 				var id = mover.node.id;
 				var index = 0
-				if(id.indexOf("_initial") > -1){
-					id = id.replace("_initial", "");
+				var initialString = "_" + _model.active.getInitialNodeString();
+				if(id.indexOf("_") > -1){
+					id = id.replace(initialString, "");
 					index = 1;
 				}
                 var node = registry.byId(mover.node);
@@ -75,7 +79,7 @@ define([
                 }
 
                 _model.active.setPosition(id, index, {"x": g.x, "y": g.y+scrollTop});
-			});
+			}, true);
 		});
 	});
 });

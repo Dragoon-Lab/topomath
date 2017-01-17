@@ -149,12 +149,13 @@ define([
 				// Silently filter out any inputs that are not defined.
 				// inputs is an array of objects.
 				var targetID = target;
-				if(target.indexOf("_initial") > 0)
-					targetID = target.replace("_initial", "");
+				var initialString = this.getInitialNodeString();
+				if(target.indexOf(initialString) > 0)
+					targetID = target.replace(("_" + initialString), "");
 				var node = this.getNode(targetID);
 				if(node){
 					node.links = array.filter(links, function(link){
-						var id = link.ID.indexOf("_initial") ? link.ID.replace("_initial", "") : link.ID;
+						var id = link.ID.indexOf(("_" + initialString)) ? link.ID.replace(("_" + initialString), "") : link.ID;
 						return this.isNode(id);
 					}, this);
 				}

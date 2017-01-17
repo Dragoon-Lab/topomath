@@ -131,8 +131,10 @@
     <div id="drawingPane" class="restrict-vscroll" data-dojo-type="dijit/layout/ContentPane" region="center">
         <div id="errorMessageBox"></div>
         <!--<div id="tableGrid" data-dojo-type="dijit/layout/ContentPane" region="center"></div>-->
+		<!-- div for descriptions for each type -->
+		<div class = "quantity-description-wrapper" id="quantity-description"></div>
+		<div class = "equation-description-wrapper" id="equation-description"></div>
         <!-- Putting jsPlumb-stuff for demo -->
-        <canvas id="myCanvas" height = "1000" width="800"></canvas>
         <div class="demo statemachine-demo" id="statemachine-demo">
         </div>
 
