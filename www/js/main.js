@@ -1,20 +1,21 @@
 define([
 	'dojo/ready',
+	'dojo/aspect',
 	'./session',
 	'./model',
 	'./equation',
 	'./draw-model'
-], function(ready, sess, model, equation, drawModel){
+], function(ready, aspect, session, model, equation, drawModel){
 	var query = {
 		'u': 'temp',
 		'p': 'rabbits',
 		'm': 'AUTHOR',
 		's': 'temp-section'
 	};
-	var session = sess(query);
+	var _session = session(query);
 	var _model = new model(query.m, query.p);
 	console.log(_model);
-	session.getModel(query).then(function(solutionGraph){
+	_session.getModel(query).then(function(solutionGraph){
 		if(solutionGraph){
 			try{
 				_model.loadModel(solutionGraph);
@@ -27,6 +28,54 @@ define([
 
 		ready(function(){
 			var dm = new drawModel(_model.active);
+
+			
+			/*********  below this part are the event handling *********/
+			aspect.after(drawModel, "onClickNoMove", function(mover){
+				if(mover.mouseButton != 2){
+					// show node editor only when it is not a right click
+					// TODO: attach node editor click
+					console.log("node open action for ", mover.node.id);
+				} else {
+					// TODO: attach menu display click event
+					console.log("menu open action for ", mover.node.id);
+				}
+			}, true);
+
+			aspect.after(drawModel, "onClickMoved", function(mover){
+				var g = geometry.position(mover.node, true);
+				console.log("Update model coordinates for ", mover.node.id, g);
+                var scrollTop = document.getElementById("drawingPane").scrollTop;
+				var id = mover.node.id;
+				var index = 0
+				if(id.indexOf("_initial") > -1){
+					id = id.replace("_initial", "");
+					index = 1;
+				}
+                var node = registry.byId(mover.node);
+                var widthLimit = document.documentElement.clientWidth - 110; 
+                var topLimit = 20;
+
+                if(g.x > widthLimit) {
+                    g.x = widthLimit;
+                    node.style.left = widthLimit+"px";
+                }    
+
+                if(g.x < 0) { 
+                    g.x = 0; 
+                    node.style.left = "0px";
+                }    
+
+                if((g.y + scrollTop) < topLimit){
+                    //check if bounds inside
+                    if(g.y < topLimit) { // BUG: this g.y should be absolute coordinates instead
+                        g.y = topLimit;
+                        node.style.top = topLimit+"px";  // BUG: This needs to correct for scroll
+                    }
+                }
+
+                _model.active.setPosition(id, index, {"x": g.x, "y": g.y+scrollTop});
+			});
 		});
 	});
 });

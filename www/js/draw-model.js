@@ -20,6 +20,7 @@ define([
 		],
 		_borderColor: 39,
 		_backgroundColor: 0,
+		_counter: 0,
 
 		constructor: function(model){
 			this._model = model;
@@ -43,28 +44,12 @@ define([
 			}, this);
 			vertices = vertices[vertices.length - 1]; //hack for keeping it one dimension
 			console.log(vertices);
-
+			
+			var makeVertexSource = this.makeVertexSource;
 			instance.doWhileSuspended(function(){
-
 				array.forEach(vertices, function(vertex){
-					instance.makeSource(vertex, {
-						filter: ".ep",
-						anchor: "Continuous",
-						connector: ["StateMachine", {curviness: 0}],
-						connectorStyle:{ strokeStyle:"#5c96bc", lineWidth:2, outlineColor:"transparent", outlineWidth:4 },
-						maxConnections: 6,
-						onMaxConnections: function(info, e){
-							alert("Maximum connections (" + info.maxConnections + ") reached");
-						},
-					});
-				});
-
-				array.forEach(vertices, function(vertex){
-					instance.makeTarget(vertex, {
-						dropOptions: {hoverClass: "dragHover"},
-						anchor: "Continuous"
-					});
-				});
+					makeVertexSource(vertex, instance);
+				}, this);
 			});
 
 			array.forEach(vertices, function(vertex){
@@ -103,6 +88,10 @@ define([
 					},
 					innerHTML: htmlStrings[count]
 				}, "statemachine-demo");
+			}, this);
+
+			array.forEach(vertices, function(vertex){
+				this.makeDraggable(vertex);
 			}, this);
 
 			return vertices;
@@ -152,6 +141,73 @@ define([
 				console.log(source.ID, " ", targetID);
 				this.setConnection(source.ID, targetID);
 			}, this);
-		}
+		},
+
+		makeDraggable: function(vertex){
+			this._instance.draggable(vertex, {
+				onMoveStart: lang.hitch(this, this.onMoveStart),
+				onMove: lang.hitch(this, this.onMove),
+				onMoveStop: lang.hitch(this, this.onMoveStop)
+			});
+
+			this.makeVertexSource(vertex);
+		},
+
+		onMoveStart: function(){
+			this._counter = 0;
+		},
+		
+		onMove: function(mover){
+			this._counter++;
+		},
+
+		onMoveStop: function(){
+			// to distinguish between move and click there is a counter increment.
+			if(this._counter <= 5){
+				console.log("arguments are ", arguments);
+				this.onClickNoMove.apply(null, arguments);
+			} else {
+				this.onClickMoved.apply(null, arguments);
+			}
+		},
+
+		onClickMoved: function(mover){
+			// aspect.after handles and this is just a stub
+			// attached in main.js
+			console.log("on click move stub called");
+		},
+
+		onClickNoMove: function(){
+			// aspect.after handles the stub
+			// created to attach the node editor opening
+			// attached in main.js
+			console.log("on click stub called");
+		},
+
+		/*
+		* converts a node to a source and target so that lines can be attached to
+		* the boundary
+		* pulled it out from the constructor to remove redundancy as this function
+		* is also called in makeDraggable
+		* @param - vertex - a node object which while drawing is called a vertex
+		*/
+		makeVertexSource: function(vertex, instance){
+			var inst = instance || this._instance;
+			inst.makeSource(vertex, {
+				filter: ".ep",
+				anchor: "Continuous",
+				connector: ["StateMachine", {curviness: 0}],
+				connectorStyle:{ strokeStyle:"#5c96bc", lineWidth:2, outlineColor:"transparent", outlineWidth:4 },
+				maxConnections: 6,
+				onMaxConnections: function(info, e){
+					alert("Maximum connections (" + info.maxConnections + ") reached");
+				},
+			});
+
+			inst.makeTarget(vertex, {
+				dropOptions: {hoverClass: "dragHover"},
+				anchor: "Continuous"
+			});
+		},
 	});
 });

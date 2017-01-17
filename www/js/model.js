@@ -117,9 +117,12 @@ define([
 				var ret = this.getNode(id);
 				return ret && ret.links;
 			},
-			getPosition: function(/*string*/ id){
+			getPosition: function(/*string*/ id, /*integer*/ index){
 				// Summary: return current position of the node.
-				return this.getNode(id).position;
+				if(index != undefined)
+					return this.getNode(id).position[index];
+				else
+					return this.getNode(id).position;
 			},
 			getValue: function(/* string */ id){
 				var node = this.getNode(id);
@@ -161,9 +164,9 @@ define([
 				if(ret)
 					ret.type = type;
 			},
-			setPosition: function(/*string*/ id, /*object*/ positionObject){
+			setPosition: function(/*string*/ id, /*integer*/ index, /*object*/ positionObject){
 				// Summary: sets the "X" and "Y" values of a node's position
-				this.getNode(id).position = positionObject;
+				this.getNode(id).position[index] = positionObject;
 			},
 			getInitialNodeString: function(){
 				return obj.initialNodeString;
