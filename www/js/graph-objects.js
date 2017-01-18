@@ -63,7 +63,9 @@ define([
 			var type = model.getType(nodeID);
 			var description = model.getDescription(nodeID);
 			var html = "";
-			if(type){
+			if(type && description){
+				if(type == "quantity")
+					description = "<b>"+model.getVariable(nodeID)+"</b>: " + description;
 				html = '<div id = "'+nodeID+'_description" class="'+type+'Description">'+description+'</div>';
 			}
 
