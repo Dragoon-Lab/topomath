@@ -3,12 +3,11 @@
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 	<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 	<title>TopoMath</title>
 	<link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon"/>
-	<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
-	<script type = "text/javascript" src = "version.js"></script>
+ 	<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+	<!-- <script type = "text/javascript" src = "version.js"></script> -->
 	<script type="text/javascript">
 		var version = "";
 
@@ -59,11 +58,24 @@
 		**/
 		require(["dojo/domReady!"], function() {
 			//Load once dom is ready
+
 			require([
 				"dojo/parser",
+				"dijit/Dialog",
+				"dijit/Editor",
+				"dijit/_editor/plugins/LinkDialog",
+				"dijit/MenuBar", "dijit/PopupMenuBarItem",
+				"dijit/layout/BorderContainer", "dijit/MenuItem",
+				"dijit/form/Select", "dijit/form/Textarea",
+				"dijit/form/Button", "dijit/form/CheckBox", "dijit/form/TextBox",
+				"dijit/form/ComboBox", "dijit/form/Textarea", "dijit/form/RadioButton",
+				"dijit/form/SimpleTextarea", "dijit/Menu",
+				"dijit/layout/ContentPane", "dijit/registry",
+				"dijit/TooltipDialog",
 				"dijit/layout/BorderContainer",
 				"dijit/layout/ContentPane",
-				"topomath" // Load up TopoMath itself
+				"topomath", // Load up TopoMath itself
+				"topomath/menu", // Wire up menus
 			]);
 		});
 	</script>
@@ -111,14 +123,26 @@
 	</script>
 
 </head>
+
+<!-- topomath needs a loadingOverlay division here, using loading gears gif for now-->
+<div id="loadingOverlay" class="loadingOverlay pageOverlay" style = "top: 0;
+	left: 0;
+	position: absolute;
+	height: 100%;
+	width: 100%;
+	z-index: 1001;
+	display: block;
+	background:  #fff url('images/loading_gears.gif') no-repeat;
+	background-position: center;
+	background-color: #d9baa3;"></div>
+
 <body class="claro" style = "top: 0;
 	left: 0;
 	position: fixed;
 	height: 100%;
-	width: 100%;">
+	width: 100%;" >
 	<?php
 		$data = $_REQUEST;
-
 		$params = "";
 		if(count($data) != 0)
 			foreach($data as $key => $value){
@@ -128,19 +152,185 @@
 		$params = substr($params, 0, -1);
 	?>
 	<input type = "hidden" id = "query" value = "<?php echo $params?>"/>
-    <div id="drawingPane" class="restrict-vscroll" data-dojo-type="dijit/layout/ContentPane" region="center">
-        <div id="errorMessageBox"></div>
-        <!--<div id="tableGrid" data-dojo-type="dijit/layout/ContentPane" region="center"></div>-->
-        <!-- Putting jsPlumb-stuff for demo -->
-        <canvas id="myCanvas" height = "1000" width="800"></canvas>
-        <div class="demo statemachine-demo" id="statemachine-demo">
-        </div>
+	<div id="main" data-dojo-type="dijit/layout/BorderContainer" gutters="false">
+		<div data-dojo-type="dijit/MenuBar" id="menuBar" region="top" splitter="false">
+			<button type="button" data-dojo-type="dijit/form/Button" id="createQuantityNodeButton" disabled="true" style="display: none">Add Quantity</button>
+			<button type="button" data-dojo-type="dijit/form/Button" id="createEquationNodeButton" disabled="true" style="display: none">Add Equation</button>
+		</div>
+    	<div id="drawingPane" class="restrict-vscroll" data-dojo-type="dijit/layout/ContentPane" region="center">
+        	<div id="errorMessageBox"></div>
+        	<!--<div id="tableGrid" data-dojo-type="dijit/layout/ContentPane" region="center"></div>-->
+        	<!-- Putting jsPlumb-stuff for demo -->
+        	<canvas id="myCanvas" height = "1000" width="800"></canvas>
+        	<div class="demo statemachine-demo" id="statemachine-demo">
+        	</div>
 
         <!-- Putting jsPlumb-stuff for demo  end-->
-    </div>
-	<!-- this is where the menu as well the node editor html code would be kept.
-	Lets follow the hierarchy used earlier.-->
-	<div id = "main" data-dojo-type="dijit/layout/BorderContainer" gutters="false">
+    	</div>
+		<!-- this is where the menu as well the node editor html code would be kept.
+		Lets follow the hierarchy used earlier.-->
+
+	
+		<!-- Putting Node-Editor -Dialog stuff for demo -->
+		<div class="claro sameedit" data-dojo-type="dijit/Dialog" id="quantityNodeEditor">
+			
+			<div id="studentModelControl" class="fieldgroup">
+				<label style="width:20ex;" for="setStudentNode">Show to student</label>
+				<input id="setStudentNode" name="markStudentNode" data-dojo-type="dijit/form/CheckBox" checked="false"/>
+			</div>
+			
+			<div id="nameControl" class="fieldgroup">
+				<label for="setName">Variable</label>
+				<input id="setName" data-dojo-type="dijit/form/ComboBox">
+				<label for="selectKind">Kind of quantity:</label>
+				<select id="selectKind" data-dojo-type="dijit/form/Select">
+					<option value='defaultSelect'>--Select--</option>
+					<option value='required'>in equation & required</option>
+					<option value='allowed'>in equation & optional</option>
+					<option value='irrelevant'>not in equation</option>
+				</select>
+			</div>
+			
+			<div class="fieldgroup">
+				<div id="descriptionControlAuthor" class="fieldgroup">
+					<span class="fixedwidth">
+						<div id="authorDescriptionQuestionMark" class="questionMark"></div>
+			 			<label for="setDescription">Description</label>
+				  	</span>
+					<input id="setDescription" data-dojo-type="dijit/form/ComboBox">
+				</div>
+			</div>
+
+			<div class="fieldgroup">
+				<!-- adding a div for value field to control its display in UI -->
+				<div id="initialValueDiv" >
+					<span>
+						<div id="initialValueQuestionMark" class="questionMark"></div>
+						<label for="initialValue"><p id="initLabel" style="display:inline"></p>Value</label>
+					</span>
+					<input id="initialValue" type="text" style="width:5em" data-dojo-type="dijit/form/TextBox">
+				</div>
+			 	<div id = "unitDiv" style="display: none">
+					<div id="unitsQuestionMark" class="questionMark"></div>
+					<label id="selectUnitsControl">Units
+						<select id="selectUnits" data-dojo-type="dijit/form/Select">
+							<option value='defaultSelect'>No Units</option>
+						</select>
+					</label>
+			 	</div>
+				<div id="setUnitsControl" style="">
+					<!-- Setting display:none in the widget itself doesn't work.
+					 setting display:none in the label doesn't work in FireFox. -->
+					<label for="setUnits">Units
+						<input id="setUnits" data-dojo-type="dijit/form/ComboBox" style="width:6em">
+					</label>
+				</div>
+			</div>
+			
+			<div id="setRootNode" class="fieldgroup" style="">
+				<label for ="markRootNode" title ="Mark this node as a root node.">Root:</label>
+				<input id ="markRootNode" name ="markRootNode" data-dojo-type="dijit/form/CheckBox" value="agreed" checked="false"/>
+				<div id="questionMarkRoot" class="questionMark"></div>
+			</div>
+
+			<div id="setDynamicNode" class="fieldgroup" style="">
+				<label for ="markDynamicNode" title ="Mark this node as a root node.">Dynamic:</label>
+				<input id ="markDynamicNode" name ="markDynamicNode" data-dojo-type="dijit/form/CheckBox" value="agreed" checked="false"/>
+				<div id="questionMarkDynamic" class="questionMark"></div>
+			</div>
+
+			<div class="fieldgroup">
+				<label for="messageBox">Messages</label>
+				<div id="messageBox" class="textscroll" data-dojo-type="dijit/layout/ContentPane"></div>
+
+				<div style="margin-bottom:10px; display:block">
+					<span>&nbsp;</span>
+					<button id="closeButton" type="button" data-dojo-type="dijit/form/Button" iconClass="dijitNoIcon" style="float:right;">Done</button>
+					<button id="deleteButton" type="button" data-dojo-type="dijit/form/Button" iconClass="dijitNoIcon" style="float:left;">Delete Node</button>
+				</div>
+			</div>
+
+		</div><!-- end of quantity node editor -->
+
+		<!-- crisis Alert -->
+		<div class="claro crisisDialog" id="crisisAlertMessage" data-dojo-type="dijit.Dialog" title="Message">
+			<div id = "crisisMessage"> </div>
+			<button id="OkButton" type="button" data-dojo-type="dijit/form/Button">OK</button>
+		</div> 
+		<!-- Equation Node Editor-->
+		<div class="claro sameedit" data-dojo-type="dijit/Dialog" id="equationNodeEditor">
+			
+			<div id="studentModelControl2" class="fieldgroup">
+				<label style="width:20ex;" for="setStudentNode2">Show to student</label>
+				<input id="setStudentNode2" name="markStudentNode2" data-dojo-type="dijit/form/CheckBox" checked="false"/>
+			</div>
+
+			<div class="fieldgroup">
+				<div id="descriptionControlAuthor2" class="fieldgroup" style="">
+					<span class="fixedwidth">
+						<div id="authorDescriptionQuestionMark2" class="questionMark"></div>
+			 			<label for="setDescription2">Explanation</label>
+				  	</span>
+					<input id="setDescription2" data-dojo-type="dijit/form/ComboBox">
+				</div>
+			</div>
+
+			<div class="ExpressionContainer" id="expressionDiv" style="">
+				<div class="fieldgroup">
+					 <div class="vertical">
+						<div id="equationLabel"></div>
+							<div id="nameControl2" class="fieldgroup">
+								<label for="setName2">Equation</label>
+									<input id="setName2" data-dojo-type="dijit/form/ComboBox">
+							</div>
+					</div>
+					<div class="buttonBox">
+						<button id="undoButton" type="button" data-dojo-type="dijit/form/Button" iconClass="dijitNoIcon">Undo</button>
+						<button id="equationDoneButton" type="button" data-dojo-type="dijit/form/Button" iconClass="dijitNoIcon">Check Equation</button>
+					</div>
+				</div>
+
+				<div class="fieldgroup" id="algebraic">
+					<span class="fixedwidth">
+						<div id="inputsQuestionMark" class="questionMark"></div>
+						<label>Insert above </label>
+					</span>
+					<div class="vertical">
+						<div id="inputControlAuthor" style="background-color:#fff;">
+							<select id="setInput" data-dojo-type="dijit/form/ComboBox">
+							</select>
+						</div>
+					</div>
+				</div>
+
+				<div class="fieldgroup" id="operations">
+					<span class="fixedwidth">
+						 <div id="operationsQuestionMark" class="questionMark" style="margin-top:4px;"></div>
+					</span>
+					<div>
+						<button id="plusButton" title="Plus" type="button" data-dojo-type="dijit/form/Button" iconClass="dijitNoIcon"><span class="fa fa-plus"></span></button>
+						<button id="minusButton" title="Minus" type="button" data-dojo-type="dijit/form/Button" iconClass="dijitNoIcon"><span class="fa fa-minus"></span></button>
+						<button id="timesButton"  title="Times" type="button" data-dojo-type="dijit/form/Button" iconClass="dijitNoIcon"><span class="fa fa-asterisk"></span></button>
+						<button id="divideButton"  title="Divide" type="button" data-dojo-type="dijit/form/Button" iconClass="dijitNoIcon"><strong class="fa fa-minus fa-division"></strong></button>
+					</div>
+				</div>
+			</div>
+
+			<div class="fieldgroup">
+				<label for="messageBox2">Messages</label>
+				<div id="messageBox2" class="textscroll" data-dojo-type="dijit/layout/ContentPane"></div>
+				<div class="buttonBox2" style="padding-top:0px">
+				<!-- Strut to move close button down.  It would be
+						better to do this with css... -->
+				</div>
+				<div style="margin-bottom:10px; display:block">
+					<span>&nbsp;</span>
+					<button id="closeButton2" type="button" data-dojo-type="dijit/form/Button" iconClass="dijitNoIcon" style="float:right;">Done</button>
+					<button id="deleteButton2" type="button" data-dojo-type="dijit/form/Button" iconClass="dijitNoIcon" style="float:left;">Delete Node</button>
+					<button id="imageButton2" type="button" data-dojo-type="dijit/form/Button" iconClass="dijitNoIcon" style="float:left; display: none;" disabled="true">Image Highlighting</button>
+				</div>
+			</div>
+		</div><!-- end of equation node editor -->
 	</div>
 </body>
 </html>
