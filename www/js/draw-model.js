@@ -229,7 +229,6 @@ define([
 				var parentDIV = type+"-description";
 				var replaceTag = descHTML ? "replace" : "last";
 				domConstruct.place(descriptionString, parentDIV, replaceTag);
-				debugger;
 				if(type == "equation")
 					domStyle.set(domID, "background-color", this._model.getColor(ID));
 				else
