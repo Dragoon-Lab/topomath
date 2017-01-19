@@ -120,6 +120,7 @@ define([
 			//create a controller object
 
 			//create new model object
+			//to do: integrate model object and use _model instead of givenModel
 			var givenModel = "";
 	
 			//create new ui configuration object based on current mode ( and activity)
