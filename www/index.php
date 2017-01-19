@@ -153,41 +153,51 @@
 	?>
 	<input type = "hidden" id = "query" value = "<?php echo $params?>"/>
 	<div id="main" data-dojo-type="dijit/layout/BorderContainer" gutters="false">
+	<div id="drawingPane" class="restrict-vscroll" data-dojo-type="dijit/layout/ContentPane" region="center">
+        <div id="errorMessageBox"></div>
+        <!--<div id="tableGrid" data-dojo-type="dijit/layout/ContentPane" region="center"></div>-->
+		<!-- div for descriptions for each type -->
+		<div class = "quantity-description-wrapper" id="quantity-description"></div>
+		<div class = "equation-description-wrapper" id="equation-description"></div>
+        <!-- Putting jsPlumb-stuff for demo -->
+        <div class="demo statemachine-demo" id="statemachine-demo">
+     	</div>
+    </div>
+
+	
 		<div data-dojo-type="dijit/MenuBar" id="menuBar" region="top" splitter="false">
 			<button type="button" data-dojo-type="dijit/form/Button" id="createQuantityNodeButton" disabled="true" style="display: none">Add Quantity</button>
 			<button type="button" data-dojo-type="dijit/form/Button" id="createEquationNodeButton" disabled="true" style="display: none">Add Equation</button>
 		</div>
-    	<div id="drawingPane" class="restrict-vscroll" data-dojo-type="dijit/layout/ContentPane" region="center">
-        	<div id="errorMessageBox"></div>
-        	<!--<div id="tableGrid" data-dojo-type="dijit/layout/ContentPane" region="center"></div>-->
-        	<!-- Putting jsPlumb-stuff for demo -->
-        	<canvas id="myCanvas" height = "1000" width="800"></canvas>
-        	<div class="demo statemachine-demo" id="statemachine-demo">
-        	</div>
-
-        <!-- Putting jsPlumb-stuff for demo  end-->
-    	</div>
+    
 		<!-- this is where the menu as well the node editor html code would be kept.
 		Lets follow the hierarchy used earlier.-->
 
-	
 		<!-- Putting Node-Editor -Dialog stuff for demo -->
 		<div class="claro sameedit" data-dojo-type="dijit/Dialog" id="quantityNodeEditor">
 			
 			<div id="studentModelControl" class="fieldgroup">
-				<label style="width:20ex;" for="setStudentNode">Show to student</label>
+				<label style="width:20ex;" for="setStudentNode">given to student</label>
 				<input id="setStudentNode" name="markStudentNode" data-dojo-type="dijit/form/CheckBox" checked="false"/>
 			</div>
 			
+			<div id="selectModelControl" class="fieldgroup" style="display:none" >
+				<label for="selectModel">Select Model</label>
+				<select id="selectModel" data-dojo-type="dijit/form/Select">
+					<option value='correct' selected>Author's Values</option>
+					<option value='given'>Initial Student Values</option>
+				</select>
+			</div>
+
 			<div id="nameControl" class="fieldgroup">
 				<label for="setName">Variable</label>
 				<input id="setName" data-dojo-type="dijit/form/ComboBox">
-				<label for="selectKind">Kind of quantity:</label>
+				<label for="selectKind">Optionality:</label>
 				<select id="selectKind" data-dojo-type="dijit/form/Select">
 					<option value='defaultSelect'>--Select--</option>
-					<option value='required'>in equation & required</option>
-					<option value='allowed'>in equation & optional</option>
-					<option value='irrelevant'>not in equation</option>
+					<option value='required'>in equations & required</option>
+					<option value='allowed'>in equations & optional</option>
+					<option value='irrelevant'>not in equations</option>
 				</select>
 			</div>
 			
@@ -261,8 +271,15 @@
 		<div class="claro sameedit" data-dojo-type="dijit/Dialog" id="equationNodeEditor">
 			
 			<div id="studentModelControl2" class="fieldgroup">
-				<label style="width:20ex;" for="setStudentNode2">Show to student</label>
+				<label style="width:20ex;" for="setStudentNode2">given to student</label>
 				<input id="setStudentNode2" name="markStudentNode2" data-dojo-type="dijit/form/CheckBox" checked="false"/>
+			</div>
+			<div id="selectModelControl2" class="fieldgroup" style="display:none" >
+				<label for="selectModel2">Select Model</label>
+				<select id="selectModel2" data-dojo-type="dijit/form/Select">
+					<option value='correct' selected>Author's Values</option>
+					<option value='given'>Initial Student Values</option>
+				</select>
 			</div>
 
 			<div class="fieldgroup">

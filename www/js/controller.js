@@ -45,11 +45,16 @@ define([
 		_model: null,
 		_quantityNodeEditor: null,
 		_equationNodeEditor: null,
+
 		/*
 		 * When opening the node editor, we need to populate the controls without
 		 * evaluating those changes.
 		 */
 		disableHandlers: false,
+		/* The last value entered into the intial value control */
+
+		lastInitial: {value: null},
+
 		genericControlMap: {
 			initial: "initialValue",
 			equation: "setName2",
@@ -279,6 +284,15 @@ define([
 
 		populateNodeEditorFields: function(nodeid){
 			console.log("populate node editor fields enter");
+
+			//to do : fetch initial value from model, for now giving empty value,
+			var initial = "";//model.getInitial(nodeid);
+			console.log('initial value is ', initial, typeof initial);
+			// Initial value will be undefined if it is not in the model
+			var isInitial = typeof initial === "number";
+			this.lastInitial.value = isInitial?initial.toString():null;
+			registry.byId(this.controlMap.initial).attr('value', isInitial?initial:'');
+
 		},
 	});
 });

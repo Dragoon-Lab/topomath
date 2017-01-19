@@ -4,9 +4,11 @@ define([
 	"dojo/_base/lang",
 	"dojo/dom-attr",
 	"dojo/dom-construct",
+	"dojo/dom",
+	"dojo/dom-style",
 	"./graph-objects",
-	"jsPlumb/jsPlumb",
-], function(declare, array, lang, attr, domConstruct, graphObjects){
+	"jsPlumb/jsPlumb"
+], function(declare, array, lang, attr, domConstruct, dom, domStyle, graphObjects){
 	return declare(null, {
 		_instance: null,
 		_model: null,
@@ -20,6 +22,7 @@ define([
 		],
 		_borderColor: 39,
 		_backgroundColor: 0,
+		_counter: 0,
 
 		constructor: function(model){
 			this._model = model;
@@ -43,28 +46,12 @@ define([
 			}, this);
 			vertices = vertices[vertices.length - 1]; //hack for keeping it one dimension
 			console.log(vertices);
-
+			
+			var makeVertexSource = this.makeVertexSource;
 			instance.doWhileSuspended(function(){
-
 				array.forEach(vertices, function(vertex){
-					instance.makeSource(vertex, {
-						filter: ".ep",
-						anchor: "Continuous",
-						connector: ["StateMachine", {curviness: 0}],
-						connectorStyle:{ strokeStyle:"#5c96bc", lineWidth:2, outlineColor:"transparent", outlineWidth:4 },
-						maxConnections: 6,
-						onMaxConnections: function(info, e){
-							alert("Maximum connections (" + info.maxConnections + ") reached");
-						},
-					});
-				});
-
-				array.forEach(vertices, function(vertex){
-					instance.makeTarget(vertex, {
-						dropOptions: {hoverClass: "dragHover"},
-						anchor: "Continuous"
-					});
-				});
+					makeVertexSource(vertex, instance);
+				}, this);
 			});
 
 			array.forEach(vertices, function(vertex){
@@ -91,7 +78,8 @@ define([
 			array.forEach(htmlStrings, function(html, count){
 				var idTag = node.ID;
 				if(count == 1)
-					idTag += "_initial"
+					idTag += "_" + this._model.getInitialNodeString();
+
 				vertices[count] = domConstruct.create("div", {
 					id: idTag,
 					"class": type,
@@ -105,11 +93,20 @@ define([
 				}, "statemachine-demo");
 			}, this);
 
+			var color = this._model.getColor(node.ID);
+			if(color){
+				this.addNodeDescription(node.ID);
+			}
+
+			array.forEach(vertices, function(vertex){
+				this.makeDraggable(vertex);
+			}, this);
+
 			return vertices;
 		},
 
 		getNodeUIProperties: function(node){
-			// node properties default case
+			// node properties default case when type is circle
 			var obj = {
 				backgroundColor: "DarkGray",
 				borderColor: "black"
@@ -118,9 +115,11 @@ define([
 			if(type && type == "equation"){
 				obj.backgroundColor = this.getNextColor(true);
 				obj.borderColor = "black";
-			} else {
+				this._model.setColor(node.ID, obj.backgroundColor);
+			} else if (type && type == "quantity") {
 				obj.backgroundColor = "white";
 				obj.borderColor = this.getNextColor(false);
+				this._model.setColor(node.ID, obj.borderColor);
 			}
 
 			return obj;
@@ -152,6 +151,90 @@ define([
 				console.log(source.ID, " ", targetID);
 				this.setConnection(source.ID, targetID);
 			}, this);
+		},
+
+		makeDraggable: function(vertex){
+			this._instance.draggable(vertex, {
+				onMoveStart: lang.hitch(this, this.onMoveStart),
+				onMove: lang.hitch(this, this.onMove),
+				onMoveStop: lang.hitch(this, this.onMoveStop)
+			});
+
+			this.makeVertexSource(vertex);
+		},
+
+		onMoveStart: function(){
+			this._counter = 0;
+		},
+
+		onMove: function(mover){
+			this._counter++;
+		},
+
+		onMoveStop: function(){
+			// to distinguish between move and click there is a counter increment.
+			if(this._counter <= 5){
+				console.log("arguments are ", arguments);
+				this.onClickNoMove.apply(null, arguments);
+			} else {
+				this.onClickMoved.apply(null, arguments);
+			}
+		},
+
+		onClickMoved: function(){
+			// aspect.after handles and this is just a stub
+			// attached in main.js
+			console.log("on click move stub called");
+		},
+
+		onClickNoMove: function(){
+			// aspect.after handles the stub
+			// created to attach the node editor opening
+			// attached in main.js
+			console.log("on click stub called");
+		},
+
+		/*
+		* converts a node to a source and target so that lines can be attached to
+		* the boundary
+		* pulled it out from the constructor to remove redundancy as this function
+		* is also called in makeDraggable
+		* @param - vertex - a node object which while drawing is called a vertex
+		*/
+		makeVertexSource: function(vertex, instance){
+			var inst = instance || this._instance;
+			inst.makeSource(vertex, {
+				filter: ".ep",
+				anchor: "Continuous",
+				connector: ["StateMachine", {curviness: 0}],
+				connectorStyle:{ strokeStyle:"#5c96bc", lineWidth:2, outlineColor:"transparent", outlineWidth:4 },
+				maxConnections: 6,
+				onMaxConnections: function(info, e){
+					alert("Maximum connections (" + info.maxConnections + ") reached");
+				},
+			});
+
+			inst.makeTarget(vertex, {
+				dropOptions: {hoverClass: "dragHover"},
+				anchor: "Continuous"
+			});
+		},
+
+		addNodeDescription: function(ID){
+			var type = this._model.getType(ID);
+			var descriptionString = graphObjects.getNodeDescriptionHTML(this._model, ID);
+			var domID = ID + "_description";
+			if(type){
+				var descHTML = dom.byId(domID);
+				var parentDIV = type+"-description";
+				var replaceTag = descHTML ? "replace" : "last";
+				domConstruct.place(descriptionString, parentDIV, replaceTag);
+				debugger;
+				if(type == "equation")
+					domStyle.set(domID, "background-color", this._model.getColor(ID));
+				else
+					domStyle.set(domID, "border-color", this._model.getColor(ID));
+			}
 		}
 	});
 });

@@ -35,10 +35,11 @@ define([
 	"dojo/aspect",
 	'dijit/registry',
 	'./controller',
+	"./typechecker",
 	"dojo/dom",
 	"dojo/dom-class",
 	"dojo/domReady!",
-], function(array, declare, lang, style, keys, ready, on, memory, aspect, registry, controller, dom, domClass){
+], function(array, declare, lang, style, keys, ready, on, memory, aspect, registry, controller, typechecker, dom, domClass){
 
 	// Summary:
 	//			MVC for the node editor, for authors
@@ -50,6 +51,27 @@ define([
 
 	return declare(controller, { // 
 		//author PM controller
+		//pedagogical module class for author
+		authorPM:{
+			process: function(nodeID, nodeType, value, validInput){
+				var returnObj=[];
+				switch(nodeType){
+				
+				case "initial":
+					if(validInput){
+						returnObj.push({id:"initial", attribute:"status", value:"entered"});
+					}else{
+						// This never happens
+						returnObj.push({id:"initial", attribute:"status", value:"incorrect"});
+					}
+					break;
+
+				default:
+					throw new Error("Unknown type: "+ nodeType + ".");
+				}
+				return returnObj;
+			}
+		},
 
 		constructor: function(){
 			console.log("++++++++ In author constructor");
@@ -73,7 +95,9 @@ define([
 			root: "markRootNode",
 			dynamic: "markDynamicNode",
 			setStudentQty: "setStudentNode",
-			setStudentEq: "setStudentNode2"
+			setStudentEq: "setStudentNode2",
+			modelType: "selectModel",
+			modelType2: "selectModel2",
 		},
 		authorControls: function(){
 			console.log("++++++++ Setting AUTHOR format in Node Editor.");
@@ -199,6 +223,73 @@ define([
 		 Handler for initial value input
 		 */
 		handleInitial: function(initial){
+
+			//Initial value handler for quantity node
+
+			//IniFlag contains the status and initial value
+			var modelType = this.getModelType();
+			console.log("model type is", modelType);
+			var tempIni = dom.byId(this.widgetMap.initial);
+			var tempInival = tempIni.value.trim();
+			console.log("temporary value is", tempInival);
+			var IniFlag = {status: undefined, value: undefined };
+			if(!((modelType === "given") && (tempInival == '') )){
+				IniFlag = typechecker.checkInitialValue(this.widgetMap.initial, this.lastInitial);
+			}
+			else{
+				IniFlag  = {status: true, value: undefined};
+			}
+			var logObj = {};
+			if(IniFlag && IniFlag.status){
+				// If the initial value is not a number or is unchanged from
+				// previous value we dont process
+				var newInitial = IniFlag.value;
+				
+				//to do: applying directives on PM processed object, for now just processing, yet to write apply directives
+				var returnObj = this.authorPM.process(this.currentID, "initial", newInitial, true);
+				console.log("author pm returned after evaluating initial value",returnObj);
+				//this.applyDirectives(this.authorPM.process(this.currentID, "initial", newInitial, true));
+				
+				/* to do : status updates after model integration and writing necessary functions
+				var studentNodeID = this._model.student.getNodeIDFor(this.currentID);
+				var studNodeInitial = this._model.student.getInitial(studentNodeID);
+				if(modelType == "given"){
+					//if the model type is given , the last initial value is the new student model value
+					//which in this case is second parameter
+					this._model.active.setInitial(studentNodeID, newInitial);
+					this.updateStatus("initial", this._model.given.getInitial(this.currentID), newInitial);
+				}
+				else{
+					this._model.active.setInitial(this.currentID, newInitial);
+					//if the model type is not given , the last initial value is the new author model value
+					//which in this case is first parameter
+					//if(studentNodeID)
+					this.updateStatus("initial", newInitial, studNodeInitial);
+
+				}
+				//update student node status
+				logObj = {
+					error: false
+				}; */
+			}else if(IniFlag && IniFlag.errorType){ 
+				logObj = {
+					error: true,
+					message: IniFlag.errorType
+				};
+			}
+			var valueFor = modelType == "given" ? "student-model": "author-model";
+			/*
+			logObj = lang.mixin({
+				type: "solution-enter",
+				node: this._model.active.getName(this.currentID),
+				nodeID: this.currentID,
+				property: "initial",
+				value: initial,
+				usage: valueFor
+			}, logObj);
+
+			this.logging.log("solution-step", logObj);
+			*/
 		},
 
 		handleInputs: function(name){
@@ -225,7 +316,7 @@ define([
 		},
 
 		getModelType: function(){
-
+			return (registry.byId(this.controlMap.setStudentQty).checked ? registry.byId(this.controlMap.modelType).value : "correct");
 		},
 
 		addStudentNode: function(nodeid){
