@@ -233,7 +233,7 @@ define([
 			var tempInival = tempIni.value.trim();
 			console.log("temporary value is", tempInival);
 			var IniFlag = {status: undefined, value: undefined };
-			if(!((modelType === "given") && (tempInival == '') )){
+			if(!((modelType === "authored") && (tempInival == '') )){
 				IniFlag = typechecker.checkInitialValue(this.widgetMap.initial, this.lastInitial);
 			}
 			else{
