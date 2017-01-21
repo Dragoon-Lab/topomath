@@ -1,28 +1,59 @@
 define([
-	"dojo/_base/array",
+	'dojo/_base/array',
 	'dojo/dom-geometry',
-	"dojo/dom-style",
+	'dojo/dom',
+	'dojo/dom-style',
 	'dojo/aspect',
-	"dojo/ready",
+	'dojo/ready',
 	'dijit/registry',
-	"./menu",
-	"dojo/_base/event",
-	"./session",
-	"./model",
-	"./equation",
-	"./draw-model",
-	"./con-author",
-], function(array, geometry, style, aspect, ready, registry, menu, event, sess, model, equation, drawModel, controlAuthor){
+	'dojo/_base/event',
+	'dojo/io-query',
+	'./menu',
+	'./session',
+	'./model',
+	'./equation',
+	'./draw-model',
+	'./con-author',
+], function(array, geometry, dom, style, aspect, ready, registry, event, ioQuery,
+			menu, session, model, equation, drawModel, controlAuthor){
 
-	//read query parameters first
-	//for now using a dummy object
-	var query = {
-		'u': 'temp',
-		'p': 'rabbits',
-		'm': 'AUTHOR',
-		's': 'temp-section'
-	};
-	var session = sess(query);
+	console.log("load main.js");
+    // Get session parameters
+    var query = {};
+    //this change will keep it backward compatible
+    //as $_REQUEST is used at the place instead of $_POST.
+    if(dom.byId("query").value){
+        query = ioQuery.queryToObject(dom.byId("query").value);
+        //new problem is being opened with fresh params
+        //update the local session storage
+        for(var prop in query){
+            sessionStorage.setItem("drag"+prop,query[prop]);
+        }
+    }else{
+        //trying to open an old problem using a refresh or it is a bad request
+        //check sessionStorage for a reload
+        //else leave console warnings
+        if(sessionStorage.getItem("dragp")){
+            //check for dragp item which implies all other params are stored
+            for(var key in sessionStorage){
+                var temp = (key.substring(0,4) == "drag") && key.substring(4);
+                if(temp)
+                    query[temp] = sessionStorage.getItem(key);
+            }
+        }
+        else {
+            console.warn("Should have method for logging this to Apache log files.");
+            console.warn("Dragoon log files won't work since we can't set up a session.");
+            console.error("Function called without arguments");
+            // show error message and exit
+            var errorMessage = new messageBox("errorMessageBox", "error", "Missing information, please recheck the query");
+            errorMessage.show();
+            throw Error("please retry, insufficient information");
+        }
+    }
+
+	var _session = session(query);
+>>>>>>> Stashed changes
 	var _model = new model(query.m, query.p);
 	console.log(_model);
 

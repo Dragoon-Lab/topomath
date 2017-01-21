@@ -154,8 +154,8 @@
 	<input type = "hidden" id = "query" value = "<?php echo $params?>"/>
 	<div id="main" data-dojo-type="dijit/layout/BorderContainer" gutters="false">
 		<div data-dojo-type="dijit/MenuBar" id="menuBar" region="top" splitter="false">
-			<button type="button" data-dojo-type="dijit/form/Button" id="createQuantityNodeButton" disabled="true" style="display: none">Add Quantity</button>
-			<button type="button" data-dojo-type="dijit/form/Button" id="createEquationNodeButton" disabled="true" style="display: none">Add Equation</button>
+			<button type="button" data-dojo-type="dijit/form/Button" id="createQuantityNodeButton" disabled="true">Add Quantity</button>
+			<button type="button" data-dojo-type="dijit/form/Button" id="createEquationNodeButton" disabled="true">Add Equation</button>
 		</div>
     	<div id="drawingPane" class="restrict-vscroll" data-dojo-type="dijit/layout/ContentPane" region="center">
         	<div id="errorMessageBox"></div>
