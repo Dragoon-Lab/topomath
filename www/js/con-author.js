@@ -234,7 +234,13 @@ define([
 			console.log("temporary value is", tempInival);
 			var IniFlag = {status: undefined, value: undefined };
 			if(!((modelType === "authored") && (tempInival == '') )){
-				IniFlag = typechecker.checkInitialValue(this.widgetMap.initial, this.lastInitial);
+				
+				IniFlag = typechecker.checkNumericValue(this.widgetMap.initial, this.lastInitial);
+				
+				if((IniFlag.errorType === undefined) && (IniFlag.status === undefined)){
+					// check for last input value matching
+					IniFlag = typechecker.checkLastInputValue(this.widgetMap.initial, this.lastInitial);
+				}
 			}
 			else{
 				IniFlag  = {status: true, value: undefined};

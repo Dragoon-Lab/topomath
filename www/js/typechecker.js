@@ -46,7 +46,7 @@ define([
 			});
 		},
 
-		checkInitialValue: function(nodeID, lastInput){
+		checkNumericValue: function(nodeID){
 			//Description : performs non number check and also checks if the initial 
 			// value was changed from previously entered value
 			//returns: status, a boolean value and value, the current initial value
@@ -94,13 +94,39 @@ define([
 				}
 
 				return {status: false, errorType: errorType};
-			}else if(inputString == lastInput.value || inputString==""){
+			}
+			else{
+
+				return {status: undefined, errorType: undefined};
+			}
+		},
+
+		checkLastInputValue: function(nodeID, lastInput){
+			//checks the current input value with last input value and returns the appropriate object
+			//also modifies the last input object
+
+			var domNode = dom.byId(nodeID);
+			var inputString = domNode.value.trim();
+
+			// we do this type conversion because we used a textbox for 
+			// initialvalue input which is a numerical
+			if(0  === inputString.length)
+				return;
+			var input= +inputString; // usage of + unary operator converts a string to number
+			
+			//At this stage we already know this is proper numerical value
+			//Just check for matching last input value
+			if(inputString == lastInput.value || inputString==""){
+				console.log("entered last input value again");
 				return {status: false};
 			}
+			//Further if current number is not last input
+			//update the last input value with current value
 			lastInput.value = inputString;
 
-			// updating node editor and the model.
+			// update return object with value as current value and staus to be true
 			return {status: true, value: input};
+
 		}
 	};
 
