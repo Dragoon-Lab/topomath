@@ -97,7 +97,7 @@ define([
 
 			array.forEach(menuButtons, function(button){
 				//setting display for each menu button
-				style.set(registry.byId(button).domNode, "display", "inline");
+				style.set(registry.byId(button).domNode, "visibility", "visible");
 
 				/*
 				* This is a work-around for getting a button to work inside a MenuBar.
