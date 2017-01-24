@@ -7,12 +7,13 @@ define([
 	'dijit/registry',
 	"./menu",
 	"dojo/_base/event",
+	"dojo/on",
 	"./session",
 	"./model",
 	"./equation",
 	"./draw-model",
 	"./con-author",
-], function(array, geometry, style, aspect, ready, registry, menu, event, session, model, equation, drawModel, controlAuthor){
+], function(array, geometry, style, aspect, ready, registry, menu, event, on, session, model, equation, drawModel, controlAuthor){
 
 	var query = {
 		'u': 'temp',
@@ -87,6 +88,7 @@ define([
 					}
 				}
 				_model.active.setPosition(id, index, {"x": g.x, "y": g.y+scrollTop});
+				_session.saveModel(_model.model);
 			}, true);
 	
 
@@ -145,6 +147,8 @@ define([
 				var id = "id1";
 				controllerObject.showEquationNodeEditor(id);	
 			});
+
+			
 		});
 	});	
 });	
