@@ -90,7 +90,7 @@
 		{
 			"ID": "id5",
 			"variable": "",
-			"description": "The number os rabbits increase by the number of births each year",
+			"description": "The number of rabbits increase by the number of births each year",
 			"type": "equation",
 			"accumulator": false,
 			"equation": "id1 = id1 + id3",
