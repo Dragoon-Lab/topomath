@@ -1,0 +1,78 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+	<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+	<title>Topomath Demo</title>
+
+	<link rel="stylesheet" type="text/css" href="css/login-base.css">
+	<link rel="stylesheet" type="text/css" href="css/login-form.css">
+
+	<script type="text/javascript">
+
+	function validateForm(){
+		var form = document.forms["problem-select"];
+		var x = form.u.value;
+		if (x==null || x==""){
+			alert("Please enter a username.");
+			return false;
+		}      
+		// If group field is empty, remove from form.
+		// Topomath treats the presence of the group field
+		// as a switch for published versus custom problems.
+		if(form.g.value.trim() == ""){
+		  console.log("Deleting group (g) from GET.", form);
+		  document.getElementById("group").removeAttribute('name');
+		}
+		return true;
+	}
+	</script>
+
+</head>
+<body>
+	<!-- Removed "onbeforeunload='reset_options()'" from body tag to correct form reset problems after download-->
+<div id="page-wrap">
+
+	<div id="content">
+
+		<form action="index.php" method="POST" id="problem-select" class="problem-selection-form" onsubmit="return validateForm()">
+
+			<h2>Start Topomath Demo</h2>
+				<div class="fieldgroup">
+					<label for="username">Username: </label>
+					<input id="username" type="text" name="u">
+				</div>
+
+				<div class="fieldgroup">
+					<label for="mode">Mode: </label>
+					<select name="m" onchange="onModeChange(this)" id="mode">
+						<!--<option value="STUDENT">Immediate Feedback (Student)</option>-->
+						<option value="AUTHOR">Author</option>
+						<!--<option value="COACHED">Coached</option>
+						<option value="TEST">Delayed Feedback (Test)</option>
+						<option value="EDITOR">No Feedback (Editor)</option>-->
+					</select>
+				</div>
+
+				<div class="fieldgroup">
+					<label for="problem">Problem: </label>
+					<input id="problem" type="text" name="p" value="rabbits">
+				</div>
+
+				<div class="fieldgroup">
+					<label for="section">Section: </label>
+					<input id="section" type="text" name="s" value="login.html">
+				</div>
+
+				<div class="fieldgroup">
+					<label for="group">Folder:<br> (i.e. group; leave blank for published model) </label>
+					<input id="group" type="text" name="f" value="">
+				</div>
+
+				<div class="fieldgroup">
+					<input type="submit" name="c" value="Continue" class="submit">
+				</div>
+		</form>
+	</div>
+</div>
+</body>
+</html>
