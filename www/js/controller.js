@@ -74,6 +74,9 @@ define([
 		// Controls that are select menus
 		selects: ['description', 'units', 'inputs'],
 
+		// attributes that should be saved in the status section
+		validStatus: {status: true, disabled: true},
+		
 		constructor: function(mode, model, ui_config){
 
 			console.log("+++++++++ In generic controller constructor");
@@ -294,5 +297,65 @@ define([
 			registry.byId(this.controlMap.initial).attr('value', isInitial?initial:'');
 
 		},
+
+		/*
+		 Take a list of directives and apply them to the Node Editor,
+		 updating the model and updating the graph.
+
+		 The format for directives is defined in documentation/node-editor.md
+		 */
+		applyDirectives: function(directives, noModelUpdate){
+			// Apply directives, either from PM or the controller itself.
+			var tempDirective = null;
+			array.forEach(directives, function(directive) {
+				if(!noModelUpdate)
+					this.updateModelStatus(directive);
+				if (directive.attribute != "display" && this.widgetMap[directive.id]) {
+					var w = registry.byId(this.widgetMap[directive.id]);
+					if (directive.attribute == 'value') {
+						w.set("value", directive.value, false);
+						// Each control has its own function to update the
+						// the model and the graph.
+						// keep updating this section as we handle the editor input fields
+						if(w.id == 'initialValue'){
+							this._model.active.setInitial(this.currentID, directive.value);
+						} 
+
+					}else{
+						w.set(directive.attribute, directive.value);
+						if(directive.attribute === "status"){
+							//tempDirective variable further input to editor tour
+							//for now commenting the variable copy
+							//tempDirective = directive;
+						}
+					}
+				}else if(directive.attribute == "display"){
+					//directives where display is updated/ given feedback from here
+					//genericDivMap needs to be checked eachtime for topoMath editor's fields
+					if(this.genericDivMap[directive.id]){
+						domStyle.set(this.genericDivMap[directive.id], directive.attribute, directive.value);
+					}
+				}else{
+					//this code needs to be uncommented when logging module is included
+					/*
+					this.logging.clientLog("warning", {
+						message: "Directive with unknown id, id :"+directive.id,
+						functionTag: 'applyDirectives'
+					});
+					*/
+				}
+			}, this);
+			/* check after node editor tour has been included into topomath
+			if(tempDirective && this.activityConfig.get("showNodeEditorTour")) {
+				this.continueTour(tempDirective);
+			}
+			*/
+		},
+
+		updateModelStatus: function(desc){
+			//stub for updateModelStatus
+			//actual implementation in con-student and con-author
+		},
+
 	});
 });

@@ -171,7 +171,11 @@ define([
 			},
 			getInitialNodeString: function(){
 				return obj.initialNodeString;
-			}
+			},
+			getInitial: function(/*string*/ id){
+				var node = this.getNode(id);
+				return node && node.initial;
+			},
 		};
 
 		obj.authored = lang.mixin({
@@ -220,6 +224,9 @@ define([
 			getAuthorID: function(/*string*/ id){
 				return id;
 			},
+			getAuthorStatus: function(/*string*/ id, /*string*/ part){
+				return this.getNode(id).authorStatus? this.getNode(id).authorStatus[part] : undefined ;
+			},
 			isRoot: function(/* string */ id){
 				var node = this.getNode(id);
 				return node && node.root;
@@ -259,14 +266,40 @@ define([
 			},
 			setColor: function(/*string*/ id, /*string*/ color){
 				this.getNode(id).color = color;
-			}
+			},
+			setAuthorStatus: function(/*string*/ id, /*string*/ part, /*string*/ status){
+				// Summary: function to set the status of node editor in author mode.
+				if(!this.getNode(id).authorStatus){
+					//backward compatibility
+					this.getNode(id).authorStatus = {};
+				}
+				this.getNode(id).authorStatus[part] = status;
+			},
 		}, both);
 
 		obj.student = lang.mixin({
 
 			getNodes: function(){
 				return obj.model.studentModelNodes;
-			}
+			},
+			getNodeIDFor: function(givenID){
+				// Summary: returns the id of a student node having a matching descriptionID;
+				//			return null if no match is found.
+				var id;
+				var gotIt = array.some(this.getNodes(), function(node){
+					id = node.ID;
+					return node.descriptionID == givenID;
+				});
+				return gotIt ? id : null;
+			},
+			setStatus: function(/*string*/ id, /*string*/ control, /*object*/ options){
+				//Summary: Update status for a particular control.
+				//		   options may have attributes "status" and "disabled".
+				var attributes = this.getNode(id).status[control];
+				// When undefined, status[control] needs to be set explicitly.
+				this.getNode(id).status[control] = lang.mixin(attributes, options);
+				return attributes;
+			},
 		}, both);
 
 		obj.constructor.apply(obj, arguments);

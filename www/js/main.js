@@ -118,17 +118,13 @@ define([
 			createEqNodeButton.setDisabled(false);
 
 			//create a controller object
-
-			//create new model object
-			//to do: integrate model object and use _model instead of givenModel
-			var givenModel = "";
 	
 			//create new ui configuration object based on current mode ( and activity)
 			var ui_config = "";
 
 			//For now using empty givenModel and ui_config 
 
-			var controllerObject = new controlAuthor(query.m, givenModel, ui_config);
+			var controllerObject = new controlAuthor(query.m, _model, ui_config);
 
 			//next step is to add action to add quantity
 			menu.add("createQuantityNodeButton", function(e){

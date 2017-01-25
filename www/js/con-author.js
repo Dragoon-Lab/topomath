@@ -160,7 +160,6 @@ define([
 		 */
 		handleVariableName: function(name){
 			console.log("**************** in handle Variable Name ", name);
-
 		},
 
 		handleExplanationName: function(name){
@@ -205,10 +204,40 @@ define([
 
 		handleSetStudentQtyNode: function(checked){
 			console.log("********************* in handle set student quantity node", checked);
+			if(checked){
+				style.set('selectModelControl', 'display', 'block');
+				var studentNode = this._model.student.getNodeIDFor(this.currentID);
+				if(studentNode == null){
+					//to do : to write addStudentNode which has to add a quantity node, pushing this it backlog 
+					//this.addStudentNode(this.currentID);
+				}
+			}else{
+				this._model.active = this._model.authored;
+				registry.byId("selectModel").set('value',"correct");
+				style.set('selectModelControl', 'display', 'none');
+				//to do : to write removeStudentNode , pushed to backlog
+				//this.removeStudentNode(this.currentID);
+				//also show the waveform assignment button and image
+			}
 		},
 
-		handleSetStudentEqNode: function(checked){
+		handleSetStudentEqNode:  function(checked){
 			console.log("********************* in handle set student equation node", checked);
+			if(checked){
+				style.set('selectModelControl2', 'display', 'block');
+				var studentNode = this._model.student.getNodeIDFor(this.currentID);
+				if(studentNode == null){
+					//to do : to write addStudentNode which has to add an equation node, pushing this it backlog 
+					//this.addStudentNode(this.currentID);
+				}
+			}else{
+				this._model.active = this._model.authored;
+				registry.byId("selectModel2").set('value',"correct");
+				style.set('selectModelControl2', 'display', 'none');
+				//to do : to write removeStudentNode which removes an equation node, pushed to backlog
+				//this.removeStudentNode(this.currentID);
+				//also show the waveform assignment button and image
+			}
 		},
 
 		handleSelectModel: function(modelType){
@@ -254,16 +283,15 @@ define([
 				//to do: applying directives on PM processed object, for now just processing, yet to write apply directives
 				var returnObj = this.authorPM.process(this.currentID, "initial", newInitial, true);
 				console.log("author pm returned after evaluating initial value",returnObj);
-				//this.applyDirectives(this.authorPM.process(this.currentID, "initial", newInitial, true));
+				this.applyDirectives(returnObj);
 				
-				/* to do : status updates after model integration and writing necessary functions
 				var studentNodeID = this._model.student.getNodeIDFor(this.currentID);
 				var studNodeInitial = this._model.student.getInitial(studentNodeID);
-				if(modelType == "given"){
-					//if the model type is given , the last initial value is the new student model value
+				if(modelType == "authored"){
+					//if the model type is authored , the last initial value is the new student model value
 					//which in this case is second parameter
 					this._model.active.setInitial(studentNodeID, newInitial);
-					this.updateStatus("initial", this._model.given.getInitial(this.currentID), newInitial);
+					this.updateStatus("initial", this._model.authored.getInitial(this.currentID), newInitial);
 				}
 				else{
 					this._model.active.setInitial(this.currentID, newInitial);
@@ -271,19 +299,18 @@ define([
 					//which in this case is first parameter
 					//if(studentNodeID)
 					this.updateStatus("initial", newInitial, studNodeInitial);
-
 				}
 				//update student node status
 				logObj = {
 					error: false
-				}; */
+				}; 
 			}else if(IniFlag && IniFlag.errorType){ 
 				logObj = {
 					error: true,
 					message: IniFlag.errorType
 				};
 			}
-			var valueFor = modelType == "given" ? "student-model": "author-model";
+			var valueFor = modelType == "authored" ? "student-model": "author-model";
 			/*
 			logObj = lang.mixin({
 				type: "solution-enter",
@@ -319,6 +346,14 @@ define([
 		},
 		updateModelStatus: function(desc, id){
 			//stub for updateModelStatus
+			//valid status object is defined in controller
+			id = id || this.currentID;
+			if(this.validStatus[desc.attribute]){
+				var opt = this._model.authored.getAuthorStatus(id, desc.id) ? this._model.authored.getAuthorStatus(id, desc.id) : {};
+				opt[desc.attribute] = desc.value;
+				this._model.authored.setAuthorStatus(id, desc.id, opt);
+			}
+			console.log("model obj is",this._model);
 		},
 
 		getModelType: function(){
@@ -343,10 +378,19 @@ define([
 		enableDisableSetStudentNode: function(){
 
 		},
-
 		updateStatus: function(/*String*/control, /*String*/correctValue, /*String*/newValue){
-
+			//Summary: Updates the status of the student model nodes
+			var studentNodeID = this._model.student.getNodeIDFor(this.currentID);
+			if(studentNodeID != null){
+				if(newValue != correctValue){ //If given value not same as correct Value
+					this._model.student.setStatus(studentNodeID, control , {"disabled": false,"status":"incorrect"});
+				}
+				else{
+					this._model.student.setStatus(studentNodeID, control, {"disabled": true,"status":"correct"});
+				}
+			}
 		},
+
 
 	});
 });
