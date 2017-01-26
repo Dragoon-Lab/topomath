@@ -1,8 +1,9 @@
 define([
 	"dojo/_base/declare", 
 	"dojo/request/xhr",
+	"dojo/_base/json",
 	"dojo/_base/lang"
-], function(declare, xhr, lang){
+], function(declare, xhr, json, lang){
 	// Summary:
 	//          Loads and saves sessions and sets up logging
 	// Description:
@@ -29,15 +30,22 @@ define([
 
 	return declare(null, {
 		constructor: function(params, path){
+			this.sessionId = FNV1aHash(params.u+"_"+params.s) +
+				'_' + new Date().getTime();
+
 			this._startTime = new Date().getTime();
 			this.params = params;
 			// Dragoon database requires that clientID be 50 characters.
 			this.params.id = FNV1aHash(params.u+"_"+params.s) +
 				'_' + new Date().getTime();
 			this.path = path || "";
+			this.doLogging = params.l=="false" ? false : true;
+
+			this.log("start-session", params);
 		},
 
 		getModel: function(params){
+			console.log("get model called with params " , params);
 			return xhr.get(this.path + "task_fetcher.php", {
 				query: params,
 				handleAs: "json"
@@ -47,6 +55,46 @@ define([
 			}), lang.hitch(this, function(err){
 				console.log("no model found", err);
 			}));
+		},
+
+		saveModel: function(params){
+			console.log("save model called with params", params);
+			var object = {
+					model: json.toJson(params),
+					session_id: this.sessionId
+				};
+			xhr.post(this.path + "save_model.php", {
+					data: object
+			}).then(lang.hitch(this, function(reply){  // this makes saveProblem blocking?
+				console.log("saveProblem worked: ", reply);
+			}), lang.hitch(this, function(err){
+				// Error in saving
+				// Log this?
+			}));
+		},
+
+		log: function(method, params, rsessionId){ //rsessionId for saving new problem
+			// Add time to log message (allowing override).
+			console.log("Logging method" ,method);
+			if(this.doLogging){
+				var p = lang.mixin({time: Math.floor(Date.now() / 1000)}, params);
+				return xhr.post(this.path + "logger.php", {
+					data: {
+						method: method,
+						message: json.toJson(p),
+						x: rsessionId?rsessionId:this.sessionId
+					}
+				}).then(lang.hitch(this, function(reply){
+					console.log("---------- logging " + method + ': ', p, " OK, reply: ", reply);
+				}), lang.hitch(this, function(err){
+					console.error("---------- logging " + method + ': ', p, " error: ", err);
+					console.error("This should be sent to apache logs");
+				}));
+			}
+		},
+		getTime: function(){
+			// Returns time in seconds since start of session.
+			return	((new Date()).getTime() - this._startTime)/1000.0;
 		}
 	});
 });
