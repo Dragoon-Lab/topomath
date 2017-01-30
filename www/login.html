@@ -16,12 +16,12 @@
 			alert("Please enter a username.");
 			return false;
 		}      
-		// If group field is empty, remove from form.
-		// Topomath treats the presence of the group field
+		// If folder field is empty, remove from form.
+		// Topomath treats the presence of the folder field
 		// as a switch for published versus custom problems.
-		if(form.g.value.trim() == ""){
-		  console.log("Deleting group (g) from GET.", form);
-		  document.getElementById("group").removeAttribute('name');
+		if(form.f.value.trim() == ""){
+		  console.log("Deleting folder (f) from GET.", form);
+		  document.getElementById("folder").removeAttribute('name');
 		}
 		return true;
 	}
@@ -64,7 +64,7 @@
 				</div>
 
 				<div class="fieldgroup">
-					<label for="folder">Folder:<br> (i.e. group; leave blank for published model) </label>
+					<label for="folder">Folder:<br> (leave blank for published model) </label>
 					<input id="folder" type="text" name="f" value="">
 				</div>
 
