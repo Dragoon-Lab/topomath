@@ -8,13 +8,14 @@ define([
 	'dijit/registry',
 	'dojo/_base/event',
 	'dojo/io-query',
+	'dojo/on',
 	'./menu',
 	'./session',
 	'./model',
 	'./equation',
 	'./draw-model',
 	'./con-author',
-], function(array, geometry, dom, style, aspect, ready, registry, event, ioQuery,
+], function(array, geometry, dom, style, aspect, ready, registry, event, ioQuery, on,
 			menu, session, model, equation, drawModel, controlAuthor){
 
 	console.log("load main.js");
@@ -121,6 +122,7 @@ define([
 					}
 				}
 				_model.active.setPosition(id, index, {"x": g.x, "y": g.y+scrollTop});
+				_session.saveModel(_model.model);
 			}, true);
 	
 
