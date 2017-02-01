@@ -169,7 +169,6 @@ define([
 			//next step is to add action to add quantity
 			menu.add("createQuantityNodeButton", function(e){
 				event.stop(e);
-				//give a fake id for now
 				var options = {
 					type: "quantity"
 				};
@@ -182,7 +181,6 @@ define([
 			//next step is to add action to add equation
 			menu.add("createEquationNodeButton", function(e){
 				event.stop(e);
-				//give a fake id for now
 				var options = {
 					type: "equation"
 				};
