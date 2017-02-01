@@ -35,11 +35,12 @@ define([
 	"dojo/aspect",
 	'dijit/registry',
 	'./controller',
+	"./equation",
 	"./typechecker",
 	"dojo/dom",
 	"dojo/dom-class",
 	"dojo/domReady!",
-], function(array, declare, lang, style, keys, ready, on, memory, aspect, registry, controller, typechecker, dom, domClass){
+], function(array, declare, lang, style, keys, ready, on, memory, aspect, registry, controller, equation, typechecker, dom, domClass){
 
 	// Summary:
 	//			MVC for the node editor, for authors
@@ -64,6 +65,56 @@ define([
 						// This never happens
 						returnObj.push({id:"initial", attribute:"status", value:"incorrect"});
 					}
+					break;
+
+					case "description":
+					if(!value){
+						returnObj.push({id:"description", attribute:"status", value:""});
+					}else if(nodeID && value){
+						returnObj.push({id:"description", attribute:"status", value:"incorrect"});
+						returnObj.push({id:"message", attribute:"append", value:"Description is already in use"});
+					}else{
+						returnObj.push({id:"description", attribute:"status", value:"entered"});
+					}
+					break;
+
+					case "explanation":
+					if(!value){
+						returnObj.push({id:"explanation", attribute:"status", value:""});
+					}else if(nodeID && value){
+						returnObj.push({id:"explanation", attribute:"status", value:"incorrect"});
+						returnObj.push({id:"message", attribute:"append", value:"Explanation is already in use"});
+					}else{
+						returnObj.push({id:"explanation", attribute:"status", value:"entered"});
+					}
+					break;
+
+					case "kind":
+					var message="";
+					returnObj.push({id:"kind", attribute:"status", value:"entered"});
+					if(value == "allowed"){
+						message	 = "One may include this quantity in a solution, but they can solve the problem without it.";
+					}else if(value == "irrelevant"){
+						message	 = "This quantity is not part of a valid solution and is not mentioned in the description.";
+					}else if(value == "required"){
+						message = "Solution quantity";
+					}else{
+						message = "Please select Kind of Quantity";
+					}
+					returnObj.push({id:"message", attribute:"append", value:message});
+					break;
+
+					case "variableName":
+						if(!nodeID && validInput){
+							returnObj.push({id:"message", attribute:"append", value:"node name is available for use"});
+							returnObj.push({id:"name", attribute:"status", value:"entered"});
+						}else if(!validInput){
+							returnObj.push({id:"message", attribute:"append", value:"Please enter a valid name without using numbers"});
+							returnObj.push({id:"name", attribute:"status", value:"incorrect"});
+						}else{
+							returnObj.push({id:"message", attribute:"append", value:"Node name is already in use"});
+							returnObj.push({id:"name", attribute:"status", value:"incorrect"});
+						}
 					break;
 
 				default:
@@ -154,6 +205,54 @@ define([
 		 */
 		handleVariableName: function(name){
 			console.log("**************** in handle Variable Name ", name);
+			/* check if node with name already exists and
+			 if name is parsed as valid variable
+			 */
+			var nameID = this._model.authored.getNodeIDByName(name);
+			// If nameID is falsy give "null"; if it doesn't match, give "false"
+			this.applyDirectives(this.authorPM.process(nameID?!(nameID==this.currentID):null,'variableName',name, equation.isVariable(name)));
+			
+			//var logObj = {};
+			if(!this._model.authored.getNodeIDByName(name) && equation.isVariable(name)){
+				// check all nodes in the model for equations containing name of this node
+				// replace name of this node in equation with its ID
+				this._model.active.setName(this.currentID, name);
+				this.updateNodes();
+				//not required - because updateNodes() will add connections automatically
+				//this.setConnections(this._model.active.getInputs(this.currentID), this.currentID);
+				// update equation labels is not required for quantity variable name handling , verify once
+				//this.updateEquationLabels();
+				
+				logObj = {
+					error: false
+				};
+				
+			} else {
+				//logging the error case
+				logObj = {
+					error: true
+				};
+				if(this._model.authored.getNodeIDByName(name)){
+					lang.mixin(logObj, {
+						message: "duplication"
+					});
+				} else if(equation.isVariable(name)){
+					lang.mixin(logObj, {
+						message: "parse"
+					});
+				}
+			}
+			this.enableDisableSetStudentNode();
+			
+			
+			logObj = lang.mixin({
+				type: "solution-enter",
+				nodeID: this.currentID,
+				propoerty: "name",
+				node: name,
+				value: name
+			}, logObj);
+			//this.logging.log('solution-step', logObj);
 		},
 
 		handleExplanationName: function(name){
@@ -174,16 +273,111 @@ define([
 
 		handleKind: function(kind){
 			console.log("**************** in handleKind ", kind);
+			if(kind == "defaultSelect" || kind == ''){
+				/*
+				this.logging.clientLog("error", {
+					message: "no kind selected for author node type",
+					functionTag: "handleKind"
+				}); */
+				kind = "defaultSelect";
+				this._model.authored.setGenus(this.currentID, kind);
+			}else{
+				this._model.authored.setGenus(this.currentID, kind);
+				this.applyDirectives(this. authorPM.process(this.currentID, "kind", kind));
+			}
+
+			/*
+			this.logging.log('solution-step', {
+				type: "solution-enter",
+				nodeID: this.currentID,
+				property: "kind",
+				node: this._model.given.getName(this.currentID),
+				value: kind
+			});
+			*/
 		},
 
-		handleQuantityDescription: function(description){
+		handleDescription: function(description){
 			// Summary: Checks to see if the given quantity node description exists; if the
 			//		description doesn't exist, it sets the description of the current node.
+			var descriptionID = this._model.authored.getNodeIDByDescription(description);
+			// If descriptionID is falsy give "null"; if it doesn't match, give "false"
+			var returnObj = this.authorPM.process(descriptionID?!(descriptionID==this.currentID):null, "description", description);
+			console.log("return obj for quantity description", returnObj);
+			this.applyDirectives(returnObj);
+			
+			//var logObj = {};
+
+			if(!this._model.active.getNodeIDByDescription(description)){
+				this._model.active.setDescription(this.currentID, description);
+				/*
+				logObj = {
+					error: false
+				};
+				*/
+			}else {
+				console.warn("In AUTHOR mode. Attempted to use description that already exists: " + description);
+				/*
+				logObj = {
+					error: true,
+					message: "duplication"
+				};
+				*/
+			}
+			/*
+			logObj = lang.mixin({
+				type: "solution-enter",
+				nodeID: this.currentID,
+				property: "description",
+				node: this._model.given.getName(this.currentID),
+				value: description
+			}, logObj);
+			
+			this.logging.log('solution-step', logObj);
+			*/
+			this.enableDisableSetStudentNode();
 		},
 
-		handleEquationExplanation: function(description){
-			// Summary: Checks to see if the given equation node description exists; if the
-			//		description doesn't exist, it sets the description of the current node.
+		handleExplanation: function(explanation){
+			// Summary: Checks to see if the given equation node explanation exists; if the
+			//		explanation doesn't exist, it sets the explanation of the current node.
+			var explanationID = this._model.authored.getNodeIDByExplanation(explanation);
+			// If descriptionID is falsy give "null"; if it doesn't match, give "false"
+			var returnObj = this.authorPM.process(explanationID?!(explanationID==this.currentID):null, "explanation", explanation);
+			console.log("return obj for equation explanation", returnObj);
+			this.applyDirectives(returnObj);
+			
+			//var logObj = {};
+
+			if(!this._model.active.getNodeIDByExplanation(explanation)){
+				this._model.active.setExplanation(this.currentID, explanation);
+				/*
+				logObj = {
+					error: false
+				};
+				*/
+			}else {
+				console.warn("In AUTHOR mode. Attempted to use explanation that already exists: " + explanation);
+				/*
+				logObj = {
+					error: true,
+					message: "duplication"
+				};
+				*/
+			}
+			/*
+			logObj = lang.mixin({
+				type: "solution-enter",
+				nodeID: this.currentID,
+				property: "description",
+				node: this._model.given.getName(this.currentID),
+				value: description
+			}, logObj);
+			
+			this.logging.log('solution-step', logObj);
+			*/
+			this.enableDisableSetStudentNode();
+
 		},
 		
 		handleRoot: function(root){
@@ -302,6 +496,11 @@ define([
 		},
 
 		handleInputs: function(name){
+			this.equationInsert(name); 
+			// After variable input, reset control to its initial state.
+			// Third argument keeps handler from being called.
+			var inputWidget = registry.byId(this.controlMap.inputs);
+			inputWidget.set('value', '', false);
 		},
 
 		equationDoneHandler: function(){
@@ -565,6 +764,34 @@ define([
 
 		},
 		enableDisableSetStudentNode: function(){
+			//Summary: Enable Set student mode checkbox only when variable/equation and description/explanation are filled
+			
+			//based on the node type this function checks variable/equation and description/explanation
+
+			var nodeType = this._model.authored.getType(this.currentID);
+
+			if(nodeType == "quantity"){
+				var varName = registry.byId(this.controlMap.variable).value;
+				var desc = registry.byId(this.controlMap.description).value;
+
+				if(name != '' && desc != ''){
+					registry.byId(this.controlMap.student).set("disabled",false);
+				}
+				else{
+					registry.byId(this.controlMap.student).set("disabled",true);
+				}	
+			}
+			else if(nodeType == "equation"){
+				var eqnName = registry.byId(this.controlMap.equation).value;
+				var expln = registry.byId(this.controlMap.explanation).value;
+
+				if(name != '' && expln != ''){
+					registry.byId(this.controlMap.student).set("disabled",false);
+				}
+				else{
+					registry.byId(this.controlMap.student).set("disabled",true);
+				}	
+			}
 
 		},
 		updateStatus: function(/*String*/control, /*String*/correctValue, /*String*/newValue){

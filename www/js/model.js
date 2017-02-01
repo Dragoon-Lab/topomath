@@ -209,6 +209,16 @@ define([
 				});
 				return gotIt ? id : null;
 			},
+			getNodeIDByExplanation: function(/*string*/ explanation){
+				// Summary: returns the id of a node matching the authored description from the
+				//          authored or extra nodes.  If none is found, return null.
+				var id;
+				var gotIt = array.some(this.getNodes(), function(node){
+					id = node.ID;
+					return node.explanation === explanation;
+				});
+				return gotIt ? id : null;
+			},
 			getDescriptions: function(){
 				// Summary: returns an array of all descriptions with
 				// name (label) and any associated node id (value).

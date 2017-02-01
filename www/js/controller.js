@@ -30,7 +30,8 @@ define([
 	"dojo/on",
 	"dojo/ready",
 	"dijit/registry",
-], function(array, declare, lang, dom, keys, on, ready, registry){
+	"./equation"
+], function(array, declare, lang, dom, keys, on, ready, registry, expression){
 
 	/* Summary:
 	 *			Controller for the node editor, common to all modes
@@ -139,13 +140,13 @@ define([
 			 //event handler for quantity node description field
 			var desc_qty = registry.byId(this.controlMap.description);
 			desc_qty.on('Change', lang.hitch(this, function(){
-				return this.disableHandlers || this.handleQuantityDescription.apply(this, arguments);
+				return this.disableHandlers || this.handleDescription.apply(this, arguments);
 			}));
 
 			//event handler for equation node explanation field
 			var expln_eq = registry.byId(this.controlMap.explanation);
 			expln_eq.on('Change', lang.hitch(this, function(){
-				return this.disableHandlers || this.handleEquationExplanation.apply(this, arguments);
+				return this.disableHandlers || this.handleExplanation.apply(this, arguments);
 			}));
 			/*
 			 *	 event handler for 'Initial' field
@@ -203,7 +204,7 @@ define([
 
 			// For each button 'name', assume there is an associated widget in the HTML
 			// with id 'nameButton' and associated handler 'nameHandler' below.
-			var buttons = ["plus", "minus", "times", "divide", "undo", "equationDone", "sum", "product"];
+			var buttons = ["plus", "minus", "times", "divide", "undo", "equationDone"];
 			array.forEach(buttons, function(button){
 				var w = registry.byId(button + 'Button');
 				if(!w){
@@ -311,7 +312,10 @@ define([
 						// keep updating this section as we handle the editor input fields
 						if(w.id == 'initialValue'){
 							this._model.active.setInitial(this.currentID, directive.value);
-						} 
+						}else if(w.id == 'selectDescription'){
+							this.updateDescription(directive.value);
+						}
+						//to do : update explanation function but right now no directives with att value for explanations not being processed 
 
 					}else{
 						w.set(directive.attribute, directive.value);
@@ -348,6 +352,68 @@ define([
 			//stub for updateModelStatus
 			//actual implementation in con-student and con-author
 		},
+		plusHandler: function(){
+			console.log("****** plus button");
+			this.equationInsert('+');
+		},
+		minusHandler: function(){
+			console.log("****** minus button");
+			this.equationInsert('-');
+		},
+		timesHandler: function(){
+			console.log("****** times button");
+			this.equationInsert('*');
+		},
+		divideHandler: function(){
+			console.log("****** divide button");
+			this.equationInsert('/');
+		},
+		equationInsert: function(text){
+			//todo: initialize domNode
+			var widget = registry.byId(this.controlMap.equation);
+			var oldEqn = widget.get("value");
+			// Get current cursor position or go to end of input
+			// console.log("	   Got offsets, length: ", widget.domNode.selectionStart, widget.domNode.selectionEnd, oldEqn.length);
+			var p1 = widget.domNode.selectionStart;
+			var p2 = widget.domNode.selectionEnd;
+			widget.set("value", oldEqn.substr(0, p1) + text + oldEqn.substr(p2));
+			// Set cursor to end of current paste
+			widget.domNode.selectionStart = widget.domNode.selectionEnd = p1 + text.length;
+		},
+
+		updateNodes: function(){
+			// Update node editor and the model.
+			this._nodeEditor.set('title', this._model.active.getName(this.currentID));
+
+			// Update inputs and other equations based on new quantity.
+			expression.addQuantity(this.currentID, this._model.active);
+
+			// need to delete all existing outgoing connections
+			// need to add connections based on new inputs in model.
+			// add hook so we can do this in draw-model...
+			this.addQuantity(this.currentID, this._model.active.getOutputs(this.currentID));
+		},
+		/* Stub to update connections in graph */
+		addQuantity: function(source, destinations){
+		},
+
+		handleEquation: function(equation){
+			var w = registry.byId(this.widgetMap.equation);
+			this.equationEntered = false;
+			w.set('status','');
+			// undo color when new value is entered in the equation box widget
+			w.on("keydown",lang.hitch(this,function(evt){
+				if(evt.keyCode != keys.ENTER){
+					w.set('status','');
+				}
+			}));
+		},
+
+		deleteNode: function(id){
+			//Stub to delete node with id by inturn calling drawmodel.deleteNode in main.js
+			return id;
+		},
+
 
 	});
 });
