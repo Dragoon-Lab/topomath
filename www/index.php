@@ -174,7 +174,7 @@
 		Lets follow the hierarchy used earlier.-->
 
 		<!-- Putting Node-Editor -Dialog stuff for demo -->
-		<div class="claro sameedit" data-dojo-type="dijit/Dialog" id="quantityNodeEditor">
+		<div class="claro sameedit" data-dojo-type="dijit/Dialog" id="nodeEditor">
 			
 			<div id="studentModelControl" class="fieldgroup">
 				<label style="width:20ex;" for="setStudentNode">Given to student</label>
@@ -189,9 +189,9 @@
 				</select>
 			</div>
 
-			<div id="nameControl" class="fieldgroup">
-				<label for="setName">Variable</label>
-				<input id="setName" data-dojo-type="dijit/form/ComboBox">
+			<div id="nameControl" class="fieldgroup" style="display: none;">
+				<label for="setVariable">Variable</label>
+				<input id="setVariable" data-dojo-type="dijit/form/ComboBox">
 				<label for="selectKind">Optionality:</label>
 				<select id="selectKind" data-dojo-type="dijit/form/Select">
 					<option value='defaultSelect'>--Select--</option>
@@ -202,16 +202,23 @@
 			</div>
 			
 			<div class="fieldgroup">
-				<div id="descriptionControlAuthor" class="fieldgroup">
+				<div id="descriptionControlAuthor" class="fieldgroup" style="display: none;">
 					<span class="fixedwidth">
 						<div id="authorDescriptionQuestionMark" class="questionMark"></div>
 						<label for="setDescription">Description</label>
 					</span>
 					<input id="setDescription" data-dojo-type="dijit/form/ComboBox">
 				</div>
+				<div id="explanationControlAuthor" class="fieldgroup" style="display: none;">
+					<span class="fixedwidth">
+						<div id="authorExplanationQuestionMark" class="questionMark"></div>
+						<label for="setExplanation">Explanation</label>
+					</span>
+					<input id="setExplanation" data-dojo-type="dijit/form/ComboBox">
+				</div>
 			</div>
 
-			<div class="fieldgroup">
+			<div class="fieldgroup" id="valueUnitsControl" style="display: none;">
 				<!-- adding a div for value field to control its display in UI -->
 				<div id="initialValueDiv" >
 					<span>
@@ -237,68 +244,25 @@
 				</div>
 			</div>
 			
-			<div id="setRootNode" class="fieldgroup" style="">
+			<div id="setRootNode" class="fieldgroup" style="display: none;">
 				<label for ="markRootNode" title ="Mark this node as a root node.">Root:</label>
 				<input id ="markRootNode" name ="markRootNode" data-dojo-type="dijit/form/CheckBox" value="agreed" checked="false"/>
 				<div id="questionMarkRoot" class="questionMark"></div>
 			</div>
 
-			<div id="setDynamicNode" class="fieldgroup" style="">
+			<div id="setDynamicNode" class="fieldgroup" style="display: none;">
 				<label for ="markDynamicNode" title ="Mark this node as a root node.">Dynamic:</label>
 				<input id ="markDynamicNode" name ="markDynamicNode" data-dojo-type="dijit/form/CheckBox" value="agreed" checked="false"/>
 				<div id="questionMarkDynamic" class="questionMark"></div>
 			</div>
 
-			<div class="fieldgroup">
-				<label for="messageBox">Messages</label>
-				<div id="messageBox" class="textscroll" data-dojo-type="dijit/layout/ContentPane"></div>
-
-				<div style="margin-bottom:10px; display:block">
-					<span>&nbsp;</span>
-					<button id="closeButton" type="button" data-dojo-type="dijit/form/Button" iconClass="dijitNoIcon" style="float:right;">Done</button>
-					<button id="deleteButton" type="button" data-dojo-type="dijit/form/Button" iconClass="dijitNoIcon" style="float:left;">Delete Node</button>
-				</div>
-			</div>
-
-		</div><!-- end of quantity node editor -->
-
-		<!-- crisis Alert -->
-		<div class="claro crisisDialog" id="crisisAlertMessage" data-dojo-type="dijit.Dialog" title="Message">
-			<div id = "crisisMessage"> </div>
-			<button id="OkButton" type="button" data-dojo-type="dijit/form/Button">OK</button>
-		</div> 
-		<!-- Equation Node Editor-->
-		<div class="claro sameedit" data-dojo-type="dijit/Dialog" id="equationNodeEditor">
-			
-			<div id="studentModelControl2" class="fieldgroup">
-				<label style="width:20ex;" for="setStudentNode2">Given to student</label>
-				<input id="setStudentNode2" name="markStudentNode2" data-dojo-type="dijit/form/CheckBox" checked="false"/>
-			</div>
-			<div id="selectModelControl2" class="fieldgroup" style="display:none" >
-				<label for="selectModel2">Select Model</label>
-				<select id="selectModel2" data-dojo-type="dijit/form/Select">
-					<option value='correct' selected>Author's Values</option>
-					<option value='given'>Initial Student Values</option>
-				</select>
-			</div>
-
-			<div class="fieldgroup">
-				<div id="descriptionControlAuthor2" class="fieldgroup" style="">
-					<span class="fixedwidth">
-						<div id="authorDescriptionQuestionMark2" class="questionMark"></div>
-						<label for="setDescription2">Explanation</label>
-					</span>
-					<input id="setDescription2" data-dojo-type="dijit/form/ComboBox">
-				</div>
-			</div>
-
-			<div class="ExpressionContainer" id="expressionDiv" style="">
+			<div class="ExpressionContainer" id="expressionDiv" style="display: none;">
 				<div class="fieldgroup">
 					 <div class="vertical">
 						<div id="equationLabel"></div>
 							<div id="nameControl2" class="fieldgroup">
-								<label for="setName2">Equation</label>
-									<textarea id="setName2" rows=4 cols=50 data-dojo-type="dijit/form/SimpleTextarea" style="min-height:60px;"></textarea>
+								<label for="setEquation">Equation</label>
+									<textarea id="setEquation" rows=4 cols=50 data-dojo-type="dijit/form/SimpleTextarea" style="min-height:60px;"></textarea>
 							</div>
 					</div>
 
@@ -334,21 +298,26 @@
 				</div>
 			</div>
 
-			<div class="fieldgroup">
-				<label for="messageBox2">Messages</label>
-				<div id="messageBox2" class="textscroll" data-dojo-type="dijit/layout/ContentPane"></div>
-				<div class="buttonBox2" style="padding-top:0px">
-				<!-- Strut to move close button down.  It would be
-						better to do this with css... -->
-				</div>
+
+			<div class="fieldgroup" id="messageControl" style="">
+				<label for="messageBox">Messages</label>
+				<div id="messageBox" class="textscroll" data-dojo-type="dijit/layout/ContentPane"></div>
+
 				<div style="margin-bottom:10px; display:block">
 					<span>&nbsp;</span>
-					<button id="closeButton2" type="button" data-dojo-type="dijit/form/Button" iconClass="dijitNoIcon" style="float:right;">Done</button>
-					<button id="deleteButton2" type="button" data-dojo-type="dijit/form/Button" iconClass="dijitNoIcon" style="float:left;">Delete Node</button>
-					<button id="imageButton2" type="button" data-dojo-type="dijit/form/Button" iconClass="dijitNoIcon" style="float:left; display: none;" disabled="true">Image Highlighting</button>
+					<button id="closeButton" type="button" data-dojo-type="dijit/form/Button" iconClass="dijitNoIcon" style="float:right;">Done</button>
+					<button id="deleteButton" type="button" data-dojo-type="dijit/form/Button" iconClass="dijitNoIcon" style="float:left;">Delete Node</button>
 				</div>
 			</div>
-		</div><!-- end of equation node editor -->
+
+		</div><!-- end of quantity node editor -->
+
+		<!-- crisis Alert -->
+		<div class="claro crisisDialog" id="crisisAlertMessage" data-dojo-type="dijit.Dialog" title="Message">
+			<div id = "crisisMessage"> </div>
+			<button id="OkButton" type="button" data-dojo-type="dijit/form/Button">OK</button>
+		</div> 
+
 	</div>
 </body>
 </html>

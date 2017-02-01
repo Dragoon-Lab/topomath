@@ -76,28 +76,27 @@ define([
 		constructor: function(){
 			console.log("++++++++ In author constructor");
 			lang.mixin(this.widgetMap, this.controlMap);
+			//can we use initialValueSettings instead
 			this.authorControls();
 			//initialize error status array to track cleared expression for given model nodes
 			this.errorStatus =[];
 			ready(this, "initAuthorHandles");
 		},
 
-		resettableControls: ["variable","explanation","description","description2","initial","units","equation"],
+		resettableControls: ["variable","explanation","description","initial","units","equation"],
 
 		controlMap: {
 			inputs: "setInput",
-			variable: "setName",
-			explanation: "setName2",
+			variable: "setVariable",
+			equation: "setEquation",
 			description: "setDescription",
-			description2: "setDescription2",
+			explanation: "setExplanation",
 			kind: "selectKind",
 			units: "setUnits",
 			root: "markRootNode",
 			dynamic: "markDynamicNode",
-			setStudentQty: "setStudentNode",
-			setStudentEq: "setStudentNode2",
+			setStudent: "setStudentNode",
 			modelType: "selectModel",
-			modelType2: "selectModel2",
 		},
 		authorControls: function(){
 			console.log("++++++++ Setting AUTHOR format in Node Editor.");
@@ -138,17 +137,12 @@ define([
 					return this.disableHandlers || this.handleDynamic(checked);
 			}));
 
-			var setStudentQtyNode = registry.byId(this.controlMap.setStudentQty);
-			setStudentQtyNode.on('Change', lang.hitch(this, function(checked){
-					return this.disableHandlers || this.handleSetStudentQtyNode(checked);
+			var setStudentNode = registry.byId(this.controlMap.setStudent);
+			setStudentNode.on('Change', lang.hitch(this, function(checked){
+					return this.disableHandlers || this.handleSetStudentNode(checked);
 			}));
 
-			var setStudentEqNode = registry.byId(this.controlMap.setStudentEq);
-			setStudentEqNode.on('Change', lang.hitch(this, function(checked){
-					return this.disableHandlers || this.handleSetStudentEqNode(checked);
-			}));
-
-			var givenEquation = registry.byId("setName2");
+			var givenEquation = registry.byId("setEquation");
 			givenEquation.on('Change', lang.hitch(this, function(){
 					return this.disableHandlers || this.handleGivenEquation.apply(this, arguments);
 			}));
@@ -187,7 +181,7 @@ define([
 			//		description doesn't exist, it sets the description of the current node.
 		},
 
-		handleEquationDescription: function(description){
+		handleEquationExplanation: function(description){
 			// Summary: Checks to see if the given equation node description exists; if the
 			//		description doesn't exist, it sets the description of the current node.
 		},
@@ -202,7 +196,7 @@ define([
 			console.log("********************* in handleDynamic", root);
 		},
 
-		handleSetStudentQtyNode: function(checked){
+		handleSetStudentNode: function(checked){
 			console.log("********************* in handle set student quantity node", checked);
 			if(checked){
 				style.set('selectModelControl', 'display', 'block');
@@ -216,25 +210,6 @@ define([
 				registry.byId("selectModel").set('value',"correct");
 				style.set('selectModelControl', 'display', 'none');
 				//to do : to write removeStudentNode , pushed to backlog
-				//this.removeStudentNode(this.currentID);
-				//also show the waveform assignment button and image
-			}
-		},
-
-		handleSetStudentEqNode:  function(checked){
-			console.log("********************* in handle set student equation node", checked);
-			if(checked){
-				style.set('selectModelControl2', 'display', 'block');
-				var studentNode = this._model.student.getNodeIDFor(this.currentID);
-				if(studentNode == null){
-					//to do : to write addStudentNode which has to add an equation node, pushing this it backlog 
-					//this.addStudentNode(this.currentID);
-				}
-			}else{
-				this._model.active = this._model.authored;
-				registry.byId("selectModel2").set('value',"correct");
-				style.set('selectModelControl2', 'display', 'none');
-				//to do : to write removeStudentNode which removes an equation node, pushed to backlog
 				//this.removeStudentNode(this.currentID);
 				//also show the waveform assignment button and image
 			}
@@ -256,6 +231,7 @@ define([
 			//Initial value handler for quantity node
 
 			//IniFlag contains the status and initial value
+
 			var modelType = this.getModelType();
 			console.log("model type is", modelType);
 			var tempIni = dom.byId(this.widgetMap.initial);
@@ -338,10 +314,223 @@ define([
 		
 		handleErrorMessage: function(){
 			//Summary: Displays a message on opening node editor if expression was cleared
+		},
+
+		initialViewSettings: function(type){
+			//make display none for all fields initially
+			var qtyElements = ["nameControl","descriptionControlAuthor","valueUnitsControl","setRootNode","setDynamicNode"];
+			var eqElements = ["explanationControlAuthor","expressionDiv"];
+		
+			if(type == "quantity"){
+				eqElements.forEach(function(elem){
+					console.log("element",elem);
+					style.set(elem,"display","none");
+				});
+				qtyElements.forEach(function(elem){
+					console.log("element",elem);
+					style.set(elem,"display","block");
+				});
+			}else if(type == "equation"){
+				qtyElements.forEach(function(elem){
+					console.log("element",elem);
+					style.set(elem,"display","none");
+				});
+				eqElements.forEach(function(elem){
+					console.log("element",elem);
+					style.set(elem,"display","block");
+				});
+
+			}
 		},	
 		
 		initialControlSettings: function(nodeid){
 			console.log("initial control settings in author mode");
+			// Apply settings appropriate for a new node
+			// This is the equivalent to newAction() in student mode.
+			this.applyDirectives([
+				{attribute:"disabled", id:"root", value:true}
+			]);
+
+			var nodeType = this._model.authored.getType(nodeid);
+			if(nodeType == "quantity"){
+				
+				var variable = this._model.authored.getName(nodeid);
+				registry.byId(this.controlMap.variable).set('value', variable || '', false);
+
+				var desc = this._model.authored.getDescription(nodeid);
+				registry.byId(this.controlMap.description).set('value', desc || '', false);
+
+				// Initialize root node checkbox
+				registry.byId(this.controlMap.root).set('value', this._model.authored.getParent(nodeid));
+
+				//Initialize dynamic node checkbox
+				registry.byId(this.controlMap.dynamic).set('value', this._model.authored.getDynamic(nodeid));
+
+				// populate inputs
+			
+				var varWidget = registry.byId(this.controlMap.variable);
+				var descriptionWidget = registry.byId(this.controlMap.description);
+				var unitsWidget = registry.byId(this.controlMap.units);
+				var kind = registry.byId(this.controlMap.kind);
+			
+				var value = this._model.authored.getGenus(this.currentID);
+				if(!value)
+					value='required';
+				kind.set('value',value);
+				
+			}
+			else if(nodeType == "equation"){
+				var desc = this._model.authored.getExplanation(nodeid);
+				registry.byId(this.controlMap.explanation).set('value', desc || '', false);
+
+				// populate inputs
+				var inputsWidget = registry.byId(this.controlMap.inputs);
+				var eqWidget = registry.byId(this.controlMap.equation);
+				var explanationWidget = registry.byId(this.controlMap.explanation);
+			}
+			
+			
+			
+			// Initialize student node checkbox
+			//this is common to both quantity and equation nodes in topomath
+				var givenNode = this._model.authored.getNode(nodeid);
+				var studentNodes = this._model.student.getNodes();
+				var checked = false;
+				checked = array.some(studentNodes, function(node){
+					return node.authoredID === givenNode.ID;
+				}, this);
+				registry.byId(this.controlMap.student).set('value', checked);
+				this.handleSetStudentNode(checked);
+			if(name != null && desc != null){
+				registry.byId(this.controlMap.student).set('disabled', false);
+			}
+			else{
+				registry.byId(this.controlMap.student).set('disabled', true);
+			}
+
+			
+			/*
+			*	populate the nodes in the Name, Description, Units, and Inputs tab
+			*	For combo-box we need to setup a data-store which is collection of {name:'', id:''} object
+			*
+			*/
+			//to do : pausing for a while , will be picked after handlers
+			/*
+			var inputs = [];
+			var descriptions = [];
+			var units = [];
+
+			// Get descriptions and units in AUTHOR mode to sort as alphabetic order
+			var authorDesc = this._model.authored.getDescriptions();
+			authorDesc.sort(function(obj1, obj2){
+				return obj1.label > obj2.label;
+			});
+			var authorUnits = this._model.getAllUnits();
+			authorUnits.sort();
+
+			array.forEach(authorDesc, function(desc){
+				if(desc.label){
+					var name = this._model.authored.getName(desc.value);
+					var obj = {name:name, id: desc.id};
+					inputs.push(obj);
+					descriptions.push({name: this._model.given.getDescription(desc.value), id: desc.id});
+				}
+			}, this);
+			array.forEach(authorUnits, function(unit){
+				units.push({name: unit, id: unit});
+			}, this);
+
+			// Sort inputs in AUTHOR mode as alphabetic order
+			//this should go into equation editor
+			inputs.sort(function(obj1, obj2){
+				return obj1.name > obj2.name;
+			});
+
+			var m = new memory({data: inputs});
+			inputsWidget.set("store", m);
+			nameWidget.set("store", m);
+			m = new memory({data: descriptions});
+			descriptionWidget.set("store", m);
+			m = new memory({data: units});
+			unitsWidget.set("store", m);
+
+			var value;
+			//node is not created for the first time. apply colors to widgets
+			//color name widget
+
+			//false value is set because while creating a name we are already checking for uniqueness and checking again while re-opening the node is not needed.
+			if(name){
+				var nodes = this._model.given.getNodes();
+				var isDuplicateName = false;
+				array.forEach(nodes, lang.hitch(this, function(node){
+					if(node.name == this._model.given.getName(this.currentID) && node.ID != this.currentID)
+						isDuplicateName = true;
+				}));
+
+				this.applyDirectives(this.authorPM.process(isDuplicateName, "name", name, equation.isVariable(name)));
+			}
+			//color kind widget
+			if(this._model.given.getGenus(this.currentID) === '' || this._model.given.getGenus(this.currentID)){
+				this.applyDirectives(this.authorPM.process(this.currentID, "kind", this._model.given.getGenus(this.currentID)));
+			}
+			//color description widget
+			//uniqueness taken care of by the handler while adding a new value. So a false value sent.
+			if(this._model.given.getDescription(this.currentID)){
+				var nodes = this._model.given.getNodes();
+				var isDuplicateDescription = false;
+				array.forEach(nodes, lang.hitch(this, function(node){
+					if(node.description == this._model.given.getDescription(this.currentID) && node.ID != this.currentID)
+						isDuplicateDescription = true;
+				}));
+
+				this.applyDirectives(this.authorPM.process(isDuplicateDescription, "description", this._model.given.getDescription(this.currentID)));
+			}
+			//color units widget
+			var unitsChoice = this._model.given.getUnits(this.currentID);
+			if(unitsChoice && unitsChoice != 'defaultSelect'){
+				this.applyDirectives(this.authorPM.process(this.currentID, 'units', this._model.given.getUnits(this.currentID)));
+			}
+			//color initial value widget
+			if(typeof this._model.given.getInitial(this.currentID) === "number"){
+				this.applyDirectives(this.authorPM.process(this.currentID, 'initial', this._model.given.getInitial(this.currentID), true));
+			}
+			//color Equation widget
+			if(this._model.given.getEquation(this.currentID)){
+				if(this._model.given.getAuthorStatus(this.currentID, "equation") && this._model.given.getAuthorStatus(this.currentID, "equation").status == "incorrect"){
+					this.applyDirectives(this.authorPM.process(this.currentID, 'equation', this._model.given.getEquation(this.currentID), false));
+				}else{
+					this.applyDirectives(this.authorPM.process(this.currentID, 'equation', this._model.given.getEquation(this.currentID), true));
+				}
+			}
+			var type = this._model.given.getType(this.currentID);
+			//color type widget
+			if(type){
+				this.applyDirectives(this.authorPM.process(this.currentID, 'type', type));
+			}
+			if(type && type != 'function'){
+				if(typeof this._model.given.getInitial(this.currentID) === "number")
+					this.applyDirectives([{id:"initial", attribute:"status", value:"entered"}]);
+			}
+			if(type && type != 'parameter'){
+				if(this._model.given.getEquation(this.currentID) && this._model.given.getAuthorStatus(this.currentID, "equation").status != "incorrect")
+					this.applyDirectives([{id:"equation", attribute:"status", value:"entered"}]);
+			}
+			this.enableDisablewaveFormAssignmentButton(this.currentID);
+
+			if(this.activityConfig.get("disableNodeEditorFields")){
+				console.log("using apply directives");
+
+				this.applyDirectives([{id: "setName", attribute : "disabled", value: true}]);
+
+				
+					DQuery("#nodeeditor input").attr("disabled",true);
+					DQuery("#nodeeditor textarea").attr("disabled",true);
+					dijit.byId("setName").readOnly = true;
+					dijit.byId("selectKind").readOnly = true;
+				
+
+			}
+			*/
 
 		},
 		updateModelStatus: function(desc, id){
@@ -357,7 +546,7 @@ define([
 		},
 
 		getModelType: function(){
-			return (registry.byId(this.controlMap.setStudentQty).checked ? registry.byId(this.controlMap.modelType).value : "correct");
+			return (registry.byId(this.controlMap.setStudent).checked ? registry.byId(this.controlMap.modelType).value : "correct");
 		},
 
 		addStudentNode: function(nodeid){

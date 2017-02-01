@@ -43,9 +43,7 @@ define([
 
 	return declare(null, {
 		_model: null,
-		_quantityNodeEditor: null,
-		_equationNodeEditor: null,
-
+		_nodeEditor: null,
 		/*
 		 * When opening the node editor, we need to populate the controls without
 		 * evaluating those changes.
@@ -57,7 +55,6 @@ define([
 
 		genericControlMap: {
 			initial: "initialValue",
-			equation: "setName2",
 		},
 		genericDivMap: {
 			initial: "initialValueDiv",
@@ -67,7 +64,6 @@ define([
 		// A list of all widgets.  (The constructor mixes this with controlMap)
 		widgetMap: {
 			message: 'messageBox',
-			message2: 'messageBox2',
 			crisisAlert: 'crisisAlertMessage'
 		},
 
@@ -90,7 +86,7 @@ define([
 			// It might be a better idea to only  call the controller
 			// after widgets are set up.
 
-			ready(this, this._setUpNodeEditors);
+			ready(this, this._setUpNodeEditor);
 			ready(this, this._initHandles);
 		},
 
@@ -119,13 +115,11 @@ define([
 			});
 		},
 
-		_setUpNodeEditors: function(){
+		_setUpNodeEditor: function(){
 			// get Node Editor widget from tree
 			// In TopoMath this functions sets up display of both quantity and equation node editor
-			this._quantityNodeEditor = registry.byId('quantityNodeEditor');
-			this._quantityNodeEditor.set("display", "block");
-			this._equationNodeEditor = registry.byId('equationNodeEditor');
-			this._equationNodeEditor.set("display", "block");
+			this._nodeEditor = registry.byId('nodeEditor');
+			this._nodeEditor.set("display", "block");
 		},
 
 		//set up event handling with UI components
@@ -148,10 +142,10 @@ define([
 				return this.disableHandlers || this.handleQuantityDescription.apply(this, arguments);
 			}));
 
-			//event handler for equation node description field
-			var desc_eq = registry.byId(this.controlMap.description2);
-			desc_eq.on('Change', lang.hitch(this, function(){
-				return this.disableHandlers || this.handleEquationDescription.apply(this, arguments);
+			//event handler for equation node explanation field
+			var expln_eq = registry.byId(this.controlMap.explanation);
+			expln_eq.on('Change', lang.hitch(this, function(){
+				return this.disableHandlers || this.handleEquationExplanation.apply(this, arguments);
 			}));
 			/*
 			 *	 event handler for 'Initial' field
@@ -243,42 +237,32 @@ define([
 		},
 		
 		//show node editor
-		showQuantityNodeEditor: function(/*string*/ id){
-			//Checks if the current mode is COACHED mode and exit from node editor if all the modes are defined
+		showNodeEditor: function(/*string*/ id){
 			console.log("showNodeEditor called for node ", id);
 			this.currentID = id; //moved using inside populateNodeEditorFields
 			//this.nodeStartAssessment();
 			this.disableHandlers = true;
-			this.initialControlSettings(id);
-			this.populateNodeEditorFields(id);
+			//based on the type decide what fields to show or hide
+			//call get type once the model is intergrated
+			//for now commenting it and randomly giving nodetype value
+			//var nodeType = this._model.authored.getType();
+			var nodeType = "quantity";
+			this.initialViewSettings(nodeType);
+			//this.initialControlSettings(id);
+			//this.populateNodeEditorFields(id);
 
 			// Hide the value and expression controls in the node editor, depending on the type of node		
 			//var type=this._model.active.getType(this.currentID);
 			//this.adjustNodeEditor(type);
 
-			this._quantityNodeEditor.show().then(lang.hitch(this, function(){
+			this._nodeEditor.show().then(lang.hitch(this, function(){
 				this.disableHandlers = false;
 			}));
+
 		},
-
-		showEquationNodeEditor: function(/*string*/ id){
-			//Checks if the current mode is COACHED mode and exit from node editor if all the modes are defined
-			console.log("showNodeEditor2 called for node ", id);
-			this.currentID = id; //moved using inside populateNodeEditorFields
-			//this.nodeStartAssessment();
-			this.disableHandlers = true;
-			this.initialControlSettings(id);
-			this.populateNodeEditorFields(id);
-
-			// Hide the value and expression controls in the node editor, depending on the type of node		
-			//var type=this._model.active.getType(this.currentID);
-			//this.adjustNodeEditor(type);
-
-			this._equationNodeEditor.show().then(lang.hitch(this, function(){
-				this.disableHandlers = false;
-			}));
+		initialViewSettings: function(type){
+			//over written by student or author specific method
 		},
-
 		// Stub to be overwritten by student or author mode-specific method.
 		initialControlSettings: function(id){
 			console.error("initialControlSettings should be overwritten.");
@@ -288,14 +272,22 @@ define([
 		populateNodeEditorFields: function(nodeid){
 			console.log("populate node editor fields enter");
 
-			//to do : fetch initial value from model, for now giving empty value,
-			var initial = "";//model.getInitial(nodeid);
-			console.log('initial value is ', initial, typeof initial);
-			// Initial value will be undefined if it is not in the model
-			var isInitial = typeof initial === "number";
-			this.lastInitial.value = isInitial?initial.toString():null;
-			registry.byId(this.controlMap.initial).attr('value', isInitial?initial:'');
+			var nodeType = this._model.authored.getType(nodeid);
 
+			if(nodeType == "quantity"){
+
+				//Populate initial value of quantity node
+				//to do : fetch initial value from model, for now giving empty value,
+				var initial = "";//model.getInitial(nodeid);
+				console.log('initial value is ', initial, typeof initial);
+				// Initial value will be undefined if it is not in the model
+				var isInitial = typeof initial === "number";
+				this.lastInitial.value = isInitial?initial.toString():null;
+				registry.byId(this.controlMap.initial).attr('value', isInitial?initial:'');
+			}
+			else if(nodeType == "equation"){
+				//populate nodeEditor fields for an equation node
+			}
 		},
 
 		/*
