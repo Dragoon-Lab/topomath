@@ -155,8 +155,9 @@
 	<div id="main" data-dojo-type="dijit/layout/BorderContainer" gutters="false">
 	
 		<div data-dojo-type="dijit/MenuBar" id="menuBar" region="top" splitter="false">
-			<button type="button" data-dojo-type="dijit/form/Button" id="createQuantityNodeButton" disabled="true" style="visibility: : hidden">Add Quantity</button>
-			<button type="button" data-dojo-type="dijit/form/Button" id="createEquationNodeButton" disabled="true" style="visibility: : hidden">Add Equation</button>
+			<button type="button" data-dojo-type="dijit/form/Button" id="createQuantityNodeButton" disabled="true" style="visibility:hidden">Add Quantity</button>
+			<button type="button" data-dojo-type="dijit/form/Button" id="createEquationNodeButton" disabled="true" style="visibility: hidden">Add Equation</button>
+			<button type="button" data-dojo-type="dijit/form/Button" id="DoneButton" disabled="true" style="visibility: hidden">Done</button>
 		</div>
 	
 		<div id="drawingPane" class="restrict-vscroll" data-dojo-type="dijit/layout/ContentPane" region="center">
@@ -349,6 +350,31 @@
 				</div>
 			</div>
 		</div><!-- end of equation node editor -->
+		<!-- Alert Dialog to show unfinished tasks before closing -->
+		<div data-dojo-type="dijit/Dialog" data-dojo-id="alertDialog" id ="alertDialog" title="Message" data-dojo-props="closable:false">
+
+			<div class="dijitDialogPaneContentArea">
+				<div id="content">
+				</div>
+				<div id="dialogButtons">
+				</div>
+			</div>
+		</div>
 	</div>
 </body>
 </html>
+<style>
+	#alertDialog .dijitDialogPaneContentArea{
+		width: 300px !important;
+	}
+	#alertDialog .dijitDialogPaneContentArea #content{
+		padding: 10px 20px;
+	}
+	#alertDialog .dijitDialogPaneContentArea #content li{
+		padding: 5px 0px;
+	}
+	#alertDialog .dijitDialogPaneContentArea #dialogButtons{
+		text-align: right;
+	}
+</style>
+

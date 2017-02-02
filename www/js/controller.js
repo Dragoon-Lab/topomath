@@ -45,7 +45,7 @@ define([
 		_model: null,
 		_quantityNodeEditor: null,
 		_equationNodeEditor: null,
-
+		_doneDialog: null,
 		/*
 		 * When opening the node editor, we need to populate the controls without
 		 * evaluating those changes.
@@ -274,6 +274,31 @@ define([
 			this._equationNodeEditor.show().then(lang.hitch(this, function(){
 				this.disableHandlers = false;
 			}));
+		},
+
+		checkDone: function () {
+			/*
+			When the author clicks on the main menu "Done" button,
+			the system checks that one variable is Root, 
+			and make sure every variable is part of at least one equation.
+			If it is not, a pop up dialog should warn the user which looks like the following:
+			Your model has the following issues:
+
+			No variable is marked as Root
+			The following variables are required, but unused by any equations
+			Are you sure you want to exit?
+			[Exit Topomath] [Cancel]
+			*/
+			console.log("Done Action called");
+			/*
+				Collect Errors in Array
+				Collect any required variables in Array
+			*/
+			var remains = {
+				"status": false,
+				"errorNotes": ["No variable is marked as Root", "Following variables are required, but not used by any equations"]
+			};
+			return remains;
 		},
 
 		// Stub to be overwritten by student or author mode-specific method.

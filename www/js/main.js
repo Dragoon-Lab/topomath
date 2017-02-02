@@ -9,14 +9,18 @@ define([
 	'dojo/_base/event',
 	'dojo/io-query',
 	'dojo/on',
+	'dijit/form/Button',
+	'dojo/dom-construct',
+	'dojo/_base/lang',
 	'./menu',
 	'./session',
 	'./model',
 	'./equation',
 	'./draw-model',
 	'./con-author',
-], function(array, geometry, dom, style, aspect, ready, registry, event, ioQuery, on,
-			menu, session, model, equation, drawModel, controlAuthor){
+	'./alert-dialog',
+], function(array, geometry, dom, style, aspect, ready, registry, event, ioQuery, on, Button, domConstruct, lang,
+			menu, session, model, equation, drawModel, controlAuthor, alertDialog){
 
 	console.log("load main.js");
 	// Get session parameters
@@ -56,6 +60,8 @@ define([
 	var _session = session(query);
 	var _model = new model(query.m, query.p);
 	console.log(_model);
+
+
 	_session.getModel(query).then(function(solutionGraph){
 		if(solutionGraph){
 			try{
@@ -74,8 +80,12 @@ define([
 			loading.style.display = "none";
 
 			var dm = new drawModel(_model.active);
-			
-			
+			var errDialog = new alertDialog();
+			this.ed = registry.byId("alertDialog")
+			aspect.after(this.ed, "hide", lang.hitch(this, function(){
+				errDialog.end();
+			}));
+
 			/*********  below this part are the event handling *********/
 			aspect.after(dm, "onClickNoMove", function(mover){
 				if(mover.mouseButton != 2){
@@ -130,6 +140,7 @@ define([
 			var menuButtons=[];
 			menuButtons.push("createQuantityNodeButton");
 			menuButtons.push("createEquationNodeButton");
+			menuButtons.push("DoneButton")
 
 			array.forEach(menuButtons, function(button){
 				//setting display for each menu button
@@ -152,6 +163,9 @@ define([
 
 			var createEqNodeButton = registry.byId("createEquationNodeButton");
 			createEqNodeButton.setDisabled(false);
+
+			var DoneButton = registry.byId("DoneButton");
+			DoneButton.setDisabled(false);
 
 			//create a controller object
 
@@ -191,6 +205,56 @@ define([
 				controllerObject.showEquationNodeEditor(id);
 				dm.addNode(_model.active.getNode(id));
 			});
+
+			menu.add("DoneButton", function (e) {
+				event.stop(e);
+				var  id = "id1";
+				// This should return an object kind of structure and
+				
+				var problemComplete = controllerObject.checkDone();
+				if( problemComplete.status ){
+					// if in preview mode , Logging is not required:
+					if(/*controllerObject.logging.doLogging*/ false){}
+						/*controllerObject.logging.log('close-problem', {
+							type: "menu-choice",
+							name: "done-button",
+							problemComplete: problemComplete
+						}).then(function(){
+							closeDialog();
+						});
+						*/
+					else {
+						errDialog.close();
+					}
+				}
+				else{
+					var title = 'Exit Topomath';
+					var exitButton = {"Exit Topomath":exitTopomath};
+					var buttons = [exitButton];
+					errDialog.showDialog(title, problemComplete.errorNotes, buttons);
+				}
+			})
+			
+			
 		});
 	});
+	var exitTopomath = function(){
+		console.log("test");	
+		if(/*controllerObject.logging.doLogging*/ false){
+			/*
+				controllerObject.logging.log('close-problem', {
+					type: "",
+					name: "",
+				}).then(function(){
+					closeDialog();
+				});*/
+			}	
+			else {
+				if(window.history.length == 1)
+					window.close();
+				else
+					window.history.back();
+			}
+	}
+	
 });
