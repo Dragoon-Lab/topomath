@@ -224,7 +224,7 @@ define([
 			var type = this._model.getType(ID);
 			var descriptionString = graphObjects.getNodeDescriptionHTML(this._model, ID);
 			var domID = ID + "_description";
-			if(type){
+			if(type && descriptionString){
 				var descHTML = dom.byId(domID);
 				var parentDIV = type+"-description";
 				var replaceTag = descHTML ? "replace" : "last";

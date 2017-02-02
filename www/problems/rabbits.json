@@ -12,6 +12,7 @@
 			"value": 24,
 			"root": true,
 			"genus": "required",
+			"expression": "",
 			"color": "",
 			"attemptCount": {
 			},
@@ -36,6 +37,7 @@
 			"value": 0.3,
 			"root": false,
 			"genus": "required",
+			"expression": "",
 			"color": "",
 			"attemptCount": {
 			},
@@ -57,6 +59,7 @@
 			"value": "",
 			"root": false,
 			"genus": "required",
+			"expression": "",
 			"color": "",
 			"attemptCount": {
 			},
@@ -78,6 +81,7 @@
 			"value": "",
 			"root": false,
 			"genus": "required",
+			"expression": "",
 			"color": "",
 			"attemptCount": {
 			},
@@ -99,6 +103,7 @@
 			"value": "",
 			"root": false,
 			"genus": "required",
+			"expression": "",
 			"color": "",
 			"attemptCount": {
 			},

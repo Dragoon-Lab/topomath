@@ -169,20 +169,27 @@ define([
 			//next step is to add action to add quantity
 			menu.add("createQuantityNodeButton", function(e){
 				event.stop(e);
-				//give a fake id for now
-				var id = "id1";
+				var options = {
+					type: "quantity"
+				};
+				var id = _model.active.addNode(options);
+				console.log("New quantity node created id - ", id);
 				controllerObject.showQuantityNodeEditor(id);	
+				dm.addNode(_model.active.getNode(id));
 			});
 
 			//next step is to add action to add equation
 			menu.add("createEquationNodeButton", function(e){
 				event.stop(e);
-				//give a fake id for now
-				var id = "id1";
+				var options = {
+					type: "equation"
+				};
+				var id = _model.active.addNode(options);
 				//var id = givenModel.active.addNode();
 				//controllerObject.logging.log('ui-action', {type: "menu-choice", name: "create-node"});
-				//drawModel.addNode(givenModel.active.getNode(id));
-				controllerObject.showEquationNodeEditor(id);	
+				console.log("New equation node created id - ", id);
+				controllerObject.showEquationNodeEditor(id);
+				dm.addNode(_model.active.getNode(id));
 			});
 		});
 	});

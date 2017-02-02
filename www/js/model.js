@@ -16,9 +16,47 @@ define([
 
 			beginX: 450,
 			beginY: 100,
-			nodeWidth: 200,
+			nodeWidth: 250,
 			nodeHeight: 100,
 			initialNodeString: "initial",
+			_updateNextXYPosition: function(){
+				var pos = {
+					x: this.x,
+					y: this.y,
+					nodeWidth: this.nodeWidth,
+					nodeHeight: this.nodeHeight
+				};
+				var nodes = obj.active.getNodes();
+				while(nodes.some(this.collides, pos)){
+					this.updatePosition();
+					//updating pos so that new values are used in case of collision
+					pos = {
+						x: this.x,
+						y: this.y,
+						nodeWidth: this.nodeWidth,
+						nodeHeight: this.nodeHeight,
+					};
+				}
+			},
+			updatePosition: function(){
+				if((this.x + this.nodeWidth) < (document.documentElement.clientWidth - this.nodeWidth))
+					this.x += this.nodeWidth;
+				else {
+					this.x = this.beginX;
+					this.y += this.nodeHeight;
+				}
+			},
+			collides: function(element){
+				if(!element.position){
+					return false;
+				}
+				return array.some(element.position, function(position){
+					var x = position.x;
+					var y = position.y;
+					return (this.x > x - this.nodeWidth && this.x < x + this.nodeWidth &&
+						this.y > y - this.nodeHeight && this.y < y + this.nodeHeight)
+				}, this);
+			},
 			loadModel: function(_model){
 				// Summary: loads a model object;
 				//      allows TopoMath to load a pre-defined program or to load a users saved work
@@ -71,13 +109,14 @@ define([
 						descriptions[node.description] = node.ID;
 					}
 
-					/*if(!node.position){
+					if(!node.position){
 						obj._updateNextXYPosition();
-						node.position = {
+						node.position = [];
+						node.position.push({
 							x: obj.x,
 							y: obj.y
-						};
-					}*/
+						});
+					}
 				}, this);
 			},
 			getModelAsString: function(){
@@ -128,6 +167,10 @@ define([
 				var node = this.getNode(id);
 				return node && node.value;
 			},
+			getExpression: function(/*string*/ id){
+				var node = this.getNode(id);
+				return node && node.expression;
+			},
 			isNode: function(/* string */ id){
 				return array.some(this.getNodes(), function(node){
 					return node.ID === id;
@@ -175,7 +218,31 @@ define([
 		};
 
 		obj.authored = lang.mixin({
+			addNode: function(options){
+				obj._updateNextXYPosition();
+				var newNode = lang.mixin({
+					ID: "id" + obj._ID++,
+					genus: "required",
+					accumulator: false,
+					root: false,
+					links: [],
+					attemptCount: {
+						description: 0,
+						value: 0,
+						equation: 0,
+						units: 0,
+						assistanceScore: 0
+					},
+					status: {},
+					position: [{
+						x: obj.x,
+						y: obj.y
+					}],
+				}, options || {});
+				obj.model.authorModelNodes.push(newNode);
 
+				return newNode.ID;
+			},
 			getNodes: function(){
 				return obj.model.authorModelNodes;
 			},
@@ -259,11 +326,28 @@ define([
 			},
 			setColor: function(/*string*/ id, /*string*/ color){
 				this.getNode(id).color = color;
+			},
+			setExpression: function(/*string*/ id, /*string*/ expression){
+				this.getNode(id).expression = expression;
 			}
 		}, both);
 
 		obj.student = lang.mixin({
+			addNode: function(options){
+				obj.updateNextXYPosition();
+				var newNode = lang.mixin({
+					ID: "id" + obj._ID++,
+					links: [],
+					position: [{
+						x: obj.x,
+						y: obj.y
+					}],
+					status: {}
+				}, options || {});
+				obj.model.studentModelNodes.push(newNode);
 
+				return newNode.ID;
+			},
 			getNodes: function(){
 				return obj.model.studentModelNodes;
 			}
