@@ -30,7 +30,8 @@ define([
 	"dojo/on",
 	"dojo/ready",
 	"dijit/registry",
-], function(array, declare, lang, dom, keys, on, ready, registry){
+	"./logging"
+], function(array, declare, lang, dom, keys, on, ready, registry, clientLogging){
 
 	/* Summary:
 	 *			Controller for the node editor, common to all modes
@@ -86,9 +87,9 @@ define([
 			// The Node Editor widget must be set up before modifications
 			// It might be a better idea to only  call the controller
 			// after widgets are set up.
-
 			ready(this, this._setUpNodeEditors);
 			ready(this, this._initHandles);
+			this.logging = clientLogging.getInstance();
 		},
 
 		// A stub for connecting routine to draw new node.
@@ -210,20 +211,17 @@ define([
 			array.forEach(buttons, function(button){
 				var w = registry.byId(button + 'Button');
 				if(!w){
-					/* logging will be added later
 					this.logging.clientLog("assert", {
 						message: "button not found, button id : "+button,
 						functionTag: '_initHandles'
 					});
-					*/
 				}
 				var handler = this[button + 'Handler'];
 				if(!handler){
-					/*
 					this.logging.clientLog("assert", {
 						message: "button handler not found, handler id : "+handler,
 						functionTag: '_initHandles'
-					}); */
+					});
 				}
 			}, this);
 
@@ -238,7 +236,7 @@ define([
 			}, this);
 
 		},
-		
+
 		//show node editor
 		showQuantityNodeEditor: function(/*string*/ id){
 			//Checks if the current mode is COACHED mode and exit from node editor if all the modes are defined

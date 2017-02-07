@@ -40,6 +40,7 @@ define([
 				'_' + new Date().getTime();
 			this.path = path || "";
 			this.doLogging = params.l=="false" ? false : true;
+			this.counter = 0;
 
 			this.log("start-session", params);
 		},
@@ -77,12 +78,13 @@ define([
 			// Add time to log message (allowing override).
 			console.log("Logging method" ,method);
 			if(this.doLogging){
-				var p = lang.mixin({time: Math.floor(Date.now() / 1000)}, params);
+				var p = lang.mixin({time: this.getTime()}, params);
 				return xhr.post(this.path + "logger.php", {
 					data: {
 						method: method,
 						message: json.toJson(p),
-						x: rsessionId?rsessionId:this.sessionId
+						x: rsessionId?rsessionId:this.sessionId,
+						id: this.counter++
 					}
 				}).then(lang.hitch(this, function(reply){
 					console.log("---------- logging " + method + ': ', p, " OK, reply: ", reply);

@@ -273,10 +273,11 @@ define([
 					this.updateStatus("initial", newInitial, studNodeInitial);
 
 				}
+				*/
 				//update student node status
 				logObj = {
 					error: false
-				}; */
+				};
 			}else if(IniFlag && IniFlag.errorType){ 
 				logObj = {
 					error: true,
@@ -284,7 +285,6 @@ define([
 				};
 			}
 			var valueFor = modelType == "given" ? "student-model": "author-model";
-			/*
 			logObj = lang.mixin({
 				type: "solution-enter",
 				node: this._model.active.getName(this.currentID),
@@ -294,8 +294,7 @@ define([
 				usage: valueFor
 			}, logObj);
 
-			this.logging.log("solution-step", logObj);
-			*/
+			this.logging.logger("solution-step", logObj);
 		},
 
 		handleInputs: function(name){

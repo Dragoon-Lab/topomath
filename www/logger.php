@@ -17,14 +17,9 @@ $mysqli = mysqli_connect("localhost", $dbuser, $dbpass, $dbname)
 $sessionId = $_REQUEST['x'];
 $method = $_REQUEST['method']; // system generated choices
 $message =  $_REQUEST['message'];
-// TODO : Add folder if required
-$folder = '';
-/*$folder = ((isset($_REQUEST['f']) && !empty($_REQUEST['f'])) ?
-      mysqli_real_escape_string($mysqli, $_REQUEST['f']) : '');
-*/
-// We may require in logging step
-//$id = $_REQUEST['id'];
-
+//$folder = '';
+//$folder = ((isset($_REQUEST['f']) && !empty($_REQUEST['f'])) ?
+//      mysqli_real_escape_string($mysqli, $_REQUEST['f']) : '');
 /*
    Work-around in case magic quotes are enabled.
    See http://stackoverflow.com/questions/220437/magic-quotes-in-php
@@ -46,11 +41,12 @@ if($method == 'start-session'||$method == 'rename-problem'){
     $value =  mysqli_real_escape_string($mysqli, $value);
   }
   $problem = isset($x->p)?"'$x->p'":"DEFAULT";
+  $folder = isset($x->f)?"'$x->p'":"DEFAULT";
   
   // This should give an error if session id already exists.
   // Need to verify how error is handled.
-  $query = "INSERT INTO session (session_id, mode, user, section, problem, folder) VALUES ('$sessionId','$x->m','$x->u','$x->s',$problem, '')";
-  //echo $query;
+  $query = "INSERT INTO session (session_id, mode, user, section, problem, folder) VALUES ('$sessionId','$x->m','$x->u','$x->s',$problem, $folder)";
+  echo $query;
   // echo "Starting new session query $query\n";
   $mysqli->query($query)
     or trigger_error("Session creation failed: " . $mysqli->error);
@@ -60,13 +56,12 @@ if($method == 'start-session'||$method == 'rename-problem'){
   /* 
      Save log message, assuming session exists.
   */
-  // TO DO : save step 
-  /*
+  $id = isset($_REQUEST['id']) ? $_REQUEST['id'] : "";
   $message = mysqli_real_escape_string($mysqli, $message);
+
   $query = "INSERT INTO step (session_id,method,message,id) VALUES ('$sessionId','$method','$message','$id')";
   $mysqli->query($query)
     or trigger_error("Logging failed.". $mysqli->error);
-  */
 }
 mysqli_close($mysqli);
 ?>

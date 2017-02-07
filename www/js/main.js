@@ -15,8 +15,9 @@ define([
 	'./equation',
 	'./draw-model',
 	'./con-author',
+	'./logging'
 ], function(array, geometry, dom, style, aspect, ready, registry, event, ioQuery, on,
-			menu, session, model, equation, drawModel, controlAuthor){
+			menu, session, model, equation, drawModel, controlAuthor, logging){
 
 	console.log("load main.js");
 	// Get session parameters
@@ -69,13 +70,17 @@ define([
 	
 		//The following code follows sachin code after the model has been rendered according to query parameters
 		ready(function(){
+			/**
+			* this has to be the first to be instantiated
+			* so that session object is not to be passed again and again. ~ Sachin
+			*/
+			var _logger = logging.getInstance(_session);
 			//remove the loading division, now that the problem is being loaded
 			var loading = document.getElementById('loadingOverlay');
 			loading.style.display = "none";
 
 			var dm = new drawModel(_model.active);
-			
-			
+
 			/*********  below this part are the event handling *********/
 			aspect.after(dm, "onClickNoMove", function(mover){
 				if(mover.mouseButton != 2){
