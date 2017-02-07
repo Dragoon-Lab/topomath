@@ -1,3 +1,4 @@
+
 /**
  *Dragoon Project
  *Arizona State University
@@ -278,27 +279,70 @@ define([
 
 		checkDone: function () {
 			/*
-			When the author clicks on the main menu "Done" button,
-			the system checks that one variable is Root, 
-			and make sure every variable is part of at least one equation.
-			If it is not, a pop up dialog should warn the user which looks like the following:
-			Your model has the following issues:
-
-			No variable is marked as Root
-			The following variables are required, but unused by any equations
-			Are you sure you want to exit?
-			[Exit Topomath] [Cancel]
+				When the author clicks on the main menu "Done" button,
+				the system checks that one variable is Root, 
+				and make sure every variable is part of at least one equation.
 			*/
 			console.log("Done Action called");
-			/*
-				Collect Errors in Array
-				Collect any required variables in Array
-			*/
-			var remains = {
-				"status": false,
-				"errorNotes": ["No variable is marked as Root", "Following variables are required, but not used by any equations"]
-			};
-			return remains;
+			var returnObj = {};
+			returnObj.errorNotes = [];
+			var hasRootNode = false;
+			var _variables = [];
+			var _equations = [];
+			
+			if( this._model ){
+				array.forEach(this._model.active.getNodes(), function (node) {
+					if(node.root){
+						hasRootNode = true;
+					}
+					// get variables and equations
+					if(node.variable != "" && node.genus){
+						_variables.push(node.ID);
+					}else{
+						_equations.push(node.equation);
+					}
+
+				});
+
+				// check if each variable is present in atleast one equation
+				var _usedVariables = _variables.map(function(_variable){
+					var tmp = array.some(_equations, function(_equation) {
+						if( _equation.search(_variable) > -1){
+							return true;
+						};
+					});
+					var obj = {};
+					obj[_variable] = tmp;
+					return obj;
+				});
+
+				// for each variable if it is not present in any equation, add it to array 
+				var _requiredVariables = [];
+				array.forEach(_usedVariables, function(item){
+					
+					if(!Object.values(item)){
+						_requiredVariables.push(Object.keys(item));
+					}
+				});
+
+				// Add errorNote adding all unused variables
+				if( _requiredVariables && _requiredVariables.length > 0 ){
+					var errorNote = "Following variables are required, but unused by equations - ";
+					array.forEach(_requiredVariables,lang.hitch(this, function(id){
+						errorNote += this._model.active.getName(id) + ", ";
+					}));
+					errorNote = errorNote.slice(0, -2); // removing trailing comma and space
+					returnObj.errorNotes.push(errorNote);
+				}	
+			}
+			if(!hasRootNode){
+				returnObj.errorNotes.push("No variable is marked as Root");
+			}else{
+				returnObj.errorNotes = [];	
+			}
+			
+			console.log("returning ", returnObj);
+			return returnObj;
 		},
 
 		// Stub to be overwritten by student or author mode-specific method.

@@ -10,8 +10,9 @@ define([
 	"dojo/query",
 	"dijit/registry",
 	"dojo/html",
+	"dojo/aspect",
 	"dijit/form/Button",
-], function(array, declare, lang, on, dom, domConstruct,  query, registry,html, Button) {
+], function(array, declare, lang, on, dom, domConstruct,  query, registry, html, aspect, Button) {
 	/* Summary:
 	 *				
 	 * 
@@ -21,13 +22,17 @@ define([
 		_clickHandlers: [],
 		_buttonsArray: [],
 
-		showDialog: function(title, alertContent, buttonsArray){
+		showDialog: function(title, alertContent, buttonsArray, cancelTitle){
 			alertDialog.set('title', title);
 			this._buttonsArray = buttonsArray;
 			d = dojo.byId('dialogButtons');
+			var cancelLabel = "Cancel";
+			if(cancelTitle && cancelTitle != ""){
+				cancelLabel = cancelTitle;
+			}
 
 			var closeButton = new Button({
-				label: 'Cancel',
+				label: cancelLabel,
 				id: 'cb'
 			});
 			var handler = on(closeButton, "click", lang.hitch(this, function(buttonsArray){
@@ -39,25 +44,21 @@ define([
 			
 			var cb = dojo.byId('cb');
 
-			array.forEach(this._buttonsArray, lang.hitch(this, function(button){
+			array.forEach(this._buttonsArray.reverse(), lang.hitch(this, function(button){
 				var b = new Button({
 					label: Object.keys(button)
 				});
 				handler = on(b, "click", Object.values(button)[0]);
 				this._clickHandlers[button] = handler;
-				domConstruct.place(b.domNode, d, "first");		
+				domConstruct.place(b.domNode, d, "first");
+				
 			}));
+
 			var dialogContent = "";
 			array.forEach(alertContent, function(message){
 				dialogContent += "<li>" + message + "</li>"
-			})
-			/*
-			var tempContent = "<li> Following variables are required, but not used by any equations. <br/>";
-			array.forEach(alertContent.requiredVariables, function(variable){
-				tempContent += " ,"+ variable ;
-				})
-				*/
-				
+			})	
+			
 			html.set(dojo.query('#alertDialog .dijitDialogPaneContentArea #content')[0], dialogContent);
 			alertDialog.show();
 		},

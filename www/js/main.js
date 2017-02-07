@@ -81,7 +81,7 @@ define([
 
 			var dm = new drawModel(_model.active);
 			var errDialog = new alertDialog();
-			this.ed = registry.byId("alertDialog")
+			this.ed = registry.byId("alertDialog");
 			aspect.after(this.ed, "hide", lang.hitch(this, function(){
 				errDialog.end();
 			}));
@@ -171,6 +171,7 @@ define([
 
 			//create new model object
 			//TODO: integrate model object and use _model instead of givenModel
+			//debugger;
 			var givenModel = "";
 	
 			//create new ui configuration object based on current mode ( and activity)
@@ -208,11 +209,9 @@ define([
 
 			menu.add("DoneButton", function (e) {
 				event.stop(e);
-				var  id = "id1";
 				// This should return an object kind of structure and
-				
 				var problemComplete = controllerObject.checkDone();
-				if( problemComplete.status ){
+				if( problemComplete.errorNotes.length == 0 ){
 					// if in preview mode , Logging is not required:
 					if(/*controllerObject.logging.doLogging*/ false){}
 						/*controllerObject.logging.log('close-problem', {
@@ -228,10 +227,11 @@ define([
 					}
 				}
 				else{
+					var buttons = [];
 					var title = 'Exit Topomath';
 					var exitButton = {"Exit Topomath":exitTopomath};
-					var buttons = [exitButton];
-					errDialog.showDialog(title, problemComplete.errorNotes, buttons);
+					buttons.push(exitButton);
+					errDialog.showDialog(title, problemComplete.errorNotes, buttons, /*optional argument*/"Don't Exit");
 				}
 			})
 			
@@ -239,22 +239,25 @@ define([
 		});
 	});
 	var exitTopomath = function(){
-		console.log("test");	
+		console.log("Force Exit Topomath");	
 		if(/*controllerObject.logging.doLogging*/ false){
 			/*
 				controllerObject.logging.log('close-problem', {
 					type: "",
 					name: "",
 				}).then(function(){
-					closeDialog();
-				});*/
-			}	
-			else {
-				if(window.history.length == 1)
-					window.close();
-				else
-					window.history.back();
-			}
+					if(window.history.length == 1)
+						window.close();
+					else
+						window.history.back();
+				});
+			*/
+		}else{
+			if(window.history.length == 1)
+				window.close();
+			else
+				window.history.back();
+		}
 	}
 	
 });
