@@ -55,16 +55,16 @@ define([
 		lastInitial: {value: null},
 
 		genericControlMap: {
-			initial: "initialValue",
+			initial: "initialValueInputbox",
 		},
 		genericDivMap: {
-			initial: "initialValueDiv",
-			units: "unitDiv",
+			initial: "initialValueInputboxContainer",
+			units: "unitsSelectorContainer",
 			equation: "expressionDiv"
 		},
 		// A list of all widgets.  (The constructor mixes this with controlMap)
 		widgetMap: {
-			message: 'messageBox',
+			message: 'messageOutputbox',
 			crisisAlert: 'crisisAlertMessage'
 		},
 
@@ -143,11 +143,6 @@ define([
 				return this.disableHandlers || this.handleDescription.apply(this, arguments);
 			}));
 
-			//event handler for equation node explanation field
-			var expln_eq = registry.byId(this.controlMap.explanation);
-			expln_eq.on('Change', lang.hitch(this, function(){
-				return this.disableHandlers || this.handleExplanation.apply(this, arguments);
-			}));
 			/*
 			 *	 event handler for 'Initial' field
 			 *	 'handleInitial' will be called in either Student or Author mode
@@ -249,8 +244,8 @@ define([
 			//var nodeType = this._model.authored.getType();
 			var nodeType = "quantity";
 			this.initialViewSettings(nodeType);
-			//this.initialControlSettings(id);
-			//this.populateNodeEditorFields(id);
+			this.initialControlSettings(id);
+			this.populateNodeEditorFields(id);
 
 			// Hide the value and expression controls in the node editor, depending on the type of node		
 			//var type=this._model.active.getType(this.currentID);
@@ -272,6 +267,32 @@ define([
 
 		populateNodeEditorFields: function(nodeid){
 			console.log("populate node editor fields enter");
+			//populate description
+			var model = this._model.active;
+			var editor = this._nodeEditor;
+			//set task name
+			var nodeName = model.getName(nodeid) || "New quantity";
+			editor.set('title', nodeName);
+
+			/*
+			 Set values and choices based on student model
+
+			 Set selection for description, type, units, inputs (multiple selections)
+
+			 Set value for initial value, equation (input),
+			 */
+
+
+			if(model.getNodeIDFor){
+				var d = registry.byId(this.controlMap.description);
+				array.forEach(this._model.given.getDescriptions(), function(desc){
+					var exists =  model.getNodeIDFor(desc.value);
+					d.getOptions(desc).disabled=exists;
+					if(desc.value == nodeName){
+						d.getOptions(desc).disabled=false;
+					}});
+			}
+
 
 			var nodeType = this._model.authored.getType(nodeid);
 
@@ -285,9 +306,24 @@ define([
 				var isInitial = typeof initial === "number";
 				this.lastInitial.value = isInitial?initial.toString():null;
 				registry.byId(this.controlMap.initial).attr('value', isInitial?initial:'');
+
+				var unit = model.getUnits(nodeid);
+				console.log('unit is', unit || "not set");
+				// Initial input in Units box
+				registry.byId(this.controlMap.units).set('value', unit || '');
+
 			}
 			else if(nodeType == "equation"){
 				//populate nodeEditor fields for an equation node
+
+				var equation = model.getEquation(nodeid);
+				console.log("equation before conversion ", equation);
+				var mEquation = equation ? expression.convert(model, equation) : '';
+				console.log("equation after conversion ", mEquation);
+				/* mEquation is a number instead of a string if equation is just a number; convert to string before setting the value */
+				registry.byId(this.controlMap.equation).set('value', mEquation.toString());
+				dom.byId("equationText").innerHTML = mEquation;
+				this.equationEntered = true;
 			}
 		},
 
@@ -310,7 +346,7 @@ define([
 						// Each control has its own function to update the
 						// the model and the graph.
 						// keep updating this section as we handle the editor input fields
-						if(w.id == 'initialValue'){
+						if(w.id == 'initialValueInputbox'){
 							this._model.active.setInitial(this.currentID, directive.value);
 						}else if(w.id == 'selectDescription'){
 							this.updateDescription(directive.value);
@@ -409,6 +445,7 @@ define([
 			}));
 		},
 
+		//TODO: delete node is to be implemented in drawModel
 		deleteNode: function(id){
 			//Stub to delete node with id by inturn calling drawmodel.deleteNode in main.js
 			return id;

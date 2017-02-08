@@ -91,90 +91,12 @@ define([
 		// Test if this is a pure sum or product
 		// If so, determine connection labels
 		createInputs: function(parse){
-			var grad;
-			var chooseSign = function(x, a, b, c){
-				return x>0.5?a:(x<-0.5?b:c);
-			};
-			if(this.isSum(parse)){
-				grad = this.gradient(parse, false);
-				return array.map(parse.variables(), function(x){
-					return {ID: x, label: chooseSign(grad[x],"","-","0")};
-				});
-			}else if(this.isProduct(parse)){
-				grad = this.gradient(parse, true);
-				return array.map(parse.variables(), function(x){
-					return {ID: x, label: chooseSign(grad[x],"","/","none")};
-				});
-			}else{
-				// General expression
-				return array.map(parse.variables(), function(x){
-					return {ID: x};
-				});
-			}
-		},
-
-		isSum: function(parse){
-			// Return true if expression is a sum of variables, allowing for minus signs.
-			// Note that a bare variable will also return true.
-			var ops = parse.operators();
-			var allowed = {"+": true, "-": true, "variable": true};
-			for(var op in ops){
-				if(ops[op] > 0 && !allowed[op])
-					return false;
-			}
-			return true;
-		},
-
-		isProduct: function(parse){
-			// Return true if the expression is a product of variables, allowing for division
-			// Note that explicit powers (a^2) are not allowed, which is mathematically incorrect
-			// but we have no mechanism for adding powers on our user interface.  For problems
-			// that are that complicated, the student should be using the full text entry anyway.
-			// Note that a bare variable will also return true.
-			var ops = parse.operators();
-			var allowed = {"*": true, "/": true, "variable": true};
-			for(var op in ops){
-				if(ops[op] > 0 && !allowed[op])
-					return false;
-			}
-			return true;
+			// General expression
+			return array.map(parse.variables(), function(x){
+				return {ID: x};
+			});
+			
 		},
 		
-        gradient: function(parse, /*boolean*/ monomial, point){
-			// Find the numerical partial derivatives of the expression at
-			// the given point or at a random point, if the point is not supplied.
-			// Both the given point and the return vector are expressed as objects.
-			// If monomial is true, take the gradient of the logarithm and multiply by the variable.
-			// That is, find	 x d/dx log(f)
-			// For a monomial, this will give the degree of each factor 
-			/*
-			 In principle, one could calculate the gradient algebraically and 
-			 use that to determine coefficients.  However, the current parser library
-			 is not really set up to do algebraic manipulations.
-			 */
-			if(!point){
-				point = {};
-				array.forEach(parse.variables(), function(x){
-					// For products, we want to stay away from zero.
-					point[x]= Math.random()+0.5;
-				});
-			}
-			var partial = {};
-			var y = parse.evaluate(point);
-			array.forEach(parse.variables(), function(x){
-				var z = lang.clone(point);
-				var dx = 1.0e-6*Math.abs(point[x]==0?1:point[x]);
-				z[x] -= 0.5*dx;
-				var y1 = parse.evaluate(z);
-				z[x] += dx;
-				var y2 = parse.evaluate(z);
-				partial[x] = (y2-y1)/dx;
-				if(monomial){
-					partial[x] *= point[x]/y;
-				}
-			});
-			return partial;
-		},
-
 	};
 });
