@@ -295,10 +295,12 @@ define([
 					if(node.root){
 						hasRootNode = true;
 					}
+					console.log(node);
+
 					// get variables and equations
-					if(node.variable != "" && node.genus){
+					if(node.variable != "" && node.genus && node.genus == "required" && node.type == "quantity"){
 						_variables.push(node.ID);
-					}else{
+					}else if(node.type == "equation"){
 						_equations.push(node.equation);
 					}
 
@@ -307,7 +309,8 @@ define([
 				// check if each variable is present in atleast one equation
 				var _usedVariables = _variables.map(function(_variable){
 					var tmp = array.some(_equations, function(_equation) {
-						if( _equation.search(_variable) > -1){
+						
+						if( _equation && _equation.search(_variable) > -1){
 							return true;
 						};
 					});
@@ -320,8 +323,8 @@ define([
 				var _requiredVariables = [];
 				array.forEach(_usedVariables, function(item){
 					
-					if(!Object.values(item)){
-						_requiredVariables.push(Object.keys(item));
+					if(!Object.values(item)[0]){	
+						_requiredVariables.push(Object.keys(item)[0]);
 					}
 				});
 
@@ -335,10 +338,11 @@ define([
 					returnObj.errorNotes.push(errorNote);
 				}	
 			}
+
+			console.log("required" + _requiredVariables);
+
 			if(!hasRootNode){
 				returnObj.errorNotes.push("No variable is marked as Root");
-			}else{
-				returnObj.errorNotes = [];	
 			}
 			
 			console.log("returning ", returnObj);
