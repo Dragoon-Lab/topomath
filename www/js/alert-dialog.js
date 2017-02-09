@@ -48,10 +48,14 @@ define([
 				var b = new Button({
 					label: Object.keys(button)
 				});
+				//console.log("trying aspect",button,typeof button,typeof b.label[0]);
+				aspect.after(button,b.label[0],function(response){
+					console.log("aspect works!");
+				});
 				handler = on(b, "click", Object.values(button)[0]);
-				this._clickHandlers[button] = handler;
+				this._clickHandlers[button] = handler; 
 				domConstruct.place(b.domNode, d, "first");
-				
+
 			}));
 
 			var dialogContent = "";

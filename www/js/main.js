@@ -229,7 +229,11 @@ define([
 				else{
 					var buttons = [];
 					var title = 'Exit Topomath';
-					var exitButton = {"Exit Topomath":exitTopomath};
+					var exitButton = {
+						"Exit Topomath": function(){
+							console.log("exit topomath function");
+						}
+					};
 					buttons.push(exitButton);
 					errDialog.showDialog(title, problemComplete.errorNotes, buttons, /*optional argument*/"Don't Exit");
 				}
@@ -238,9 +242,10 @@ define([
 			
 		});
 	});
+	/*
 	var exitTopomath = function(){
 		console.log("Force Exit Topomath");	
-		if(/*controllerObject.logging.doLogging*/ false){
+		if(/*controllerObject.logging.doLogging false){
 			/*
 				controllerObject.logging.log('close-problem', {
 					type: "",
@@ -251,7 +256,7 @@ define([
 					else
 						window.history.back();
 				});
-			*/
+			*//*
 		}else{
 			if(window.history.length == 1)
 				window.close();
@@ -259,5 +264,6 @@ define([
 				window.history.back();
 		}
 	}
+	*/
 	
 });
