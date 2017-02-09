@@ -8,13 +8,14 @@ define([
 	'dijit/registry',
 	'dojo/_base/event',
 	'dojo/io-query',
+	'dojo/on',
 	'./menu',
 	'./session',
 	'./model',
 	'./equation',
 	'./draw-model',
 	'./con-author',
-], function(array, geometry, dom, style, aspect, ready, registry, event, ioQuery,
+], function(array, geometry, dom, style, aspect, ready, registry, event, ioQuery, on,
 			menu, session, model, equation, drawModel, controlAuthor){
 
 	console.log("load main.js");
@@ -121,6 +122,7 @@ define([
 					}
 				}
 				_model.active.setPosition(id, index, {"x": g.x, "y": g.y+scrollTop});
+				_session.saveModel(_model.model);
 			}, true);
 	
 
@@ -163,20 +165,27 @@ define([
 			//next step is to add action to add quantity
 			menu.add("createQuantityNodeButton", function(e){
 				event.stop(e);
-				//give a fake id for now, attach after sachin adds "addNode" function
-				var id = "id1";
+				var options = {
+					type: "quantity"
+				};
+				var id = _model.active.addNode(options);
+				console.log("New quantity node created id - ", id);
 				controllerObject.showNodeEditor(id);	
+				dm.addNode(_model.active.getNode(id));
 			});
 
 			//next step is to add action to add equation
 			menu.add("createEquationNodeButton", function(e){
 				event.stop(e);
-				//give a fake id for now, , attach after sachin adds "addNode" function
-				var id = "id1";
+				var options = {
+					type: "equation"
+				};
+				var id = _model.active.addNode(options);
 				//var id = givenModel.active.addNode();
 				//controllerObject.logging.log('ui-action', {type: "menu-choice", name: "create-node"});
-				//drawModel.addNode(givenModel.active.getNode(id));
-				controllerObject.showNodeEditor(id);	
+				console.log("New equation node created id - ", id);
+				controllerObject.showNodeEditor(id);
+				dm.addNode(_model.active.getNode(id));
 			});
 		});
 	});

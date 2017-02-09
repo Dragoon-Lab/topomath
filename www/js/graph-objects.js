@@ -33,11 +33,11 @@ define([
 					break;
 				case "equation":
 					var eq = model.getEquation(nodeID);
-					nodeString.value = eq ? expression.convert(model, eq) : "";
+					nodeString.value = eq ? expression.convert(model, eq) : "Click here!";
 					break;
 				case "quantity":
 					var nodeName = model.getVariable(nodeID);
-					nodeString.value = nodeName || "";
+					nodeString.value = nodeName || "Click here!";
 					var initial = model.getValue(nodeID);
 					initial = typeof(initial) == "number" ? initial : "";
 					//create initial value node only if the accumulator property is set to true
