@@ -281,8 +281,16 @@ define([
 					return {label: node.description, value: node.ID};
 				});
 			},
+			/*
+			* incorporating the new change to description.
+			* strict assumption is that a node either has an explanation
+			* or a description.
+			* Explanation - describes an equation.
+			* Description - describes a quantity.
+			*/
 			getDescription: function(/*string*/ id){
-				return this.getNode(id).description;
+				var node = this.getNode(id);
+				return node.explanation || node.description;
 			},
 			getAuthorID: function(/*string*/ id){
 				return id;
