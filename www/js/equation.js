@@ -7,6 +7,7 @@ define([
 			return Parser.parse(equation);
 		},
 		equalto: "=",
+		_logger: null,
 		/*
 		* Converts an equation with ids to corresponding variable names
 		* It splits the equation at = and then replaces the variables in
@@ -25,10 +26,10 @@ define([
 					expressions[count] = Parser.parse(eq);
 				}, this);
 			}catch(e){
-				/*this.logging.clientLog("error", {
+				this._logger.logClientEvent("error", {
 					message:'error in parser, error message : ' + e,
 					functionTag:'convert'
-				});*/
+				});
 				return equation;
 			}
 			this.mapVariableNodeNames = {};
@@ -48,5 +49,9 @@ define([
 			}, this);
 			return expressions[0].toString() + " " + this.equalto + " " + expressions[1].toString();
 		},
+
+		setLogging: function(logger){
+			this._logger = logger;
+		}
 	};
 });

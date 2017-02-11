@@ -75,6 +75,12 @@ define([
 			* so that session object is not to be passed again and again. ~ Sachin
 			*/
 			var _logger = logging.getInstance(_session);
+			/**
+			* equation does not have a constructor because
+			* we dont want to run it on it's own. So there is an explicit call
+			* to set the logger for equation.
+			*/
+			equation.setLogging(_logger);
 			//remove the loading division, now that the problem is being loaded
 			var loading = document.getElementById('loadingOverlay');
 			loading.style.display = "none";
@@ -179,6 +185,7 @@ define([
 				};
 				var id = _model.active.addNode(options);
 				console.log("New quantity node created id - ", id);
+				_logger.logClientEvent({type: "menu-choice", name: "create-node", "type": "quantity"});
 				controllerObject.showQuantityNodeEditor(id);	
 				dm.addNode(_model.active.getNode(id));
 			});
@@ -191,7 +198,7 @@ define([
 				};
 				var id = _model.active.addNode(options);
 				//var id = givenModel.active.addNode();
-				//controllerObject.logging.log('ui-action', {type: "menu-choice", name: "create-node"});
+				_logger.logClientEvent({type: "menu-choice", name: "create-node", "type": "equation"});
 				console.log("New equation node created id - ", id);
 				controllerObject.showEquationNodeEditor(id);
 				dm.addNode(_model.active.getNode(id));

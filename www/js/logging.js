@@ -7,29 +7,29 @@ define([
 		setSession: function(session){
 			this._session = session;
 		},
-		//wrapper for session topomath logger
-		/**
-		* this logs each and every user events, like node opening, closing, solution entering
-		* @params:	_log: message which is a json object with all the keys and values to be logged.
-		*/
-		eventLogger: function(_log){
-			this.logger("ui-action", _log);
-		},
 		/**
 		* this is for general logging message with not a fixed type, used for logging runtime
 		* error messages and window on focus and on blur events.
 		* @params:	type - type of logging message - like "runtime-error"
 		*			_log - json object with key values that are to be logged.
 		*/
-		logger: function(type, _log){
+		log: function(type, _log){
 			this._session.log(type, _log);
+		},
+		//wrappers for session topomath logger
+		/**
+		* this logs each and every user events, like node opening, closing, solution entering
+		* @params:	_log: message which is a json object with all the keys and values to be logged.
+		*/
+		logUserEvent: function(_log){
+			this.log("ui-action", _log);
 		},
 		/**
 		* this is for client messages which are of the format that there are errors that we
 		* have in try catch. like there was an error where initial value was not a number.
 		* @params:	_log: json object with key and values that are converted to string and logged
 		*/
-		clientLog: function(type, _log){
+		logClientMessages: function(type, _log){
 			switch(type){
 				case "error":
 				case "assert":
@@ -39,7 +39,7 @@ define([
 					console.warn(_log.message);
 					break;
 			}
-			this.logger("client-message", _log);
+			this.log("client-message", _log);
 		}
 	};
 
@@ -75,7 +75,7 @@ define([
     window.onerror = function(msg, url, lineNumber){
         var tempFile = url.split('/');
         var filename = tempFile[tempFile.length-1];
-        logging.logger("runtime-error", {
+        logging.log("runtime-error", {
             message: msg,
             file: filename, 
             line: lineNumber
@@ -85,14 +85,14 @@ define([
 
     //send in focus event to logs
     window.onfocus = function(){
-        logging.logger('window-focus', {
+        logging.log('window-focus', {
             type:"in-focus"
         });
     };
 
     //send window out of focus message to logs
     window.onblur = function(){
-        logging.logger('window-focus', {
+        logging.log('window-focus', {
             type:"out-of-focus"
         });
     };  
@@ -109,11 +109,9 @@ define([
 
 	//log the window closing message
     baseUnload.addOnUnload(function(){
-        logging.eventLogger({
+        logging.logUserEvent({
             type: "window",
             name: "close-button"
         });
     });
-
-	//return SingletonLogger;
 });

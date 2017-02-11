@@ -89,7 +89,7 @@ define([
 			// after widgets are set up.
 			ready(this, this._setUpNodeEditors);
 			ready(this, this._initHandles);
-			this.logging = clientLogging.getInstance();
+			this._logger = clientLogging.getInstance();
 		},
 
 		// A stub for connecting routine to draw new node.
@@ -211,14 +211,14 @@ define([
 			array.forEach(buttons, function(button){
 				var w = registry.byId(button + 'Button');
 				if(!w){
-					this.logging.clientLog("assert", {
+					this._logger.logClientEvent("assert", {
 						message: "button not found, button id : "+button,
 						functionTag: '_initHandles'
 					});
 				}
 				var handler = this[button + 'Handler'];
 				if(!handler){
-					this.logging.clientLog("assert", {
+					this._logger.logClientEvent("assert", {
 						message: "button handler not found, handler id : "+handler,
 						functionTag: '_initHandles'
 					});
