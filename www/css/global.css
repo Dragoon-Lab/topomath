@@ -255,6 +255,19 @@ input[type=radio]{
     z-index:5000 !important;
 }
 
+#popupDialog .dijitDialogPaneContentArea{
+    width: 300px !important;
+}
+#popupDialog .dijitDialogPaneContentArea #popupDialogContent{
+  padding: 10px 20px;
+}
+#popupDialog .dijitDialogPaneContentArea #popupDialogContent li{
+  padding: 5px 0px;
+}
+#popupDialog .dijitDialogPaneContentArea #popupDialogButtons{
+  text-align: right;
+}
+
 #equationBox, #givenEquationBox{
     min-height:48px;
     font:10pt Arial,Myriad,Tahoma,Verdana,sans-serif !important;

@@ -285,10 +285,11 @@ define([
 			*/
 			console.log("Done Action called");
 			var returnObj = {};
-			returnObj.errorNotes = [];
+			returnObj.errorNotes = "";
 			var hasRootNode = false;
 			var _variables = [];
 			var _equations = [];
+			var _errorNotes = [];
 			
 			if( this._model ){
 				array.forEach(this._model.active.getNodes(), function (node) {
@@ -298,9 +299,9 @@ define([
 					console.log(node);
 
 					// get variables and equations
-					if(node.variable != "" && node.genus && node.genus == "required" && node.type == "quantity"){
+					if(node.variable !== "" && node.genus && node.genus === "required" && node.type === "quantity"){
 						_variables.push(node.ID);
-					}else if(node.type == "equation"){
+					}else if(node.type === "equation"){
 						_equations.push(node.equation);
 					}
 
@@ -335,14 +336,19 @@ define([
 						errorNote += this._model.active.getName(id) + ", ";
 					}));
 					errorNote = errorNote.slice(0, -2); // removing trailing comma and space
-					returnObj.errorNotes.push(errorNote);
+					_errorNotes.push(errorNote);
 				}	
 			}
 
 			console.log("required" + _requiredVariables);
 
 			if(!hasRootNode){
-				returnObj.errorNotes.push("No variable is marked as Root");
+				_errorNotes.push("No variable is marked as Root");
+			}
+			if(_errorNotes && _errorNotes.length > 0){
+				array.forEach(_errorNotes, function(_error){
+					returnObj.errorNotes += "<li>" + _error + "</li>";
+				})
 			}
 			
 			console.log("returning ", returnObj);

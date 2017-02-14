@@ -299,7 +299,7 @@
 						<div id="equationLabel"></div>
 							<div id="nameControl2" class="fieldgroup">
 								<label for="setName2">Equation</label>
-									<textarea id="setName2" rows=4 cols=50 data-dojo-type="dijit/form/SimpleTextarea" style="min-height:60px;"></textarea>
+									<textarea id="setName2" rows=4 cols=50 data-dojo-type="dijit/form/SimpleTextarea	" style="min-height:60px;"></textarea>
 							</div>
 					</div>
 
@@ -350,31 +350,16 @@
 				</div>
 			</div>
 		</div><!-- end of equation node editor -->
-		<!-- Alert Dialog to show unfinished tasks before closing -->
-		<div data-dojo-type="dijit/Dialog" data-dojo-id="alertDialog" id ="alertDialog" title="Message" data-dojo-props="closable:false">
+		<!-- popup Dialog to show unfinished tasks before closing -->
+		<div data-dojo-type="dijit/Dialog" data-dojo-id="popupDialog" id ="popupDialog" title="Message" data-dojo-props="closable:false">
 
 			<div class="dijitDialogPaneContentArea">
-				<div id="content">
+				<div id="popupDialogContent">
 				</div>
-				<div id="dialogButtons">
+				<div id="popupDialogButtons">
 				</div>
 			</div>
 		</div>
 	</div>
 </body>
 </html>
-<style>
-	#alertDialog .dijitDialogPaneContentArea{
-		width: 300px !important;
-	}
-	#alertDialog .dijitDialogPaneContentArea #content{
-		padding: 10px 20px;
-	}
-	#alertDialog .dijitDialogPaneContentArea #content li{
-		padding: 5px 0px;
-	}
-	#alertDialog .dijitDialogPaneContentArea #dialogButtons{
-		text-align: right;
-	}
-</style>
-

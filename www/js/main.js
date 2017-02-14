@@ -18,9 +18,9 @@ define([
 	'./equation',
 	'./draw-model',
 	'./con-author',
-	'./alert-dialog',
+	'./popup-dialog',
 ], function(array, geometry, dom, style, aspect, ready, registry, event, ioQuery, on, Button, domConstruct, lang,
-			menu, session, model, equation, drawModel, controlAuthor, alertDialog){
+			menu, session, model, equation, drawModel, controlAuthor, popupDialog){
 
 	console.log("load main.js");
 	// Get session parameters
@@ -80,11 +80,7 @@ define([
 			loading.style.display = "none";
 
 			var dm = new drawModel(_model.active);
-			var errDialog = new alertDialog();
-			this.ed = registry.byId("alertDialog");
-			aspect.after(this.ed, "hide", lang.hitch(this, function(){
-				errDialog.end();
-			}));
+			var errDialog = new popupDialog();
 
 			/*********  below this part are the event handling *********/
 			aspect.after(dm, "onClickNoMove", function(mover){
@@ -140,7 +136,7 @@ define([
 			var menuButtons=[];
 			menuButtons.push("createQuantityNodeButton");
 			menuButtons.push("createEquationNodeButton");
-			menuButtons.push("DoneButton")
+			menuButtons.push("DoneButton");
 
 			array.forEach(menuButtons, function(button){
 				//setting display for each menu button
@@ -166,7 +162,7 @@ define([
 
 			var DoneButton = registry.byId("DoneButton");
 			DoneButton.setDisabled(false);
-
+			
 			//create a controller object
 
 			//create new model object
@@ -211,7 +207,7 @@ define([
 				event.stop(e);
 				// This should return an object kind of structure and
 				var problemComplete = controllerObject.checkDone();
-				if( problemComplete.errorNotes.length == 0 ){
+				if( problemComplete.errorNotes === "" ){
 					// if in preview mode , Logging is not required:
 					if(/*controllerObject.logging.doLogging*/ false){}
 						/*controllerObject.logging.log('close-problem', {
@@ -223,7 +219,7 @@ define([
 						});
 						*/
 					else {
-						errDialog.close();
+						errDialog.destroyDialog();
 					}
 				}
 				else{
@@ -233,8 +229,7 @@ define([
 					buttons.push(exitButton);
 					errDialog.showDialog(title, problemComplete.errorNotes, buttons, /*optional argument*/"Don't Exit");
 				}
-			})
-			
+			});
 			
 		});
 	});
@@ -249,7 +244,18 @@ define([
 				}).then(function(){
 					
 				});
+				console.log("Close Called!! ");
+				if(window.history.length === 1)
+					window.close();
+				else
+					window.history.back();
 			*/
+		}else{
+			console.log("Close Called!! ");
+			if(window.history.length === 1)
+				window.close();
+			else
+				window.history.back();
 		}
 	}
 	
