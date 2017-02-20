@@ -329,6 +329,28 @@ define([
 			},
 			setExpression: function(/*string*/ id, /*string*/ expression){
 				this.getNode(id).expression = expression;
+			},
+			isComplete: function(/*string*/ id){
+				var node = this.getNode(id);
+				// if units were not entered even then it would show node complete
+				var unitsOptional = true;
+				var returnFlag = '';
+
+				var nameEntered = node.type && node.type == "equation" || node.variable != null;
+				var valueEntered = node.type && node.type == "equation" || node.value != null;
+				var equationEntered = node.type && node.type == "quantity" || node.value != null;
+				if(node.genus == "required" || node.genus == "allowed" || node.genus == "preferred"){
+					returnFlag = nameEntered && (node.description || node.explanation) &&
+						node.type && (valueEntered || typeof valueEntered === "number") &&
+						(unitsOptional || nodes.units) && equationEntered;
+				} else {
+					// if genus is irrelevant
+					returnFlag = nameEntered && (node.description || node.explanation);
+				}
+				if(returnFlag)
+					return true;
+				else
+					return false;
 			}
 		}, both);
 

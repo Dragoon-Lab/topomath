@@ -13,13 +13,14 @@ define([
 		_instance: null,
 		_model: null,
 		_colors:[
-			"#00ffff", "#f0e68c", "#add8e6", "#e0ffff", "#90ee90", "#d3d3d3", "#ffb6c1",
+			"#00ffff", "#f0e68c", "#add8e6", "#e0ffff", "#90ee90", "#ffb6c1",
 			"#ffffe0", "#00ff00", "#008000", "#f5f5dc", "#0000ff", "#a52a2a", "#00ffff",
 			"#ffd700", "#4b0082", "#ff00ff", "#800000", "#000080", "#808000", "#ffa500",
 			"#c0c0c0", "#ffc0cb", "#ff0000", "#800080", "#ffff00", "#00008b", "#008b8b",
-			"#f0ffff", "#a9a9a9", "#006400", "#bdb76b", "#8b008b", "#556b2f", "#ff8c00",
+			"#f0ffff", "#006400", "#bdb76b", "#8b008b", "#556b2f", "#ff8c00",
 			"#9932cc", "#8b0000", "#e9967a", "#9400d3", "#ff00ff"
 		],
+		_incompleteColor: "#d3d3d3",
 		_borderColor: 39,
 		_backgroundColor: 0,
 		_counter: 0,
@@ -80,9 +81,14 @@ define([
 				if(count == 1)
 					idTag += "_" + this._model.getInitialNodeString();
 
+				var classTag = type;
+				debugger;
+				if(!this._model.isComplete(node.ID))
+					classTag += " incomplete";
+
 				vertices[count] = domConstruct.create("div", {
 					id: idTag,
-					"class": type,
+					"class": classTag,
 					style: {
 						left: node.position[count].x + 'px',
 						top: node.position[count].y + 'px',
@@ -112,13 +118,30 @@ define([
 				borderColor: "black"
 			};
 			var type = node.type;
+			// border color or description color would only make sense if
+			// 1) description for quantity node and explanation for equation node
+			// 2) variable name for quantity node
+			// so the default value is set to lightgrey
+			var hasDescription = this._model.getDescription(node.ID) &&
+					(type == "equation" || node.variable);
+			if(!hasDescription){
+				return {
+					backgroundColor: this._incompleteColor,
+					borderColor: "black"
+				};
+			}
+
+			// now we need to check if there is color and
+			// should the node be shown with color
+			var color = node.color && hasDescription ? node.color :
+					this.getNextColor(type && type == "equation");
 			if(type && type == "equation"){
-				obj.backgroundColor = this.getNextColor(true);
+				obj.backgroundColor = color;
 				obj.borderColor = "black";
 				this._model.setColor(node.ID, obj.backgroundColor);
 			} else if (type && type == "quantity") {
 				obj.backgroundColor = "white";
-				obj.borderColor = this.getNextColor(false);
+				obj.borderColor = color;
 				this._model.setColor(node.ID, obj.borderColor);
 			}
 

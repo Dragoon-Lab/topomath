@@ -9,13 +9,14 @@ define([
 	'dojo/_base/event',
 	'dojo/io-query',
 	'dojo/on',
+	'dojo/_base/lang',
 	'./menu',
 	'./session',
 	'./model',
 	'./equation',
 	'./draw-model',
 	'./con-author',
-], function(array, geometry, dom, style, aspect, ready, registry, event, ioQuery, on,
+], function(array, geometry, dom, style, aspect, ready, registry, event, ioQuery, on, lang,
 			menu, session, model, equation, drawModel, controlAuthor){
 
 	console.log("load main.js");
@@ -122,7 +123,7 @@ define([
 					}
 				}
 				_model.active.setPosition(id, index, {"x": g.x, "y": g.y+scrollTop});
-				_session.saveModel(_model.model);
+				//_session.saveModel(_model.model);
 			}, true);
 	
 
@@ -174,8 +175,8 @@ define([
 				};
 				var id = _model.active.addNode(options);
 				console.log("New quantity node created id - ", id);
-				controllerObject.showQuantityNodeEditor(id);	
-				dm.addNode(_model.active.getNode(id));
+				controllerObject.showQuantityNodeEditor(id);
+				controllerObject.addNode(_model.active.getNode(id));
 			});
 
 			//next step is to add action to add equation
@@ -189,8 +190,23 @@ define([
 				//controllerObject.logging.log('ui-action', {type: "menu-choice", name: "create-node"});
 				console.log("New equation node created id - ", id);
 				controllerObject.showEquationNodeEditor(id);
-				dm.addNode(_model.active.getNode(id));
+				controllerObject.addNode(_model.active.getNode(id));
 			});
+
+			aspect.after(controllerObject, "addNode",
+				lang.hitch(dm, dm.addNode), true);
+
+			on(registry.byId("closeButton"), "click", function(){
+				//TODO: once node_editor2 is merged to master, uncomment the line below.
+				//registry.byId("nodeEditor").hide();
+			});
+
+			//TODO: uncomment this after node_editor2 is merged
+			//all the things we need to do once node is closed
+			/*aspect.after(registry.byId('nodeeditor'), "hide", function(){
+				_session.saveProblem(_model.model);
+				dm.addNode(_model.active.getNode(controllerObject.currentID));
+			});*/
 		});
 	});
 });
