@@ -155,8 +155,9 @@
 	<div id="main" data-dojo-type="dijit/layout/BorderContainer" gutters="false">
 	
 		<div data-dojo-type="dijit/MenuBar" id="menuBar" region="top" splitter="false">
-			<button type="button" data-dojo-type="dijit/form/Button" id="createQuantityNodeButton" disabled="true" style="visibility: : hidden">Add Quantity</button>
-			<button type="button" data-dojo-type="dijit/form/Button" id="createEquationNodeButton" disabled="true" style="visibility: : hidden">Add Equation</button>
+			<button type="button" data-dojo-type="dijit/form/Button" id="createQuantityNodeButton" disabled="true" style="visibility:hidden">Add Quantity</button>
+			<button type="button" data-dojo-type="dijit/form/Button" id="createEquationNodeButton" disabled="true" style="visibility: hidden">Add Equation</button>
+			<button type="button" data-dojo-type="dijit/form/Button" id="DoneButton" disabled="true" style="visibility: hidden">Done</button>
 		</div>
 	
 		<div id="drawingPane" class="restrict-vscroll" data-dojo-type="dijit/layout/ContentPane" region="center">
@@ -298,7 +299,7 @@
 						<div id="equationLabel"></div>
 							<div id="nameControl2" class="fieldgroup">
 								<label for="setName2">Equation</label>
-									<textarea id="setName2" rows=4 cols=50 data-dojo-type="dijit/form/SimpleTextarea" style="min-height:60px;"></textarea>
+									<textarea id="setName2" rows=4 cols=50 data-dojo-type="dijit/form/SimpleTextarea	" style="min-height:60px;"></textarea>
 							</div>
 					</div>
 
@@ -349,6 +350,16 @@
 				</div>
 			</div>
 		</div><!-- end of equation node editor -->
+		<!-- popup Dialog to show unfinished tasks before closing -->
+		<div data-dojo-type="dijit/Dialog" data-dojo-id="popupDialog" id ="popupDialog" title="Message" data-dojo-props="closable:false">
+
+			<div class="dijitDialogPaneContentArea">
+				<div id="popupDialogContent">
+				</div>
+				<div id="popupDialogButtons">
+				</div>
+			</div>
+		</div>
 	</div>
 </body>
 </html>

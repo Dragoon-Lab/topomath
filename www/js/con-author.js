@@ -1,45 +1,33 @@
-/* global define */
-/**
- *Dragoon Project
- *Arizona State University
- *(c) 2014, Arizona Board of Regents for and on behalf of Arizona State University
- *
- *This file is a part of Dragoon
- *Dragoon is free software: you can redistribute it and/or modify
- *it under the terms of the GNU Lesser General Public License as published by
- *the Free Software Foundation, either version 3 of the License, or
- *(at your option) any later version.
- *
- *Dragoon is distributed in the hope that it will be useful,
- *but WITHOUT ANY WARRANTY; without even the implied warranty of
- *MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	See the
- *GNU Lesser General Public License for more details.
- *
- *You should have received a copy of the GNU Lesser General Public License
- *along with Dragoon.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
-/*
- * AUTHOR mode-specific handlers
- */
+/* global define */ /**  *Dragoon Project  *Arizona State University  *(c)
+2014, Arizona Board of Regents for and on behalf of Arizona State University *
+*This file is a part of Dragoon  *Dragoon is free software: you can
+redistribute it and/or modify  *it under the terms of the GNU Lesser General
+Public License as published by  *the Free Software Foundation, either version
+3 of the License, or  *(at your option) any later version.  *  *Dragoon is
+distributed in the hope that it will be useful,  *but WITHOUT ANY WARRANTY;
+without even the implied warranty of  *MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE.  See the  *GNU Lesser General Public License for more
+details.  *  *You should have received a copy of the GNU Lesser General Public
+License  *along with Dragoon.  If not, see <http://www.gnu.org/licenses/>.  *
+*/ /*  * AUTHOR mode-specific handlers  */
 
 define([
-	"dojo/_base/array",
+	'dojo/_base/array',
 	'dojo/_base/declare',
-	"dojo/_base/lang",
+	'dojo/_base/lang',
 	'dojo/dom-style',
 	'dojo/keys',
 	'dojo/ready',
-	"dojo/on",
-	"dojo/store/Memory",
-	"dojo/aspect",
+	'dojo/on',
+	'dojo/store/Memory',
+	'dojo/aspect',
+	'dojo/dom',
+	'dojo/dom-class',
 	'dijit/registry',
 	'./controller',
-	"./typechecker",
-	"dojo/dom",
-	"dojo/dom-class",
-	"dojo/domReady!",
-], function(array, declare, lang, style, keys, ready, on, memory, aspect, registry, controller, typechecker, dom, domClass){
+	'./typechecker',
+	'dojo/domReady!'
+], function(array, declare, lang, style, keys, ready, on, memory, aspect, dom, domClass, registry, controller, typechecker){
 
 	// Summary:
 	//			MVC for the node editor, for authors
@@ -196,11 +184,31 @@ define([
 		handleRoot: function(root){
 			// Summary: Sets the current node to be parent node
 			console.log("********************* in handleRoot", root);
+			//this._model.given.setParent(this.currentID, root);
+			/*
+			this.logging.log("solution-step", {
+				type: "solution-enter",
+				nodeID: this.currentID,
+				property: "root",
+				node: this._model.given.getName(this.currentID),
+				value: root
+			});
+			*/
 		},
 
-		handleDynamic: function(root){
+		handleDynamic: function(dynamic){
 			// Summary: Sets the current node to be parent node
-			console.log("********************* in handleDynamic", root);
+			console.log("********************* in handleDynamic", dynamic);
+			//this._model.given.setParent(this.currentID, root);
+			/*
+			this.logging.log("solution-step", {
+				type: "solution-enter",
+				nodeID: this.currentID,
+				property: "dynamic",
+				node: this._model.given.getName(this.currentID),
+				value: dynamic
+			});
+			*/
 		},
 
 		handleSetStudentQtyNode: function(checked){
@@ -218,6 +226,36 @@ define([
 		handleUnits: function(units){
 			console.log("**************** in handleUnits ", units);
 
+			var modelType = this.getModelType();
+			// TODO : Use applyDirectives here
+			var returnObj = this.authorPM.process(this.currentID, "units", units);
+			
+			console.log("Returned from author PM : ", returnObj)
+			//var studentNodeID = this._model.student.getNodeIDFor(this.currentID);
+
+			if(modelType == "given"){
+				this._model.active.setUnits(studentNodeID, units);
+				//this.updateStatus("units", this._model.given.getUnits(this.currentID), units);
+			}
+			else{
+				/*
+				this._model.active.setUnits(this.currentID, units);
+				if(studentNodeID) this.updateStatus("units", units, this._model.student.getUnits(studentNodeID));
+				*/
+			}
+
+			//update student node status
+			/*
+			var valueFor = modelType == "given" ? "student-model": "author-model";
+			this.logging.log("solution-step", {
+				type: "solution-enter",
+				nodeID: this.currentID,
+				property: "units",
+				value: units,
+				node: this._model.given.getName(this.currentID),
+				usage: valueFor
+			});
+			*/
 		},
 		/*
 		 Handler for initial value input
