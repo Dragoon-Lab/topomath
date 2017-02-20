@@ -78,17 +78,6 @@ define([
 					}
 					break;
 
-					case "explanation":
-					if(!value){
-						returnObj.push({id:"explanation", attribute:"status", value:""});
-					}else if(nodeID && value){
-						returnObj.push({id:"explanation", attribute:"status", value:"incorrect"});
-						returnObj.push({id:"message", attribute:"append", value:"Explanation is already in use"});
-					}else{
-						returnObj.push({id:"explanation", attribute:"status", value:"entered"});
-					}
-					break;
-
 					case "kind":
 					var message="";
 					returnObj.push({id:"kind", attribute:"status", value:"entered"});
@@ -107,14 +96,15 @@ define([
 					case "variableName":
 						if(!nodeID && validInput){
 							returnObj.push({id:"message", attribute:"append", value:"node name is available for use"});
-							returnObj.push({id:"name", attribute:"status", value:"entered"});
+							returnObj.push({id:"variable", attribute:"status", value:"entered"});
 						}else if(!validInput){
 							returnObj.push({id:"message", attribute:"append", value:"Please enter a valid name without using numbers"});
-							returnObj.push({id:"name", attribute:"status", value:"incorrect"});
+							returnObj.push({id:"variable", attribute:"status", value:"incorrect"});
 						}else{
 							returnObj.push({id:"message", attribute:"append", value:"Node name is already in use"});
-							returnObj.push({id:"name", attribute:"status", value:"incorrect"});
+							returnObj.push({id:"variable", attribute:"status", value:"incorrect"});
 						}
+						console.log("return obj is",returnObj);
 					break;
 
 					case "equation":
@@ -153,7 +143,6 @@ define([
 			variable: "variableInputbox",
 			equation: "equationInputbox",
 			description: "descriptionInputbox",
-			explanation: "setExplanation",
 			kind: "optionalitySelector",
 			units: "unitsSelector",
 			root: "rootNodeToggleCheckbox",
@@ -177,6 +166,7 @@ define([
 
 			var variable_name = registry.byId(this.controlMap.variable);
 			variable_name.on('Change', lang.hitch(this, function(){
+				console.log("handling variable name");
 				return this.disableHandlers || this.handleVariableName.apply(this, arguments);
 			}));
 
@@ -217,6 +207,7 @@ define([
 			 */
 			var nameID = this._model.authored.getNodeIDByName(name);
 			// If nameID is falsy give "null"; if it doesn't match, give "false"
+			console.log("nameID, currentID",nameID,this.currentID,equation.isVariable(name));
 			this.applyDirectives(this.authorPM.process(nameID?!(nameID==this.currentID):null,'variableName',name, equation.isVariable(name)));
 			
 			//var logObj = {};
@@ -343,48 +334,6 @@ define([
 			this.logging.log('solution-step', logObj);
 			*/
 			this.enableDisableSetStudentNode();
-		},
-
-		handleExplanation: function(explanation){
-			// Summary: Checks to see if the given equation node explanation exists; if the
-			//		explanation doesn't exist, it sets the explanation of the current node.
-			var explanationID = this._model.authored.getNodeIDByExplanation(explanation);
-			// If descriptionID is falsy give "null"; if it doesn't match, give "false"
-			var returnObj = this.authorPM.process(explanationID?!(explanationID==this.currentID):null, "explanation", explanation);
-			console.log("return obj for equation explanation", returnObj);
-			this.applyDirectives(returnObj);
-			
-			//var logObj = {};
-
-			if(!this._model.active.getNodeIDByExplanation(explanation)){
-				this._model.active.setExplanation(this.currentID, explanation);
-				/*
-				logObj = {
-					error: false
-				};
-				*/
-			}else {
-				console.warn("In AUTHOR mode. Attempted to use explanation that already exists: " + explanation);
-				/*
-				logObj = {
-					error: true,
-					message: "duplication"
-				};
-				*/
-			}
-			/*
-			logObj = lang.mixin({
-				type: "solution-enter",
-				nodeID: this.currentID,
-				property: "description",
-				node: this._model.given.getName(this.currentID),
-				value: description
-			}, logObj);
-			
-			this.logging.log('solution-step', logObj);
-			*/
-			this.enableDisableSetStudentNode();
-
 		},
 		
 		handleRoot: function(root){
@@ -525,7 +474,7 @@ define([
 		initialViewSettings: function(type){
 			//make display none for all fields initially
 			var qtyElements = ["variableOptionalityContainer","descriptionInputboxContainer","valueUnitsContainer","rootNodeToggleContainer","dynamicNodeToggleContainer"];
-			var eqElements = ["expressionDiv"];
+			var eqElements = ["descriptionInputboxContainer","expressionDiv"];
 		
 			if(type == "quantity"){
 				eqElements.forEach(function(elem){
@@ -547,6 +496,8 @@ define([
 				});
 
 			}
+			//emptying message box
+
 		},	
 		
 		initialControlSettings: function(nodeid){
@@ -576,7 +527,7 @@ define([
 				checked = array.some(studentNodes, function(node){
 					return node.authoredID === givenNode.ID;
 				}, this);
-				registry.byId(this.controlMap.student).set('value', checked);
+				registry.byId(this.controlMap.setStudent).set('value', checked);
 				this.handleSetStudentNode(checked);
 			
 			
@@ -628,10 +579,10 @@ define([
 
 				//Enable or disable the given to student checkbox
 				if(variable != null && desc != null){
-					registry.byId(this.controlMap.student).set('disabled', false);
+					registry.byId(this.controlMap.setStudent).set('disabled', false);
 				}
 				else{
-					registry.byId(this.controlMap.student).set('disabled', true);
+					registry.byId(this.controlMap.setStudent).set('disabled', true);
 				}
 
 				//sort units and store in units array
@@ -688,10 +639,10 @@ define([
 
 				//Enable or disable the given to student checkbox
 				if(desc != null){
-					registry.byId(this.controlMap.student).set('disabled', false);
+					registry.byId(this.controlMap.setStudent).set('disabled', false);
 				}
 				else{
-					registry.byId(this.controlMap.student).set('disabled', true);
+					registry.byId(this.controlMap.setStudent).set('disabled', true);
 				}
 
 				m = new memory({data: inputs});
@@ -701,11 +652,14 @@ define([
 				//color Equation widget
 				
 				if(this._model.authored.getEquation(this.currentID)){
+					//we have not found a use case for getAuthorStatus yet so commenting this sesion for now
+					/*
 					if(this._model.authored.getAuthorStatus(this.currentID, "equation") && this._model.authored.getAuthorStatus(this.currentID, "equation").status == "incorrect"){
 
 					}else{
 						this.applyDirectives(this.authorPM.process(this.currentID, 'equation', this._model.authored.getEquation(this.currentID), true));
 					}
+					*/
 				}
 			}
 			
@@ -722,6 +676,7 @@ define([
 				this.applyDirectives(this.authorPM.process(isDuplicateDescription, "description", this._model.given.getDescription(this.currentID)));
 			}
 		},
+		/* discontinuing use of author status
 		updateModelStatus: function(desc, id){
 			//stub for updateModelStatus
 			//valid status object is defined in controller
@@ -733,7 +688,7 @@ define([
 			}
 			console.log("model obj is",this._model);
 		},
-
+		*/
 		getModelType: function(){
 			return (registry.byId(this.controlMap.setStudent).checked ? registry.byId(this.controlMap.modelType).value : "correct");
 		},
@@ -757,29 +712,29 @@ define([
 			//Summary: Enable Set student mode checkbox only when variable/equation and description/explanation are filled
 			
 			//based on the node type this function checks variable/equation and description/explanation
-
+			console.log("enable disable set student node called");
 			var nodeType = this._model.authored.getType(this.currentID);
 
 			if(nodeType == "quantity"){
 				var varName = registry.byId(this.controlMap.variable).value;
 				var desc = registry.byId(this.controlMap.description).value;
 
-				if(name != '' && desc != ''){
-					registry.byId(this.controlMap.student).set("disabled",false);
+				if(varName != '' && desc != ''){
+					registry.byId(this.controlMap.setStudent).set("disabled",false);
 				}
 				else{
-					registry.byId(this.controlMap.student).set("disabled",true);
+					registry.byId(this.controlMap.setStudent).set("disabled",true);
 				}	
 			}
 			else if(nodeType == "equation"){
-				var eqnName = registry.byId(this.controlMap.equation).value;
-				var expln = registry.byId(this.controlMap.explanation).value;
+				//var eqnName = registry.byId(this.controlMap.equation).value;
+				var expln = registry.byId(this.controlMap.description).value;
 
-				if(name != '' && expln != ''){
-					registry.byId(this.controlMap.student).set("disabled",false);
+				if(expln != ''){
+					registry.byId(this.controlMap.setStudent).set("disabled",false);
 				}
 				else{
-					registry.byId(this.controlMap.student).set("disabled",true);
+					registry.byId(this.controlMap.setStudent).set("disabled",true);
 				}	
 			}
 

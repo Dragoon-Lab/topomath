@@ -181,7 +181,7 @@
 				<input id="givenToStudentCheckbox" name="markStudentNode" data-dojo-type="dijit/form/CheckBox" checked="false"/>
 			</div>
 			
-			<div id="modelSelectContainer" class="fieldgroup" style="display:none" >
+			<div id="modelSelectorContainer" class="fieldgroup" style="display:none" >
 				<label for="modelSelector">Select Model</label>
 				<select id="modelSelector" data-dojo-type="dijit/form/Select">
 					<option value='correct' selected>Author's Values</option>

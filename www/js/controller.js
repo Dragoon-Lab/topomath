@@ -30,8 +30,10 @@ define([
 	"dojo/on",
 	"dojo/ready",
 	"dijit/registry",
+	"dojo/dom-style",
+	"dojo/dom-construct",
 	"./equation"
-], function(array, declare, lang, dom, keys, on, ready, registry, expression){
+], function(array, declare, lang, dom, keys, on, ready, registry, domStyle, domConstruct, expression){
 
 	/* Summary:
 	 *			Controller for the node editor, common to all modes
@@ -115,12 +117,149 @@ define([
 				crisis.hide();
 			});
 		},
+		_setStatus : function(value){
+			var colorMap = {
+				correct: "lightGreen",
+				incorrect: "#FF8080",
+				demo: "yellow",
+				premature: "lightBlue",
+				entered: "#2EFEF7"
+			};
+			if(value && !colorMap[value]){
+				this.logging.clientLog("assert", {
+					message: 'Invalid color specification, color value : '+value,
+					functionTag: 'setStatus'
+				});
+			}
+			/* BvdS:  I chose bgColor because it was easy to do
+			 Might instead/also change text color?
+			 Previously, just set domNode.bgcolor but this approach didn't work
+			 for text boxes.   */
+			// console.log(">>>>>>>>>>>>> setting color ", this.domNode.id, " to ", value);
+			domStyle.set(this.domNode, 'backgroundColor', value ? colorMap[value] : '');
+		},
 
 		_setUpNodeEditor: function(){
 			// get Node Editor widget from tree
 			// In TopoMath this functions sets up display of both quantity and equation node editor
 			this._nodeEditor = registry.byId('nodeEditor');
 			this._nodeEditor.set("display", "block");
+			/*
+			 Add attribute handler to all of the controls
+			 When "status" attribute is changed, then this function
+			 is called.
+			 */
+
+			//we do not yet have activity parameters, for now setting it to true by default
+			var showFeedback = /*this.activityConfig.get("showFeedback")*/true;
+			if(showFeedback){
+				for(var control in this.controlMap){
+					var w = registry.byId(this.controlMap[control]);
+					console.log(control);
+					w._setStatusAttr = this._setStatus;
+				}
+				/*
+				 * If the status is set for equationBox, we also need to set
+				 * the status for equationText.  Since equationText is not a widget,
+				 * we need to set it explicitly.
+				 * Adding a watch method to the equationBox didn't work.
+				 */
+				//commenting out this section for now as we do not yet use equationText
+				/* 
+				aspect.after(registry.byId(this.controlMap.equation), "_setStatusAttr",
+					lang.hitch({domNode: dom.byId("equationText")}, this._setStatus),
+					true);
+				*/	
+			}
+
+			var setEnableOption = function(value){
+				console.log("++++ in setEnableOption, scope=", this);
+				array.forEach(this.options, function(option){
+					if((!value || option.value == value ) && option.value !== "defaultSelect")
+						option.disabled = false;
+				});
+				this.startup();
+			};
+			var setDisableOption = function(value){
+				console.log("++++ in setDisableOption, scope=", this);
+				array.forEach(this.options, function(option){
+					if(!value || option.value == value)
+						option.disabled = true;
+				});
+				this.startup();
+			};
+			// All <select> controls
+			array.forEach(this.selects, function(select){
+				var w = registry.byId(this.controlMap[select]);
+				w._setEnableOptionAttr = setEnableOption;
+				w._setDisableOptionAttr = setDisableOption;
+			}, this);
+
+			// Add appender to message widget
+			var messageWidget = registry.byId(this.widgetMap.message);
+			messageWidget._setAppendAttr = function(message){
+				var message_box_id=dom.byId("messageOutputbox");
+
+				// Set the background color for the new <p> element
+				// then undo the background color after waiting.
+				var element=domConstruct.place('<p style="background-color:#FFD700;">'
+					+ message + '</p>', message_box_id);
+
+				/*Set interval for message blink*/
+				window.setTimeout(function(){
+					// This unsets the "background-color" style
+					domStyle.set(element, "backgroundColor", "");
+				}, 3000);  // Wait in milliseconds
+
+				// Scroll to bottoms
+				this.domNode.scrollTop = this.domNode.scrollHeight;
+			};
+
+			/*
+			 Add fields to units box, using units in model node
+			 In author mode, this needs to be turned into a text box.
+			 */
+			//to do : selectUnits comes with student mode
+			/* 
+			var u = registry.byId("selectUnits");
+			// console.log("units widget ", u);
+
+			var units = this._model.getAllUnits();
+			units.sort();
+
+			array.forEach(units, function(unit){
+				u.addOption({label: unit, value: unit});
+			});
+			*/
+			//to do: discuss with team implications of autho complete for now commenting
+			/*
+			if(this.activityConfig.get('showEquationAutoComplete')){
+				var mathFunctions = dojo.xhrGet({
+					url: 'mathFunctions.json',
+					handleAs: 'json',
+					load: lang.hitch(this, function(response){
+						//get math functions
+						var mathFunctions = Object.keys(response);
+
+						//Add Node names
+						var descriptions = this._model.given.getDescriptions();
+						var nodeNames = [];
+						array.forEach(descriptions, function (desc) {
+							var name = this._model.given.getName(desc.value);
+							nodeNames.push(name)
+						}, this);
+
+						//Combine node names and math functions
+						nodeNames = nodeNames.concat(mathFunctions);
+
+						var equationAutoComplete = new AutoComplete('equationBox', nodeNames ,[' ',  '+', '-' , '/', '*', '(' , ')', ','], response);
+					}),
+					error: function(){
+
+					}
+				});
+			} */
+
 		},
 
 		//set up event handling with UI components
@@ -218,6 +357,7 @@ define([
 						functionTag: '_initHandles'
 					}); */
 				}
+				w.on('click', lang.hitch(this, handler));
 			}, this);
 
 			//undo background color on change
@@ -241,8 +381,8 @@ define([
 			//based on the type decide what fields to show or hide
 			//call get type once the model is intergrated
 			//for now commenting it and randomly giving nodetype value
-			//var nodeType = this._model.authored.getType();
-			var nodeType = "quantity";
+			var nodeType = this._model.active.getType(this.currentID);
+			console.log("nodeType",nodeType);
 			this.initialViewSettings(nodeType);
 			this.initialControlSettings(id);
 			this.populateNodeEditorFields(id);
@@ -271,7 +411,8 @@ define([
 			var model = this._model.active;
 			var editor = this._nodeEditor;
 			//set task name
-			var nodeName = model.getName(nodeid) || "New quantity";
+			var nodeHeading =  "New "+(this._model.active.getType(nodeid)?this._model.active.getType(nodeid): "node");
+			var nodeName = model.getName(nodeid) || nodeHeading;
 			editor.set('title', nodeName);
 
 			/*
@@ -322,7 +463,8 @@ define([
 				console.log("equation after conversion ", mEquation);
 				/* mEquation is a number instead of a string if equation is just a number; convert to string before setting the value */
 				registry.byId(this.controlMap.equation).set('value', mEquation.toString());
-				dom.byId("equationText").innerHTML = mEquation;
+				//This was used when structured was also there, once confirm with team before removing it, for now commenting it 
+				//dom.byId("equationText").innerHTML = mEquation;
 				this.equationEntered = true;
 			}
 		},
@@ -337,8 +479,9 @@ define([
 			// Apply directives, either from PM or the controller itself.
 			var tempDirective = null;
 			array.forEach(directives, function(directive) {
+				/*to do: for now not using authorModelStatus, so updateModelStatus function has no significance
 				if(!noModelUpdate)
-					this.updateModelStatus(directive);
+					this.updateModelStatus(directive); */
 				if (directive.attribute != "display" && this.widgetMap[directive.id]) {
 					var w = registry.byId(this.widgetMap[directive.id]);
 					if (directive.attribute == 'value') {
@@ -350,10 +493,13 @@ define([
 							this._model.active.setInitial(this.currentID, directive.value);
 						}else if(w.id == 'selectDescription'){
 							this.updateDescription(directive.value);
+						}else if(w.id == 'equationBox'){
+							this.equationSet(directive.value);
 						}
 						//to do : update explanation function but right now no directives with att value for explanations not being processed 
 
 					}else{
+						console.log("w is",w);
 						w.set(directive.attribute, directive.value);
 						if(directive.attribute === "status"){
 							//tempDirective variable further input to editor tour
@@ -404,6 +550,16 @@ define([
 			console.log("****** divide button");
 			this.equationInsert('/');
 		},
+		undoHandler: function(){
+			var equationWidget = registry.byId("equationInputbox");
+			equationWidget.set("value", "");
+			//to do: based on how we handle select model, for now commenting it out
+			/*
+			var givenEquationWidget = registry.byId("givenEquationBox");//if value of selectModel was equal to "given"
+			givenEquationWidget.set("value", "");
+			dom.byId("equationText").innerHTML = "";
+			*/
+		},
 		equationInsert: function(text){
 			//todo: initialize domNode
 			var widget = registry.byId(this.controlMap.equation);
@@ -434,6 +590,7 @@ define([
 		},
 
 		handleEquation: function(equation){
+			console.log("inside equation handler");
 			var w = registry.byId(this.widgetMap.equation);
 			this.equationEntered = false;
 			w.set('status','');

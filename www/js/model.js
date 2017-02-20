@@ -124,6 +124,30 @@ define([
 				//          Should only be used for debugging.
 				return JSON.stringify(this.model, null, 4);
 			},
+			/* to do : after we imbibe task into model
+			getUnits: function(){
+				return this.model.task.time.units;
+			},
+			*/
+			getAllUnits: function(){
+				// Summary:	 returns a list of all distinct units
+				// (string format) defined in a problem.
+				// Need to order list alphabetically.
+				var unitList = new Array();
+				//to do: after we imbide task.time.units into model
+				/*
+				var timeUnits = this.getUnits();
+				if(timeUnits){
+					unitList.push(timeUnits);
+				}
+				*/
+				array.forEach(this.authored.getNodes(), function(node){
+					if(node.units && array.indexOf(unitList, node.units) == -1){
+						unitList.push(node.units);
+					}
+				}, this);
+				return unitList;
+			},
 
 		};
 
@@ -145,6 +169,7 @@ define([
 			},
 			getType: function(/*string*/ id){
 				var node = this.getNode(id);
+				console.log("node with id",node);
 				return node && node.type;
 			},
 			getEquation: function(/*string*/ id){
@@ -166,6 +191,9 @@ define([
 			getValue: function(/* string */ id){
 				var node = this.getNode(id);
 				return node && node.value;
+			},
+			getUnits: function(/*string*/ id){
+				return this.getNode(id).units;
 			},
 			getExpression: function(/*string*/ id){
 				var node = this.getNode(id);
@@ -219,6 +247,18 @@ define([
 				var node = this.getNode(id);
 				return node && node.initial;
 			},
+			getOutputs: function(/*string*/ id){
+				// Summary: return an array containing the output ids for a node.
+				var outputs = [];
+				array.forEach(this.getNodes(), function(node){
+					if(array.some(node.inputs, function(input){
+						return input.ID == id;
+					})){
+						outputs.push(node.ID);
+					}
+				});
+				return outputs;
+			},
 		};
 
 		obj.authored = lang.mixin({
@@ -244,7 +284,7 @@ define([
 					}],
 				}, options || {});
 				obj.model.authorModelNodes.push(newNode);
-
+				console.log("node added", newNode.ID, newNode.type);
 				return newNode.ID;
 			},
 			getNodes: function(){
@@ -301,8 +341,11 @@ define([
 			getAuthorID: function(/*string*/ id){
 				return id;
 			},
-			getAuthorStatus: function(/*string*/ id, /*string*/ part){
-				return this.getNode(id).authorStatus? this.getNode(id).authorStatus[part] : undefined ;
+			getParent: function(/*string*/ id){
+				return this.getNode(id).parentNode;
+			},
+			getDynamic: function(/*string*/ id){
+				return this.getNode(id).dynamic;
 			},
 			isRoot: function(/* string */ id){
 				var node = this.getNode(id);
@@ -344,18 +387,9 @@ define([
 			setColor: function(/*string*/ id, /*string*/ color){
 				this.getNode(id).color = color;
 			},
-			setAuthorStatus: function(/*string*/ id, /*string*/ part, /*string*/ status){
-				// Summary: function to set the status of node editor in author mode.
-				if(!this.getNode(id).authorStatus){
-					//backward compatibility
-					this.getNode(id).authorStatus = {};
-				}
-				this.getNode(id).authorStatus[part] = status;
-			},
 			setExpression: function(/*string*/ id, /*string*/ expression){
 				this.getNode(id).expression = expression;
-			}
-			
+			},			
 		}, both);
 
 		obj.student = lang.mixin({
