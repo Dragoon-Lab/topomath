@@ -1,3 +1,4 @@
+
 /**
  *Dragoon Project
  *Arizona State University
@@ -47,6 +48,7 @@ define([
 	return declare(null, {
 		_model: null,
 		_nodeEditor: null,
+		_doneDialog: null,
 		/*
 		 * When opening the node editor, we need to populate the controls without
 		 * evaluating those changes.
@@ -396,9 +398,91 @@ define([
 			}));
 
 		},
+
 		initialViewSettings: function(type){
 			//over written by student or author specific method
 		},
+
+
+		checkDone: function () {
+			/*
+				When the author clicks on the main menu "Done" button,
+				the system checks that one variable is Root, 
+				and make sure every variable is part of at least one equation.
+			*/
+			console.log("Done Action called");
+			var returnObj = {};
+			returnObj.errorNotes = "";
+			var hasRootNode = false;
+			var _variables = [];
+			var _equations = [];
+			var _errorNotes = [];
+			
+			if( this._model ){
+				array.forEach(this._model.active.getNodes(), function (node) {
+					if(node.root){
+						hasRootNode = true;
+					}
+					console.log(node);
+
+					// get variables and equations
+					if(node.variable !== "" && node.genus && node.genus === "required" && node.type === "quantity"){
+						_variables.push(node.ID);
+					}else if(node.type === "equation"){
+						_equations.push(node.equation);
+					}
+
+				});
+
+				// check if each variable is present in atleast one equation
+				var _usedVariables = _variables.map(function(_variable){
+					var tmp = array.some(_equations, function(_equation) {
+						
+						if( _equation && _equation.search(_variable) > -1){
+							return true;
+						};
+					});
+					var obj = {};
+					obj[_variable] = tmp;
+					return obj;
+				});
+
+				// for each variable if it is not present in any equation, add it to array 
+				var _requiredVariables = [];
+				array.forEach(_usedVariables, function(item){
+					
+					if(!Object.values(item)[0]){	
+						_requiredVariables.push(Object.keys(item)[0]);
+					}
+				});
+
+				// Add errorNote adding all unused variables
+				if( _requiredVariables && _requiredVariables.length > 0 ){
+					var errorNote = "Following variables are required, but unused by equations - ";
+					array.forEach(_requiredVariables,lang.hitch(this, function(id){
+						errorNote += this._model.active.getName(id) + ", ";
+					}));
+					errorNote = errorNote.slice(0, -2); // removing trailing comma and space
+					_errorNotes.push(errorNote);
+				}	
+			}
+
+			console.log("required" + _requiredVariables);
+
+			if(!hasRootNode){
+				_errorNotes.push("No variable is marked as Root");
+			}
+			if(_errorNotes && _errorNotes.length > 0){
+				array.forEach(_errorNotes, function(_error){
+					returnObj.errorNotes += "<li>" + _error + "</li>";
+				})
+			}
+			
+			console.log("returning ", returnObj);
+			return returnObj;
+		},
+
+
 		// Stub to be overwritten by student or author mode-specific method.
 		initialControlSettings: function(id){
 			console.error("initialControlSettings should be overwritten.");
