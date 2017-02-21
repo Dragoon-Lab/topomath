@@ -5,10 +5,12 @@ define([
 	"dojo/dom-attr",
 	"dojo/dom-construct",
 	"dojo/dom",
+	"dojo/query",
 	"dojo/dom-style",
 	"./graph-objects",
-	"jsPlumb/jsPlumb"
-], function(declare, array, lang, attr, domConstruct, dom, domStyle, graphObjects){
+	"jsPlumb/jsPlumb",
+	"dojo/NodeList-dom"
+], function(declare, array, lang, attr, domConstruct, dom, query, domStyle, graphObjects){
 	return declare(null, {
 		_instance: null,
 		_model: null,
@@ -24,6 +26,7 @@ define([
 		_borderColor: 39,
 		_backgroundColor: 0,
 		_counter: 0,
+		_cache: {},
 
 		constructor: function(model){
 			this._model = model;
@@ -69,8 +72,13 @@ define([
 
 		addNode: function(/* object */ node){
 			type = node.type || "circle";
-			console.log("Adding vertex to the canvas id = ", node.ID, " type = ", type);
 
+			if(!node.ID){
+				conole.error("addNode called with a node without ID");
+				return;
+			}
+
+			console.log("Adding vertex to the canvas id = ", node.ID, " type = ", type);
 			console.log("Position for the vertex : ",node.ID, " position: x ", node.position[0].x, " y: " + node.position[0].y);
 			var properties = this.getNodeUIProperties(node);
 			var htmlStrings = graphObjects.getNodeHTML(this._model, node.ID); 
@@ -82,7 +90,6 @@ define([
 					idTag += "_" + this._model.getInitialNodeString();
 
 				var classTag = type;
-				debugger;
 				if(!this._model.isComplete(node.ID))
 					classTag += " incomplete";
 
@@ -108,7 +115,98 @@ define([
 				this.makeDraggable(vertex);
 			}, this);
 
+			//add to cache
+			this._cache[node.ID] = lang.clone(node);
+
 			return vertices;
+		},
+
+		updateNode: function(/* object */ node){
+			// all the classes that we need
+			var initialNodeIDTag = this._model.getInitialNodeString();
+			var domIDTags = {
+				'nodeDOM': node.ID+'Content',
+				'initialNode': node.ID+'ContentInitial',
+				'description': node.ID+'_description',
+				'parentDOM': node.ID,
+				'parentInitial': node.ID+"_"+initialNodeIDTag
+			};
+			// null checks
+			if(!node.ID){
+				console.error("update node called for an unknown node ID");
+				return;
+			}
+			if(!this._cache[node.ID]){
+				this.addNode(this._model.getNode(node.ID));
+				return;
+			}
+
+			var cachedNode = this._cache[node.ID];
+			// update variable name
+			if(cachedNode.variable != node.variable){
+				if(node.type && node.type == "quantity"){
+					dom.byId(domIDTags['nodeDOM']).innerHTML = graphObjects.getDomUIStrings(this._model, "variable", node.ID);
+				}
+			}
+			// update description
+			var cachedDescription = cachedNode.description || cachedNode.explanation;
+			var description = node.description || node.explanation;
+			if(cachedDescription != description || (cachedNode.variable != node.variable && description != "")){
+				var description = graphObjects.getDomUIStrings(this._model, "description", node.ID);
+				var descriptionDOM = dom.byId(domIDTags['description']);
+				if(descriptionDOM)
+					descriptionDOM.innerHTML = description;
+				else if(!node.color){
+					var ui = this.getNodeUIProperties(node);
+					domStyle.set(domIDTags['parentDOM'], "backgroundColor", ui.backgroundColor);
+					domStyle.set(domIDTags['parentDOM'], "borderColor", ui.borderColor);
+					this.addNodeDescription(node.ID);
+				}
+			}
+			//update value
+			if(node.type && node.type == "quantity" && cachedNode.value != node.value){
+				if(node.accumulator){
+					// here we need to update the initial value node as well.
+					var initialNode = dom.byId(domIDTags['parentIntial']);
+					if(initialNode)
+						dom.byId(domIDTags['initialNode']).innerHTML = graphObjects.getDomUIStrings(this._model, "value", node.ID);
+					else{
+						//this part of the code creates a new node with initial value when a node is added as dynamic
+						//explicitly picking up the second value as that is the one to be added
+						var initialNodeString = graphObjects.getNodeHTML(this._model, node.ID)[1];
+						// TODO: the handler for accumulator/dynamic will ensure that a new position is created for the initial node.
+						// draw-model does not and should not have access to that part of the node, hence it needs to be done by the handler
+						var properties = this.getNodeUIProperties(node);
+						// temporary work around for it.
+						var x = node.position[0].x + 100;
+						var y = node.position[0].y + 100;
+						var initialNode = domConstruct.create("div", {
+							id: domIDTags['parentInitial'],
+							"class": node.type,
+							style: {
+								left: x + 'px',
+								top: y + 'px',
+								backgroundColor: properties.backgroundColor,
+								borderColor: properties.borderColor
+							},
+							innerHTML: initialNodeString
+						}, "statemachine-demo");
+						this.makeDraggable(initialNode);
+					}
+
+				} else
+					dom.byId(domIDTags['nodeDOM']).innerHTML = graphObjects.getDomUIStrings(this._model, "value", node.ID);
+			} else if(node.type && node.type == "equation" && cachedNode.equation != node.equation){
+				dom.byId(domIDTags['nodeDOM']).innerHTML = graphObjects.getDomUIStrings(this._model, "equation", node.ID);
+				// TODO : need to check how and where the connections are set
+			}
+			//update border
+			if(dojo.hasClass(domIDTags['parentDOM'], "incomplete") && this._model.isComplete(node.ID)){
+				dojo.removeClass(domIDTags['parentDOM'], "incomplete");
+			}
+
+			//add to cache for next time
+			this._cache[node.ID] = lang.clone(node);
 		},
 
 		getNodeUIProperties: function(node){

@@ -298,10 +298,19 @@ define([
 				this.getNode(id).variable = name.trim();
 			},
 			setDescription: function(/*string*/ id, /*string*/ description){
-				this.getNode(id).description = description.trim();
+				// keeping the idea that description is what we will call this in our code.
+				description = description.trim();
+				var node = this.getNode(id);
+				if(node.type == "quantity")
+					node.description = description;
+				else
+					node.explanation = description;
 			},
 			setExplanation: function(/*string*/ id, /*string*/ content){
 				this.getNode(id).explanation = content;
+			},
+			setValue: function(/*string*/ id, /*number*/ value){
+				this.getNode(id).value = value;
 			},
 			setParent: function(/*string*/ id, /*bool*/ parent){
 				this.getNode(id).parentNode = parent;

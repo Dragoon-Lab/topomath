@@ -209,14 +209,16 @@ define([
 			on(registry.byId("closeButton"), "click", function(){
 				//TODO: once node_editor2 is merged to master, uncomment the line below.
 				//registry.byId("nodeEditor").hide();
+				console.log("uncomment code to close");
 			});
 
 			//TODO: uncomment this after node_editor2 is merged
 			//all the things we need to do once node is closed
-			/*aspect.after(registry.byId('nodeeditor'), "hide", function(){
+			/*aspect.after(registry.byId('nodeEditor'), "hide", function(){
 				_session.saveProblem(_model.model);
-				dm.addNode(_model.active.getNode(controllerObject.currentID));
+				dm.updateNode(_model.active.getNode(controllerObject.currentID));
 			});*/
+
 			menu.add("DoneButton", function (e) {
 				event.stop(e);
 				// This should return an object kind of structure and
