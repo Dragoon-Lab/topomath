@@ -4,13 +4,14 @@ define([
 	"dojo/_base/lang",
 	"dojo/dom-attr",
 	"dojo/dom-construct",
+	"dojo/dom-class",
 	"dojo/dom",
-	"dojo/query",
 	"dojo/dom-style",
+	"dijit/Menu",
+	"dijit/MenuItem",
 	"./graph-objects",
 	"jsPlumb/jsPlumb",
-	"dojo/NodeList-dom"
-], function(declare, array, lang, attr, domConstruct, dom, query, domStyle, graphObjects){
+], function(declare, array, lang, attr, domConstruct, domClass, dom, domStyle, Menu, MenuItem, graphObjects){
 	return declare(null, {
 		_instance: null,
 		_model: null,
@@ -107,11 +108,11 @@ define([
 				'initialNode': node.ID+'ContentInitial',
 				'description': node.ID+'_description',
 				'parentDOM': node.ID,
-				'parentInitial': node.ID+"_"+initialNodeIDTag
+				'parentInitial': node.ID+initialNodeIDTag
 			};
 			// null checks
 			if(!node.ID){
-				console.error("update node called for an unknown node ID");
+				console.error("update node called for an unknown node ID ", node.ID);
 				return;
 			}
 			if(!this._cache[node.ID]){
@@ -164,8 +165,12 @@ define([
 				// TODO : need to check how and where the connections are set
 			}
 			//update border
-			if(dojo.hasClass(domIDTags['parentDOM'], "incomplete") && this._model.isComplete(node.ID)){
-				dojo.removeClass(domIDTags['parentDOM'], "incomplete");
+			var isComplete = this._model.isComplete(node.ID);
+			var hasClass = domClass.contains(domIDTags['parentDOM'], "incomplete");
+			if(hasClass && isComplete){
+				domClass.remove(domIDTags['parentDOM'], "incomplete");
+			} else if (!hasClass && !isComplete){
+				domClass.add(domIDTags['parentDOM'], "incomplete");
 			}
 
 			//add to cache for next time
@@ -185,7 +190,7 @@ define([
 			var idTag = node.ID;
 			var classTag = node.type;
 			if(isInitial){
-				idTag += "_" + this._model.getInitialNodeString();
+				idTag += this._model.getInitialNodeString();
 				if(node.position.length > 1){
 					x = node.position[1].x;
 					y = node.position[1].y;
@@ -209,6 +214,18 @@ define([
 			}, "statemachine-demo");
 
 			this.makeDraggable(nodeDOM);
+
+			// creating menu for each DOM element
+			pMenu = new Menu({
+				targetNodeIds: [idTag]
+			});
+			pMenu.addChild(new MenuItem({
+				label: "Delete Node",
+				onClick: lang.hitch(this, function(){
+					this.deleteNode(node.ID)
+				})
+			}));
+
 			return nodeDOM;
 		},
 
@@ -358,6 +375,34 @@ define([
 				else
 					domStyle.set(domID, "border-color", this._model.getColor(ID));
 			}
+		},
+
+		deleteNode: function(/*string*/ nodeID){
+			this.detachConnections(nodeID);
+			// TODO log this event
+			var type = this._model.getType(nodeID);
+			if(type && type == "quantity" && this._model.isAccumulator(nodeID)
+				&& this._model.getValue(nodeID)){
+				var initialNodeID = nodeID + this._model.getInitialNodeString();
+				this.detachConnections(initialNodeID);
+				domConstruct.destroy(initialNodeID);
+			}
+			domConstruct.destroy(nodeID);
+			// delete node from the model
+			var updateNodes = this._model.deleteNode(nodeID);
+			console.log(updateNodes);
+			array.forEach(updateNodes, function(ID){
+				console.log(ID);
+				this.updateNode(this._model.getNode(ID));
+			}, this);
+		},
+
+		detachConnections: function(nodeID){
+			array.forEach(this._instance.getConnections(), function(connection){
+				if(connection.sourceId == nodeID || connection.targetId == nodeID){
+					this._instance.detach(connection);
+				}
+			}, this);
 		}
 	});
 });

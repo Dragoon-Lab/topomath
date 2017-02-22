@@ -18,7 +18,7 @@ define([
 			beginY: 100,
 			nodeWidth: 250,
 			nodeHeight: 100,
-			initialNodeString: "initial",
+			initialNodeString: "_initial",
 			_updateNextXYPosition: function(){
 				var pos = {
 					x: this.x,
@@ -188,13 +188,41 @@ define([
 				var node = this.getNode(id);
 				return node && node.accumulator;
 			},
+			deleteNode: function(/*string*/ id){
+				var nodes = this.getNodes();
+				var l = nodes.length;
+				var index = -1;
+				var updateNodes = [];
+				for(var i = 0; i < l; i++){
+					var found = false;
+					if(nodes[i].ID === id){
+						index = i;
+					}
+					array.forEach(nodes[i].links, function(link){
+						if(link.ID.indexOf(id) > -1){
+							found = true;
+							return;
+						}
+					});
+					if(found){
+						updateNodes.push(nodes[i].ID);
+						nodes[i].links = [];
+						nodes[i].equation = "";
+						/*nodes[i].status.equation = {
+							"disabled": false
+						};*/
+					}
+				}
+
+				return updateNodes;
+			},
 			setLinks: function(/*array*/ link, /*string*/ target){
 				// Silently filter out any inputs that are not defined.
 				// inputs is an array of objects.
 				var targetID = target;
 				var initialString = this.getInitialNodeString();
 				if(target.indexOf(initialString) > 0)
-					targetID = target.replace(("_" + initialString), "");
+					targetID = target.replace((initialString), "");
 				var node = this.getNode(targetID);
 				if(node){
 					node.links = array.filter(links, function(link){
@@ -345,9 +373,9 @@ define([
 				var unitsOptional = true;
 				var returnFlag = '';
 
-				var nameEntered = node.type && node.type == "equation" || node.variable != null;
-				var valueEntered = node.type && node.type == "equation" || node.value != null;
-				var equationEntered = node.type && node.type == "quantity" || node.value != null;
+				var nameEntered = node.type && node.type == "equation" || node.variable;
+				var valueEntered = node.type && node.type == "equation" || node.value;
+				var equationEntered = node.type && node.type == "quantity" || node.equation;
 				if(node.genus == "required" || node.genus == "allowed" || node.genus == "preferred"){
 					returnFlag = nameEntered && (node.description || node.explanation) &&
 						node.type && (valueEntered || typeof valueEntered === "number") &&
