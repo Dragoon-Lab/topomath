@@ -93,14 +93,22 @@ define([
 
 			ready(this, this._setUpNodeEditor);
 			ready(this, this._initHandles);
+			this.nodeConnections = [];
 		},
 
 		// A stub for connecting routine to draw new node.
-		/*
+		
 		addNode: function(node, autoflag){
 			console.log("Node Editor calling addNode() for ", node.id);
 		},
-		*/
+		// Stub to setting description for auto craeted nodes.
+		setNodeDescription: function(id, variable){
+		},
+		// Stub to set connections in the graph
+		setConnections: function(from, to){
+			// console.log("======== setConnections fired for node" + to);
+		},
+
 
 		_initCrisisAlert: function(){
 			//Crisis Alert widget
@@ -153,7 +161,7 @@ define([
 			 */
 
 			//we do not yet have activity parameters, for now setting it to true by default
-			var showFeedback = /*this.activityConfig.get("showFeedback")*/true;
+			var showFeedback = true;
 			if(showFeedback){
 				for(var control in this.controlMap){
 					var w = registry.byId(this.controlMap[control]);
@@ -221,7 +229,7 @@ define([
 			 Add fields to units box, using units in model node
 			 In author mode, this needs to be turned into a text box.
 			 */
-			//to do : selectUnits comes with student mode
+			//TODO : selectUnits comes with student mode
 			/* 
 			var u = registry.byId("selectUnits");
 			// console.log("units widget ", u);
@@ -233,7 +241,7 @@ define([
 				u.addOption({label: unit, value: unit});
 			});
 			*/
-			//to do: discuss with team implications of autho complete for now commenting
+			//TODO: discuss with team implications of autho complete for now commenting
 			/*
 			if(this.activityConfig.get('showEquationAutoComplete')){
 				var mathFunctions = dojo.xhrGet({
@@ -524,7 +532,7 @@ define([
 			if(nodeType == "quantity"){
 
 				//Populate initial value of quantity node
-				//to do : fetch initial value from model, for now giving empty value,
+				//TODO : fetch initial value from model, for now giving empty value,
 				var initial = "";//model.getInitial(nodeid);
 				console.log('initial value is ', initial, typeof initial);
 				// Initial value will be undefined if it is not in the model
@@ -563,7 +571,7 @@ define([
 			// Apply directives, either from PM or the controller itself.
 			var tempDirective = null;
 			array.forEach(directives, function(directive) {
-				/*to do: for now not using authorModelStatus, so updateModelStatus function has no significance
+				/*TODO : for now not using authorModelStatus, so updateModelStatus function has no significance
 				if(!noModelUpdate)
 					this.updateModelStatus(directive); */
 				if (directive.attribute != "display" && this.widgetMap[directive.id]) {
@@ -580,7 +588,7 @@ define([
 						}else if(w.id == 'equationBox'){
 							this.equationSet(directive.value);
 						}
-						//to do : update explanation function but right now no directives with att value for explanations not being processed 
+						//TODO : update explanation function but right now no directives with att value for explanations not being processed 
 
 					}else{
 						console.log("w is",w);
@@ -637,7 +645,7 @@ define([
 		undoHandler: function(){
 			var equationWidget = registry.byId("equationInputbox");
 			equationWidget.set("value", "");
-			//to do: based on how we handle select model, for now commenting it out
+			//TODO : based on how we handle select model, for now commenting it out
 			/*
 			var givenEquationWidget = registry.byId("givenEquationBox");//if value of selectModel was equal to "given"
 			givenEquationWidget.set("value", "");
@@ -645,7 +653,7 @@ define([
 			*/
 		},
 		equationInsert: function(text){
-			//todo: initialize domNode
+			//TODO: initialize domNode
 			var widget = registry.byId(this.controlMap.equation);
 			var oldEqn = widget.get("value");
 			// Get current cursor position or go to end of input
@@ -691,6 +699,335 @@ define([
 			//Stub to delete node with id by inturn calling drawmodel.deleteNode in main.js
 			return id;
 		},
+
+		equationAnalysis: function(directives, ignoreUnknownTest){
+			this.equationEntered = true;
+			console.log("****** enter button");
+			/*
+			 This takes the contents of the equation box and parses it.
+
+			 If the parse fails:
+			 * send a warning message, and
+			 * log attempt (the PM does not handle syntax errors).
+
+			 Note: the model module may do some of these things automatically.
+
+			 Also, the following section could just as well be placed in the PM?
+			 */
+			var widget = registry.byId(this.controlMap.equation);
+			var inputEquation = widget.get("value");
+
+			var parse = {};
+			if (inputEquation == "") {
+				directives.push({id: 'message', attribute: 'append', value: 'There is no equation to check.'});
+				return null;
+			}
+			try{
+				//input equation in topomath should contain symbol "=" 
+				//both left hand side and right hand side have to be parsed
+				var splitEq = inputEquation.split("=");
+				if(splitEq.length !== 2){
+					directives.push({id: 'message', attribute: 'append', value: 'Incorrect equation syntax'});
+					return null;
+				}
+				var lhsEquation = splitEq[0];
+				var rhsEquation = splitEq[1];
+				console.log(inputEquation, typeof inputEquation, lhsEquation,typeof lhsEquation);				
+				parse.lhsParse = expression.parse(lhsEquation);
+				parse.rhsParse = expression.parse(rhsEquation);
+			}catch(err){
+				console.log("Parser error: ", err);
+				console.log(err.message);
+				console.log(err.Error);
+				this._model.active.setEquation(this.currentID, inputEquation);
+				if(err.message.includes("unexpected variable"))
+					directives.push({id: 'message', attribute: 'append', value: 'The value entered for the equation is incorrect'});
+				else
+					directives.push({id: 'message', attribute: 'append', value: 'Incorrect equation syntax.'});
+				directives.push({id: 'equation', attribute: 'status', value: 'incorrect'});
+				/*
+				this.logging.log("solution-step", {
+					type: "parse-error",
+					node: this._model.active.getName(this.currentID),
+					nodeID: this.currentID,
+					property: "equation",
+					value: inputEquation,
+					correctResult: this._model.given.getEquation(this.currentID),
+					checkResult: "INCORRECT",
+					message: err
+				});
+				*/
+				return null;
+			}
+			//rest of the analysis is only needed for the student mode. So returning in case the active model is not student.
+			if(this._model.active != this._model.student){
+				return parse;
+			}
+			//TODO : as suggested in above comment if the mode is student we enable the below code
+			//For now, commenting
+			/*
+			var cancelUpdate = false;
+			var resetEquation = false;
+			var descriptionID = this._model.student.getDescriptionID(this.currentID);
+
+			var mapID = this._model.active.getDescriptionID || function(x){ return x; };
+			var unMapID = this._model.active.getNodeIDFor || function(x){ return x; };
+			//there is no error in parse. We check equation for validity
+			//Check 1 - accumulator equation is not set to 0, basically the type of a node should be parameter.
+			if(this._model.active.getType(this.currentID) === "accumulator" &&
+				!parse.variables().length && parse.tokens.length == 1 && parse.tokens[0].number_ == 0){
+				cancelUpdate = true;
+				directives.push({id: 'equation', attribute: 'status', value: 'incorrect'});
+				directives.push({
+					id: 'crisisAlert',
+					attribute: 'open',
+					value: "Equation of accumulator can not be set to 0. If this is the case then please change the type of the node to parameter."
+				});
+				this.logging.log("solution-step", {
+					type: "zero-equation-accumulator",
+					node: this._model.active.getName(this.currentID),
+					nodeID: this.currentID,
+					property: "equation",
+					value: inputEquation,
+					correctResult: this._model.given.getEquation(this.currentID),
+					checkResult: "INCORRECT"
+				});
+			}
+			array.forEach(parse.variables(), function(variable){
+				var givenID = this._model.given.getNodeIDByName(variable);
+				var badVarCount = "";
+				// Check 2 - Checks for nodes referencing themselves; this causes problems because
+				//		functions will always evaluate to true if they reference themselves
+				if(!givenID){
+					if(!ignoreUnknownTest){
+						// Check for number of unknown var, only in student mode.
+						badVarCount = this._model.given.getAttemptCount(descriptionID, "unknownVar");
+					}
+					cancelUpdate = true;  // Don't update model or send ot PM.
+
+					// The following if statement prevents a user from being endlessly stuck if he/she is using an incorrect variable.
+					//		To organize this better in the future we may want to move this check into another file with the code from
+					//		pedagogical_module.js that is responsible for deciding the correctness of a student's response.
+					if(badVarCount){
+						this._model.given.setAttemptCount(descriptionID, "unknownVar", badVarCount+1);
+						if(badVarCount > 2){
+							//resetEquation = true;
+						//} else {
+							this._model.given.setAttemptCount(descriptionID, "equation", badVarCount+1);
+							cancelUpdate = false;
+						}
+					}else{
+						this._model.given.setAttemptCount(descriptionID, "unknownVar", 1);
+						//resetEquation = true;
+					}
+					directives.push({id: 'equation', attribute: 'status', value: 'incorrect'});
+					directives.push({id: 'message', attribute: 'append', value: "Unknown variable '" + variable + "'."});
+					directives.push({
+						id: 'crisisAlert',
+						attribute: 'open',
+						value: "Unknown variable '" + variable + "' entered in equation."
+					});
+					this.logging.log("solution-step", {
+						type: "unknown-variable",
+						node: this._model.active.getName(this.currentID),
+						nodeID: this.currentID,
+						property: "equation",
+						value: inputEquation,
+						correctResult: this._model.given.getEquation(this.currentID),
+						checkResult: "INCORRECT"
+					});
+				}
+
+				if(givenID && this._model.active.getType(this.currentID) === "function" &&
+					givenID === mapID.call(this._model.active, this.currentID)){
+					cancelUpdate = true;
+					directives.push({id: 'equation', attribute: 'status', value: 'incorrect'});
+					directives.push({id: 'message', attribute: 'append', value: "You cannot use '" + variable + "' in the equation. Function nodes cannot reference themselves."});
+					this.logging.log("solution-step", {
+						type: "self-referencing-function",
+						node: this._model.active.getName(this.currentID),
+						nodeID: this.currentID,
+						property: "equation",
+						value: inputEquation,
+						correctResult: this._model.given.getEquation(this.currentID),
+						checkResult: "INCORRECT"
+					});
+				}
+				//Check 3 - check if accumulator has a reference to itself as per the Trello card https://trello.com/c/0aqmwqqG
+				if(givenID && this._model.active.getType(this.currentID) === "accumulator" &&
+					givenID === mapID.call(this._model.active, this.currentID)){
+					cancelUpdate = true;
+					directives.push({id: 'equation', attribute: 'status', value: 'incorrect'});
+					directives.push({
+						id: 'crisisAlert',
+						attribute: 'open',
+						value: "The old value of the accumulator is already included in the expression, so you don't have to mention it in the expression.  Only put an expression for the change in the accumulators value."
+					});
+					this.logging.log("solution-step", {
+						type: "self-referencing-accumulator",
+						node: this._model.active.getName(this.currentID),
+						nodeID: this.currentID,
+						property: "equation",
+						value: inputEquation,
+						correctResult: this._model.given.getEquation(this.currentID),
+						checkResult: "INCORRECT"
+					});
+				}
+			}, this);
+
+			if(resetEquation){
+				this._model.active.setEquation(this.currentID, "");
+				directives.push({id: 'equation', attribute: 'value', value: ""});
+			}
+			// changing this as it is essential to update the equation using createExpressionNodes.
+			// otherwise equation with correct nodes not converted to their corresponding id stays in the equation of the model
+			// fix for bug : https://trello.com/c/bVYAQBKT ~ Sachin Grover
+			/*else if(cancelUpdate){
+				//in case we are not calling the pm then we need to save the equation to the model.
+				//this._model.active.setEquation(this.currentID, inputEquation);
+			}*/
+			//if(true || !cancelUpdate){
+			//return parse;
+			//}
+			//return null; */
+
+		},
+		createExpressionNodes: function(parse, ignoreUnknownTest){
+			/*
+			 Create Expression nodes if equation is valid and parsed sucessfully.
+
+			 If the parse succeeds:
+			 * substitute in student id for variable names (when possible),
+			 * save to model,
+			 * update inputs,
+			 * update the associated connections in the graph, and
+			 * send the equation to the PM. **Done**
+			 * Handle the reply from the PM. **Done**
+			 * If the reply contains an update to the equation, the model should also be updated.
+
+			 */
+			 // in topomath parse has noth lhsParse and rhsParse 
+			if(parse){
+				var inputNodesList = [];
+				var cancelUpdate = false;
+				var directives = [];
+
+				var widget = registry.byId(this.controlMap.equation);
+				var inputEquation = widget.get("value");
+
+				var lhsInputs = this.substituteVars(parse.lhsParse,ignoreUnknownTest);
+				var rhsInputs = this.substituteVars(parse.rhsParse,ignoreUnknownTest);
+				inputNodesList = lhsInputs.concat(rhsInputs);
+
+				if(directives.length > 0){
+					this._model.active.setEquation(this.currentID, inputEquation);
+					this.applyDirectives(directives);
+					return;
+				}
+				//Check to see if there are unknown variables in parsedEquation if in student mode
+				//If unknown variable exist, do not update equation in model. 
+				//Do the same if a function node references itself.
+				if (cancelUpdate){
+					return null;
+				}
+				// Expression now is written in terms of student IDs, when possible.
+				// Save with explicit parentheses for all binary operations.
+				var lhsParsedEq = parse.lhsParse.toString(true);
+				var rhsParsedEq = parse.rhsParse.toString(true);
+
+				//Check to see if parsedEquation returns a string, change to string if not
+				if (typeof lhsParsedEq == "number"){
+					lhsParsedEq = lhsParsedEq.toString();
+				}
+
+				if(typeof rhsParsedEq == "number"){
+					rhsParsedEq = rhsParsedEq.toString();
+				}
+
+				var parsedEquation = lhsParsedEq + "=" + rhsParsedEq;
+				console.log("parsed equations",parsedEquation, lhsParsedEq, rhsParsedEq);
+				// This duplicates code in equationDoneHandler
+				// console.log("********* Saving equation to model: ", parsedEquation);
+				this._model.active.setEquation(this.currentID, parsedEquation);
+
+				// Test if this is a pure sum or product
+				// If so, determine connection labels
+				var lhsInputs = expression.createInputs(parse.lhsParse);
+				var rhsInputs = expression.createInputs(parse.rhsParse);
+				var inputs = lhsInputs.concat(rhsInputs);
+				// Update inputs and connections
+				console.log("final inputs",lhsInputs,rhsInputs,inputs);
+				this._model.active.setInputs(inputs, this.currentID);
+				this.setConnections(this._model.active.getInputs(this.currentID), this.currentID);
+				// console.log("************** equationAnalysis directives ", directives);
+
+				array.forEach(inputNodesList, lang.hitch(this, function(node){
+					this.updateInputNode(node.id, node.variable);
+				}));
+
+				var variableList = parse.lhsParse.variables().concat(parse.rhsParse.variables());
+				array.forEach(variableList, lang.hitch(this, function(n){
+					this.nodeConnections.push(n);
+				}));
+
+				// Send to PM if all variables are known.
+				console.log(parse);
+			}
+		},
+
+		substituteVars : function(parse,ignoreUnknownTest){
+		//getDescriptionID is present only in student mode. So in author mode it will give an identity function. This is a work around in case when its in author mode at that time the given model is the actual model. So descriptionID etc are not available. 
+			var mapID = this._model.active.getAuthoredID || function(x){ return x; };
+			var unMapID = this._model.active.getNodeIDFor || function(x){ return x; };
+			var currentNodelist = [];
+			array.forEach(parse.variables(), function(variable){
+					// Test if variable name can be found in given model
+					console.log("each variable",variable);
+					var givenID = this._model.authored.getNodeIDByName(variable);
+
+					// autocreation flag will eventually be set from the URL
+					// or from the state table.  Alternatively, we will show a list
+					// of variables.
+					var autocreationFlag = true;
+					/*if(autocreationFlag && !this._model.active.isNode(givenID))
+					 this.autocreateNodes(variable);*/
+					// The variable "descriptionID" is the corresponding givenModelNodeID from the model (it is not equal to the givenID used here).
+					// The variable "badVarCount" is used to track the number of times a user has attempted to use an incorrect variable to prevent
+					//		him or her from being stuck indefinitely.
+
+					var descriptionID = "";
+					//var badVarCount = "";
+					/*if (!ignoreUnknownTest) {
+						// Check for number of unknown var, only in student mode.
+						descriptionID = this._model.active.getDescriptionID(this.currentID);
+						badVarCount = this._model.given.getAttemptCount(descriptionID, "unknownVar");
+					}*/
+
+					if(givenID || ignoreUnknownTest){
+						//|| ignoreUnknownTest || badVarCount > 3){
+						// Test if variable has been defined already
+						var subID = unMapID.call(this._model.active, givenID);
+						if(subID){
+							// console.log("	   substituting ", variable, " -> ", studentID);
+							parse.substitute(variable, subID);
+							//inputNodesList.push({ "id": subID, "variable":variable});
+						}else if(autocreationFlag){
+							//create node
+							var id = this._model.active.addNode();
+							this.addNode(this._model.active.getNode(id));
+							this.setNodeDescription(id, variable);
+
+							currentNodelist.push({ "id": id, "variable":variable});
+							//get Node ID and substitute in equation
+							var subID2 = unMapID.call(this._model.active, givenID||id);
+							parse.substitute(variable, subID2); //this should handle createInputs and connections to automatic node
+						}/*else{
+							directives.push({id: 'message', attribute: 'append', value: "Quantity '" + variable + "' not defined yet."});
+						}*/
+					}
+				}, this);
+				return currentNodelist;	
+		}
 
 
 	});

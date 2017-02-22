@@ -148,6 +148,7 @@ define([
 			style.set('rootNodeToggleContainer', 'display', 'block');
 			style.set('expressionDiv', 'display', 'block');
 			style.set('inputSelectorContainer', 'display', 'block');
+
 		},
 		
 		initAuthorHandles: function(){
@@ -360,14 +361,14 @@ define([
 				style.set('modelSelectorContainer', 'display', 'block');
 				var studentNode = this._model.student.getNodeIDFor(this.currentID);
 				if(studentNode == null){
-					//to do : to write addStudentNode which has to add a quantity node, pushing this it backlog 
+					//TODO : to write addStudentNode which has to add a quantity node, pushing this it backlog 
 					//this.addStudentNode(this.currentID);
 				}
 			}else{
 				this._model.active = this._model.authored;
 				registry.byId("modelSelector").set('value',"correct");
 				style.set('modelSelectorContainer', 'display', 'none');
-				//to do : to write removeStudentNode , pushed to backlog
+				//TODO : to write removeStudentNode , pushed to backlog
 				//this.removeStudentNode(this.currentID);
 				//also show the waveform assignment button and image
 			}
@@ -444,7 +445,7 @@ define([
 				// previous value we dont process
 				var newInitial = IniFlag.value;
 				
-				//to do: applying directives on PM processed object, for now just processing, yet to write apply directives
+				//TODO: applying directives on PM processed object, for now just processing, yet to write apply directives
 				var returnObj = this.authorPM.process(this.currentID, "initial", newInitial, true);
 				console.log("author pm returned after evaluating initial value",returnObj);
 				this.applyDirectives(returnObj);
@@ -498,7 +499,86 @@ define([
 		},
 
 		equationDoneHandler: function(){
+			var model = registry.byId("modelSelector").value;
+			if(model && model == "correct"){
+				var directives = [];
+				var logObj = {};
+				var parse = this.equationAnalysis(directives, true);
+				if(parse){
+					directives = directives.concat(this.authorPM.process(this.currentID, "equation", parse));
+				} else {
+					logObj = {
+						error: true,
+						message: "parse error"
+					}
+				}
+				console.log("directives are", directives);
+				this.applyDirectives(directives);
+				this.createExpressionNodes(parse, true); 
+			} /* TODO: when equation for student values
+			else if(model && model =="given"){
+				var studentNodeID = this._model.student.getNodeIDFor(this.currentID);
+				var eqn = registry.byId(this.controlMap.equation).value;
+				var inputs = [];
+				if(typeof equation != "undefined" && eqn != null && eqn != ""){
+					var parse = equation.parse(eqn);
+					console.log("parse is ", parse);
+					this.givenEquationEntered = true;
+					array.forEach(parse.variables(), lang.hitch(this, function(variable){
+						console.log("there are variables");
+						var givenID = this._model.given.getNodeIDByName(variable);
+						var studentID = this._model.student.getNodeIDFor(givenID);
+						eqn = eqn.replace(variable, studentID);
+						inputs.push({"ID": studentID});
+						if(studentID == null){
+							this.givenEquationEntered = false;
+							eqn = "";
+							this.applyDirectives([{
+								id: "crisisAlert", attribute:
+								"open", value: "You are trying to add a node that is not part of student model."
+							}]);
+							registry.byId(this.controlMap.equation).set("value", "");
+							return;
+						}
+					}));
 
+					this._model.student.setInputs(inputs, studentNodeID);
+					this._model.student.setEquation(studentNodeID, eqn);
+					if(this.givenEquationEntered){
+						style.set(this.controlMap.equation, 'backgroundColor', "#2EFEF7");
+					}
+					var flag = equation.areEquivalent(this.currentID, this._model, eqn);
+					//update student node status
+					if(!flag){
+						this._model.student.setStatus(studentNodeID, "equation" , {"disabled": false,"status":"incorrect"});
+					}
+					else{
+						this._model.student.setStatus(studentNodeID, "equation" , {"disabled": false,"status":"correct"});
+					}
+				}else{
+					 //set status if equation is empty
+					 givenEqn = this._model.given.getEquation(this.currentID);
+					 if(typeof givenEqn === 'undefined' || givenEqn === "" || givenEqn === null){
+						this._model.student.setStatus(studentNodeID, "equation" , {"disabled": true,"status":"correct"});
+					 }
+					 else{
+						this._model.student.setStatus(studentNodeID, "equation" , {"disabled": false,"status":"incorrect"});
+					 }
+					 this._model.student.setInputs(inputs, studentNodeID);
+					 this._model.student.setEquation(studentNodeID, "");
+				}
+			}
+			var valueFor = model == "given" ? "student-model": "author-model";
+			logObj = lang.mixin({	
+				type: "solution-enter",
+				nodeID: this.currentID,
+				node: this._model.given.getName(this.currentID),
+				property: "equation",
+				value: registry.byId(this.controlMap.equation).get("value"),
+				usage: valueFor
+			}, logObj);
+			this.logging.log("solution-step", logObj);
+			*/
 		},
 		
 		handleGivenEquation: function(equation){

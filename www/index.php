@@ -256,12 +256,11 @@
 				<div class="fieldgroup">
 					 <div class="vertical">
 						<div id="equationLabel"></div>
-							<div id="equationInputboxContainer" class="fieldgroup">
-								<label for="equationInputbox">Equation</label>
-									<textarea id="equationInputbox" rows=4 cols=50 data-dojo-type="dijit/form/SimpleTextarea" style="min-height:60px;"></textarea>
-							</div>
+						<div id="equationInputboxContainer" class="fieldgroup">
+							<label for="equationInputbox">Equation</label>
+							<textarea id="equationInputbox" rows=4 cols=50 data-dojo-type="dijit/form/SimpleTextarea" style="min-height:60px;"></textarea>
+						</div>
 					</div>
-
 				</div>
 
 				<div class="fieldgroup" id="algebraic">
