@@ -51,12 +51,12 @@ define([
 			vertices = vertices[vertices.length - 1]; //hack for keeping it one dimension
 			console.log(vertices);
 			
-			var makeVertexSource = this.makeVertexSource;
+			/*var makeVertexSource = this.makeVertexSource;
 			instance.doWhileSuspended(function(){
 				array.forEach(vertices, function(vertex){
 					makeVertexSource(vertex, instance);
 				}, this);
-			});
+			});*/
 
 			array.forEach(vertices, function(vertex){
 				var id = attr.get(vertex, "id");
@@ -85,35 +85,13 @@ define([
 
 			var vertices = [];
 			array.forEach(htmlStrings, function(html, count){
-				var idTag = node.ID;
-				if(count == 1)
-					idTag += "_" + this._model.getInitialNodeString();
-
-				var classTag = type;
-				if(!this._model.isComplete(node.ID))
-					classTag += " incomplete";
-
-				vertices[count] = domConstruct.create("div", {
-					id: idTag,
-					"class": classTag,
-					style: {
-						left: node.position[count].x + 'px',
-						top: node.position[count].y + 'px',
-						backgroundColor: properties.backgroundColor,
-						borderColor: properties.borderColor
-					},
-					innerHTML: htmlStrings[count]
-				}, "statemachine-demo");
+				vertices[count] = this.createNodeDOM(node, html, count == 1);
 			}, this);
 
 			var color = this._model.getColor(node.ID);
 			if(color){
 				this.addNodeDescription(node.ID);
 			}
-
-			array.forEach(vertices, function(vertex){
-				this.makeDraggable(vertex);
-			}, this);
 
 			//add to cache
 			this._cache[node.ID] = lang.clone(node);
@@ -176,22 +154,7 @@ define([
 						var initialNodeString = graphObjects.getNodeHTML(this._model, node.ID)[1];
 						// TODO: the handler for accumulator/dynamic will ensure that a new position is created for the initial node.
 						// draw-model does not and should not have access to that part of the node, hence it needs to be done by the handler
-						var properties = this.getNodeUIProperties(node);
-						// temporary work around for it.
-						var x = node.position[0].x + 100;
-						var y = node.position[0].y + 100;
-						var initialNode = domConstruct.create("div", {
-							id: domIDTags['parentInitial'],
-							"class": node.type,
-							style: {
-								left: x + 'px',
-								top: y + 'px',
-								backgroundColor: properties.backgroundColor,
-								borderColor: properties.borderColor
-							},
-							innerHTML: initialNodeString
-						}, "statemachine-demo");
-						this.makeDraggable(initialNode);
+						this.createNodeDOM(node, initialNodeString, true);
 					}
 
 				} else
@@ -207,6 +170,46 @@ define([
 
 			//add to cache for next time
 			this._cache[node.ID] = lang.clone(node);
+		},
+		/**
+		* creates the dom structure for the node
+		* @params:	nodeID - node ID to get position for the node
+		*			innerHTML - string of the dom structure that is to be put
+		*			isInitial - whether the DOM to be created is of initial node or not
+		*/
+		createNodeDOM: function(node, innerHTML, isInitial){
+			//var node = this._model.getNode(nodeID);
+			var x = node.position[0].x;
+			var y = node.position[0].y;
+			var properties = this.getNodeUIProperties(node);
+			var idTag = node.ID;
+			var classTag = node.type;
+			if(isInitial){
+				idTag += "_" + this._model.getInitialNodeString();
+				if(node.position.length > 1){
+					x = node.position[1].x;
+					y = node.position[1].y;
+				} else {
+					x += 100;
+					y += 100;
+				}
+			}
+			if(!this._model.isComplete(node.ID))
+				classTag += " incomplete";
+			var nodeDOM = domConstruct.create("div", {
+				id: idTag,
+				"class": classTag,
+				style: {
+					left: x + 'px',
+					top: y + 'px',
+					backgroundColor: properties.backgroundColor,
+					borderColor: properties.borderColor
+				},
+				innerHTML: innerHTML
+			}, "statemachine-demo");
+
+			this.makeDraggable(nodeDOM);
+			return nodeDOM;
 		},
 
 		getNodeUIProperties: function(node){
