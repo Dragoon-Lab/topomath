@@ -717,24 +717,23 @@ define([
 			var widget = registry.byId(this.controlMap.equation);
 			var inputEquation = widget.get("value");
 
-			var parse = {};
+			//var parse = {};
+			var returnObj = {};
 			if (inputEquation == "") {
 				directives.push({id: 'message', attribute: 'append', value: 'There is no equation to check.'});
 				return null;
 			}
 			try{
-				//input equation in topomath should contain symbol "=" 
-				//both left hand side and right hand side have to be parsed
-				var splitEq = inputEquation.split("=");
-				if(splitEq.length !== 2){
-					directives.push({id: 'message', attribute: 'append', value: 'Incorrect equation syntax'});
-					return null;
+				//send the input equation entered to convert function in equation.js
+				//which parses, converts the equation to ids and sends back necessary params
+				console.log("converting expression");
+				var equationParams = {
+					equation: inputEquation,
+					autoCreateNodes: true, // where do we get this input from 
+					nameToID: true,
+					subModel: this._model
 				}
-				var lhsEquation = splitEq[0];
-				var rhsEquation = splitEq[1];
-				console.log(inputEquation, typeof inputEquation, lhsEquation,typeof lhsEquation);				
-				parse.lhsParse = expression.parse(lhsEquation);
-				parse.rhsParse = expression.parse(rhsEquation);
+				returnObj = expression.convert(equationParams);
 			}catch(err){
 				console.log("Parser error: ", err);
 				console.log(err.message);
@@ -761,7 +760,7 @@ define([
 			}
 			//rest of the analysis is only needed for the student mode. So returning in case the active model is not student.
 			if(this._model.active != this._model.student){
-				return parse;
+				return returnObj;
 			}
 			//TODO : as suggested in above comment if the mode is student we enable the below code
 			//For now, commenting
@@ -892,7 +891,7 @@ define([
 			//return null; */
 
 		},
-		createExpressionNodes: function(parse, ignoreUnknownTest){
+		createExpressionNodes: function(parseObject, ignoreUnknownTest){
 			/*
 			 Create Expression nodes if equation is valid and parsed sucessfully.
 
@@ -906,18 +905,25 @@ define([
 			 * If the reply contains an update to the equation, the model should also be updated.
 
 			 */
-			 // in topomath parse has noth lhsParse and rhsParse 
-			if(parse){
-				var inputNodesList = [];
-				var cancelUpdate = false;
-				var directives = [];
+			if(parseObject){
 
+				var newNodesList = parseObject.newNodeList;
+				var variableList = parseObject.variableList;
+				var autoCreationFlag = true; //can be read from the source
+				var cancelUpdate = false; // any purpose of this variable ??
+				var directives = [];
 				var widget = registry.byId(this.controlMap.equation);
 				var inputEquation = widget.get("value");
 
-				var lhsInputs = this.substituteVars(parse.lhsParse,ignoreUnknownTest);
-				var rhsInputs = this.substituteVars(parse.rhsParse,ignoreUnknownTest);
-				inputNodesList = lhsInputs.concat(rhsInputs);
+				//TODO : ignoreUnknownTest should be discussed
+				if(autoCreationFlag){
+					array.forEach(newNodesList, function(newNode){
+						//newNodeList containts those nodes which were not present when equation has been parsed
+						//these nodes were added to model, substituted into equation but should be added here
+						this.addNode(this._model.active.getNode(newNode.id));
+						this.setNodeDescription(newNode.id,newNode.variable);
+					});
+				}
 
 				if(directives.length > 0){
 					this._model.active.setEquation(this.currentID, inputEquation);
@@ -931,41 +937,20 @@ define([
 					return null;
 				}
 				// Expression now is written in terms of student IDs, when possible.
-				// Save with explicit parentheses for all binary operations.
-				var lhsParsedEq = parse.lhsParse.toString(true);
-				var rhsParsedEq = parse.rhsParse.toString(true);
+				console.log("********* Saving equation to model: ", parseObject.equation);
+				this._model.active.setEquation(this.currentID, parseObject.equation);
 
-				//Check to see if parsedEquation returns a string, change to string if not
-				if (typeof lhsParsedEq == "number"){
-					lhsParsedEq = lhsParsedEq.toString();
-				}
-
-				if(typeof rhsParsedEq == "number"){
-					rhsParsedEq = rhsParsedEq.toString();
-				}
-
-				var parsedEquation = lhsParsedEq + "=" + rhsParsedEq;
-				console.log("parsed equations",parsedEquation, lhsParsedEq, rhsParsedEq);
-				// This duplicates code in equationDoneHandler
-				// console.log("********* Saving equation to model: ", parsedEquation);
-				this._model.active.setEquation(this.currentID, parsedEquation);
-
-				// Test if this is a pure sum or product
-				// If so, determine connection labels
-				var lhsInputs = expression.createInputs(parse.lhsParse);
-				var rhsInputs = expression.createInputs(parse.rhsParse);
-				var inputs = lhsInputs.concat(rhsInputs);
+				var inputs = parseObject.inputsList;
 				// Update inputs and connections
-				console.log("final inputs",lhsInputs,rhsInputs,inputs);
-				this._model.active.setInputs(inputs, this.currentID);
-				this.setConnections(this._model.active.getInputs(this.currentID), this.currentID);
+				this._model.active.setLinks(inputs, this.currentID);
+				this.setConnections(this._model.active.getLinks(this.currentID), this.currentID);
 				// console.log("************** equationAnalysis directives ", directives);
 
-				array.forEach(inputNodesList, lang.hitch(this, function(node){
+				array.forEach(newNodesList, lang.hitch(this, function(node){
 					this.updateInputNode(node.id, node.variable);
 				}));
 
-				var variableList = parse.lhsParse.variables().concat(parse.rhsParse.variables());
+				var variableList = parseObject.variableList;
 				array.forEach(variableList, lang.hitch(this, function(n){
 					this.nodeConnections.push(n);
 				}));
@@ -974,61 +959,5 @@ define([
 				console.log(parse);
 			}
 		},
-
-		substituteVars : function(parse,ignoreUnknownTest){
-		//getDescriptionID is present only in student mode. So in author mode it will give an identity function. This is a work around in case when its in author mode at that time the given model is the actual model. So descriptionID etc are not available. 
-			var mapID = this._model.active.getAuthoredID || function(x){ return x; };
-			var unMapID = this._model.active.getNodeIDFor || function(x){ return x; };
-			var currentNodelist = [];
-			array.forEach(parse.variables(), function(variable){
-					// Test if variable name can be found in given model
-					console.log("each variable",variable);
-					var givenID = this._model.authored.getNodeIDByName(variable);
-
-					// autocreation flag will eventually be set from the URL
-					// or from the state table.  Alternatively, we will show a list
-					// of variables.
-					var autocreationFlag = true;
-					/*if(autocreationFlag && !this._model.active.isNode(givenID))
-					 this.autocreateNodes(variable);*/
-					// The variable "descriptionID" is the corresponding givenModelNodeID from the model (it is not equal to the givenID used here).
-					// The variable "badVarCount" is used to track the number of times a user has attempted to use an incorrect variable to prevent
-					//		him or her from being stuck indefinitely.
-
-					var descriptionID = "";
-					//var badVarCount = "";
-					/*if (!ignoreUnknownTest) {
-						// Check for number of unknown var, only in student mode.
-						descriptionID = this._model.active.getDescriptionID(this.currentID);
-						badVarCount = this._model.given.getAttemptCount(descriptionID, "unknownVar");
-					}*/
-
-					if(givenID || ignoreUnknownTest){
-						//|| ignoreUnknownTest || badVarCount > 3){
-						// Test if variable has been defined already
-						var subID = unMapID.call(this._model.active, givenID);
-						if(subID){
-							// console.log("	   substituting ", variable, " -> ", studentID);
-							parse.substitute(variable, subID);
-							//inputNodesList.push({ "id": subID, "variable":variable});
-						}else if(autocreationFlag){
-							//create node
-							var id = this._model.active.addNode();
-							this.addNode(this._model.active.getNode(id));
-							this.setNodeDescription(id, variable);
-
-							currentNodelist.push({ "id": id, "variable":variable});
-							//get Node ID and substitute in equation
-							var subID2 = unMapID.call(this._model.active, givenID||id);
-							parse.substitute(variable, subID2); //this should handle createInputs and connections to automatic node
-						}/*else{
-							directives.push({id: 'message', attribute: 'append', value: "Quantity '" + variable + "' not defined yet."});
-						}*/
-					}
-				}, this);
-				return currentNodelist;	
-		}
-
-
 	});
 });

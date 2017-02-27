@@ -503,9 +503,10 @@ define([
 			if(model && model == "correct"){
 				var directives = [];
 				var logObj = {};
-				var parse = this.equationAnalysis(directives, true);
-				if(parse){
-					directives = directives.concat(this.authorPM.process(this.currentID, "equation", parse));
+				//if parse is successful, equation analysis returns an object with parameters for creating expression nodes further
+				var returnObj = this.equationAnalysis(directives, true);
+				if(returnObj){
+					directives = directives.concat(this.authorPM.process(this.currentID, "equation", returnObj));
 				} else {
 					logObj = {
 						error: true,
@@ -514,7 +515,7 @@ define([
 				}
 				console.log("directives are", directives);
 				this.applyDirectives(directives);
-				this.createExpressionNodes(parse, true); 
+				this.createExpressionNodes(returnObj, true); 
 			} /* TODO: when equation for student values
 			else if(model && model =="given"){
 				var studentNodeID = this._model.student.getNodeIDFor(this.currentID);

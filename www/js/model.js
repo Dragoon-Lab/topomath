@@ -199,11 +199,6 @@ define([
 				var node = this.getNode(id);
 				return node && node.expression;
 			},
-			getInputs: function(/*string*/ id){
-				// Summary: return an array containing the input ids for a node.
-				var ret = this.getNode(id);
-				return ret && ret.inputs;
-			},
 			isNode: function(/* string */ id){
 				return array.some(this.getNodes(), function(node){
 					return node.ID === id;
@@ -244,16 +239,6 @@ define([
 			setPosition: function(/*string*/ id, /*integer*/ index, /*object*/ positionObject){
 				// Summary: sets the "X" and "Y" values of a node's position
 				this.getNode(id).position[index] = positionObject;
-			},
-			setInputs: function(/*array*/ inputs, /*string*/ inputInto){
-				// Silently filter out any inputs that are not defined.
-				// inputs is an array of objects.
-				var node = this.getNode(inputInto);
-				if(node){
-					node.inputs = array.filter(inputs, function(input){
-						return this.isNode(input.ID);
-					}, this);
-				}
 			},
 			getInitialNodeString: function(){
 				return obj.initialNodeString;
@@ -353,11 +338,6 @@ define([
 			getDescription: function(/*string*/ id){
 				return this.getNode(id).description;
 			},
-			getAuthoredID: function(id){
-				// Summary: Return any matched given model id for student node.
-				var node = this.getNode(id);
-				return node && node.authoredID;
-			},
 			getAuthorID: function(/*string*/ id){
 				return id;
 			},
@@ -448,6 +428,11 @@ define([
 				// When undefined, status[control] needs to be set explicitly.
 				this.getNode(id).status[control] = lang.mixin(attributes, options);
 				return attributes;
+			},
+			getAuthoredID: function(id){
+				// Summary: Return any matched given model id for student node.
+				var node = this.getNode(id);
+				return node && node.authoredID;
 			},
 		}, both);
 
