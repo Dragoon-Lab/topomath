@@ -36,13 +36,19 @@ $folder = ((isset($_REQUEST['f']) && !empty($_REQUEST['f'])) ?
 * As far as I remember the problem was to fetch problem 
 * using group in forums, which I think is not present in Drupal website
 * ~ Sachin
+* Update - there is a change from the above comments in first if check
+* where I think I found the use case of user precedence. I am not sure
+* so I am still leaving the TODO as well as the new comment there ~ Sachin
 */
 if($mode == "AUTHOR"){
 	$query = "";
 	if($folder != ""){
+		// this is with the user precedence logic I think
+		// where the problem needs to be get based on the folder
+		// so that teams can work on the same model. ~ Sachin
 		$query = sprintf(get_query('problem_without_user_fetch'), $mode, $section, $problem, $folder);
 	} else {
-		$query = sprintf(get_query('problem_without_user_folder_fetch'), $mode, $section, $problem);
+		$query = sprintf(get_query('problem_without_folder_fetch'), $user, $mode, $section, $problem);
 	}
 } elseif ($mode == "STUDENT") {
 	if($folder != "")

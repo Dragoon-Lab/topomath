@@ -70,7 +70,8 @@ define([
 				throw Error(err);
 			}
 		} else {
-			throw Error("something went wrong");
+			console.log("Its a new problem");
+			// TODO: show the message box at the top to say that its a new problem.
 		}
 	
 		//The following code follows sachin code after the model has been rendered according to query parameters
@@ -128,7 +129,7 @@ define([
 					}
 				}
 				_model.active.setPosition(id, index, {"x": g.x, "y": g.y+scrollTop});
-				//_session.saveModel(_model.model);
+				_session.saveModel(_model.model);
 			}, true);
 	
 
