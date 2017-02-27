@@ -99,7 +99,7 @@ define([
 					initial = typeof(initial) === "number" ? initial : "";
 					value = model.getVariable(nodeID);
 					if(model.isAccumulator(nodeID) && initial){
-						value = "initial " + value + " : " + initial;
+						value = model.getInitialNodeDisplayString() + value + " : " + initial;
 					} else if(initial) {
 						value += " = " + initial;
 					}

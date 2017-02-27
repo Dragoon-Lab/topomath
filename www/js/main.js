@@ -101,8 +101,8 @@ define([
 				var scrollTop = document.getElementById("drawingPane").scrollTop;
 				var id = mover.node.id;
 				var index = 0
-				var initialString = "_" + _model.active.getInitialNodeString();
-				if(id.indexOf("_") > -1){
+				var initialString = _model.active.getInitialNodeIDString();
+				if(id.indexOf(initialString) > -1){
 					id = id.replace(initialString, "");
 					index = 1;
 				}
@@ -205,6 +205,9 @@ define([
 
 			aspect.after(controllerObject, "addNode",
 				lang.hitch(dm, dm.addNode), true);
+
+			aspect.after(controllerObject, "setConnections",
+				lang.hitch(dm, dm.setConnections));
 
 			on(registry.byId("closeButton"), "click", function(){
 				//TODO: once node_editor2 is merged to master, uncomment the line below.

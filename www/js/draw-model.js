@@ -102,7 +102,7 @@ define([
 
 		updateNode: function(/* object */ node){
 			// all the classes that we need
-			var initialNodeIDTag = this._model.getInitialNodeString();
+			var initialNodeIDTag = this._model.getInitialIDNodeString();
 			var domIDTags = {
 				'nodeDOM': node.ID+'Content',
 				'initialNode': node.ID+'ContentInitial',
@@ -190,7 +190,7 @@ define([
 			var idTag = node.ID;
 			var classTag = node.type;
 			if(isInitial){
-				idTag += this._model.getInitialNodeString();
+				idTag += this._model.getInitialNodeIDString();
 				if(node.position.length > 1){
 					x = node.position[1].x;
 					y = node.position[1].y;
@@ -383,7 +383,7 @@ define([
 			var type = this._model.getType(nodeID);
 			if(type && type == "quantity" && this._model.isAccumulator(nodeID)
 				&& this._model.getValue(nodeID)){
-				var initialNodeID = nodeID + this._model.getInitialNodeString();
+				var initialNodeID = nodeID + this._model.getInitialNodeIDString();
 				this.detachConnections(initialNodeID);
 				domConstruct.destroy(initialNodeID);
 			}

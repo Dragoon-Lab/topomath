@@ -18,7 +18,8 @@ define([
 			beginY: 100,
 			nodeWidth: 250,
 			nodeHeight: 100,
-			initialNodeString: "_initial",
+			initialNodeIDString: "_initial",
+			initialNodeDisplayString: "prior",
 			_updateNextXYPosition: function(){
 				var pos = {
 					x: this.x,
@@ -220,7 +221,7 @@ define([
 				// Silently filter out any inputs that are not defined.
 				// inputs is an array of objects.
 				var targetID = target;
-				var initialString = this.getInitialNodeString();
+				var initialString = this.getInitialNodeIDString();
 				if(target.indexOf(initialString) > 0)
 					targetID = target.replace((initialString), "");
 				var node = this.getNode(targetID);
@@ -240,8 +241,11 @@ define([
 				// Summary: sets the "X" and "Y" values of a node's position
 				this.getNode(id).position[index] = positionObject;
 			},
-			getInitialNodeString: function(){
-				return obj.initialNodeString;
+			getInitialNodeIDString: function(){
+				return obj.initialNodeIDString;
+			},
+			getInitialNodeDisplayString: function(){
+				return obj.initialNodeDisplayString;
 			}
 		};
 
