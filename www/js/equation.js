@@ -15,15 +15,18 @@ define([
 		*
 		* @params:	object subModel: model used to get the node name for each variable
 		* 			string equation: equation which is to be converted
-		* @return:	string expression: with each variable ID replaced with variable name
+		* @return:	object variables
+		*			string equation: converted equation string
+		*			array nodeList:
+		*			array variableList:
+		*			array inputList:
 		*/
 		convert: function(params){
 			var equation = params.equation;
 			var subModel = params.subModel;
 
-			var eqs = params.equation.split(this.equalto);
+			var eqs = equation.split(this.equalto);
 			var expressions = [];
-
 			try{
 				array.forEach(eqs, function(eq, count){
 					expressions[count] = Parser.parse(eq);
@@ -39,10 +42,7 @@ define([
 			this.mapVariableNodeNames = {};
 			// console.log("            parse: ", expr);
 
-			
-			var nameToId = params.nameToId ? true : false;
-
-			if(nameToId){
+			if(params.nameToId){
 				var nodeList = []; //this holds new node ids and variable objects
 				var variableList = []; // this holds the variable list
 				var inputList = []; // this holds the input list
@@ -90,7 +90,9 @@ define([
 					}, this);
 				}, this);
 				//this would be the case where equation with ids is converted to names and returned
-				return expressions[0].toString() + " " + this.equalto + " " + expressions[1].toString();
+				return {
+					equation: expressions[0].toString() + " " + this.equalto + " " + expressions[1].toString()
+				};
 			}	
 		},
 
