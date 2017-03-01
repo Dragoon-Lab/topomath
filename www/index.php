@@ -214,12 +214,12 @@
 
 			<div class="fieldgroup" id="valueUnitsContainer" style="display: none;">
 				<!-- adding a div for value field to control its display in UI -->
-				<div id="initialValueInputboxContainer" >
+				<div id="valueInputboxContainer" >
 					<span>
-						<div id="initialValueQuestionMark" class="questionMark"></div>
-						<label for="initialValueInputbox"><p id="initLabel" style="display:inline"></p>Value</label>
+						<div id="valueQuestionMark" class="questionMark"></div>
+						<label for="valueInputbox"><p id="initLabel" style="display:inline"></p>Value</label>
 					</span>
-					<input id="initialValueInputbox" type="text" style="width:5em" data-dojo-type="dijit/form/TextBox">
+					<input id="valueInputbox" type="text" style="width:5em" data-dojo-type="dijit/form/TextBox">
 				</div>
 				<!--
 				<div id = "unitDiv" style="display: none">

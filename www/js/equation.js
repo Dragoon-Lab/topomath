@@ -17,9 +17,9 @@ define([
 		* 			string equation: equation which is to be converted
 		* @return:	object variables
 		*			string equation: converted equation string
-		*			array nodeList:
-		*			array variableList:
-		*			array inputList:
+		*			array variableList: array of all variables in the equation
+		*			array newnodeList: array of objects which contain ids and corresponding variable names of new nodes (nodes which are not already present in the model and have been added after equation parse)
+		*			array inputList: array of objects containing inputs of the equation
 		*/
 		convert: function(params){
 			var equation = params.equation;
@@ -53,7 +53,7 @@ define([
 						//This is the case where node names have to be converted to ids
 						//This situation arises from equationDoneHandler
 						//In such situation convert name to id
-						var nodeId = subModel.getNodeIDByName(variable);
+						var nodeId = subModel.active.getNodeIDByName(variable);
 						if(nodeId){
 							expr.substitute(variable,nodeId);
 						}

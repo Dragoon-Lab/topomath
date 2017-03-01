@@ -216,7 +216,7 @@ define([
 				var node = this.getNode(id);
 				return node && node.accumulator;
 			},
-			setLinks: function(/*array*/ link, /*string*/ target){
+			setLinks: function(/*array*/ links, /*string*/ target){
 				// Silently filter out any inputs that are not defined.
 				// inputs is an array of objects.
 				var targetID = target;
@@ -242,22 +242,6 @@ define([
 			},
 			getInitialNodeString: function(){
 				return obj.initialNodeString;
-			},
-			getInitial: function(/*string*/ id){
-				var node = this.getNode(id);
-				return node && node.initial;
-			},
-			getOutputs: function(/*string*/ id){
-				// Summary: return an array containing the output ids for a node.
-				var outputs = [];
-				array.forEach(this.getNodes(), function(node){
-					if(array.some(node.inputs, function(input){
-						return input.ID == id;
-					})){
-						outputs.push(node.ID);
-					}
-				});
-				return outputs;
 			},
 		};
 
@@ -372,8 +356,8 @@ define([
 			setUnits: function(/*string*/ id, /*string*/ units){
 				this.getNode(id).units = units;
 			},
-			setInitial: function(/*string*/ id, /*float*/ initial){
-				this.getNode(id).initial = initial;
+			setValue: function(/*string*/ id, /*float*/ value){
+				this.getNode(id).value = value;
 			},
 			setEquation: function(/*string*/ id, /*string | object*/ equation){
 				this.getNode(id).equation = equation;

@@ -56,13 +56,13 @@ define([
 		disableHandlers: false,
 		/* The last value entered into the intial value control */
 
-		lastInitial: {value: null},
+		lastValue: {value: null},
 
 		genericControlMap: {
-			initial: "initialValueInputbox",
+			value: "valueInputbox",
 		},
 		genericDivMap: {
-			initial: "initialValueInputboxContainer",
+			value: "valueInputboxContainer",
 			units: "unitsSelectorContainer",
 			equation: "expressionDiv"
 		},
@@ -293,30 +293,30 @@ define([
 			}));
 
 			/*
-			 *	 event handler for 'Initial' field
-			 *	 'handleInitial' will be called in either Student or Author mode
+			 *	 event handler for 'value' field
+			 *	 'handleValue' will be called in either Student or Author mode
 			 * */
 
-			var initialWidget = registry.byId(this.controlMap.initial);
+			var valueWidget = registry.byId(this.controlMap.value);
 			// This event gets fired if student hits TAB or input box
 			// goes out of focus.
-			initialWidget.on('Change', lang.hitch(this, function(){
-				return this.disableHandlers || this.handleInitial.apply(this, arguments);
+			valueWidget.on('Change', lang.hitch(this, function(){
+				return this.disableHandlers || this.handleValue.apply(this, arguments);
 			}));
 
 			// Look for ENTER key event and fire 'Change' event, passing
 			// value in box as argument.  This is then intercepted by the
 			// regular handler.
-			initialWidget.on("keydown", function(evt){
+			valueWidget.on("keydown", function(evt){
 				// console.log("----------- input character ", evt.keyCode, this.get('value'));
 				if(evt.keyCode == keys.ENTER){
 					this.emit('Change', {}, [this.get('value')]);
 				}
 			});
-			// undo color on change in the initial value widget
-			initialWidget.on("keydown",lang.hitch(this,function(evt){
+			// undo color on change in the  value widget
+			valueWidget.on("keydown",lang.hitch(this,function(evt){
 				if(evt.keyCode != keys.ENTER){
-					var w = registry.byId(this.controlMap.initial);
+					var w = registry.byId(this.controlMap.value);
 					w.set('status','');
 				}
 			}));
@@ -512,7 +512,7 @@ define([
 
 			 Set selection for description, type, units, inputs (multiple selections)
 
-			 Set value for initial value, equation (input),
+			 Set value for  value, equation (input),
 			 */
 
 
@@ -531,14 +531,14 @@ define([
 
 			if(nodeType == "quantity"){
 
-				//Populate initial value of quantity node
-				//TODO : fetch initial value from model, for now giving empty value,
-				var initial = "";//model.getInitial(nodeid);
-				console.log('initial value is ', initial, typeof initial);
-				// Initial value will be undefined if it is not in the model
-				var isInitial = typeof initial === "number";
-				this.lastInitial.value = isInitial?initial.toString():null;
-				registry.byId(this.controlMap.initial).attr('value', isInitial?initial:'');
+				//Populate value of quantity node
+				//TODO : fetch value from model, for now giving empty value,
+				var value = "";//model.getValue(nodeid);
+				console.log(' value is ', value, typeof value);
+				//  value will be undefined if it is not in the model
+				var isValue = typeof value === "number";
+				this.lastValue.value = isValue?value.toString():null;
+				registry.byId(this.controlMap.value).attr('value', isValue?value:'');
 
 				var unit = model.getUnits(nodeid);
 				console.log('unit is', unit || "not set");
@@ -581,8 +581,8 @@ define([
 						// Each control has its own function to update the
 						// the model and the graph.
 						// keep updating this section as we handle the editor input fields
-						if(w.id == 'initialValueInputbox'){
-							this._model.active.setInitial(this.currentID, directive.value);
+						if(w.id == 'valueInputbox'){
+							this._model.active.setValue(this.currentID, directive.value);
 						}else if(w.id == 'selectDescription'){
 							this.updateDescription(directive.value);
 						}else if(w.id == 'equationBox'){
@@ -675,7 +675,7 @@ define([
 			// need to delete all existing outgoing connections
 			// need to add connections based on new inputs in model.
 			// add hook so we can do this in draw-model...
-			this.addQuantity(this.currentID, this._model.active.getOutputs(this.currentID));
+			this.addQuantity(this.currentID, this._model.active.getLinks(this.currentID));
 		},
 		/* Stub to update connections in graph */
 		addQuantity: function(source, destinations){
@@ -730,7 +730,7 @@ define([
 				var equationParams = {
 					equation: inputEquation,
 					autoCreateNodes: true, // where do we get this input from 
-					nameToID: true,
+					nameToId: true,
 					subModel: this._model
 				}
 				returnObj = expression.convert(equationParams);
@@ -922,7 +922,7 @@ define([
 						//these nodes were added to model, substituted into equation but should be added here
 						this.addNode(this._model.active.getNode(newNode.id));
 						this.setNodeDescription(newNode.id,newNode.variable);
-					});
+					}, this);
 				}
 
 				if(directives.length > 0){
@@ -955,8 +955,6 @@ define([
 					this.nodeConnections.push(n);
 				}));
 
-				// Send to PM if all variables are known.
-				console.log(parse);
 			}
 		},
 	});

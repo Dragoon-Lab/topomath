@@ -46,12 +46,12 @@ define([
 				var returnObj=[];
 				switch(nodeType){
 				
-				case "initial":
+				case "value":
 					if(validInput){
-						returnObj.push({id:"initial", attribute:"status", value:"entered"});
+						returnObj.push({id:"value", attribute:"status", value:"entered"});
 					}else{
 						// This never happens
-						returnObj.push({id:"initial", attribute:"status", value:"incorrect"});
+						returnObj.push({id:"value", attribute:"status", value:"incorrect"});
 					}
 					break;
 
@@ -124,7 +124,7 @@ define([
 			ready(this, "initAuthorHandles");
 		},
 
-		resettableControls: ["variable","description","initial","units","equation"],
+		resettableControls: ["variable","description","value","units","equation"],
 
 		controlMap: {
 			inputs: "inputSelector",
@@ -142,7 +142,7 @@ define([
 			console.log("++++++++ Setting AUTHOR format in Node Editor.");
 			style.set('variableOptionalityContainer', 'display', 'block');
 			style.set('descriptionInputboxContainer', 'display', 'inline-block');
-			style.set('initialValueInputboxContainer', 'display', 'inline');
+			style.set('valueInputboxContainer', 'display', 'inline');
 			//style.set('unitDiv', 'display', 'none');
 			style.set('unitsSelectorContainer', 'display', 'inline');
 			style.set('rootNodeToggleContainer', 'display', 'block');
@@ -413,66 +413,66 @@ define([
 			*/
 		},
 		/*
-		 Handler for initial value input
+		 Handler for value input
 		 */
-		handleInitial: function(initial){
+		handleValue: function(value){
 
-			//Initial value handler for quantity node
+			// value handler for quantity node
 
-			//IniFlag contains the status and initial value
+			//valueFlag contains the status and value
 
 			var modelType = this.getModelType();
 			console.log("model type is", modelType);
-			var tempIni = dom.byId(this.widgetMap.initial);
-			var tempInival = tempIni.value.trim();
-			console.log("temporary value is", tempInival);
-			var IniFlag = {status: undefined, value: undefined };
-			if(!((modelType === "authored") && (tempInival == '') )){
+			var tempValId = dom.byId(this.widgetMap.value);
+			var tempVal = tempValId.value.trim();
+			console.log("temporary value is", tempVal);
+			var valueFlag = {status: undefined, value: undefined };
+			if(!((modelType === "authored") && (tempVal == '') )){
 				
-				IniFlag = typechecker.checkNumericValue(this.widgetMap.initial, this.lastInitial);
+				valueFlag = typechecker.checkNumericValue(this.widgetMap.value, this.lastValue);
 				
-				if((IniFlag.errorType === undefined) && (IniFlag.status === undefined)){
+				if((valueFlag.errorType === undefined) && (valueFlag.status === undefined)){
 					// check for last input value matching
-					IniFlag = typechecker.checkLastInputValue(this.widgetMap.initial, this.lastInitial);
+					valueFlag = typechecker.checkLastInputValue(this.widgetMap.value, this.lastValue);
 				}
 			}
 			else{
-				IniFlag  = {status: true, value: undefined};
+				valueFlag  = {status: true, value: undefined};
 			}
 			var logObj = {};
-			if(IniFlag && IniFlag.status){
-				// If the initial value is not a number or is unchanged from
+			if(valueFlag && valueFlag.status){
+				// If the value is not a number or is unchanged from
 				// previous value we dont process
-				var newInitial = IniFlag.value;
+				var newValue = valueFlag.value;
 				
 				//TODO: applying directives on PM processed object, for now just processing, yet to write apply directives
-				var returnObj = this.authorPM.process(this.currentID, "initial", newInitial, true);
-				console.log("author pm returned after evaluating initial value",returnObj);
+				var returnObj = this.authorPM.process(this.currentID, "value", newValue, true);
+				console.log("author pm returned after evaluating value",returnObj);
 				this.applyDirectives(returnObj);
 				
 				var studentNodeID = this._model.student.getNodeIDFor(this.currentID);
-				var studNodeInitial = this._model.student.getInitial(studentNodeID);
+				var studNodeValue = this._model.student.getValue(studentNodeID);
 				if(modelType == "authored"){
-					//if the model type is authored , the last initial value is the new student model value
+					//if the model type is authored , the last value is the new student model value
 					//which in this case is second parameter
-					this._model.active.setInitial(studentNodeID, newInitial);
-					this.updateStatus("initial", this._model.authored.getInitial(this.currentID), newInitial);
+					this._model.active.setValue(studentNodeID, newValue);
+					this.updateStatus("value", this._model.authored.getValue(this.currentID), newValue);
 				}
 				else{
-					this._model.active.setInitial(this.currentID, newInitial);
-					//if the model type is not given , the last initial value is the new author model value
+					this._model.active.setValue(this.currentID, newValue);
+					//if the model type is not given , the last  value is the new author model value
 					//which in this case is first parameter
 					//if(studentNodeID)
-					this.updateStatus("initial", newInitial, studNodeInitial);
+					this.updateStatus("value", newValue, studNodeValue);
 				}
 				//update student node status
 				logObj = {
 					error: false
 				}; 
-			}else if(IniFlag && IniFlag.errorType){ 
+			}else if(valueFlag && valueFlag.errorType){ 
 				logObj = {
 					error: true,
-					message: IniFlag.errorType
+					message: valueFlag.errorType
 				};
 			}
 			var valueFor = modelType == "authored" ? "student-model": "author-model";
@@ -481,8 +481,8 @@ define([
 				type: "solution-enter",
 				node: this._model.active.getName(this.currentID),
 				nodeID: this.currentID,
-				property: "initial",
-				value: initial,
+				property: "value",
+				value: value,
 				usage: valueFor
 			}, logObj);
 
@@ -745,9 +745,9 @@ define([
 				if(unitsChoice && unitsChoice != 'defaultSelect'){
 					this.applyDirectives(this.authorPM.process(this.currentID, 'units', this._model.authored.getUnits(this.currentID)));
 				}
-				//color initial value widget
-				if(typeof this._model.authored.getInitial(this.currentID) === "number"){
-					this.applyDirectives(this.authorPM.process(this.currentID, 'initial', this._model.authored.getInitial(this.currentID), true));
+				//color value widget
+				if(typeof this._model.authored.getValue(this.currentID) === "number"){
+					this.applyDirectives(this.authorPM.process(this.currentID, 'value', this._model.authored.getValue(this.currentID), true));
 				}
 				
 			}
