@@ -164,18 +164,13 @@ define([
 			DoneButton.setDisabled(false);
 			
 			//create a controller object
-
-			//create new model object
-			//TODO: integrate model object and use _model instead of givenModel
-			//debugger;
-			var givenModel = "";
 	
 			//create new ui configuration object based on current mode ( and activity)
 			var ui_config = "";
 
-			//For now using empty givenModel and ui_config 
+			//For now using empty  ui_config 
 
-			var controllerObject = new controlAuthor(query.m, givenModel, ui_config);
+			var controllerObject = new controlAuthor(query.m, _model, ui_config);
 
 			//next step is to add action to add quantity
 			menu.add("createQuantityNodeButton", function(e){
@@ -185,7 +180,7 @@ define([
 				};
 				var id = _model.active.addNode(options);
 				console.log("New quantity node created id - ", id);
-				controllerObject.showQuantityNodeEditor(id);	
+				controllerObject.showNodeEditor(id);	
 				dm.addNode(_model.active.getNode(id));
 			});
 
@@ -199,7 +194,7 @@ define([
 				//var id = givenModel.active.addNode();
 				//controllerObject.logging.log('ui-action', {type: "menu-choice", name: "create-node"});
 				console.log("New equation node created id - ", id);
-				controllerObject.showEquationNodeEditor(id);
+				controllerObject.showNodeEditor(id);
 				dm.addNode(_model.active.getNode(id));
 			});
 

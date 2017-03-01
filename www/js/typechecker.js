@@ -47,9 +47,9 @@ define([
 		},
 
 		checkNumericValue: function(nodeID){
-			//Description : performs non number check and also checks if the initial 
+			//Description : performs non number check and also checks if the  
 			// value was changed from previously entered value
-			//returns: status, a boolean value and value, the current initial value
+			//returns: status, a boolean value and value, the current  value
 			// nodeID: string
 			//     id of dom node to be checked.
 			// lastInput: object 
@@ -65,7 +65,7 @@ define([
 			var inputString = domNode.value.trim();
 
 			// we do this type conversion because we used a textbox for 
-			// initialvalue input which is a numerical
+			// value input which is a numerical
 			if(0  === inputString.length)
 				return;
 			var input= +inputString; // usage of + unary operator converts a string to number
@@ -75,7 +75,7 @@ define([
 				var errorType;
 				// Put in checks here
 				console.log('not a number');
-				//initialValue is the id of the textbox, we get the value in the textbox
+				//Value is the id of the textbox, we get the value in the textbox
 				if(!inputString.match('%')){ //To check the decimals against percentages
 					console.warn("Sachin should log when this happens");
 					popup.open({
@@ -109,7 +109,7 @@ define([
 			var inputString = domNode.value.trim();
 
 			// we do this type conversion because we used a textbox for 
-			// initialvalue input which is a numerical
+			// value input which is a numerical
 			if(0  === inputString.length)
 				return;
 			var input= +inputString; // usage of + unary operator converts a string to number
