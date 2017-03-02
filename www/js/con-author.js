@@ -475,8 +475,8 @@ define([
 					message: valueFlag.errorType
 				};
 			}
-			var valueFor = modelType == "authored" ? "student-model": "author-model";
 			/*
+			var valueFor = modelType == "authored" ? "student-model": "author-model";
 			logObj = lang.mixin({
 				type: "solution-enter",
 				node: this._model.active.getName(this.currentID),
@@ -486,7 +486,7 @@ define([
 				usage: valueFor
 			}, logObj);
 
-			this.logging.log("solution-step", logObj);
+			this._logger.log("solution-step", logObj);
 			*/
 		},
 

@@ -33,8 +33,10 @@ define([
 	"dijit/registry",
 	"dojo/dom-style",
 	"dojo/dom-construct",
-	"./equation"
-], function(array, declare, lang, dom, keys, on, ready, registry, domStyle, domConstruct, expression){
+	"./equation",
+	"./logging"
+], function(array, declare, lang, dom, keys, on, ready, registry, domStyle, domConstruct, 
+	expression, clientLogging){
 
 	/* Summary:
 	 *			Controller for the node editor, common to all modes
@@ -94,6 +96,7 @@ define([
 			ready(this, this._setUpNodeEditor);
 			ready(this, this._initHandles);
 			this.nodeConnections = [];
+			this._logger = clientLogging.getInstance();
 		},
 
 		// A stub for connecting routine to draw new node.
@@ -352,20 +355,17 @@ define([
 			array.forEach(buttons, function(button){
 				var w = registry.byId(button + 'Button');
 				if(!w){
-					/* logging will be added later
-					this.logging.clientLog("assert", {
+					this._logger.logClientEvent("assert", {
 						message: "button not found, button id : "+button,
 						functionTag: '_initHandles'
 					});
-					*/
 				}
 				var handler = this[button + 'Handler'];
 				if(!handler){
-					/*
-					this.logging.clientLog("assert", {
+					this._logger.logClientEvent("assert", {
 						message: "button handler not found, handler id : "+handler,
 						functionTag: '_initHandles'
-					}); */
+					});
 				}
 				w.on('click', lang.hitch(this, handler));
 			}, this);
@@ -381,7 +381,7 @@ define([
 			}, this);
 
 		},
-		
+
 		//show node editor
 		showNodeEditor: function(/*string*/ id){
 			console.log("showNodeEditor called for node ", id);

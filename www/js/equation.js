@@ -8,6 +8,7 @@ define([
 		},
 		isVariable: Parser.isVariable,
 		equalto: "=",
+		_logger: null,
 		/*
 		* Converts an equation with ids to corresponding variable names
 		* It splits the equation at = and then replaces the variables in
@@ -32,10 +33,10 @@ define([
 					expressions[count] = Parser.parse(eq);
 				}, this);
 			}catch(e){
-				/*this.logging.clientLog("error", {
+				this._logger.logClientEvent("error", {
 					message:'error in parser, error message : ' + e,
 					functionTag:'convert'
-				});*/
+				});
 				return equation;
 			}
 			// is there any significance for the following object? else delete
@@ -143,6 +144,9 @@ define([
 			});
 			
 		},
-		
+
+		setLogging: function(logger){
+			this._logger = logger;
+		}
 	};
 });
