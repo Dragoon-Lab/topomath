@@ -127,12 +127,12 @@ html, body, #main{
 
 /* If we use float to horizontally align, there seems to be
    no way to vertically align the buttons.  */
-.sameedit .buttonBox {
+.sameedit .equationUndoDoneButtonsContainer {
     margin-left: 10px;
     padding-top:10px;
 }
 
-.sameedit .buttonBox .dijitButtonContents{
+.sameedit .equationUndoDoneButtonsContainer .dijitButtonContents{
     width:120px;
 }
 
@@ -142,7 +142,7 @@ html, body, #main{
 }
 
 /* Right align buttons */
-.buttonBox > * {
+.equationUndoDoneButtonsContainer > * {
     float:right;
     clear:right;
 }
@@ -255,12 +255,25 @@ input[type=radio]{
     z-index:5000 !important;
 }
 
+#popupDialog .dijitDialogPaneContentArea{
+    width: 300px !important;
+}
+#popupDialog .dijitDialogPaneContentArea #popupDialogContent{
+  padding: 10px 20px;
+}
+#popupDialog .dijitDialogPaneContentArea #popupDialogContent li{
+  padding: 5px 0px;
+}
+#popupDialog .dijitDialogPaneContentArea #popupDialogButtons{
+  text-align: right;
+}
+
 #equationBox, #givenEquationBox{
     min-height:48px;
     font:10pt Arial,Myriad,Tahoma,Verdana,sans-serif !important;
 }
 
-.ExpressionContainer{
+.equationInputsContainer{
     background-color: #E1E1E1;
     border-radius: 5px;
     padding: 5px;

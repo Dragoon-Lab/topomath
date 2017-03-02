@@ -5,6 +5,7 @@ define([
 	"jsPlumb/jsPlumb"
 ], function(array, lang, expression){
 	return {
+		defaultString: "Click here!",
 		/*
 		* This is the function which based on the type of the node 
 		* will return the corresponding HTML string. Since type and ID
@@ -29,15 +30,22 @@ define([
 			var createInitial = false;
 			switch(type){
 				case "circle":
-					nodeString.value = "Click here!";
+					nodeString.value = this.defaultString;
 					break;
 				case "equation":
 					var eq = model.getEquation(nodeID);
-					nodeString.value = eq ? expression.convert(model, eq) : "Click here!";
+					nodeString.value = this.defaultString;
+					if(eq){
+						var params = {
+							subModel: model,
+							equation: eq
+						};
+						nodeString.value = expression.convert(params).equation || this.defaultString;
+					}
 					break;
 				case "quantity":
 					var nodeName = model.getVariable(nodeID);
-					nodeString.value = nodeName || "Click here!";
+					nodeString.value = nodeName || this.defaultString;
 					var initial = model.getValue(nodeID);
 					initial = typeof(initial) == "number" ? initial : "";
 					//create initial value node only if the accumulator property is set to true
