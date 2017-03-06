@@ -125,6 +125,30 @@ define([
 				//          Should only be used for debugging.
 				return JSON.stringify(this.model, null, 4);
 			},
+			/* TODO : after we imbibe task into model
+			getUnits: function(){
+				return this.model.task.time.units;
+			},
+			*/
+			getAllUnits: function(){
+				// Summary:	 returns a list of all distinct units
+				// (string format) defined in a problem.
+				// Need to order list alphabetically.
+				var unitList = new Array();
+				//TODO: after we imbide task.time.units into model
+				/*
+				var timeUnits = this.getUnits();
+				if(timeUnits){
+					unitList.push(timeUnits);
+				}
+				*/
+				array.forEach(this.authored.getNodes(), function(node){
+					if(node.units && array.indexOf(unitList, node.units) == -1){
+						unitList.push(node.units);
+					}
+				}, this);
+				return unitList;
+			},
 
 		};
 
@@ -146,6 +170,7 @@ define([
 			},
 			getType: function(/*string*/ id){
 				var node = this.getNode(id);
+				console.log("node with id",node);
 				return node && node.type;
 			},
 			getEquation: function(/*string*/ id){
@@ -167,6 +192,9 @@ define([
 			getValue: function(/* string */ id){
 				var node = this.getNode(id);
 				return node && node.value;
+			},
+			getUnits: function(/*string*/ id){
+				return this.getNode(id).units;
 			},
 			getExpression: function(/*string*/ id){
 				var node = this.getNode(id);
@@ -217,7 +245,7 @@ define([
 
 				return updateNodes;
 			},
-			setLinks: function(/*array*/ link, /*string*/ target){
+			setLinks: function(/*array*/ links, /*string*/ target){
 				// Silently filter out any inputs that are not defined.
 				// inputs is an array of objects.
 				var targetID = target;
@@ -227,7 +255,7 @@ define([
 				var node = this.getNode(targetID);
 				if(node){
 					node.links = array.filter(links, function(link){
-						var id = link.ID.indexOf(("_" + initialString)) ? link.ID.replace(("_" + initialString), "") : link.ID;
+						var id = link.ID.indexOf((initialString)) ? link.ID.replace((initialString), "") : link.ID;
 						return this.isNode(id);
 					}, this);
 				}
@@ -272,7 +300,7 @@ define([
 					}],
 				}, options || {});
 				obj.model.authorModelNodes.push(newNode);
-
+				console.log("node added", newNode.ID, newNode.type);
 				return newNode.ID;
 			},
 			getNodes: function(){
@@ -304,20 +332,44 @@ define([
 				});
 				return gotIt ? id : null;
 			},
+			getNodeIDByExplanation: function(/*string*/ explanation){
+				// Summary: returns the id of a node matching the authored description from the
+				//          authored or extra nodes.  If none is found, return null.
+				var id;
+				var gotIt = array.some(this.getNodes(), function(node){
+					id = node.ID;
+					return node.explanation === explanation;
+				});
+				return gotIt ? id : null;
+			},
 			getDescriptions: function(){
 				// Summary: returns an array of all descriptions with
 				// name (label) and any associated node id (value).
 				// Note that the description may be empty.
-				// TO DO:  The list should be sorted.
+				// TODO:  The list should be sorted.
 				return array.map(this.getNodes(), function(node){
 					return {label: node.description, value: node.ID};
 				});
 			},
+			/*
+			* incorporating the new change to description.
+			* strict assumption is that a node either has an explanation
+			* or a description.
+			* Explanation - describes an equation.
+			* Description - describes a quantity.
+			*/
 			getDescription: function(/*string*/ id){
-				return this.getNode(id).description;
+				var node = this.getNode(id);
+				return node.explanation || node.description;
 			},
 			getAuthorID: function(/*string*/ id){
 				return id;
+			},
+			getParent: function(/*string*/ id){
+				return this.getNode(id).parentNode;
+			},
+			getDynamic: function(/*string*/ id){
+				return this.getNode(id).dynamic;
 			},
 			isRoot: function(/* string */ id){
 				var node = this.getNode(id);
@@ -353,8 +405,8 @@ define([
 			setUnits: function(/*string*/ id, /*string*/ units){
 				this.getNode(id).units = units;
 			},
-			setInitial: function(/*string*/ id, /*float*/ initial){
-				this.getNode(id).initial = initial;
+			setValue: function(/*string*/ id, /*float*/ value){
+				this.getNode(id).value = value;
 			},
 			setEquation: function(/*string*/ id, /*string | object*/ equation){
 				this.getNode(id).equation = equation;
@@ -378,7 +430,10 @@ define([
 				var returnFlag = '';
 
 				var nameEntered = node.type && node.type == "equation" || node.variable;
-				var valueEntered = node.type && node.type == "equation" || node.value;
+				// TODO : logic for value is still incomplete
+				// needs to incorporate values of function, accumulator and parameters
+				// as seen in Dragoon.
+				var valueEntered = node.type && node.type == "equation" || node.accumulator || node.value;
 				var equationEntered = node.type && node.type == "quantity" || node.equation;
 				if(node.genus == "required" || node.genus == "allowed" || node.genus == "preferred"){
 					returnFlag = nameEntered && (node.description || node.explanation) &&
@@ -413,7 +468,30 @@ define([
 			},
 			getNodes: function(){
 				return obj.model.studentModelNodes;
-			}
+			},
+			getNodeIDFor: function(givenID){
+				// Summary: returns the id of a student node having a matching descriptionID;
+				//			return null if no match is found.
+				var id;
+				var gotIt = array.some(this.getNodes(), function(node){
+					id = node.ID;
+					return node.descriptionID == givenID;
+				});
+				return gotIt ? id : null;
+			},
+			setStatus: function(/*string*/ id, /*string*/ control, /*object*/ options){
+				//Summary: Update status for a particular control.
+				//		   options may have attributes "status" and "disabled".
+				var attributes = this.getNode(id).status[control];
+				// When undefined, status[control] needs to be set explicitly.
+				this.getNode(id).status[control] = lang.mixin(attributes, options);
+				return attributes;
+			},
+			getAuthoredID: function(id){
+				// Summary: Return any matched given model id for student node.
+				var node = this.getNode(id);
+				return node && node.authoredID;
+			},
 		}, both);
 
 		obj.constructor.apply(obj, arguments);

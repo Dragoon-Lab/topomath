@@ -5,6 +5,7 @@ define([
 	"jsPlumb/jsPlumb"
 ], function(array, lang, expression){
 	return {
+		defaultString: "Click here!",
 		/*
 		* This is the function which based on the type of the node 
 		* will return the corresponding HTML string. Since type and ID
@@ -29,7 +30,7 @@ define([
 			var createInitial = false;
 			switch(type){
 				case "circle":
-					nodeString.value = "Click here!";
+					nodeString.value = this.defaultString;
 					break;
 				case "equation":
 					var eq = model.getEquation(nodeID);
@@ -74,7 +75,6 @@ define([
 		*           node - node object with all the values
 		*/
 		getDomUIStrings: function(/* object */ model, /* string */ field, /* string */ nodeID){
-			var defaultString = "Click here!";
 			var value = "";
 			switch(field){
 				case "description":
@@ -91,7 +91,7 @@ define([
 					if(variable){
 						value = variable;
 					} else {
-						value = defaultString;
+						value = this.defaultString;
 					}
 					break;
 				case "value":
@@ -105,11 +105,16 @@ define([
 					}
 					break;
 				case "equation":
-					var equation = model.getEquation(nodeID);
-					if(equation)
-						value = expression.convert(model, equation);
-					else
-						value = defaultString;
+					debugger;
+					var eq = model.getEquation(nodeID);
+					if(eq){
+						var params = {
+							subModel: model,
+							equation: eq
+						};
+						value = expression.convert(params).equation || this.defaultString;
+					} else
+						value = this.defaultString;
 					break;
 			}
 			console.log(value);

@@ -18,10 +18,11 @@ define([
 	'./equation',
 	'./draw-model',
 	'./con-author',
-	'./popup-dialog',
+	'./logging',
+	'./popup-dialog'
 ], function(array, geometry, dom, style, aspect, ready, registry, event, ioQuery, on, Button, domConstruct, lang,
-			menu, session, model, equation, drawModel, controlAuthor, popupDialog){
-
+			menu, session, model, equation, drawModel, controlAuthor, logging, popupDialog){
+	
 	console.log("load main.js");
 	// Get session parameters
 	var query = {};
@@ -76,6 +77,17 @@ define([
 	
 		//The following code follows sachin code after the model has been rendered according to query parameters
 		ready(function(){
+			/**
+			* this has to be the first to be instantiated
+			* so that session object is not to be passed again and again. ~ Sachin
+			*/
+			var _logger = logging.getInstance(_session);
+			/**
+			* equation does not have a constructor because
+			* we dont want to run it on it's own. So there is an explicit call
+			* to set the logger for equation.
+			*/
+			equation.setLogging(_logger);
 			//remove the loading division, now that the problem is being loaded
 			var loading = document.getElementById('loadingOverlay');
 			loading.style.display = "none";
@@ -165,18 +177,13 @@ define([
 			DoneButton.setDisabled(false);
 			
 			//create a controller object
-
-			//create new model object
-			//TODO: integrate model object and use _model instead of givenModel
-			//debugger;
-			var givenModel = "";
 	
 			//create new ui configuration object based on current mode ( and activity)
 			var ui_config = "";
 
-			//For now using empty givenModel and ui_config 
+			//For now using empty  ui_config 
 
-			var controllerObject = new controlAuthor(query.m, givenModel, ui_config);
+			var controllerObject = new controlAuthor(query.m, _model, ui_config);
 
 			//next step is to add action to add quantity
 			menu.add("createQuantityNodeButton", function(e){
@@ -188,6 +195,7 @@ define([
 				console.log("New quantity node created id - ", id);
 				controllerObject.showQuantityNodeEditor(id);
 				controllerObject.addNode(_model.active.getNode(id));
+				_logger.logUserEvent({type: "menu-choice", name: "create-node", "type": "quantity"});
 			});
 
 			//next step is to add action to add equation
@@ -198,10 +206,10 @@ define([
 				};
 				var id = _model.active.addNode(options);
 				//var id = givenModel.active.addNode();
-				//controllerObject.logging.log('ui-action', {type: "menu-choice", name: "create-node"});
 				console.log("New equation node created id - ", id);
 				controllerObject.showEquationNodeEditor(id);
 				controllerObject.addNode(_model.active.getNode(id));
+				_logger.logUserEvent({type: "menu-choice", name: "create-node", "type": "equation"});
 			});
 
 			aspect.after(controllerObject, "addNode",

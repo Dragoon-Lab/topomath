@@ -12,7 +12,6 @@
 			"value": 24,
 			"root": true,
 			"genus": "required",
-			"expression": "",
 			"color": "",
 			"attemptCount": {
 			},
@@ -37,7 +36,6 @@
 			"value": 0.3,
 			"root": false,
 			"genus": "required",
-			"expression": "",
 			"color": "",
 			"attemptCount": {
 			},
@@ -59,7 +57,6 @@
 			"value": "",
 			"root": false,
 			"genus": "required",
-			"expression": "",
 			"color": "",
 			"attemptCount": {
 			},
@@ -72,7 +69,7 @@
 		{
 			"ID": "id4",
 			"variable": "",
-			"description": "The number of births is the number of rabbits times the birth probability",
+			"explanation": "The number of births is the number of rabbits times the birth probability",
 			"type": "equation",
 			"accumulator": false,
 			"equation": "id3 = id1 * id2",
@@ -81,7 +78,6 @@
 			"value": "",
 			"root": false,
 			"genus": "required",
-			"expression": "",
 			"color": "",
 			"attemptCount": {
 			},
@@ -94,7 +90,7 @@
 		{
 			"ID": "id5",
 			"variable": "",
-			"description": "The number of rabbits increase by the number of births each year",
+			"explanation": "The number of rabbits increase by the number of births each year",
 			"type": "equation",
 			"accumulator": false,
 			"equation": "id1 = id1 + id3",
@@ -103,7 +99,6 @@
 			"value": "",
 			"root": false,
 			"genus": "required",
-			"expression": "",
 			"color": "",
 			"attemptCount": {
 			},
