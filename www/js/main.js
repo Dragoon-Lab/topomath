@@ -99,10 +99,10 @@ define([
 			aspect.after(dm, "onClickNoMove", function(mover){
 				if(mover.mouseButton != 2){
 					// show node editor only when it is not a right click
-					// TODO: attach node editor click
 					console.log("node open action for ", mover.node.id);
+					var id = mover.node.id;
+					controllerObject.showNodeEditor(id);
 				} else {
-					// TODO: attach menu display click event
 					console.log("menu open action for ", mover.node.id);
 				}
 			}, true);
@@ -193,9 +193,13 @@ define([
 				};
 				var id = _model.active.addNode(options);
 				console.log("New quantity node created id - ", id);
-				controllerObject.showQuantityNodeEditor(id);
-				controllerObject.addNode(_model.active.getNode(id));
-				_logger.logUserEvent({type: "menu-choice", name: "create-node", "type": "quantity"});
+				_logger.logUserEvent({
+					type: "menu-choice",
+					name: "create-node",
+					nodeType: "quantity"
+				});
+				controllerObject.showNodeEditor(id);	
+				dm.addNode(_model.active.getNode(id));
 			});
 
 			//next step is to add action to add equation
@@ -206,10 +210,14 @@ define([
 				};
 				var id = _model.active.addNode(options);
 				//var id = givenModel.active.addNode();
+				_logger.logUserEvent({
+					type: "menu-choice",
+					name: "create-node",
+					nodeType: "equation"
+				});
 				console.log("New equation node created id - ", id);
-				controllerObject.showEquationNodeEditor(id);
+				controllerObject.showNodeEditor(id);
 				controllerObject.addNode(_model.active.getNode(id));
-				_logger.logUserEvent({type: "menu-choice", name: "create-node", "type": "equation"});
 			});
 
 			aspect.after(controllerObject, "addNode",
@@ -219,17 +227,16 @@ define([
 				lang.hitch(dm, dm.setConnections));
 
 			on(registry.byId("closeButton"), "click", function(){
-				//TODO: once node_editor2 is merged to master, uncomment the line below.
-				//registry.byId("nodeEditor").hide();
+				registry.byId("nodeEditor").hide();
 				console.log("uncomment code to close");
 			});
 
 			//TODO: uncomment this after node_editor2 is merged
 			//all the things we need to do once node is closed
-			/*aspect.after(registry.byId('nodeEditor'), "hide", function(){
+			aspect.after(registry.byId('nodeEditor'), "hide", function(){
 				_session.saveProblem(_model.model);
 				dm.updateNode(_model.active.getNode(controllerObject.currentID));
-			});*/
+			});
 
 			menu.add("DoneButton", function (e) {
 				event.stop(e);
@@ -258,7 +265,19 @@ define([
 					errDialog.showDialog(title, problemComplete.errorNotes, buttons, /*optional argument*/"Don't Exit");
 				}
 			});
+
+			aspect.after(controllerObject, "showNodeEditor", function(id){
+				_logger.logUserEvent({
+					type: 'open-dialog-box', 
+					name: 'node-editor', 
+					nodeID: id,
+					nodeType: _model.active.getType(id),
+					node: _model.active.getVariable || _model.active.getDescription(id)
+				});
+			});
 		});
+
+		
 	});
 	
 	var exitTopomath = function(){
