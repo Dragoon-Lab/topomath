@@ -318,7 +318,7 @@ define([
 				var id;
 				var gotIt = array.some(this.getNodes(), function(node){
 					id = node.ID;
-					return node.name === name;
+					return node.variable === name;
 				});
 				return gotIt ? id : null;
 			},

@@ -62,8 +62,14 @@ define([
 							//verify if autocreatenodes is enabled
 							if(params.autoCreateNodes){
 								//add node id to model
-								var newId = subModel.active.addNode();
-								nodeList.push({ "id": newId, "variable":variable});
+								//name and type parameters attached
+								var newNodeOptions = {
+                                    name: variable,
+                                    type: "quantity"
+                                };
+                                var newId = subModel.active.addNode(newNodeOptions);
+                                nodeList.push({ "id": newId, "variable":variable});
+                                expr.substitute(variable, newId);
 							}
 						}
 					}, this);
