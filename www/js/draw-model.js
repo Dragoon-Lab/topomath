@@ -102,7 +102,7 @@ define([
 
 		updateNode: function(/* object */ node){
 			// all the classes that we need
-			var initialNodeIDTag = this._model.getInitialIDNodeString();
+			var initialNodeIDTag = this._model.getInitialNodeIDString();
 			var domIDTags = {
 				'nodeDOM': node.ID+'Content',
 				'initialNode': node.ID+'ContentInitial',

@@ -234,8 +234,12 @@ define([
 			//TODO: uncomment this after node_editor2 is merged
 			//all the things we need to do once node is closed
 			aspect.after(registry.byId('nodeEditor'), "hide", function(){
-				_session.saveProblem(_model.model);
+				_session.saveModel(_model.model);
+				// TODO : Call a function that does post node creation tasks
+				_model.active = _model.authored;
 				dm.updateNode(_model.active.getNode(controllerObject.currentID));
+
+
 			});
 
 			menu.add("DoneButton", function (e) {
@@ -244,18 +248,11 @@ define([
 				var problemComplete = controllerObject.checkDone();
 				if( problemComplete.errorNotes === "" ){
 					// if in preview mode , Logging is not required:
-					if(/*controllerObject.logging.doLogging*/ false){}
-						/*controllerObject.logging.log('close-problem', {
-							type: "menu-choice",
-							name: "done-button",
-							problemComplete: problemComplete
-						}).then(function(){
-							
-						});
-						*/
-					else {
-						errDialog.destroyDialog();
-					}
+					// TODO : Add Logging
+					if(window.history.length === 1)
+						window.close();
+					else
+						window.history.back();
 				}
 				else{
 					var buttons = [];

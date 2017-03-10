@@ -259,6 +259,7 @@
 						<div id="equationInputboxContainer" class="fieldgroup">
 							<label for="equationInputbox">Equation</label>
 							<textarea id="equationInputbox" rows=4 cols=50 data-dojo-type="dijit/form/SimpleTextarea" style="min-height:60px;"></textarea>
+							<textarea id="givenEquationInputbox" rows=4 cols=50 data-dojo-type="dijit/form/SimpleTextarea" style="min-height:60px; display: none;"></textarea>
 						</div>
 					</div>
 				</div>

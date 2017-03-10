@@ -441,7 +441,7 @@ define([
 					}
 
 				});
-
+				console.log("Equations : ", _equations);
 				// check if each variable is present in atleast one equation
 				var _usedVariables = _variables.map(function(_variable){
 					var tmp = array.some(_equations, function(_equation) {
