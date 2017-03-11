@@ -132,6 +132,9 @@ define([
 		},
 
 		resettableControls: ["variable","description","value","units","equation"],
+		variableNodeControls: ["variable","value","units","kind","dynamic","root"],
+		equationNodeControls: ["inputs","equation"],
+		commonNodeControls: ["setStudent","modelType","description"],
 
 		controlMap: {
 			inputs: "inputSelector",
@@ -833,7 +836,7 @@ define([
 						isDuplicateDescription = true;
 				}));
 
-				this.applyDirectives(this.authorPM.process(isDuplicateDescription, "description", this._model.given.getDescription(this.currentID)));
+				this.applyDirectives(this.authorPM.process(isDuplicateDescription, "description", this._model.authored.getDescription(this.currentID)));
 			}
 		},
 		/* discontinuing use of author status

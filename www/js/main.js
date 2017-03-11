@@ -235,11 +235,7 @@ define([
 			//all the things we need to do once node is closed
 			aspect.after(registry.byId('nodeEditor'), "hide", function(){
 				_session.saveModel(_model.model);
-				// TODO : Call a function that does post node creation tasks
-				_model.active = _model.authored;
 				dm.updateNode(_model.active.getNode(controllerObject.currentID));
-
-
 			});
 
 			menu.add("DoneButton", function (e) {

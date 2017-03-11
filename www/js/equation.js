@@ -64,7 +64,7 @@ define([
 								//add node id to model
 								//name and type parameters attached
 								var newNodeOptions = {
-                                    name: variable,
+                                    variable: variable,
                                     type: "quantity"
                                 };
                                 var newId = subModel.active.addNode(newNodeOptions);
