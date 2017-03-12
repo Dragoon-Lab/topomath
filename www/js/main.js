@@ -100,7 +100,7 @@ define([
 				if(mover.mouseButton != 2){
 					// show node editor only when it is not a right click
 					console.log("node open action for ", mover.node.id);
-					var id = mover.node.id;
+					var id = _model.active.getNodeID(mover.node.id);
 					controllerObject.showNodeEditor(id);
 				} else {
 					console.log("menu open action for ", mover.node.id);
@@ -258,19 +258,7 @@ define([
 					errDialog.showDialog(title, problemComplete.errorNotes, buttons, /*optional argument*/"Don't Exit");
 				}
 			});
-
-			aspect.after(controllerObject, "showNodeEditor", function(id){
-				_logger.logUserEvent({
-					type: 'open-dialog-box', 
-					name: 'node-editor', 
-					nodeID: id,
-					nodeType: _model.active.getType(id),
-					node: _model.active.getVariable || _model.active.getDescription(id)
-				});
-			});
 		});
-
-		
 	});
 	
 	var exitTopomath = function(){

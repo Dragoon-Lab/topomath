@@ -164,6 +164,13 @@ define([
 				// console.trace();
 				return null;
 			},
+			/**
+			* takes a node ID and removes the initial node ID string from it if present
+			*/
+			getNodeID: function(/*string*/ id){
+				return id.indexOf(this.getInitialNodeIDString()) > -1 ?
+							id.replace(this.getInitialNodeIDString(), "") : id;
+			},
 			getVariable: function(/* string */ id){
 				var node = this.getNode(id);
 				return node && node.variable;

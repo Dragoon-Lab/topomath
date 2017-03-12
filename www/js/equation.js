@@ -75,12 +75,12 @@ define([
 					}, this);
 				}, this);
 				return {
-						variableList: variableList, 
-						newNodeList: nodeList, 
-						inputList: inputList,
-						parseSuccess: true, 
-						equation: expressions[0].toString() + " " + this.equalto + " " + expressions[1].toString()
-					};
+					variableList: variableList,
+					newNodeList: nodeList,
+					inputList: inputList,
+					parseSuccess: true,
+					equation: expressions[0].toString() + " " + this.equalto + " " + expressions[1].toString()
+				};
 			}
 			else{
 				array.forEach(expressions, function(expr){

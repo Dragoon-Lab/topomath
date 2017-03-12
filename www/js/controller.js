@@ -82,7 +82,6 @@ define([
 		validStatus: {status: true, disabled: true},
 		
 		constructor: function(mode, model, ui_config){
-
 			console.log("+++++++++ In generic controller constructor");
 			lang.mixin(this.controlMap, this.genericControlMap);
 
@@ -663,7 +662,12 @@ define([
 
 				var equation = model.getEquation(nodeid);
 				console.log("equation before conversion ", equation);
-				var mEquation = equation ? expression.convert(model, equation) : '';
+				params = {
+					subModel: model,
+					equation: equation,
+					nameToId: false
+				};
+				var mEquation = equation ? expression.convert(params).equation : '';
 				console.log("equation after conversion ", mEquation);
 				/* mEquation is a number instead of a string if equation is just a number; convert to string before setting the value */
 				registry.byId(this.controlMap.equation).set('value', mEquation.toString());

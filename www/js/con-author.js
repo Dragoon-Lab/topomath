@@ -397,7 +397,6 @@ define([
 				
 				this._model.active = this._model.authored;
 				this.enableDisableFields(modelType);
-				debugger;
 				this.populateNodeEditorFields(this.currentID);
 
 			}
