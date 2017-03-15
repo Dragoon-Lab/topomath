@@ -28,9 +28,19 @@ define([
 		_backgroundColor: 0,
 		_counter: 0,
 		_cache: {},
+		domIDs: function(nodeID){
+			return {
+				'nodeDOM': nodeID+'Content',
+				'initialNode': nodeID+'ContentInitial',
+				'description': nodeID+'_description',
+				'parentDOM': nodeID,
+				'parentInitial': nodeID + this.initialNodeIDTag
+			}
+		},
 
 		constructor: function(model){
 			this._model = model;
+			this.initialNodeIDTag = this._model.getInitialNodeIDString();
 			this._borderColor = this._colors.length - 1;
 			this.connectorUI = {
 				endpoint: ["Dot", {radius: 2}],
@@ -102,14 +112,7 @@ define([
 
 		updateNode: function(/* object */ node){
 			// all the classes that we need
-			var initialNodeIDTag = this._model.getInitialNodeIDString();
-			var domIDTags = {
-				'nodeDOM': node.ID+'Content',
-				'initialNode': node.ID+'ContentInitial',
-				'description': node.ID+'_description',
-				'parentDOM': node.ID,
-				'parentInitial': node.ID+initialNodeIDTag
-			};
+			var domIDTags = this.domIDs(node.ID);
 			// null checks
 			if(!node.ID){
 				console.error("update node called for an unknown node ID ", node.ID);
@@ -163,6 +166,7 @@ define([
 			} else if(node.type && node.type == "equation" && cachedNode.equation != node.equation){
 				dom.byId(domIDTags['nodeDOM']).innerHTML = graphObjects.getDomUIStrings(this._model, "equation", node.ID);
 				// TODO : need to check how and where the connections are set
+				
 			}
 			//update border
 			var isComplete = this._model.isComplete(node.ID);
@@ -391,6 +395,7 @@ define([
 			// delete node from the model
 			var updateNodes = this._model.deleteNode(nodeID);
 			console.log(updateNodes);
+			this.removeDescription(nodeID);
 			array.forEach(updateNodes, function(ID){
 				console.log(ID);
 				this.updateNode(this._model.getNode(ID));
@@ -403,6 +408,16 @@ define([
 					this._instance.detach(connection);
 				}
 			}, this);
+		},
+
+		removeDescription: function(nodeID){
+			var id = this.domIDs(nodeID)['description'];
+			if(id) domConstruct.destroy(id);
+		},
+
+		updateNodeConnections: function(from, to){
+			this.detachConnections(to);
+			this.setConnections(from, to);
 		}
 	});
 });

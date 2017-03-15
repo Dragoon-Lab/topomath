@@ -105,7 +105,6 @@ define([
 					}
 					break;
 				case "equation":
-					debugger;
 					var eq = model.getEquation(nodeID);
 					if(eq){
 						var params = {

@@ -1,8 +1,9 @@
 define([
 	'dojo/_base/unload',
+	'dojo/on',
 	'dojo/aspect',
 	'./controller'
-], function(baseUnload, aspect, controller){
+], function(baseUnload, on, aspect, controller){
 	var logging = {
 		_session: null,
 		instance: null,

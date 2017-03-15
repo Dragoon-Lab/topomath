@@ -847,7 +847,7 @@ define([
 					equation: inputEquation,
 					autoCreateNodes: true, // where do we get this input from 
 					nameToId: true,
-					subModel: this._model
+					subModel: this._model.active
 				}
 				returnObj = expression.convert(equationParams);
 			}catch(err){
@@ -1056,7 +1056,7 @@ define([
 				console.log("********* Saving equation to model: ", parseObject.equation);
 				this._model.active.setEquation(this.currentID, parseObject.equation);
 
-				var inputs = parseObject.inputsList;
+				var inputs = parseObject.connections;
 				// Update inputs and connections
 				this._model.active.setLinks(inputs, this.currentID);
 				this.setConnections(this._model.active.getLinks(this.currentID), this.currentID);
@@ -1072,6 +1072,6 @@ define([
 				}));
 
 			}
-		},
+		}
 	});
 });

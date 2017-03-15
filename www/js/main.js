@@ -175,7 +175,6 @@ define([
 
 			var DoneButton = registry.byId("DoneButton");
 			DoneButton.setDisabled(false);
-			
 			//create a controller object
 	
 			//create new ui configuration object based on current mode ( and activity)
@@ -184,7 +183,6 @@ define([
 			//For now using empty  ui_config 
 
 			var controllerObject = new controlAuthor(query.m, _model, ui_config);
-
 			//next step is to add action to add quantity
 			menu.add("createQuantityNodeButton", function(e){
 				event.stop(e);
@@ -224,7 +222,7 @@ define([
 				lang.hitch(dm, dm.addNode), true);
 
 			aspect.after(controllerObject, "setConnections",
-				lang.hitch(dm, dm.setConnections));
+				lang.hitch(dm, dm.updateNodeConnections), true);
 
 			on(registry.byId("closeButton"), "click", function(){
 				registry.byId("nodeEditor").hide();
