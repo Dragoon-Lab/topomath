@@ -493,7 +493,7 @@ define([
 				if(this.nodeType == "equation"){
 					this.controlMap.equation = "equationInputbox";
 					domStyle.set('equationInputbox', 'display', 'block');
-					domStyle.set('givenEquationBox', 'display', 'none');
+					domStyle.set('givenEquationInputbox', 'display', 'none');
 				}
 				/* check the usage of this code
 				var kind = registry.byId(this.controlMap.kind).value;

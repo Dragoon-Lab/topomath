@@ -814,14 +814,8 @@ define([
 				//color Equation widget
 				
 				if(this._model.authored.getEquation(this.currentID)){
-					//we have not found a use case for getAuthorStatus yet so commenting this sesion for now
-					/*
-					if(this._model.authored.getAuthorStatus(this.currentID, "equation") && this._model.authored.getAuthorStatus(this.currentID, "equation").status == "incorrect"){
-
-					}else{
-						this.applyDirectives(this.authorPM.process(this.currentID, 'equation', this._model.authored.getEquation(this.currentID), true));
-					}
-					*/
+					console.log("equation returns",this._model.authored.getEquation(this.currentID));
+					this.applyDirectives(this.authorPM.process(this.currentID, 'equation', this._model.authored.getEquation(this.currentID), true));
 				}
 			}
 			
