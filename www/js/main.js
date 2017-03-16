@@ -224,6 +224,10 @@ define([
 			aspect.after(controllerObject, "setConnections",
 				lang.hitch(dm, dm.updateNodeConnections), true);
 
+			aspect.after(dm, "deleteNode", function(){
+				_session.saveModel(_model.model);
+			});
+
 			on(registry.byId("closeButton"), "click", function(){
 				registry.byId("nodeEditor").hide();
 				console.log("uncomment code to close");

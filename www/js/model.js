@@ -13,13 +13,13 @@ define([
 				};
 				obj.active = (mode == "AUTHOR") ? obj.authored : obj.student;
 			},
-
+			_ID: 1,
 			beginX: 450,
 			beginY: 100,
 			nodeWidth: 250,
 			nodeHeight: 100,
 			initialNodeIDString: "_initial",
-			initialNodeDisplayString: "prior",
+			initialNodeDisplayString: "prior ",
 			_updateNextXYPosition: function(){
 				var pos = {
 					x: this.x,
@@ -249,6 +249,7 @@ define([
 						};*/
 					}
 				}
+				nodes.splice(index, 1);
 
 				return updateNodes;
 			},
