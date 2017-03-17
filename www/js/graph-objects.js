@@ -34,34 +34,23 @@ define([
 					break;
 				case "equation":
 					var eq = model.getEquation(nodeID);
-					nodeString.value = this.defaultString;
-					if(eq){
-						var params = {
-							subModel: model,
-							equation: eq
-						};
-						nodeString.value = expression.convert(params).equation || this.defaultString;
-					}
+					nodeString.value = this.getDomUIStrings(model, "equation", nodeID);
 					break;
 				case "quantity":
-					var nodeName = model.getVariable(nodeID);
-					nodeString.value = nodeName || this.defaultString;
-					var initial = model.getValue(nodeID);
-					initial = typeof(initial) == "number" ? initial : "";
-					//create initial value node only if the accumulator property is set to true
-					//and initial value is a number
-					if(model.isAccumulator(nodeID) && initial){
-						nodeString.initial = "initial " + nodeName + " : " + initial;
-						createInitial = true;
-					} else if(initial) {
-						nodeString.value += " = " + initial;
-					}
+					nodeString.value = this.getDomUIStrings(model, "variable", nodeID);
+					if(model.getVariable(nodeID))
+						if(model.isAccumulator(nodeID)){
+							nodeString.initial = this.getDomUIStrings(model, "value", nodeID);
+							createInitial = true;
+						} else {
+							nodeString.value = this.getDomUIStrings(model, "value", nodeID);
+						}
 					break;
 			}
-			html[0] = '<div id="'+nodeID+'Label" class = "bubble"><div class="'+ type +'Wrapper"><strong class = "nodeContent">' + nodeString.value + '</strong></div></div>';
+			html[0] = '<div id="'+nodeID+'Label" class = "bubble"><div class="'+ type +'Wrapper"><strong id = "'+nodeID+'Content" class = "nodeContent">' + nodeString.value + '</strong></div></div>';
 
 			if(createInitial){
-				html[1] = '<div id="'+nodeID+'LabelInitial" class = "bubble"><div class="'+ type +'Wrapper"><strong class = "nodeContent">' + nodeString.initial + '</strong></div></div>';
+				html[1] = '<div id="'+nodeID+'LabelInitial" class = "bubble"><div class="'+ type +'Wrapper"><strong id = "'+ nodeID +'ContentInitial" class = "nodeContent">' + nodeString.initial + '</strong></div></div>';
 			}
 
 			return html;
@@ -69,15 +58,68 @@ define([
 
 		getNodeDescriptionHTML: function(model, nodeID){
 			var type = model.getType(nodeID);
-			var description = model.getDescription(nodeID);
+			var description = this.getDomUIStrings(model, "description", nodeID);
 			var html = "";
 			if(type && description){
-				if(type == "quantity")
-					description = "<b>"+model.getVariable(nodeID)+"</b>: " + description;
 				html = '<div id = "'+nodeID+'_description" class="'+type+'Description">'+description+'</div>';
 			}
 
 			return html;
+		},
+
+		/**
+		* returns the string to show in the Node DOM structure.
+		* Like in quantity node for description we need to show
+		* the name with the description for quantity
+		* @params : field - for which the view is needed - description
+		*           node - node object with all the values
+		*/
+		getDomUIStrings: function(/* object */ model, /* string */ field, /* string */ nodeID){
+			var value = "";
+			switch(field){
+				case "description":
+					var description = model.getDescription(nodeID);
+					var type = model.getType(nodeID);
+					if(description){
+						value = description;
+						if(type == "quantity")
+							value = "<b>" + model.getVariable(nodeID) + "</b>: " + model.getDescription(nodeID);
+					}
+					break;
+				case "variable":
+					var variable = model.getVariable(nodeID);
+					if(variable){
+						value = variable;
+					} else {
+						value = this.defaultString;
+					}
+					break;
+				case "value":
+					var initial = model.getValue(nodeID);
+					initial = typeof(initial) === "number" ? initial : "";
+					value = model.getVariable(nodeID);
+					if(model.isAccumulator(nodeID) && initial){
+						value = model.getInitialNodeDisplayString() + value + " : " + initial;
+					} else if(initial) {
+						value += " = " + initial;
+					}
+					break;
+				case "equation":
+					debugger;
+					var eq = model.getEquation(nodeID);
+					if(eq){
+						var params = {
+							subModel: model,
+							equation: eq
+						};
+						value = expression.convert(params).equation || this.defaultString;
+					} else
+						value = this.defaultString;
+					break;
+			}
+			console.log(value);
+
+			return value;
 		}
 	};
 });

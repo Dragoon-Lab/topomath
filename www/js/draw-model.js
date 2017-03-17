@@ -4,25 +4,30 @@ define([
 	"dojo/_base/lang",
 	"dojo/dom-attr",
 	"dojo/dom-construct",
+	"dojo/dom-class",
 	"dojo/dom",
 	"dojo/dom-style",
+	"dijit/Menu",
+	"dijit/MenuItem",
 	"./graph-objects",
-	"jsPlumb/jsPlumb"
-], function(declare, array, lang, attr, domConstruct, dom, domStyle, graphObjects){
+	"jsPlumb/jsPlumb",
+], function(declare, array, lang, attr, domConstruct, domClass, dom, domStyle, Menu, MenuItem, graphObjects){
 	return declare(null, {
 		_instance: null,
 		_model: null,
 		_colors:[
-			"#00ffff", "#f0e68c", "#add8e6", "#e0ffff", "#90ee90", "#d3d3d3", "#ffb6c1",
+			"#00ffff", "#f0e68c", "#add8e6", "#e0ffff", "#90ee90", "#ffb6c1",
 			"#ffffe0", "#00ff00", "#008000", "#f5f5dc", "#0000ff", "#a52a2a", "#00ffff",
 			"#ffd700", "#4b0082", "#ff00ff", "#800000", "#000080", "#808000", "#ffa500",
 			"#c0c0c0", "#ffc0cb", "#ff0000", "#800080", "#ffff00", "#00008b", "#008b8b",
-			"#f0ffff", "#a9a9a9", "#006400", "#bdb76b", "#8b008b", "#556b2f", "#ff8c00",
+			"#f0ffff", "#006400", "#bdb76b", "#8b008b", "#556b2f", "#ff8c00",
 			"#9932cc", "#8b0000", "#e9967a", "#9400d3", "#ff00ff"
 		],
+		_incompleteColor: "#d3d3d3",
 		_borderColor: 39,
 		_backgroundColor: 0,
 		_counter: 0,
+		_cache: {},
 
 		constructor: function(model){
 			this._model = model;
@@ -47,12 +52,12 @@ define([
 			vertices = vertices[vertices.length - 1]; //hack for keeping it one dimension
 			console.log(vertices);
 			
-			var makeVertexSource = this.makeVertexSource;
+			/*var makeVertexSource = this.makeVertexSource;
 			instance.doWhileSuspended(function(){
 				array.forEach(vertices, function(vertex){
 					makeVertexSource(vertex, instance);
 				}, this);
-			});
+			});*/
 
 			array.forEach(vertices, function(vertex){
 				var id = attr.get(vertex, "id");
@@ -68,29 +73,20 @@ define([
 
 		addNode: function(/* object */ node){
 			type = node.type || "circle";
-			console.log("Adding vertex to the canvas id = ", node.ID, " type = ", type);
 
+			if(!node.ID){
+				conole.error("addNode called with a node without ID");
+				return;
+			}
+
+			console.log("Adding vertex to the canvas id = ", node.ID, " type = ", type);
 			console.log("Position for the vertex : ",node.ID, " position: x ", node.position[0].x, " y: " + node.position[0].y);
 			var properties = this.getNodeUIProperties(node);
 			var htmlStrings = graphObjects.getNodeHTML(this._model, node.ID); 
 
 			var vertices = [];
 			array.forEach(htmlStrings, function(html, count){
-				var idTag = node.ID;
-				if(count == 1)
-					idTag += "_" + this._model.getInitialNodeString();
-
-				vertices[count] = domConstruct.create("div", {
-					id: idTag,
-					"class": type,
-					style: {
-						left: node.position[count].x + 'px',
-						top: node.position[count].y + 'px',
-						backgroundColor: properties.backgroundColor,
-						borderColor: properties.borderColor
-					},
-					innerHTML: htmlStrings[count]
-				}, "statemachine-demo");
+				vertices[count] = this.createNodeDOM(node, html, count == 1);
 			}, this);
 
 			var color = this._model.getColor(node.ID);
@@ -98,11 +94,139 @@ define([
 				this.addNodeDescription(node.ID);
 			}
 
-			array.forEach(vertices, function(vertex){
-				this.makeDraggable(vertex);
-			}, this);
+			//add to cache
+			this._cache[node.ID] = lang.clone(node);
 
 			return vertices;
+		},
+
+		updateNode: function(/* object */ node){
+			// all the classes that we need
+			var initialNodeIDTag = this._model.getInitialIDNodeString();
+			var domIDTags = {
+				'nodeDOM': node.ID+'Content',
+				'initialNode': node.ID+'ContentInitial',
+				'description': node.ID+'_description',
+				'parentDOM': node.ID,
+				'parentInitial': node.ID+initialNodeIDTag
+			};
+			// null checks
+			if(!node.ID){
+				console.error("update node called for an unknown node ID ", node.ID);
+				return;
+			}
+			if(!this._cache[node.ID]){
+				this.addNode(this._model.getNode(node.ID));
+				return;
+			}
+
+			var cachedNode = this._cache[node.ID];
+			// update variable name
+			if(cachedNode.variable != node.variable){
+				if(node.type && node.type == "quantity"){
+					dom.byId(domIDTags['nodeDOM']).innerHTML = graphObjects.getDomUIStrings(this._model, "variable", node.ID);
+				}
+			}
+			// update description
+			var cachedDescription = cachedNode.description || cachedNode.explanation;
+			var description = node.description || node.explanation;
+			if(cachedDescription != description || (cachedNode.variable != node.variable && description != "")){
+				var description = graphObjects.getDomUIStrings(this._model, "description", node.ID);
+				var descriptionDOM = dom.byId(domIDTags['description']);
+				if(descriptionDOM)
+					descriptionDOM.innerHTML = description;
+				else if(!node.color){
+					var ui = this.getNodeUIProperties(node);
+					domStyle.set(domIDTags['parentDOM'], "backgroundColor", ui.backgroundColor);
+					domStyle.set(domIDTags['parentDOM'], "borderColor", ui.borderColor);
+					this.addNodeDescription(node.ID);
+				}
+			}
+			//update value
+			if(node.type && node.type == "quantity" && cachedNode.value != node.value){
+				if(node.accumulator){
+					// here we need to update the initial value node as well.
+					var initialNode = dom.byId(domIDTags['parentIntial']);
+					if(initialNode)
+						dom.byId(domIDTags['initialNode']).innerHTML = graphObjects.getDomUIStrings(this._model, "value", node.ID);
+					else{
+						//this part of the code creates a new node with initial value when a node is added as dynamic
+						//explicitly picking up the second value as that is the one to be added
+						var initialNodeString = graphObjects.getNodeHTML(this._model, node.ID)[1];
+						// TODO: the handler for accumulator/dynamic will ensure that a new position is created for the initial node.
+						// draw-model does not and should not have access to that part of the node, hence it needs to be done by the handler
+						this.createNodeDOM(node, initialNodeString, true);
+					}
+
+				} else
+					dom.byId(domIDTags['nodeDOM']).innerHTML = graphObjects.getDomUIStrings(this._model, "value", node.ID);
+			} else if(node.type && node.type == "equation" && cachedNode.equation != node.equation){
+				dom.byId(domIDTags['nodeDOM']).innerHTML = graphObjects.getDomUIStrings(this._model, "equation", node.ID);
+				// TODO : need to check how and where the connections are set
+			}
+			//update border
+			var isComplete = this._model.isComplete(node.ID);
+			var hasClass = domClass.contains(domIDTags['parentDOM'], "incomplete");
+			if(hasClass && isComplete){
+				domClass.remove(domIDTags['parentDOM'], "incomplete");
+			} else if (!hasClass && !isComplete){
+				domClass.add(domIDTags['parentDOM'], "incomplete");
+			}
+
+			//add to cache for next time
+			this._cache[node.ID] = lang.clone(node);
+		},
+		/**
+		* creates the dom structure for the node
+		* @params:	nodeID - node ID to get position for the node
+		*			innerHTML - string of the dom structure that is to be put
+		*			isInitial - whether the DOM to be created is of initial node or not
+		*/
+		createNodeDOM: function(node, innerHTML, isInitial){
+			//var node = this._model.getNode(nodeID);
+			var x = node.position[0].x;
+			var y = node.position[0].y;
+			var properties = this.getNodeUIProperties(node);
+			var idTag = node.ID;
+			var classTag = node.type;
+			if(isInitial){
+				idTag += this._model.getInitialNodeIDString();
+				if(node.position.length > 1){
+					x = node.position[1].x;
+					y = node.position[1].y;
+				} else {
+					x += 100;
+					y += 100;
+				}
+			}
+			if(!this._model.isComplete(node.ID))
+				classTag += " incomplete";
+			var nodeDOM = domConstruct.create("div", {
+				id: idTag,
+				"class": classTag,
+				style: {
+					left: x + 'px',
+					top: y + 'px',
+					backgroundColor: properties.backgroundColor,
+					borderColor: properties.borderColor
+				},
+				innerHTML: innerHTML
+			}, "statemachine-demo");
+
+			this.makeDraggable(nodeDOM);
+
+			// creating menu for each DOM element
+			pMenu = new Menu({
+				targetNodeIds: [idTag]
+			});
+			pMenu.addChild(new MenuItem({
+				label: "Delete Node",
+				onClick: lang.hitch(this, function(){
+					this.deleteNode(node.ID)
+				})
+			}));
+
+			return nodeDOM;
 		},
 
 		getNodeUIProperties: function(node){
@@ -112,13 +236,30 @@ define([
 				borderColor: "black"
 			};
 			var type = node.type;
+			// border color or description color would only make sense if
+			// 1) description for quantity node and explanation for equation node
+			// 2) variable name for quantity node
+			// so the default value is set to lightgrey
+			var hasDescription = this._model.getDescription(node.ID) &&
+					(type == "equation" || node.variable);
+			if(!hasDescription){
+				return {
+					backgroundColor: this._incompleteColor,
+					borderColor: "black"
+				};
+			}
+
+			// now we need to check if there is color and
+			// should the node be shown with color
+			var color = node.color && hasDescription ? node.color :
+					this.getNextColor(type && type == "equation");
 			if(type && type == "equation"){
-				obj.backgroundColor = this.getNextColor(true);
+				obj.backgroundColor = color;
 				obj.borderColor = "black";
 				this._model.setColor(node.ID, obj.backgroundColor);
 			} else if (type && type == "quantity") {
 				obj.backgroundColor = "white";
-				obj.borderColor = this.getNextColor(false);
+				obj.borderColor = color;
 				this._model.setColor(node.ID, obj.borderColor);
 			}
 
@@ -127,13 +268,13 @@ define([
 
 		getNextColor: function(isBackground){
 			var index = isBackground ? this._backgroundColor++ : this._borderColor--;
-			if(isBackground && index >= this._colors.length){
+			if(isBackground && index >= this._colors.length-1){
 				console.error("need more colors, last color returned");
-				index--;
+				// resetting the counter
 				this._backgroundColor = 0;
-			} else if(!isBackground && index < 0){
+			} else if(!isBackground && index <= 0){
 				console.error("need more colors, last color returned");
-				index++;
+				// resetting the counter
 				this._borderColor = this._colors.length - 1;
 			}
 			var color = this._colors[index];
@@ -234,6 +375,34 @@ define([
 				else
 					domStyle.set(domID, "border-color", this._model.getColor(ID));
 			}
+		},
+
+		deleteNode: function(/*string*/ nodeID){
+			this.detachConnections(nodeID);
+			// TODO log this event
+			var type = this._model.getType(nodeID);
+			if(type && type == "quantity" && this._model.isAccumulator(nodeID)
+				&& this._model.getValue(nodeID)){
+				var initialNodeID = nodeID + this._model.getInitialNodeIDString();
+				this.detachConnections(initialNodeID);
+				domConstruct.destroy(initialNodeID);
+			}
+			domConstruct.destroy(nodeID);
+			// delete node from the model
+			var updateNodes = this._model.deleteNode(nodeID);
+			console.log(updateNodes);
+			array.forEach(updateNodes, function(ID){
+				console.log(ID);
+				this.updateNode(this._model.getNode(ID));
+			}, this);
+		},
+
+		detachConnections: function(nodeID){
+			array.forEach(this._instance.getConnections(), function(connection){
+				if(connection.sourceId == nodeID || connection.targetId == nodeID){
+					this._instance.detach(connection);
+				}
+			}, this);
 		}
 	});
 });

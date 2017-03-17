@@ -111,6 +111,10 @@
 	border: 3px solid;
 }
 
+.incomplete{
+	border-style: dotted;
+}
+
 /* css for path color and end point color for node structure for model UI*/
 path {
 	cursor:pointer;

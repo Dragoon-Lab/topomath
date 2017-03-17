@@ -18,7 +18,8 @@ define([
 			beginY: 100,
 			nodeWidth: 250,
 			nodeHeight: 100,
-			initialNodeString: "initial",
+			initialNodeIDString: "_initial",
+			initialNodeDisplayString: "prior",
 			_updateNextXYPosition: function(){
 				var pos = {
 					x: this.x,
@@ -216,17 +217,45 @@ define([
 				var node = this.getNode(id);
 				return node && node.accumulator;
 			},
+			deleteNode: function(/*string*/ id){
+				var nodes = this.getNodes();
+				var l = nodes.length;
+				var index = -1;
+				var updateNodes = [];
+				for(var i = 0; i < l; i++){
+					var found = false;
+					if(nodes[i].ID === id){
+						index = i;
+					}
+					array.forEach(nodes[i].links, function(link){
+						if(link.ID.indexOf(id) > -1){
+							found = true;
+							return;
+						}
+					});
+					if(found){
+						updateNodes.push(nodes[i].ID);
+						nodes[i].links = [];
+						nodes[i].equation = "";
+						/*nodes[i].status.equation = {
+							"disabled": false
+						};*/
+					}
+				}
+
+				return updateNodes;
+			},
 			setLinks: function(/*array*/ links, /*string*/ target){
 				// Silently filter out any inputs that are not defined.
 				// inputs is an array of objects.
 				var targetID = target;
-				var initialString = this.getInitialNodeString();
+				var initialString = this.getInitialNodeIDString();
 				if(target.indexOf(initialString) > 0)
-					targetID = target.replace(("_" + initialString), "");
+					targetID = target.replace((initialString), "");
 				var node = this.getNode(targetID);
 				if(node){
 					node.links = array.filter(links, function(link){
-						var id = link.ID.indexOf(("_" + initialString)) ? link.ID.replace(("_" + initialString), "") : link.ID;
+						var id = link.ID.indexOf((initialString)) ? link.ID.replace((initialString), "") : link.ID;
 						return this.isNode(id);
 					}, this);
 				}
@@ -240,9 +269,12 @@ define([
 				// Summary: sets the "X" and "Y" values of a node's position
 				this.getNode(id).position[index] = positionObject;
 			},
-			getInitialNodeString: function(){
-				return obj.initialNodeString;
+			getInitialNodeIDString: function(){
+				return obj.initialNodeIDString;
 			},
+			getInitialNodeDisplayString: function(){
+				return obj.initialNodeDisplayString;
+			}
 		};
 
 		obj.authored = lang.mixin({
@@ -350,10 +382,19 @@ define([
 				this.getNode(id).variable = name.trim();
 			},
 			setDescription: function(/*string*/ id, /*string*/ description){
-				this.getNode(id).description = description.trim();
+				// keeping the idea that description is what we will call this in our code.
+				description = description.trim();
+				var node = this.getNode(id);
+				if(node.type == "quantity")
+					node.description = description;
+				else
+					node.explanation = description;
 			},
 			setExplanation: function(/*string*/ id, /*string*/ content){
 				this.getNode(id).explanation = content;
+			},
+			setValue: function(/*string*/ id, /*number*/ value){
+				this.getNode(id).value = value;
 			},
 			setParent: function(/*string*/ id, /*bool*/ parent){
 				this.getNode(id).parentNode = parent;
@@ -382,6 +423,31 @@ define([
 			setExpression: function(/*string*/ id, /*string*/ expression){
 				this.getNode(id).expression = expression;
 			},
+			isComplete: function(/*string*/ id){
+				var node = this.getNode(id);
+				// if units were not entered even then it would show node complete
+				var unitsOptional = true;
+				var returnFlag = '';
+
+				var nameEntered = node.type && node.type == "equation" || node.variable;
+				// TODO : logic for value is still incomplete
+				// needs to incorporate values of function, accumulator and parameters
+				// as seen in Dragoon.
+				var valueEntered = node.type && node.type == "equation" || node.accumulator || node.value;
+				var equationEntered = node.type && node.type == "quantity" || node.equation;
+				if(node.genus == "required" || node.genus == "allowed"){
+					returnFlag = nameEntered && (node.description || node.explanation) &&
+						node.type && (valueEntered || typeof valueEntered === "number") &&
+						(unitsOptional || nodes.units) && equationEntered;
+				} else {
+					// if genus is irrelevant
+					returnFlag = nameEntered && (node.description || node.explanation);
+				}
+				if(returnFlag)
+					return true;
+				else
+					return false;
+			}
 		}, both);
 
 		obj.student = lang.mixin({

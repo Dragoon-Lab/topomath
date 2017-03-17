@@ -71,7 +71,8 @@ define([
 				throw Error(err);
 			}
 		} else {
-			throw Error("something went wrong");
+			console.log("Its a new problem");
+			// TODO: show the message box at the top to say that its a new problem.
 		}
 	
 		//The following code follows sachin code after the model has been rendered according to query parameters
@@ -113,8 +114,8 @@ define([
 				var scrollTop = document.getElementById("drawingPane").scrollTop;
 				var id = mover.node.id;
 				var index = 0
-				var initialString = "_" + _model.active.getInitialNodeString();
-				if(id.indexOf("_") > -1){
+				var initialString = _model.active.getInitialNodeIDString();
+				if(id.indexOf(initialString) > -1){
 					id = id.replace(initialString, "");
 					index = 1;
 				}
@@ -192,9 +193,9 @@ define([
 				};
 				var id = _model.active.addNode(options);
 				console.log("New quantity node created id - ", id);
+				controllerObject.showQuantityNodeEditor(id);
+				controllerObject.addNode(_model.active.getNode(id));
 				_logger.logUserEvent({type: "menu-choice", name: "create-node", "type": "quantity"});
-				controllerObject.showNodeEditor(id);	
-				dm.addNode(_model.active.getNode(id));
 			});
 
 			//next step is to add action to add equation
@@ -205,11 +206,30 @@ define([
 				};
 				var id = _model.active.addNode(options);
 				//var id = givenModel.active.addNode();
-				_logger.logUserEvent({type: "menu-choice", name: "create-node", "type": "equation"});
 				console.log("New equation node created id - ", id);
-				controllerObject.showNodeEditor(id);
-				dm.addNode(_model.active.getNode(id));
+				controllerObject.showEquationNodeEditor(id);
+				controllerObject.addNode(_model.active.getNode(id));
+				_logger.logUserEvent({type: "menu-choice", name: "create-node", "type": "equation"});
 			});
+
+			aspect.after(controllerObject, "addNode",
+				lang.hitch(dm, dm.addNode), true);
+
+			aspect.after(controllerObject, "setConnections",
+				lang.hitch(dm, dm.setConnections));
+
+			on(registry.byId("closeButton"), "click", function(){
+				//TODO: once node_editor2 is merged to master, uncomment the line below.
+				//registry.byId("nodeEditor").hide();
+				console.log("uncomment code to close");
+			});
+
+			//TODO: uncomment this after node_editor2 is merged
+			//all the things we need to do once node is closed
+			/*aspect.after(registry.byId('nodeEditor'), "hide", function(){
+				_session.saveProblem(_model.model);
+				dm.updateNode(_model.active.getNode(controllerObject.currentID));
+			});*/
 
 			menu.add("DoneButton", function (e) {
 				event.stop(e);
@@ -238,7 +258,6 @@ define([
 					errDialog.showDialog(title, problemComplete.errorNotes, buttons, /*optional argument*/"Don't Exit");
 				}
 			});
-			
 		});
 	});
 	
