@@ -435,7 +435,7 @@ define([
 				// as seen in Dragoon.
 				var valueEntered = node.type && node.type == "equation" || node.accumulator || node.value;
 				var equationEntered = node.type && node.type == "quantity" || node.equation;
-				if(node.genus == "required" || node.genus == "allowed" || node.genus == "preferred"){
+				if(node.genus == "required" || node.genus == "allowed"){
 					returnFlag = nameEntered && (node.description || node.explanation) &&
 						node.type && (valueEntered || typeof valueEntered === "number") &&
 						(unitsOptional || nodes.units) && equationEntered;
