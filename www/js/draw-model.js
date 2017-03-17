@@ -268,13 +268,13 @@ define([
 
 		getNextColor: function(isBackground){
 			var index = isBackground ? this._backgroundColor++ : this._borderColor--;
-			if(isBackground && index >= this._colors.length){
+			if(isBackground && index >= this._colors.length-1){
 				console.error("need more colors, last color returned");
-				index--;
+				// resetting the counter
 				this._backgroundColor = 0;
-			} else if(!isBackground && index < 0){
+			} else if(!isBackground && index <= 0){
 				console.error("need more colors, last color returned");
-				index++;
+				// resetting the counter
 				this._borderColor = this._colors.length - 1;
 			}
 			var color = this._colors[index];
