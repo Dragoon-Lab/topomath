@@ -49,7 +49,6 @@ define([
 				var connections = []; // this holds the input list
 				array.forEach(expressions, function(expr){
 					variableList = variableList.concat(expr.variables());
-					connections = connections.concat(this.createConnections(expr, subModel));
 					array.forEach(expr.variables(), function(variable){
 						//This is the case where node names have to be converted to ids
 						//This situation arises from equationDoneHandler
@@ -73,6 +72,7 @@ define([
 							}
 						}
 					}, this);
+					connections = connections.concat(this.createConnections(expr, subModel));
 				}, this);
 				return {
 					variableList: variableList,
@@ -146,7 +146,10 @@ define([
 			// General expression
 			// TODO: ensure that initial node has a different ID
 			return array.map(parse.variables(), function(x){
-				return {ID: subModel.getNodeIDByName(x)};
+				if(x.indexOf("id") != 0)
+					return {ID: subModel.getNodeIDByName(x)};
+				else
+					return {ID: x};
 			}, this);
 		},
 
