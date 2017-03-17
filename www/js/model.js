@@ -13,13 +13,13 @@ define([
 				};
 				obj.active = (mode == "AUTHOR") ? obj.authored : obj.student;
 			},
-
+			_ID: 1,
 			beginX: 450,
 			beginY: 100,
 			nodeWidth: 250,
 			nodeHeight: 100,
 			initialNodeIDString: "_initial",
-			initialNodeDisplayString: "prior",
+			initialNodeDisplayString: "prior ",
 			_updateNextXYPosition: function(){
 				var pos = {
 					x: this.x,
@@ -164,6 +164,13 @@ define([
 				// console.trace();
 				return null;
 			},
+			/**
+			* takes a node ID and removes the initial node ID string from it if present
+			*/
+			getNodeID: function(/*string*/ id){
+				return id.indexOf(this.getInitialNodeIDString()) > -1 ?
+							id.replace(this.getInitialNodeIDString(), "") : id;
+			},
 			getVariable: function(/* string */ id){
 				var node = this.getNode(id);
 				return node && node.variable;
@@ -242,6 +249,7 @@ define([
 						};*/
 					}
 				}
+				nodes.splice(index, 1);
 
 				return updateNodes;
 			},
@@ -318,7 +326,7 @@ define([
 				var id;
 				var gotIt = array.some(this.getNodes(), function(node){
 					id = node.ID;
-					return node.name === name;
+					return node.variable === name;
 				});
 				return gotIt ? id : null;
 			},
@@ -452,7 +460,7 @@ define([
 
 		obj.student = lang.mixin({
 			addNode: function(options){
-				obj.updateNextXYPosition();
+				obj._updateNextXYPosition();
 				var newNode = lang.mixin({
 					ID: "id" + obj._ID++,
 					links: [],
@@ -491,6 +499,64 @@ define([
 				// Summary: Return any matched given model id for student node.
 				var node = this.getNode(id);
 				return node && node.authoredID;
+			},
+			getInitial: function(/*string*/ id){
+				var node = this.getNode(id);
+				return node && node.initial;
+			},
+			getInputs: function(/*string*/ id){
+				// Summary: return an array containing the input ids for a node.
+				var ret = this.getNode(id);
+				return ret && ret.inputs;
+			},
+			getUnits: function(/*string*/ id){
+				return this.getNode(id).units;
+			},
+			deleteNode: function(/*string*/ id){
+				
+				var index;
+				var nodes = this.getNodes();
+				for(var i = 0; i < nodes.length; i++){
+					var found = false;
+					if(nodes[i].ID === id)
+						index = i;
+					array.forEach(nodes[i].inputs, function(input){
+						if(input.ID === id){
+							found = true;
+							return;
+						}
+					});
+					if(found){
+						nodes[i].inputs = [];
+						nodes[i].equation = "";
+						nodes[i].status.equation = {
+							"disabled": false
+						};
+					}
+				}
+				nodes.splice(index, 1);
+			},
+			setDescriptionID: function(/*string*/ id, /*string*/ descriptionID){
+				this.getNode(id).descriptionID = descriptionID;
+			},
+			setInitial: function(/*string*/ id, /*float*/ initial){
+				this.getNode(id).initial = initial;
+			},
+			setUnits: function(/*string*/ id, /*string*/ units){
+				this.getNode(id).units = units;
+			},
+			setInputs: function(/*array*/ inputs, /*string*/ inputInto){
+				// Silently filter out any inputs that are not defined.
+				// inputs is an array of objects.
+				var node = this.getNode(inputInto);
+				if(node){
+					node.inputs = array.filter(inputs, function(input){
+						return this.isNode(input.ID);
+					}, this);
+				}
+			},
+			setEquation: function(/*string*/ id, /*string | object*/ equation){
+				this.getNode(id).equation = equation;
 			},
 		}, both);
 

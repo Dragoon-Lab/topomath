@@ -20,7 +20,7 @@ define([
 		*			string equation: converted equation string
 		*			array variableList: array of all variables in the equation
 		*			array newnodeList: array of objects which contain ids and corresponding variable names of new nodes (nodes which are not already present in the model and have been added after equation parse)
-		*			array inputList: array of objects containing inputs of the equation
+		*			array/map connections: array of objects containing inputs of the equation
 		*/
 		convert: function(params){
 			var equation = params.equation;
@@ -46,15 +46,14 @@ define([
 			if(params.nameToId){
 				var nodeList = []; //this holds new node ids and variable objects
 				var variableList = []; // this holds the variable list
-				var inputList = []; // this holds the input list
+				var connections = []; // this holds the input list
 				array.forEach(expressions, function(expr){
 					variableList = variableList.concat(expr.variables());
-					inputList = inputList.concat(this.createInputs(expr));
 					array.forEach(expr.variables(), function(variable){
 						//This is the case where node names have to be converted to ids
 						//This situation arises from equationDoneHandler
 						//In such situation convert name to id
-						var nodeId = subModel.active.getNodeIDByName(variable);
+						var nodeId = subModel.getNodeIDByName(variable);
 						if(nodeId){
 							expr.substitute(variable,nodeId);
 						}
@@ -62,19 +61,26 @@ define([
 							//verify if autocreatenodes is enabled
 							if(params.autoCreateNodes){
 								//add node id to model
-								var newId = subModel.active.addNode();
-								nodeList.push({ "id": newId, "variable":variable});
+								//name and type parameters attached
+								var newNodeOptions = {
+                                    variable: variable,
+                                    type: "quantity"
+                                };
+                                var newId = subModel.addNode(newNodeOptions);
+                                nodeList.push({ "id": newId, "variable":variable});
+                                expr.substitute(variable, newId);
 							}
 						}
 					}, this);
+					connections = connections.concat(this.createConnections(expr, subModel));
 				}, this);
 				return {
-						variableList: variableList, 
-						newNodeList: nodeList, 
-						inputList: inputList,
-						parseSuccess: true, 
-						equation: expressions[0].toString() + " " + this.equalto + " " + expressions[1].toString()
-					};
+					variableList: variableList,
+					newNodeList: nodeList,
+					connections: connections,
+					parseSuccess: true,
+					equation: expressions[0].toString() + " " + this.equalto + " " + expressions[1].toString()
+				};
 			}
 			else{
 				array.forEach(expressions, function(expr){
@@ -102,7 +108,6 @@ define([
 		 equations and inputs of existing nodes.
 		 */
 		addQuantity: function(id, subModel){
-
 			var name = subModel.getName(id);
 			array.forEach(subModel.getNodes(), function(node){
 				if(node.equation){
@@ -125,10 +130,10 @@ define([
 					if(changed){
 						node.equation = expr.toString(true);
 						node.inputs = [];
-						var inputs = this.createInputs(expr);
-						array.forEach(inputs, function(input){
-							if(subModel.isNode(input.ID))
-								node.inputs.push(input);
+						var connections = this.createConnections(expr);
+						array.forEach(connections, function(connection){
+							if(subModel.isNode(connection.ID))
+								node.inputs.push(connection);
 						});
 					}
 				}
@@ -137,12 +142,15 @@ define([
 
 		// Test if this is a pure sum or product
 		// If so, determine connection labels
-		createInputs: function(parse){
+		createConnections: function(parse, subModel){
 			// General expression
+			// TODO: ensure that initial node has a different ID
 			return array.map(parse.variables(), function(x){
-				return {ID: x};
-			});
-			
+				if(x.indexOf("id") != 0)
+					return {ID: subModel.getNodeIDByName(x)};
+				else
+					return {ID: x};
+			}, this);
 		},
 
 		setLogging: function(logger){

@@ -106,6 +106,13 @@ define([
 					}
 					break;
 
+					case "units":
+					if(value){
+						returnObj.push({id:"units", attribute:"status", value:"entered"});
+					}else{
+						returnObj.push({id:"units", attribute:"status", value:""});
+					}
+					break;
 
 				default:
 					throw new Error("Unknown type: "+ nodeType + ".");
@@ -125,6 +132,9 @@ define([
 		},
 
 		resettableControls: ["variable","description","value","units","equation"],
+		variableNodeControls: ["variable","value","units","kind","dynamic","root"],
+		equationNodeControls: ["inputs","equation"],
+		commonNodeControls: ["setStudent","modelType","description"],
 
 		controlMap: {
 			inputs: "inputSelector",
@@ -170,7 +180,7 @@ define([
 			}));
 
 			var dynamic_check = registry.byId(this.controlMap.dynamic);
-			root_check.on('Change', lang.hitch(this, function(checked){
+			dynamic_check.on('Change', lang.hitch(this, function(checked){
 					return this.disableHandlers || this.handleDynamic(checked);
 			}));
 
@@ -182,6 +192,11 @@ define([
 			var givenEquation = registry.byId("equationInputbox");
 			givenEquation.on('Change', lang.hitch(this, function(){
 					return this.disableHandlers || this.handleGivenEquation.apply(this, arguments);
+			}));
+
+			var selectModel = registry.byId(this.controlMap.modelType);
+			selectModel.on('Change', lang.hitch(this, function(){
+					return this.disableHandlers || this.handleSelectModel.apply(this, arguments);
 			}));
 
 			this.handleErrorMessage(); //binds a function to Display Error message if expression is cleared.
@@ -328,7 +343,7 @@ define([
 		handleRoot: function(root){
 			// Summary: Sets the current node to be parent node
 			console.log("********************* in handleRoot", root);
-			//this._model.given.setParent(this.currentID, root);
+			this._model.authored.setRoot(this.currentID, root);
 			/*
 			this.logging.log("solution-step", {
 				type: "solution-enter",
@@ -343,7 +358,8 @@ define([
 		handleDynamic: function(dynamic){
 			// Summary: Sets the current node to be parent node
 			console.log("********************* in handleDynamic", dynamic);
-			//this._model.given.setParent(this.currentID, root);
+			this._model.authored.setAccumulator(this.currentID, dynamic);
+			/*TODO : Add code to update position of the node*/
 			/*
 			this.logging.log("solution-step", {
 				type: "solution-enter",
@@ -361,45 +377,71 @@ define([
 				style.set('modelSelectorContainer', 'display', 'block');
 				var studentNode = this._model.student.getNodeIDFor(this.currentID);
 				if(studentNode == null){
-					//TODO : to write addStudentNode which has to add a quantity node, pushing this it backlog 
-					//this.addStudentNode(this.currentID);
+					this.addStudentNode(this.currentID);
 				}
 			}else{
 				this._model.active = this._model.authored;
 				registry.byId("modelSelector").set('value',"correct");
 				style.set('modelSelectorContainer', 'display', 'none');
-				//TODO : to write removeStudentNode , pushed to backlog
-				//this.removeStudentNode(this.currentID);
-				//also show the waveform assignment button and image
+				this.removeStudentNode(this.currentID);
+				//TODO : also show the waveform assignment button and image
 			}
 		},
 
 		handleSelectModel: function(modelType){
+			console.log("********************* in handle select model", modelType);
+			if(modelType === "correct"){
+				this.controlMap.equation = "equationInputbox";
+				style.set('equationInputbox', 'display', 'block');		//show EquationBox
+				style.set('givenEquationInputbox', 'display', 'none');	//hide GivenEquationBox
+				
+				this._model.active = this._model.authored;
+				this.enableDisableFields(modelType);
+				this.populateNodeEditorFields(this.currentID);
 
+			}
+			else if(modelType === "given"){
+				var equation = registry.byId("equationInputbox");
+				style.set('givenEquationInputbox', 'display', 'block'); //show GivenEquationBox
+				style.set('equationInputbox', 'display', 'none');	   //hide EquationBox
+				this.controlMap.equation = "givenEquationInputbox"
+				if(equation.value && !this.equationEntered){
+					//Crisis alert popup if equation not checked
+					this.applyDirectives([{
+						id: "crisisAlert", attribute:
+						"open", value: "Your expression has not been checked!  Go back and check your expression to verify it is correct, or delete the expression, before closing the node editor."
+					}]);
+					registry.byId("modelSelector").set('value',"correct");
+				}
+				else{
+					this._model.active = this._model.student;
+					this.enableDisableFields(modelType);
+					this.getStudentNodeValues(this.currentID);
+				}
+			}
 		},
 		
 		handleUnits: function(units){
 			console.log("**************** in handleUnits ", units);
 
 			var modelType = this.getModelType();
-			// TODO : Use applyDirectives here
-			var returnObj = this.authorPM.process(this.currentID, "units", units);
 			
+			var returnObj = this.authorPM.process(this.currentID, "units", units);
 			console.log("Returned from author PM : ", returnObj)
-			//var studentNodeID = this._model.student.getNodeIDFor(this.currentID);
+			this.applyDirectives(returnObj);
 
-			if(modelType == "given"){
+			var studentNodeID = this._model.student.getNodeIDFor(this.currentID);
+
+			if(modelType == "authored"){
 				this._model.active.setUnits(studentNodeID, units);
-				//this.updateStatus("units", this._model.given.getUnits(this.currentID), units);
+				this.updateStatus("units", this._model.authored.getUnits(this.currentID), units);
 			}
 			else{
-				/*
 				this._model.active.setUnits(this.currentID, units);
 				if(studentNodeID) this.updateStatus("units", units, this._model.student.getUnits(studentNodeID));
-				*/
 			}
 
-			//update student node status
+			//TODO : update student node status
 			/*
 			var valueFor = modelType == "given" ? "student-model": "author-model";
 			this.logging.log("solution-step", {
@@ -624,9 +666,9 @@ define([
 			console.log("initial control settings in author mode");
 			// Apply settings appropriate for a new node
 			// This is the equivalent to newAction() in student mode.
-			this.applyDirectives([
+			/*this.applyDirectives([
 				{attribute:"disabled", id:"root", value:true}
-			]);
+			]);*/
 
 			var nodeType = this._model.authored.getType(nodeid);
 			//desc widget is common to both node types in topomath
@@ -681,10 +723,10 @@ define([
 				registry.byId(this.controlMap.variable).set('value', variable || '', false);
 
 				// Initialize root node checkbox
-				registry.byId(this.controlMap.root).set('value', this._model.authored.getParent(nodeid));
+				registry.byId(this.controlMap.root).set('value', this._model.authored.isRoot(nodeid));
 
 				//Initialize dynamic node checkbox
-				registry.byId(this.controlMap.dynamic).set('value', this._model.authored.getDynamic(nodeid));
+				registry.byId(this.controlMap.dynamic).set('value', this._model.authored.isAccumulator(nodeid));
 
 				// populate inputs
 			
@@ -772,14 +814,8 @@ define([
 				//color Equation widget
 				
 				if(this._model.authored.getEquation(this.currentID)){
-					//we have not found a use case for getAuthorStatus yet so commenting this sesion for now
-					/*
-					if(this._model.authored.getAuthorStatus(this.currentID, "equation") && this._model.authored.getAuthorStatus(this.currentID, "equation").status == "incorrect"){
-
-					}else{
-						this.applyDirectives(this.authorPM.process(this.currentID, 'equation', this._model.authored.getEquation(this.currentID), true));
-					}
-					*/
+					console.log("equation returns",this._model.authored.getEquation(this.currentID));
+					this.applyDirectives(this.authorPM.process(this.currentID, 'equation', this._model.authored.getEquation(this.currentID), true));
 				}
 			}
 			
@@ -793,7 +829,7 @@ define([
 						isDuplicateDescription = true;
 				}));
 
-				this.applyDirectives(this.authorPM.process(isDuplicateDescription, "description", this._model.given.getDescription(this.currentID)));
+				this.applyDirectives(this.authorPM.process(isDuplicateDescription, "description", this._model.authored.getDescription(this.currentID)));
 			}
 		},
 		/* discontinuing use of author status
@@ -814,19 +850,125 @@ define([
 		},
 
 		addStudentNode: function(nodeid){
+			this.removeStudentNode(nodeid);
+			var currentNode = this._model.authored.getNode(nodeid);
+			var newNodeID = this._model.student.addNode();
 
+			//copy correct values into student node
+			this._model.student.setDescriptionID(newNodeID, currentNode.ID);
+			this._model.student.setInitial(newNodeID, currentNode.initial);
+			this._model.student.setUnits(newNodeID, currentNode.units);
+			
+			if(currentNode.equation){
+				var inputs = [];
+				var isExpressionValid = true;
+				var equation = currentNode.equation;
+				array.forEach(currentNode.inputs, lang.hitch(this, function(input){
+					 var studentNodeID = this._model.student.getNodeIDFor(input.ID);
+					 if(studentNodeID){
+						inputs.push({ "ID": studentNodeID});
+						var regexp = "(" +input.ID +")([^0-9]?)";
+						var re = new RegExp(regexp);
+						equation = equation.replace(re, studentNodeID+"$2");
+					}
+					else{
+						isExpressionValid = false;
+					}
+				}));
+				if(isExpressionValid){
+					this._model.student.setInputs(inputs, newNodeID);
+					this._model.student.setEquation(newNodeID, equation);
+					this.givenEquationEntered = true;
+					this._model.student.setStatus(newNodeID, "equation" , {"disabled":true,"status":"correct"});
+				}
+				else{
+					this._model.student.setInputs([], newNodeID);
+					this._model.student.setEquation(newNodeID, "");
+					this.errorStatus.push({"id": nodeid, "isExpressionCleared":true});
+					this._model.student.setStatus(newNodeID, "equation" , {"disabled":false,"status":"incorrect"});
+				}
+			}
+			this._model.student.setPosition(newNodeID, currentNode.position);
+
+			//Set default status to correct for all the fields
+			this._model.student.setStatus(newNodeID, "description" , {"disabled":true,"status":"correct"});
+			if(typeof currentNode.units !== "undefined"){
+				this._model.student.setStatus(newNodeID, "units" , {"disabled":true,"status":"correct"});
+			}
 		},
 
 		removeStudentNode: function(nodeid){
-
+			// Track which expressions are cleared for given model on removing node
+			var studentNodeID = this._model.student.getNodeIDFor(nodeid);
+			if(studentNodeID){
+				var nodes = this._model.student.getNodes();
+				for(var i = 0; i < nodes.length; i++){
+					var found = false;
+					if(nodes[i].ID === studentNodeID)
+						index = i;
+					array.forEach(nodes[i].inputs, function(input){
+						if(input.ID === studentNodeID){
+							found = true;
+							return;
+						}
+					});
+					if(found){
+						this.errorStatus.push({"id": nodes[i].descriptionID, "isExpressionCleared":true});
+						console.log("error status: ", this.errorStatus);
+					}
+				}
+				//Removes the current node from student Model
+				this._model.student.deleteNode(studentNodeID);
+			}
 		},
 
 		getStudentNodeValues: function(nodeid){
-
+			var studentNodeID = this._model.student.getNodeIDFor(nodeid);
+			if(studentNodeID){
+				
+				var type = this._model.student.getType(studentNodeID);
+				//registry.byId(this.controlMap.type).set('value', type || "defaultSelect");
+				registry.byId(this.controlMap.equation).set("disabled", false);
+				var initial = this._model.student.getInitial(studentNodeID);
+				if(typeof initial !== "undefined" && initial != null){
+					registry.byId(this.controlMap.initial).set('value', initial);
+				}
+				var units = this._model.student.getUnits(studentNodeID);
+				registry.byId(this.controlMap.units).set('value', units || "");
+			}
 		},
 
 		enableDisableFields: function(/*String*/modelType){
+			//Summary: enable disable fields in the node editor based on selected model value
+			type = this._model.authored.getType(this.currentID);
+			if(type == "equation"){
+				if( modelType == "given"){
+					registry.byId(this.controlMap.description).set("disabled", true);
+					registry.byId(this.controlMap.description).set("status", '');
+				}else if (modelType == "correct"){
+					registry.byId(this.controlMap.description).set("disabled", false);
+					registry.byId(this.controlMap.description).set("status", "entered");
+				}
+			}else{
+				if(modelType == "given"){
+					registry.byId(this.controlMap.variable).set("disabled",true);
+					registry.byId(this.controlMap.description).set("disabled",true);
+					registry.byId(this.controlMap.variable).set("status",'');
+					registry.byId(this.controlMap.kind).set("disabled",true);
+					registry.byId(this.controlMap.root).set("disabled",true);
+					registry.byId(this.controlMap.dynamic).set("disabled",true);
+					registry.byId(this.controlMap.dynamic).set("checked",false);
+				}
+				else if(modelType == "correct"){
+					registry.byId(this.controlMap.variable).set("disabled",false);
+					registry.byId(this.controlMap.description).set("disabled",false);
+					registry.byId(this.controlMap.variable).set("status","entered");
+					registry.byId(this.controlMap.description).set("status","entered");
 
+					registry.byId(this.controlMap.kind).set("disabled",false);
+					registry.byId(this.controlMap.root).set("disabled",false);
+				}
+			}
 		},
 		enableDisableSetStudentNode: function(){
 			//Summary: Enable Set student mode checkbox only when variable/equation and description/explanation are filled

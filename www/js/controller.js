@@ -33,9 +33,10 @@ define([
 	"dijit/registry",
 	"dojo/dom-style",
 	"dojo/dom-construct",
+	"dojo/aspect",
 	"./equation",
 	"./logging"
-], function(array, declare, lang, dom, keys, on, ready, registry, domStyle, domConstruct, 
+], function(array, declare, lang, dom, keys, on, ready, registry, domStyle, domConstruct, aspect, 
 	expression, clientLogging){
 
 	/* Summary:
@@ -81,7 +82,6 @@ define([
 		validStatus: {status: true, disabled: true},
 		
 		constructor: function(mode, model, ui_config){
-
 			console.log("+++++++++ In generic controller constructor");
 			lang.mixin(this.controlMap, this.genericControlMap);
 
@@ -152,11 +152,82 @@ define([
 			domStyle.set(this.domNode, 'backgroundColor', value ? colorMap[value] : '');
 		},
 
+		hideCloseNodeEditor: function(/* originical hide method*/ doHide){
+			doHide.apply(this._nodeEditor);
+			this.closeEditor.call(this);
+		},
+
 		_setUpNodeEditor: function(){
 			// get Node Editor widget from tree
 			// In TopoMath this functions sets up display of both quantity and equation node editor
+			console.log("in set up node editor", this.nodeType);
 			this._nodeEditor = registry.byId('nodeEditor');
 			this._nodeEditor.set("display", "block");
+
+			// Wire up this.closeEditor.  Aspect.around is used so we can stop hide()
+			// from firing if equation is not entered.
+			
+			aspect.around(this._nodeEditor, "hide", lang.hitch(this, function(doHide){ 
+				console.log("nodeeditor hide");
+				//To keep the proper scope throughout
+				//TODO: check node type
+				var myThis = this;
+				return function(){
+					if(myThis.nodeType == "equation"){
+						var equation = registry.byId("equationInputbox");
+						
+						//if the equation is in the box but has not been checked(or entered)
+						if(equation.value && !myThis.equationEntered){
+							
+							//call equation done handler(equation done handlers in one of the modes will be called based on current mode)
+							var directives = myThis.equationDoneHandler();
+							var isAlertShown = array.some(directives, function(directive){
+								if(directive.id === 'crisisAlert'){
+									return true;
+								}
+							});
+							
+							//isAlertShown records if the crisis alert was shown, if not we have to close editor programatically
+							if(!isAlertShown) {
+								//TODO: discuss premature nodes deletion
+								//further hide editor and call closeEditor function
+								myThis.hideCloseNodeEditor(doHide);
+							}
+						} // if the mode is author and user has selected to enter student values (" given ")
+						else if(myThis._mode == "AUTHOR" && registry.byId("modelSelector").value == "given"){
+							var equation = registry.byId("givenEquationInputbox");
+							
+							//equation value in this case if from givenEquationInputbox and check if the value is entered/checked
+							//if not throw a crisis alert message
+							if(equation.value && !myThis.givenEquationEntered){
+								
+								//Crisis alert popup if equation not checked
+								myThis.applyDirectives([{
+									id: "crisisAlert", attribute:
+										"open", value: "Initial Student Expression value is not checked!  Go back and check your expression to verify it is correct, or delete the expression, before closing the node editor."
+								}]);
+							}
+							else{
+								
+								// Else, do normal closeEditor routine and hide
+								myThis.hideCloseNodeEditor(doHide);
+							}
+						}else{ // this case implies either equation box is empty or value has already been checked/entered
+							
+							// Else, do normal closeEditor routine and hide
+							myThis.hideCloseNodeEditor(doHide);
+						}
+						
+						//empty the node connections finally
+						this.nodeConnections = [];
+					}
+					else{ //node type is variable (not equation)
+						myThis.hideCloseNodeEditor(doHide);
+					}
+				};
+			}));
+		
+
 			/*
 			 Add attribute handler to all of the controls
 			 When "status" attribute is changed, then this function
@@ -178,6 +249,7 @@ define([
 				 * Adding a watch method to the equationBox didn't work.
 				 */
 				//commenting out this section for now as we do not yet use equationText
+				//TODO: discuss why equation text was used in dragoon
 				/* 
 				aspect.after(registry.byId(this.controlMap.equation), "_setStatusAttr",
 					lang.hitch({domNode: dom.byId("equationText")}, this._setStatus),
@@ -391,9 +463,9 @@ define([
 			//based on the type decide what fields to show or hide
 			//call get type once the model is intergrated
 			//for now commenting it and randomly giving nodetype value
-			var nodeType = this._model.active.getType(this.currentID);
-			console.log("nodeType",nodeType);
-			this.initialViewSettings(nodeType);
+			this.nodeType = this._model.active.getType(this.currentID);
+			console.log("nodeType",this.nodeType);
+			this.initialViewSettings(this.nodeType);
 			this.initialControlSettings(id);
 			this.populateNodeEditorFields(id);
 
@@ -410,6 +482,48 @@ define([
 		initialViewSettings: function(type){
 			//over written by student or author specific method
 		},
+
+		closeEditor: function(){ 
+			console.log("++++++++++ entering closeEditor");
+			if(this._mode == "AUTHOR"){
+				//Reset to given on close of node editor
+				this._model.active = this._model.authored;
+				registry.byId("modelSelector").set('value',"correct");
+				
+				if(this.nodeType == "equation"){
+					this.controlMap.equation = "equationInputbox";
+					domStyle.set('equationInputbox', 'display', 'block');
+					domStyle.set('givenEquationInputbox', 'display', 'none');
+				}
+				/* check the usage of this code
+				var kind = registry.byId(this.controlMap.kind).value;
+				if(kind == "required"){
+					this._model.authored.setGenus(this.currentID, kind);
+				}
+				*/
+			}
+			// Erase modifications to the control settings.
+			// Enable all options in select controls.
+			/* TODO: this enable/disable options looks like for student mode
+			array.forEach(this.selects, function(control){
+				var w = registry.byId(this.controlMap[control]);
+				w.set("enableOption", null);  // enable all options
+			}, this);
+			*/
+			//for all controls corresponding to a node type , enable and remove colors
+			var allControls = (this.nodeType == "equation" ? this.equationNodeControls : this.variableNodeControls).concat(this.commonNodeControls);
+			console.log("all controls", allControls);
+			array.forEach(allControls,lang.hitch(this,function(control){
+				console.log("current control is", control);
+				var w = registry.byId(this.controlMap[control]);
+				w.set("disabled", false);  // enable everything
+				w.set("status", '');  // remove colors
+			}));
+			
+			this.disableHandlers = true;
+			//TODO: check logging
+		},
+
 
 
 		checkDone: function () {
@@ -441,7 +555,7 @@ define([
 					}
 
 				});
-
+				console.log("Equations : ", _equations);
 				// check if each variable is present in atleast one equation
 				var _usedVariables = _variables.map(function(_variable){
 					var tmp = array.some(_equations, function(_equation) {
@@ -518,7 +632,7 @@ define([
 
 			if(model.getNodeIDFor){
 				var d = registry.byId(this.controlMap.description);
-				array.forEach(this._model.given.getDescriptions(), function(desc){
+				array.forEach(this._model.authored.getDescriptions(), function(desc){
 					var exists =  model.getNodeIDFor(desc.value);
 					d.getOptions(desc).disabled=exists;
 					if(desc.value == nodeName){
@@ -526,14 +640,11 @@ define([
 					}});
 			}
 
-
-			var nodeType = this._model.authored.getType(nodeid);
-
-			if(nodeType == "quantity"){
+			if(this.nodeType == "quantity"){
 
 				//Populate value of quantity node
 				//TODO : fetch value from model, for now giving empty value,
-				var value = "";//model.getValue(nodeid);
+				var value = model.getValue(nodeid);//model.getValue(nodeid);
 				console.log(' value is ', value, typeof value);
 				//  value will be undefined if it is not in the model
 				var isValue = typeof value === "number";
@@ -546,12 +657,17 @@ define([
 				registry.byId(this.controlMap.units).set('value', unit || '');
 
 			}
-			else if(nodeType == "equation"){
+			else if(this.nodeType == "equation"){
 				//populate nodeEditor fields for an equation node
 
 				var equation = model.getEquation(nodeid);
 				console.log("equation before conversion ", equation);
-				var mEquation = equation ? expression.convert(model, equation) : '';
+				params = {
+					subModel: model,
+					equation: equation,
+					nameToId: false
+				};
+				var mEquation = equation ? expression.convert(params).equation : '';
 				console.log("equation after conversion ", mEquation);
 				/* mEquation is a number instead of a string if equation is just a number; convert to string before setting the value */
 				registry.byId(this.controlMap.equation).set('value', mEquation.toString());
@@ -731,7 +847,7 @@ define([
 					equation: inputEquation,
 					autoCreateNodes: true, // where do we get this input from 
 					nameToId: true,
-					subModel: this._model
+					subModel: this._model.active
 				}
 				returnObj = expression.convert(equationParams);
 			}catch(err){
@@ -940,7 +1056,7 @@ define([
 				console.log("********* Saving equation to model: ", parseObject.equation);
 				this._model.active.setEquation(this.currentID, parseObject.equation);
 
-				var inputs = parseObject.inputsList;
+				var inputs = parseObject.connections;
 				// Update inputs and connections
 				this._model.active.setLinks(inputs, this.currentID);
 				this.setConnections(this._model.active.getLinks(this.currentID), this.currentID);
@@ -956,6 +1072,6 @@ define([
 				}));
 
 			}
-		},
+		}
 	});
 });
