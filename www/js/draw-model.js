@@ -255,8 +255,18 @@ define([
 
 			// now we need to check if there is color and
 			// should the node be shown with color
-			var color = node.color && hasDescription ? node.color :
-					this.getNextColor(type && type == "equation");
+			var color;
+			if(hasDescription)
+				if(node.color){
+					color = node.color;
+					if(type == "quantity")
+						this._borderColor = this._colors.indexOf(node.color) - 1;
+					else
+						this._backgroundColor = this._colors.indexOf(node.color) + 1;
+				} else {
+					color = this.getNextColor(type && type == "equation");
+				}
+
 			if(type && type == "equation"){
 				obj.backgroundColor = color;
 				obj.borderColor = "black";
@@ -394,11 +404,13 @@ define([
 			domConstruct.destroy(nodeID);
 			// delete node from the model
 			var updateNodes = this._model.deleteNode(nodeID);
+			// updateNodes are the nodes for which the equations and links were updated.
 			console.log(updateNodes);
 			this.removeDescription(nodeID);
 			array.forEach(updateNodes, function(ID){
 				console.log(ID);
 				this.updateNode(this._model.getNode(ID));
+				this.detachConnections(ID);
 			}, this);
 		},
 
