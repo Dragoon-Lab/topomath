@@ -220,6 +220,27 @@ define([
 				var node = this.getNode(id);
 				return node && node.color;
 			},
+			/**
+			* gets the nodes where node corresponding to the id is part of the links to any other node
+			* - used for updating the corresponding equations if the node variables are updated
+			* @params -	id - quantity node ID whose variable name has been changed
+			*			nodes - nodes for which the equation has to be updated
+			*/
+			getLinksFromID: function(/* string */ id){
+				var nodes = [];
+				var temp = array.map(this.getNodes(), function(node){
+					var found = false;
+					found = array.some(node.links, function(link){
+						return (link.ID === id);
+					});
+					if(found) return node.ID;
+				});
+				array.forEach(temp, function(t){
+					if(t) nodes.push(t);
+				});
+
+				return nodes;
+			},
 			isAccumulator: function(/* string */ id){
 				var node = this.getNode(id);
 				return node && node.accumulator;

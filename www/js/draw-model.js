@@ -128,7 +128,18 @@ define([
 			if(cachedNode.variable != node.variable){
 				if(node.type && node.type == "quantity"){
 					dom.byId(domIDTags['nodeDOM']).innerHTML = graphObjects.getDomUIStrings(this._model, "variable", node.ID);
+					// updating the corresponsing initial node
+					if(node.value && node.accumulator && dom.byId(domIDTags['initialNode'])){
+						dom.byId(domIDTags['initialNode']).innerHTML = graphObjects.getDomUIStrings(this._model, "value", node.ID);
+					}
 				}
+				// updating the corresponding equations
+				var _nodes = this._model.getLinksFromID(node.ID);
+				array.forEach(_nodes, function(id){
+					var tags = this.domIDs(id);
+					dom.byId(tags['nodeDOM']).innerHTML = graphObjects.getDomUIStrings(this._model, "equation", id);
+				}, this);
+				// updating the corresponsing initial node
 			}
 			// update description
 			var cachedDescription = cachedNode.description || cachedNode.explanation;
@@ -145,22 +156,28 @@ define([
 					this.addNodeDescription(node.ID);
 				}
 			}
-			//update value
-			if(node.type && node.type == "quantity" && cachedNode.value != node.value){
+			//update value or update dynamic
+			if(node.type && node.type == "quantity" && (cachedNode.value != node.value ||
+				cachedNode.accumulator != node.accumulator)){
 				if(node.accumulator){
-					// here we need to update the initial value node as well.
-					var initialNode = dom.byId(domIDTags['parentIntial']);
-					if(initialNode)
-						dom.byId(domIDTags['initialNode']).innerHTML = graphObjects.getDomUIStrings(this._model, "value", node.ID);
-					else{
-						//this part of the code creates a new node with initial value when a node is added as dynamic
-						//explicitly picking up the second value as that is the one to be added
-						var initialNodeString = graphObjects.getNodeHTML(this._model, node.ID)[1];
-						// TODO: the handler for accumulator/dynamic will ensure that a new position is created for the initial node.
-						// draw-model does not and should not have access to that part of the node, hence it needs to be done by the handler
-						this.createNodeDOM(node, initialNodeString, true);
-					}
+					if(node.value){
+						// here we need to update the initial value node as well.
+						var initialNode = dom.byId(domIDTags['parentIntial']);
+						if(initialNode){
+							dom.byId(domIDTags['initialNode']).innerHTML = graphObjects.getDomUIStrings(this._model, "value", node.ID);
+						} else {
+							//this part of the code creates a new node with initial value when a node is added as dynamic
+							//explicitly picking up the second value as that is the one to be added
+							var initialNodeString = graphObjects.getNodeHTML(this._model, node.ID)[1];
+							// TODO: the handler for accumulator/dynamic will ensure that a new position is created for the initial node.
+							// draw-model does not and should not have access to that part of the node, hence it needs to be done by the handler
+							this.createNodeDOM(node, initialNodeString, true);
+						}
+					} else if(!node.value || node.value == "") {
+						// the case when the value of the node is removed
+						// this should delete the initial node
 
+					}
 				} else
 					dom.byId(domIDTags['nodeDOM']).innerHTML = graphObjects.getDomUIStrings(this._model, "value", node.ID);
 			} else if(node.type && node.type == "equation" && cachedNode.equation != node.equation){
