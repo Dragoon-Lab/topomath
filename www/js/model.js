@@ -153,6 +153,16 @@ define([
 		};
 
 		var both = {
+			/**
+			* wrapper to get ID given all types of node ID with or without the initial String
+			* @params - id - node ID may or may not have initial in its ID string
+			*			id - returns the id with removed string
+			*/
+			getID: function(/* string */ id){
+				var initialNodeString = this.getInitialNodeIDString();
+				return id.indexOf(initialNodeString) > 0 ?
+							id.replace(initialNodeString, "") : id;
+			},
 			getNode: function(/* string */ id){
 				var nodes = this.getNodes();
 				var l = nodes.length;
@@ -247,13 +257,16 @@ define([
 			},
 			deleteNode: function(/*string*/ id){
 				var nodes = this.getNodes();
+				var isDeleteInitialNode = id.indexOf(this.getInitialNodeIDString()) > 0;
 				var l = nodes.length;
 				var index = -1;
 				var updateNodes = [];
 				for(var i = 0; i < l; i++){
 					var found = false;
-					if(nodes[i].ID === id){
-						index = i;
+					if(!isDeleteInitialNode){
+						if(nodes[i].ID === id){
+							index = i;
+						}
 					}
 					array.forEach(nodes[i].links, function(link){
 						if(link.ID.indexOf(id) > -1){
@@ -270,7 +283,8 @@ define([
 						};*/
 					}
 				}
-				nodes.splice(index, 1);
+				if(!isDeleteInitialNode)
+					nodes.splice(index, 1);
 
 				return updateNodes;
 			},

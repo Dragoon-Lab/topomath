@@ -159,10 +159,10 @@ define([
 			//update value or update dynamic
 			if(node.type && node.type == "quantity" && (cachedNode.value != node.value ||
 				cachedNode.accumulator != node.accumulator)){
+				var initialNode = dom.byId(domIDTags['parentInitial']);
 				if(node.accumulator){
 					if(node.value){
 						// here we need to update the initial value node as well.
-						var initialNode = dom.byId(domIDTags['parentIntial']);
 						if(initialNode){
 							dom.byId(domIDTags['initialNode']).innerHTML = graphObjects.getDomUIStrings(this._model, "value", node.ID);
 						} else {
@@ -173,13 +173,15 @@ define([
 							// draw-model does not and should not have access to that part of the node, hence it needs to be done by the handler
 							this.createNodeDOM(node, initialNodeString, true);
 						}
-					} else if(!node.value || node.value == "") {
+					} else if(initialNode && (!node.value || node.value == "")) {
 						// the case when the value of the node is removed
 						// this should delete the initial node
-
+						this.deleteNode(domIDTags['parentInitial'], true);
 					}
-				} else
+				} else {
 					dom.byId(domIDTags['nodeDOM']).innerHTML = graphObjects.getDomUIStrings(this._model, "value", node.ID);
+					if(initialNode) this.deleteNode(domIDTags['parentInitial'], true);
+				}
 			} else if(node.type && node.type == "equation" && cachedNode.equation != node.equation){
 				dom.byId(domIDTags['nodeDOM']).innerHTML = graphObjects.getDomUIStrings(this._model, "equation", node.ID);
 				// TODO : need to check how and where the connections are set
@@ -408,15 +410,30 @@ define([
 			}
 		},
 
-		deleteNode: function(/*string*/ nodeID){
+		/**
+		* deletes the dom of a node
+		* @params - nodeID - ID to be deleted
+		*			isDeleteInitialNode - whether we have to delete only the initial node or not
+		*				this is used to handle the case where user calls delete node from UI as
+		*				as that will delete the complete node, when called from functions internally
+		*				we might just need to delete just the initial node.
+		*/
+		deleteNode: function(/*string*/ nodeID, isDeleteInitialNode){
+			isDeleteInitialNode = isDeleteInitialNode || false; //ensure that it has a value
 			this.detachConnections(nodeID);
+			var initialNodeIDString = this._model.getInitialNodeIDString();
 			// TODO log this event
-			var type = this._model.getType(nodeID);
-			if(type && type == "quantity" && this._model.isAccumulator(nodeID)
-				&& this._model.getValue(nodeID)){
-				var initialNodeID = nodeID + this._model.getInitialNodeIDString();
-				this.detachConnections(initialNodeID);
-				domConstruct.destroy(initialNodeID);
+			//useful when we are deleting the initial Node
+			var ID = nodeID;
+			if(isDeleteInitialNode && nodeID.indexOf(initialNodeIDString) > 0){
+				ID = this._model.getID(nodeID);
+			}
+			var type = this._model.getType(ID);
+			if(!isDeleteInitialNode && type == "quantity" && this._model.isAccumulator(ID)
+				&& this._model.getValue(ID)){
+				ID += initialNodeIDString;
+				this.detachConnections(ID);
+				domConstruct.destroy(ID);
 			}
 			domConstruct.destroy(nodeID);
 			// delete node from the model
@@ -424,10 +441,10 @@ define([
 			// updateNodes are the nodes for which the equations and links were updated.
 			console.log(updateNodes);
 			this.removeDescription(nodeID);
-			array.forEach(updateNodes, function(ID){
-				console.log(ID);
-				this.updateNode(this._model.getNode(ID));
-				this.detachConnections(ID);
+			array.forEach(updateNodes, function(x){
+				console.log(x);
+				this.updateNode(this._model.getNode(x));
+				this.detachConnections(x);
 			}, this);
 		},
 
