@@ -41,7 +41,7 @@ if($method == 'start-session'||$method == 'rename-problem'){
     $value =  mysqli_real_escape_string($mysqli, $value);
   }
   $problem = isset($x->p)?"'$x->p'":"DEFAULT";
-  $folder = isset($x->f)?"'$x->f'":"DEFAULT";
+  $folder = isset($x->f)?"'$x->p'":"DEFAULT";
   
   // This should give an error if session id already exists.
   // Need to verify how error is handled.

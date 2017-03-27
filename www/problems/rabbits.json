@@ -13,7 +13,6 @@
 			"root": true,
 			"genus": "required",
 			"color": "",
-			"variableType": "dynamic",
 			"attemptCount": {
 			},
 			"position": [{
@@ -38,7 +37,6 @@
 			"root": false,
 			"genus": "required",
 			"color": "",
-			"variableType": "parameter",
 			"attemptCount": {
 			},
 			"position": [{
@@ -57,7 +55,6 @@
 			"links": "",
 			"equation": "",
 			"value": "",
-			"variableType": "unknown",
 			"root": false,
 			"genus": "required",
 			"color": "",
