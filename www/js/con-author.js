@@ -494,8 +494,8 @@ define([
 				
 				var studentNodeID = this._model.student.getNodeIDFor(this.currentID);
 				var studNodeValue = this._model.student.getValue(studentNodeID);
-				if(modelType == "authored"){
-					//if the model type is authored , the last value is the new student model value
+				if(modelType == "given"){
+					//if the model type is given , the last value is the new student model value
 					//which in this case is second parameter
 					this._model.active.setValue(studentNodeID, newValue);
 					this.updateStatus("value", this._model.authored.getValue(this.currentID), newValue);
@@ -846,7 +846,7 @@ define([
 		},
 		*/
 		getModelType: function(){
-			return (registry.byId(this.controlMap.setStudent).checked ? registry.byId(this.controlMap.modelType).value : "correct");
+			return (registry.byId(this.controlMap.setStudent).checked ? registry.byId(this.controlMap.modelType).value : "authored");
 		},
 
 		addStudentNode: function(nodeid){
