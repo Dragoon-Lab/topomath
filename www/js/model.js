@@ -448,9 +448,6 @@ define([
 			setUnits: function(/*string*/ id, /*string*/ units){
 				this.getNode(id).units = units;
 			},
-			setValue: function(/*string*/ id, /*float*/ value){
-				this.getNode(id).value = value;
-			},
 			setEquation: function(/*string*/ id, /*string | object*/ equation){
 				this.getNode(id).equation = equation;
 			},
@@ -513,12 +510,12 @@ define([
 				return obj.model.studentModelNodes;
 			},
 			getNodeIDFor: function(givenID){
-				// Summary: returns the id of a student node having a matching descriptionID;
+				// Summary: returns the id of a student node having a matching authoredID;
 				//			return null if no match is found.
 				var id;
 				var gotIt = array.some(this.getNodes(), function(node){
 					id = node.ID;
-					return node.descriptionID == givenID;
+					return node.authoredID == givenID;
 				});
 				return gotIt ? id : null;
 			},
@@ -571,8 +568,8 @@ define([
 				}
 				nodes.splice(index, 1);
 			},
-			setDescriptionID: function(/*string*/ id, /*string*/ descriptionID){
-				this.getNode(id).descriptionID = descriptionID;
+			setAuthoredID: function(/*string*/ id, /*string*/ authoredID){
+				this.getNode(id).authoredID = authoredID;
 			},
 			setInitial: function(/*string*/ id, /*float*/ initial){
 				this.getNode(id).initial = initial;
@@ -592,6 +589,9 @@ define([
 			},
 			setEquation: function(/*string*/ id, /*string | object*/ equation){
 				this.getNode(id).equation = equation;
+			},
+			setValue: function(/*string*/ id, /*float*/ value){
+				this.getNode(id).value = value;
 			},
 		}, both);
 

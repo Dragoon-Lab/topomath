@@ -302,9 +302,9 @@ define([
 		handleDescription: function(description){
 			// Summary: Checks to see if the given quantity node description exists; if the
 			//		description doesn't exist, it sets the description of the current node.
-			var descriptionID = this._model.authored.getNodeIDByDescription(description);
-			// If descriptionID is falsy give "null"; if it doesn't match, give "false"
-			var returnObj = this.authorPM.process(descriptionID?!(descriptionID==this.currentID):null, "description", description);
+			var authoredID = this._model.authored.getNodeIDByDescription(description);
+			// If authoredID is falsy give "null"; if it doesn't match, give "false"
+			var returnObj = this.authorPM.process(authoredID?!(authoredID==this.currentID):null, "description", description);
 			console.log("return obj for quantity description", returnObj);
 			this.applyDirectives(returnObj);
 			
@@ -381,7 +381,7 @@ define([
 				}
 			}else{
 				this._model.active = this._model.authored;
-				registry.byId("modelSelector").set('value',"correct");
+				registry.byId("modelSelector").set('value',"authored");
 				style.set('modelSelectorContainer', 'display', 'none');
 				this.removeStudentNode(this.currentID);
 				//TODO : also show the waveform assignment button and image
@@ -390,7 +390,7 @@ define([
 
 		handleSelectModel: function(modelType){
 			console.log("********************* in handle select model", modelType);
-			if(modelType === "correct"){
+			if(modelType === "authored"){
 				this.controlMap.equation = "equationInputbox";
 				style.set('equationInputbox', 'display', 'block');		//show EquationBox
 				style.set('givenEquationInputbox', 'display', 'none');	//hide GivenEquationBox
@@ -400,7 +400,7 @@ define([
 				this.populateNodeEditorFields(this.currentID);
 
 			}
-			else if(modelType === "given"){
+			else if(modelType === "student"){
 				var equation = registry.byId("equationInputbox");
 				style.set('givenEquationInputbox', 'display', 'block'); //show GivenEquationBox
 				style.set('equationInputbox', 'display', 'none');	   //hide EquationBox
@@ -411,7 +411,7 @@ define([
 						id: "crisisAlert", attribute:
 						"open", value: "Your expression has not been checked!  Go back and check your expression to verify it is correct, or delete the expression, before closing the node editor."
 					}]);
-					registry.byId("modelSelector").set('value',"correct");
+					registry.byId("modelSelector").set('value',"authored");
 				}
 				else{
 					this._model.active = this._model.student;
@@ -494,7 +494,7 @@ define([
 				
 				var studentNodeID = this._model.student.getNodeIDFor(this.currentID);
 				var studNodeValue = this._model.student.getValue(studentNodeID);
-				if(modelType == "given"){
+				if(modelType == "student"){
 					//if the model type is given , the last value is the new student model value
 					//which in this case is second parameter
 					this._model.active.setValue(studentNodeID, newValue);
@@ -542,7 +542,7 @@ define([
 
 		equationDoneHandler: function(){
 			var model = registry.byId("modelSelector").value;
-			if(model && model == "correct"){
+			if(model && model == "authored"){
 				var directives = [];
 				var logObj = {};
 				//if parse is successful, equation analysis returns an object with parameters for creating expression nodes further
@@ -689,6 +689,7 @@ define([
 				checked = array.some(studentNodes, function(node){
 					return node.authoredID === givenNode.ID;
 				}, this);
+				
 				registry.byId(this.controlMap.setStudent).set('value', checked);
 				this.handleSetStudentNode(checked);
 			
@@ -855,7 +856,7 @@ define([
 			var newNodeID = this._model.student.addNode();
 
 			//copy correct values into student node
-			this._model.student.setDescriptionID(newNodeID, currentNode.ID);
+			this._model.student.setAuthoredID(newNodeID, currentNode.ID);
 			this._model.student.setInitial(newNodeID, currentNode.initial);
 			this._model.student.setUnits(newNodeID, currentNode.units);
 			
@@ -913,7 +914,7 @@ define([
 						}
 					});
 					if(found){
-						this.errorStatus.push({"id": nodes[i].descriptionID, "isExpressionCleared":true});
+						this.errorStatus.push({"id": nodes[i].authoredID, "isExpressionCleared":true});
 						console.log("error status: ", this.errorStatus);
 					}
 				}
@@ -942,15 +943,15 @@ define([
 			//Summary: enable disable fields in the node editor based on selected model value
 			type = this._model.authored.getType(this.currentID);
 			if(type == "equation"){
-				if( modelType == "given"){
+				if( modelType == "student"){
 					registry.byId(this.controlMap.description).set("disabled", true);
 					registry.byId(this.controlMap.description).set("status", '');
-				}else if (modelType == "correct"){
+				}else if (modelType == "authored"){
 					registry.byId(this.controlMap.description).set("disabled", false);
 					registry.byId(this.controlMap.description).set("status", "entered");
 				}
 			}else{
-				if(modelType == "given"){
+				if(modelType == "student"){
 					registry.byId(this.controlMap.variable).set("disabled",true);
 					registry.byId(this.controlMap.description).set("disabled",true);
 					registry.byId(this.controlMap.variable).set("status",'');
@@ -959,7 +960,7 @@ define([
 					registry.byId(this.controlMap.dynamic).set("disabled",true);
 					registry.byId(this.controlMap.dynamic).set("checked",false);
 				}
-				else if(modelType == "correct"){
+				else if(modelType == "authored"){
 					registry.byId(this.controlMap.variable).set("disabled",false);
 					registry.byId(this.controlMap.description).set("disabled",false);
 					registry.byId(this.controlMap.variable).set("status","entered");
