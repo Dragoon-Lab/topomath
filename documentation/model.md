@@ -1,5 +1,5 @@
-#Model Object#
-Model is [JSON object]() which is used to store the nodes created by the user. TopoMath is a comparison based tutoring system, where the student's answers will be compared to an already constructed model. We call it the authored model.
+# Model Object #
+Model is [JSON object](http://www.json.org/) which is used to store the nodes created by the user. TopoMath is a comparison based tutoring system, where the student's answers will be compared to an already constructed model. We call it the authored model.
 
 Both models contain nodes and these nodes have node properties that were filled by the author or a student. The mnode object looks like this -
 
@@ -69,7 +69,5 @@ The properties of a node are -
 ### Implementation ###
 
 * [model.js](https://github.com/Dragoon-Lab/topomath/blob/master/www/js/model.js)
-
 This file implements the getters and setters for each type of model, loading of the models and the maintains the user access to the data. Like ensuring that student part of the code gets no access to the author nodes. It can not change anything in them. 
-
 There are many other functions like adding nodes, loading model (this function does the sanity checks) and gives access to the model level parameters, like global position starting point, counter to be apprended after the id of a node.
