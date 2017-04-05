@@ -132,7 +132,7 @@ define([
 		},
 
 		resettableControls: ["variable","description","value","units","equation"],
-		variableNodeControls: ["variable","value","units","kind","dynamic","root"],
+		variableNodeControls: ["variable","value","units","kind","root"],
 		equationNodeControls: ["inputs","equation"],
 		commonNodeControls: ["setStudent","modelType","description"],
 
@@ -144,7 +144,6 @@ define([
 			kind: "optionalitySelector",
 			units: "unitsSelector",
 			root: "rootNodeToggleCheckbox",
-			dynamic: "dynamicNodeToggleCheckbox",
 			setStudent: "givenToStudentCheckbox",
 			modelType: "modelSelector",
 		},
@@ -178,10 +177,10 @@ define([
 			root_check.on('Change', lang.hitch(this, function(checked){
 					return this.disableHandlers || this.handleRoot(checked);
 			}));
-
-			var dynamic_check = registry.byId(this.controlMap.dynamic);
-			dynamic_check.on('Change', lang.hitch(this, function(checked){
-					return this.disableHandlers || this.handleDynamic(checked);
+			
+			var variableTypeToggle = dojo.query("input[type=radio][name=variableType]");
+			variableTypeToggle.on('change', lang.hitch(this, function(){
+				return this.disableHandlers || this.handleVariableType(event);
 			}));
 
 			var setStudentNode = registry.byId(this.controlMap.setStudent);
@@ -355,20 +354,30 @@ define([
 			*/
 		},
 
-		handleDynamic: function(dynamic){
-			// Summary: Sets the current node to be parent node
-			console.log("********************* in handleDynamic", dynamic);
-			this._model.authored.setAccumulator(this.currentID, dynamic);
-			/*TODO : Add code to update position of the node*/
-			/*
-			this.logging.log("solution-step", {
-				type: "solution-enter",
-				nodeID: this.currentID,
-				property: "dynamic",
-				node: this._model.given.getName(this.currentID),
-				value: dynamic
-			});
-			*/
+		handleVariableType: function(event){
+			// Summary : Sets variableType to Unknown/Parameter/Dynamic
+			// Value is not allowed when variableType is Unknown
+			// Value is handled when variableType is parameter or dynamic.
+			console.log("********************* in handleVariableType");
+			var _variableType = event.target.value;
+			registry.byId(this.controlMap.value).set('status','');
+			this._model.authored.setVariableType(this.currentID, _variableType);
+			this._model.authored.setAccumulator(this.currentID, false);
+			if( _variableType == "parameter" || _variableType == "dynamic"){
+				style.set('valueInputboxContainer','display','inline-block');
+				if(_variableType == "dynamic"){
+					this._model.authored.setAccumulator(this.currentID, true);
+					// Update position to avoid overlap of node
+					this._model.authored.updatePositionXY(this.currentID);
+				}
+			}else{
+				// Find all nodes that have reference to the initial node of this node and delete links to them
+				this._model.authored.updateLinks(this.currentID);
+				registry.byId(this.controlMap.value).set('value','');
+				this._model.active.setValue(this.currentID, '');
+				style.set('valueInputboxContainer','display','none');
+				this.handleValue(null);
+			}
 		},
 
 		handleSetStudentNode: function(checked){
@@ -462,7 +471,6 @@ define([
 			// value handler for quantity node
 
 			//valueFlag contains the status and value
-
 			var modelType = this.getModelType();
 			console.log("model type is", modelType);
 			var tempValId = dom.byId(this.widgetMap.value);
@@ -473,7 +481,7 @@ define([
 				
 				valueFlag = typechecker.checkNumericValue(this.widgetMap.value, this.lastValue);
 				
-				if((valueFlag.errorType === undefined) && (valueFlag.status === undefined)){
+				if(valueFlag && (valueFlag.errorType === undefined) && (valueFlag.status === undefined)){
 					// check for last input value matching
 					valueFlag = typechecker.checkLastInputValue(this.widgetMap.value, this.lastValue);
 				}
@@ -634,7 +642,7 @@ define([
 
 		initialViewSettings: function(type){
 			//make display none for all fields initially
-			var qtyElements = ["variableOptionalityContainer","descriptionInputboxContainer","valueUnitsContainer","rootNodeToggleContainer","dynamicNodeToggleContainer"];
+			var qtyElements = ["variableOptionalityContainer","descriptionInputboxContainer","variableTypeContainer","valueUnitsContainer","rootNodeToggleContainer"];
 			var eqElements = ["descriptionInputboxContainer","expressionDiv"];
 		
 			if(type == "quantity"){
@@ -725,8 +733,15 @@ define([
 				// Initialize root node checkbox
 				registry.byId(this.controlMap.root).set('value', this._model.authored.isRoot(nodeid));
 
-				//Initialize dynamic node checkbox
-				registry.byId(this.controlMap.dynamic).set('value', this._model.authored.isAccumulator(nodeid));
+				// Initialize variableType to 'Unknown' by default / retrieve previous value
+				var _variableType = this._model.authored.getVariableType(nodeid);
+				if(!_variableType && this._model.authored.getValue(nodeid) == undefined){
+					_variableType = "unknown";
+					this._model.authored.setVariableType(nodeid, _variableType);
+					this._model.authored.setValue(nodeid,'');
+				}
+
+				dojo.query("input[type=radio][name=variableType][value="+_variableType+"]")[0].checked=true;
 
 				// populate inputs
 			
@@ -788,8 +803,16 @@ define([
 					this.applyDirectives(this.authorPM.process(this.currentID, 'units', this._model.authored.getUnits(this.currentID)));
 				}
 				//color value widget
-				if(typeof this._model.authored.getValue(this.currentID) === "number"){
-					this.applyDirectives(this.authorPM.process(this.currentID, 'value', this._model.authored.getValue(this.currentID), true));
+				
+				if(_variableType == "unknown"){
+					registry.byId(this.controlMap.value).set('value','');
+					style.set('valueInputboxContainer','display','none');
+				}else{
+					style.set('valueInputboxContainer','display','inline-block');
+					if(typeof this._model.authored.getValue(this.currentID) === "number"){
+						this.applyDirectives(this.authorPM.process(this.currentID, 'value', this._model.authored.getValue(this.currentID), true));
+					}
+
 				}
 				
 			}
@@ -956,8 +979,6 @@ define([
 					registry.byId(this.controlMap.variable).set("status",'');
 					registry.byId(this.controlMap.kind).set("disabled",true);
 					registry.byId(this.controlMap.root).set("disabled",true);
-					registry.byId(this.controlMap.dynamic).set("disabled",true);
-					registry.byId(this.controlMap.dynamic).set("checked",false);
 				}
 				else if(modelType == "correct"){
 					registry.byId(this.controlMap.variable).set("disabled",false);

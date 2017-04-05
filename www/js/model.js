@@ -207,6 +207,10 @@ define([
 				var node = this.getNode(id);
 				return node && node.expression;
 			},
+			getVariableType: function(/*string*/ id){
+				var node = this.getNode(id);
+				return node && node.variableType;
+			},
 			isNode: function(/* string */ id){
 				return array.some(this.getNodes(), function(node){
 					return node.ID === id;
@@ -268,10 +272,31 @@ define([
 					}, this);
 				}
 			},
+			updateLinks: function(/*string*/ id){
+				var nodes = this.getNodes();
+				var removeId = id + "_initial";
+				array.forEach(nodes, function(node){
+					var links = node.links;	
+					if(links && links.length > 0){
+						var index = links.findIndex(function(link){
+							console.log(link.ID);
+							return link.ID === removeId;
+						}, this);
+						links.splice(index,1);
+					}
+				}, this);
+				
+			},
 			setType: function(/*string*/ id, /*string*/ type){
 				var ret = this.getNode(id);
 				if(ret)
 					ret.type = type;
+			},
+			setVariableType: function(/*string*/ id, /*string*/ variableType ){
+				var node = this.getNode(id);
+				if( node){
+					node.variableType = variableType;	
+				} 
 			},
 			setPosition: function(/*string*/ id, /*integer*/ index, /*object*/ positionObject){
 				// Summary: sets the "X" and "Y" values of a node's position
@@ -310,6 +335,15 @@ define([
 				obj.model.authorModelNodes.push(newNode);
 				console.log("node added", newNode.ID, newNode.type);
 				return newNode.ID;
+			},
+			updatePositionXY: function(/*string */ id){
+				console.log(obj);
+				obj._updateNextXYPosition();
+				var _position = {
+					x: obj.x,
+					y: obj.y
+				};
+				this.setPosition(id, 1, _position);
 			},
 			getNodes: function(){
 				return obj.model.authorModelNodes;
@@ -438,10 +472,17 @@ define([
 				var returnFlag = '';
 
 				var nameEntered = node.type && node.type == "equation" || node.variable;
-				// TODO : logic for value is still incomplete
-				// needs to incorporate values of function, accumulator and parameters
 				// as seen in Dragoon.
-				var valueEntered = node.type && node.type == "equation" || node.accumulator || node.value;
+				// variableType and value combined defines node completion
+				// node is complete in following cases
+				// 1. variableType Unknown and no value 
+				// 2. variableType dynamic and value is valid 
+				// 3. variableType parameter and value is valid
+				
+				var valueEntered = node.type && node.type == "equation" || (node.accumulator && node.value) 
+				|| (node.value == "" && node.variableType == "unknown") ||
+				(node.value && node.variableType == "parameter") ;
+				
 				var equationEntered = node.type && node.type == "quantity" || node.equation;
 				if(node.genus == "required" || node.genus == "allowed"){
 					returnFlag = nameEntered && (node.description || node.explanation) &&
@@ -455,7 +496,7 @@ define([
 					return true;
 				else
 					return false;
-			}
+			},
 		}, both);
 
 		obj.student = lang.mixin({
