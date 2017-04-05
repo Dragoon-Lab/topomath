@@ -111,7 +111,10 @@ define([
 		setConnections: function(from, to){
 			// console.log("======== setConnections fired for node" + to);
 		},
-
+		//stub to update node in draw model
+		updateNode: function(nodeId){
+			//calling updateNode in controller
+		},
 
 		_initCrisisAlert: function(){
 			//Crisis Alert widget
@@ -1069,6 +1072,14 @@ define([
 				var variableList = parseObject.variableList;
 				array.forEach(variableList, lang.hitch(this, function(n){
 					this.nodeConnections.push(n);
+				}));
+
+				var dynamicList = parseObject.dynamicList;
+				array.forEach(dynamicList, lang.hitch(this,function(prior){
+					this._model.authored.setAccumulator(prior.id, true);
+					//this._model.authored.setDescription(prior.id, prior.variable);
+					//this._model.authored.setValue(prior.id,3);
+					this.updateNode(prior.id);
 				}));
 
 			}

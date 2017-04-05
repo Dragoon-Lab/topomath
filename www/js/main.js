@@ -228,6 +228,11 @@ define([
 				_session.saveModel(_model.model);
 			});
 
+			aspect.after(controllerObject, "updateNode",function(){
+				_session.saveModel(_model.model);
+				dm.updateNode(_model.active.getNode(controllerObject.currentID));
+			});
+
 			on(registry.byId("closeButton"), "click", function(){
 				registry.byId("nodeEditor").hide();
 				console.log("uncomment code to close");
