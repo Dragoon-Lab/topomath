@@ -21,7 +21,6 @@ define([
 			node: this._model.active.getVariable || this._model.active.getDescription(id)
 		});
 	}, true);
-	debugger;
 
 	aspect.after(controller.prototype, "logSolutionStep", function(obj){
 		_logger.log("solution-step", obj);
