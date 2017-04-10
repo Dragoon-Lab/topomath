@@ -485,13 +485,13 @@ define([
 				// 3. variableType parameter and value is valid
 				
 				var valueEntered = node.type && node.type == "equation" || (node.accumulator && node.value) 
-				|| (node.value == "" && node.variableType == "unknown") ||
+				|| (node.value && node.variableType == "unknown") ||
 				(node.value && node.variableType == "parameter") ;
 				
 				var equationEntered = node.type && node.type == "quantity" || node.equation;
 				if(node.genus == "required" || node.genus == "allowed"){
 					returnFlag = nameEntered && (node.description || node.explanation) &&
-						node.type && (valueEntered || typeof valueEntered === "number") &&
+						node.type && ( node.variableType == "unknown" || valueEntered || typeof valueEntered === "number" ) &&
 						(unitsOptional || nodes.units) && equationEntered;
 				} else {
 					// if genus is irrelevant
