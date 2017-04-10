@@ -273,8 +273,10 @@ define([
 				}
 			},
 			updateLinks: function(/*string*/ id){
+				// Summary : Update links when variableType is set to some other value
+				// 			 after initially assigning to dynamic.
 				var nodes = this.getNodes();
-				var removeId = id + "_initial";
+				var removeId = id + this.getInitialNodeIDString();
 				array.forEach(nodes, function(node){
 					var links = node.links;	
 					if(links && links.length > 0){
@@ -337,6 +339,9 @@ define([
 				return newNode.ID;
 			},
 			updatePositionXY: function(/*string */ id){
+				// Summary : - Updates the position explicitly for the next node on UI.
+				// 			 - Used to position the initial/prior node of dynamic node so that
+				// 			   it does not overlap with the other existing nodes
 				console.log(obj);
 				obj._updateNextXYPosition();
 				var _position = {

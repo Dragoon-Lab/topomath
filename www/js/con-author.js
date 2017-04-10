@@ -175,9 +175,9 @@ define([
 
 			var root_check = registry.byId(this.controlMap.root);
 			root_check.on('Change', lang.hitch(this, function(checked){
-					return this.disableHandlers || this.handleRoot(checked);
+				return this.disableHandlers || this.handleRoot(checked);
 			}));
-			
+
 			var variableTypeToggle = dojo.query("input[type=radio][name=variableType]");
 			variableTypeToggle.on('change', lang.hitch(this, function(){
 				return this.disableHandlers || this.handleVariableType(event);
@@ -185,17 +185,17 @@ define([
 
 			var setStudentNode = registry.byId(this.controlMap.setStudent);
 			setStudentNode.on('Change', lang.hitch(this, function(checked){
-					return this.disableHandlers || this.handleSetStudentNode(checked);
+				return this.disableHandlers || this.handleSetStudentNode(checked);
 			}));
 
 			var givenEquation = registry.byId("equationInputbox");
 			givenEquation.on('Change', lang.hitch(this, function(){
-					return this.disableHandlers || this.handleGivenEquation.apply(this, arguments);
+				return this.disableHandlers || this.handleGivenEquation.apply(this, arguments);
 			}));
 
 			var selectModel = registry.byId(this.controlMap.modelType);
 			selectModel.on('Change', lang.hitch(this, function(){
-					return this.disableHandlers || this.handleSelectModel.apply(this, arguments);
+				return this.disableHandlers || this.handleSelectModel.apply(this, arguments);
 			}));
 
 			this.handleErrorMessage(); //binds a function to Display Error message if expression is cleared.
