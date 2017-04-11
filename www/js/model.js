@@ -273,8 +273,10 @@ define([
 				}
 			},
 			updateLinks: function(/*string*/ id){
+				// Summary : Update links when variableType is set to some other value
+				// 			 after initially assigning to dynamic.
 				var nodes = this.getNodes();
-				var removeId = id + "_initial";
+				var removeId = id + this.getInitialNodeIDString();
 				array.forEach(nodes, function(node){
 					var links = node.links;	
 					if(links && links.length > 0){
@@ -337,6 +339,9 @@ define([
 				return newNode.ID;
 			},
 			updatePositionXY: function(/*string */ id){
+				// Summary : - Updates the position explicitly for the next node on UI.
+				// 			 - Used to position the initial/prior node of dynamic node so that
+				// 			   it does not overlap with the other existing nodes
 				console.log(obj);
 				obj._updateNextXYPosition();
 				var _position = {
@@ -480,13 +485,13 @@ define([
 				// 3. variableType parameter and value is valid
 				
 				var valueEntered = node.type && node.type == "equation" || (node.accumulator && node.value) 
-				|| (node.value == "" && node.variableType == "unknown") ||
+				|| (node.value && node.variableType == "unknown") ||
 				(node.value && node.variableType == "parameter") ;
 				
 				var equationEntered = node.type && node.type == "quantity" || node.equation;
 				if(node.genus == "required" || node.genus == "allowed"){
 					returnFlag = nameEntered && (node.description || node.explanation) &&
-						node.type && (valueEntered || typeof valueEntered === "number") &&
+						node.type && ( node.variableType == "unknown" || valueEntered || typeof valueEntered === "number" ) &&
 						(unitsOptional || nodes.units) && equationEntered;
 				} else {
 					// if genus is irrelevant
