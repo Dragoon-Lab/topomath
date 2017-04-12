@@ -197,7 +197,7 @@ define([
 					nodeType: "quantity"
 				});
 				controllerObject.showNodeEditor(id);	
-				dm.addNode(_model.active.getNode(id));
+				controllerObject.addNode(_model.active.getNode(id));
 			});
 
 			//next step is to add action to add equation
