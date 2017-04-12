@@ -99,11 +99,9 @@ define([
 					initial = typeof(initial) === "number" ? initial : "";
 					value = model.getVariable(nodeID);
 					if(model.isAccumulator(nodeID)){
-						//this is shown on the initial node
 						if(!initial) initial = "??";
-						value = model.getInitialNodeDisplayString() + value + " : " + initial;
-					} else if (initial){
-						// this is shown on quantity node
+						value = model.getInitialNodeDisplayString() + " " + value + " : " + initial;
+					} else if(initial) {
 						value += " = " + initial;
 					}
 					break;
