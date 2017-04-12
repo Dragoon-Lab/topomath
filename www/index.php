@@ -153,13 +153,13 @@
 	?>
 	<input type = "hidden" id = "query" value = "<?php echo $params?>"/>
 	<div id="main" data-dojo-type="dijit/layout/BorderContainer" gutters="false">
-	
+
 		<div data-dojo-type="dijit/MenuBar" id="menuBar" region="top" splitter="false">
 			<button type="button" data-dojo-type="dijit/form/Button" id="createQuantityNodeButton" disabled="true" style="visibility:hidden">Add Quantity</button>
 			<button type="button" data-dojo-type="dijit/form/Button" id="createEquationNodeButton" disabled="true" style="visibility: hidden">Add Equation</button>
 			<button type="button" data-dojo-type="dijit/form/Button" id="DoneButton" disabled="true" style="visibility: hidden">Done</button>
 		</div>
-	
+
 		<div id="drawingPane" class="restrict-vscroll" data-dojo-type="dijit/layout/ContentPane" region="center">
 			<div id="errorMessageBox"></div>
 			<!--<div id="tableGrid" data-dojo-type="dijit/layout/ContentPane" region="center"></div>-->
@@ -178,10 +178,10 @@
 		<div class="claro sameedit" data-dojo-type="dijit/Dialog" id="nodeEditor">
 			
 			<div id="givenToStudentToggleContainer" class="fieldgroup">
-				<label style="width:20ex;" for="givenToStudentCheckbox">Given to student</label>
+				<label style="" for="givenToStudentCheckbox">Given to student</label>
 				<input id="givenToStudentCheckbox" name="markStudentNode" data-dojo-type="dijit/form/CheckBox" checked="false"/>
 			</div>
-			
+
 			<div id="modelSelectorContainer" class="fieldgroup" style="display:none" >
 				<label for="modelSelector">Select Model</label>
 				<select id="modelSelector" data-dojo-type="dijit/form/Select">
@@ -190,18 +190,6 @@
 				</select>
 			</div>
 
-			<div id="variableOptionalityContainer" class="fieldgroup" style="display: none;">
-				<label for="variableInputbox">Variable</label>
-				<input id="variableInputbox" data-dojo-type="dijit/form/ComboBox">
-				<label for="optionalitySelector">Optionality:</label>
-				<select id="optionalitySelector" data-dojo-type="dijit/form/Select">
-					<option value='defaultSelect'>--Select--</option>
-					<option value='required'>In equations & required</option>
-					<option value='allowed'>In equations & optional</option>
-					<option value='irrelevant'>Not in equations</option>
-				</select>
-			</div>
-			
 			<div class="fieldgroup">
 				<div id="descriptionInputboxContainer" class="fieldgroup" style="display: none;">
 					<span class="fixedwidth">
@@ -212,10 +200,25 @@
 				</div>
 			</div>
 
+			<div id="variableOptionalityContainer" class="fieldgroup" style="display: none;">
+				<label for="optionalitySelector">Optionality</label>
+				<select id="optionalitySelector" data-dojo-type="dijit/form/Select">
+					<option value='defaultSelect'>--Select--</option>
+					<option value='required'>In equations & required</option>
+					<option value='allowed'>In equations & optional</option>
+					<option value='irrelevant'>Not in equations</option>
+				</select>
+			</div>
+
+			<div id="variableInputboxContainer" class="fieldgroup" style="display: none;">
+				<label for="variableInputbox">Variable</label>
+				<input id="variableInputbox" data-dojo-type="dijit/form/ComboBox">
+			</div> 
+
 			<div class="fieldgroup" id="valueUnitsContainer" style="display: none;">
 				<!-- adding a div for value field to control its display in UI -->
-				<div id="valueInputboxContainer" >
-					<span>
+				<div id="valueInputboxContainer" class="fieldgroup">
+					<span class="fixedwidth">
 						<div id="valueQuestionMark" class="questionMark"></div>
 						<label for="valueInputbox"><p id="initLabel" style="display:inline"></p>Value</label>
 					</span>
@@ -231,36 +234,38 @@
 					</label>
 				</div>
 				-->
-				<div id="unitsSelectorContainer" style="">
+				<div id="unitsSelectorContainer" class="fieldgroup">
 					<!-- Setting display:none in the widget itself doesn't work.
 					 setting display:none in the label doesn't work in FireFox. -->
-					<label for="unitsSelector">Units
+					<label for="unitsSelector">Units</label>
 						<input id="unitsSelector" data-dojo-type="dijit/form/ComboBox" style="width:6em">
-					</label>
 				</div>
 			</div>
 			
 			<div id="rootNodeToggleContainer" class="fieldgroup" style="display: none;">
-				<label for ="rootNodeToggleCheckbox" title ="Mark this node as a root node.">Root:</label>
+				<span class="fixedwidth">
+					<div id="questionMarkRoot" class="questionMark"></div>
+					<label for ="rootNodeToggleCheckbox" title ="Mark this node as a root node.">Root</label>
+				</span>
 				<input id ="rootNodeToggleCheckbox" name ="markRootNode" data-dojo-type="dijit/form/CheckBox" value="agreed" checked="false"/>
-				<div id="questionMarkRoot" class="questionMark"></div>
 			</div>
 
 			<div id="dynamicNodeToggleContainer" class="fieldgroup" style="display: none;">
-				<label for ="dynamicNodeToggleCheckbox" title ="Mark this node as a root node.">Dynamic:</label>
+				<span class="fixedwidth">
+					<div id="questionMarkDynamic" class="questionMark"></div>
+					<label for ="dynamicNodeToggleCheckbox" title ="Mark this node as a root node.">Dynamic</label>
+				</span>
 				<input id ="dynamicNodeToggleCheckbox" name ="markDynamicNode" data-dojo-type="dijit/form/CheckBox" value="agreed" checked="false"/>
-				<div id="questionMarkDynamic" class="questionMark"></div>
 			</div>
 
 			<div class="equationInputsContainer" id="expressionDiv" style="display: none;">
-				<div class="fieldgroup">
-					 <div class="vertical">
-						<div id="equationLabel"></div>
-						<div id="equationInputboxContainer" class="fieldgroup">
-							<label for="equationInputbox">Equation</label>
-							<textarea id="equationInputbox" rows=4 cols=50 data-dojo-type="dijit/form/SimpleTextarea" style="min-height:60px;"></textarea>
-							<textarea id="givenEquationInputbox" rows=4 cols=50 data-dojo-type="dijit/form/SimpleTextarea" style="min-height:60px; display: none;"></textarea>
-						</div>
+				 <div class="vertical">
+					<div id="equationLabel">
+						<label for="equationInputbox">Equation</label>
+					</div>
+					<div id="equationInputboxContainer" class="fieldgroup">
+						<textarea id="equationInputbox" rows=4 cols=50 data-dojo-type="dijit/form/SimpleTextarea" style="min-height:60px;"></textarea>
+						<textarea id="givenEquationInputbox" rows=4 cols=50 data-dojo-type="dijit/form/SimpleTextarea" style="min-height:60px; display: none;"></textarea>
 					</div>
 				</div>
 
@@ -282,14 +287,12 @@
 				</div>
 
 				<div class="fieldgroup" id="operations">
-					<span class="fixedwidth">
-						 <div id="operationsQuestionMark" class="questionMark" style="margin-top:4px;"></div>
-					</span>
 					<div>
 						<button id="plusButton" title="Plus" type="button" data-dojo-type="dijit/form/Button" iconClass="dijitNoIcon"><span class="fa fa-plus"></span></button>
 						<button id="minusButton" title="Minus" type="button" data-dojo-type="dijit/form/Button" iconClass="dijitNoIcon"><span class="fa fa-minus"></span></button>
 						<button id="timesButton"  title="Times" type="button" data-dojo-type="dijit/form/Button" iconClass="dijitNoIcon"><span class="fa fa-asterisk"></span></button>
 						<button id="divideButton"  title="Divide" type="button" data-dojo-type="dijit/form/Button" iconClass="dijitNoIcon"><strong class="fa fa-minus fa-division"></strong></button>
+						<div id="operationsQuestionMark" class="questionMark" style="margin: 0 0 -8px 0"></div>
 					</div>
 				</div>
 			</div>

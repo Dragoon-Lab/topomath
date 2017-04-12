@@ -152,9 +152,10 @@ define([
 			console.log("++++++++ Setting AUTHOR format in Node Editor.");
 			style.set('variableOptionalityContainer', 'display', 'block');
 			style.set('descriptionInputboxContainer', 'display', 'inline-block');
-			style.set('valueInputboxContainer', 'display', 'inline');
+			style.set('variableInputboxContainer', 'display', 'inline-block');
+			style.set('valueInputboxContainer', 'display', 'block');
 			//style.set('unitDiv', 'display', 'none');
-			style.set('unitsSelectorContainer', 'display', 'inline');
+			style.set('unitsSelectorContainer', 'display', 'block');
 			style.set('rootNodeToggleContainer', 'display', 'block');
 			style.set('expressionDiv', 'display', 'block');
 			style.set('inputSelectorContainer', 'display', 'block');
@@ -634,7 +635,7 @@ define([
 
 		initialViewSettings: function(type){
 			//make display none for all fields initially
-			var qtyElements = ["variableOptionalityContainer","descriptionInputboxContainer","valueUnitsContainer","rootNodeToggleContainer","dynamicNodeToggleContainer"];
+			var qtyElements = ["variableOptionalityContainer","descriptionInputboxContainer","variableInputboxContainer","valueUnitsContainer","rootNodeToggleContainer","dynamicNodeToggleContainer"];
 			var eqElements = ["descriptionInputboxContainer","expressionDiv"];
 		
 			if(type == "quantity"){

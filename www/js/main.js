@@ -12,6 +12,8 @@ define([
 	'dijit/form/Button',
 	'dojo/dom-construct',
 	'dojo/_base/lang',
+	'dojo/dom-class',
+	'dijit/Tooltip',
 	'./menu',
 	'./session',
 	'./model',
@@ -20,7 +22,7 @@ define([
 	'./con-author',
 	'./logging',
 	'./popup-dialog'
-], function(array, geometry, dom, style, aspect, ready, registry, event, ioQuery, on, Button, domConstruct, lang,
+], function(array, geometry, dom, style, aspect, ready, registry, event, ioQuery, on, Button, domConstruct, lang, domClass, toolTip,
 			menu, session, model, equation, drawModel, controlAuthor, logging, popupDialog){
 	
 	console.log("load main.js");
@@ -259,6 +261,40 @@ define([
 					buttons.push(exitButton);
 					errDialog.showDialog(title, problemComplete.errorNotes, buttons, /*optional argument*/"Don't Exit");
 				}
+			});
+
+			var questionMarkButtons = {
+					"authorDescriptionQuestionMark": "The quantity computed by the node ",
+					"inputsQuestionMark": "Select a quantity to enter into the expression above.  Much faster than typing.",
+					"valueQuestionMark": "This is a number, typically given to you in the system description.",
+					"operationsQuestionMark": "Click one of these to enter it in the expression above. <br> See the Help menu at the top of the screen for a list of other mathematical operators and functions that you can type in.",
+					"questionMarkRoot": "TODO",
+					"questionMarkDynamic": "TODO"
+				};
+			var toggleTooltip = function(id){
+				//Hide Tooltip
+				var _position="before-centered";
+				if(! domClass.contains(dom.byId(id), "active")) {
+					if(id==="operationsQuestionMark") _position="after";
+					toolTip.show(questionMarkButtons[id], dom.byId(id), [_position]);
+				}else{
+					toolTip.hide(dom.byId(id));
+				}
+				domClass.toggle(dom.byId(id), "active");
+
+				//Reset Buttons
+				array.forEach(Object.keys(questionMarkButtons), function(buttonID){
+					if(buttonID !== id) {
+						domClass.remove(dom.byId(buttonID), "active");
+					}
+				});
+			};
+
+			//Add event handlers on questionmark buttons
+			array.forEach(Object.keys(questionMarkButtons), function(buttonID){
+				on(dom.byId(buttonID), "click", function(evt){
+					toggleTooltip(buttonID)
+				});
 			});
 		});
 	});
