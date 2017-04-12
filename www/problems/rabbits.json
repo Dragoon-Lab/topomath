@@ -93,7 +93,7 @@
 			"explanation": "The number of rabbits increase by the number of births each year",
 			"type": "equation",
 			"accumulator": false,
-			"equation": "id1 = id1 + id3",
+			"equation": "id1 = id1_initial + id3",
 			"units": "",
 			"links": [{"ID": "id1"},{"ID": "id1_initial"},{"ID": "id3"}],
 			"value": "",

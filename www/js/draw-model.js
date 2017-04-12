@@ -146,7 +146,7 @@ define([
 				}
 			}
 			//update value
-			if(node.type && node.type == "quantity" && cachedNode.value != node.value){
+			if(node.type && node.type == "quantity"){
 				if(node.accumulator){
 					// here we need to update the initial value node as well.
 					var initialNode = dom.byId(domIDTags['parentIntial']);
