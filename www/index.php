@@ -185,8 +185,8 @@
 			<div id="modelSelectorContainer" class="fieldgroup" style="display:none" >
 				<label for="modelSelector">Select Model</label>
 				<select id="modelSelector" data-dojo-type="dijit/form/Select">
-					<option value='correct' selected>Author's Values</option>
-					<option value='given'>Initial Student Values</option>
+					<option value='authored' selected>Author's Values</option>
+					<option value='student'>Initial Student Values</option>
 				</select>
 			</div>
 
