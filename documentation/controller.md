@@ -44,6 +44,11 @@ Controller for node editor is mainly implemented by controller.js, con-author.js
 					After an equation is provided by user for a node and sent to analysis, if there are any new nodes in the equation user provides, they are auto created and connections are updated once an equation is updated.
 
 * Checking Doneness of the problem: (checkDone from main menu bar):
-	* Dharani's writing will go here
+	* Clicking this checks for the completeness of the model. 
+		A model is complete when it satisfies the following conditions
+		* One variable is root
+		* Every required variable is part of atleast one equation
+
+	* A popup dialog is shown when model does not satisfy above conditions. Once Popup dialog.js is loaded, an instance of popupDialog can be used to show popup dialog box for any button. (* [PopUp Dialog](PopupDialog.md))
 				
 

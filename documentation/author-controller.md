@@ -23,7 +23,13 @@
 
 	* handle kind sets up the optionality of the node, optionality is whether the node is in equations or not and if it is part of equation, is it optional or required?
 
-	* handle value, handle set student node , handle model selector, handle dynamic and handle root : dharani udpates this section 
+	* handle set student node adds a node to student model nodes and displayed when initial rendering of the model in Student mode. One of the options Author Values and Initial Student Values should be chosen. 
+
+	* handleVariableType sets the value of a quantity node depending on the Variable type. Variable Type can be Unknown, Parameter and Dynamic. Selecting Unknown does not require the value for a node, parameter requires a value to be present whereas dynamic requires value to be present. Selecting dynamic sets accumulator to true for the node and adds a prior node with initial value equal to value of the node. Variable type Unknown sets value to empty string.
+
+	* handle value is checked for number type if the value for the node exists in parameter or dynamic variable type.
+
+	* handle root sets the node as parent of the model. A Root is required for a model to be complete.
 
 	* handle units sets up units for a quantity node value.
 
