@@ -157,12 +157,13 @@ define([
 				}
 			}
 
-			//update value
-			if(node.type && node.type == "quantity"){
+			//update value or update dynamic
+			if(node.type && node.type == "quantity" && (cachedNode.value != node.value ||
+				cachedNode.accumulator != node.accumulator)){
+				var initialNode = dom.byId(domIDTags['parentInitial']);
 				if(node.accumulator){
 					if(node.value){
 						// here we need to update the initial value node as well.
-						var initialNode = dom.byId(domIDTags['parentIntial']);
 						if(initialNode){
 							dom.byId(domIDTags['initialNode']).innerHTML = graphObjects.getDomUIStrings(this._model, "value", node.ID);
 						} else {
@@ -430,7 +431,6 @@ define([
 			var updateNodes = this._model.deleteNode(nodeID);
 			console.log(updateNodes);
 			this.removeDescription(nodeID);
-
 			array.forEach(updateNodes, function(x){
 				console.log(x);
 				this.updateNode(this._model.getNode(x));
