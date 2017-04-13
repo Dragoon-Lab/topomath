@@ -49,6 +49,6 @@ Controller for node editor is mainly implemented by controller.js, con-author.js
 		* One variable is root
 		* Every required variable is part of atleast one equation
 
-	* A popup dialog is shown when model does not satisfy above conditions. Once Popup dialog.js is loaded, an instance of popupDialog can be used to show popup dialog box for any button. (* [PopUp Dialog](PopupDialog.md))
+	* A popup dialog is shown when model does not satisfy above conditions. Once Popup dialog.js is loaded, an instance of popupDialog can be used to show popup dialog box for any button. ([PopUp Dialog](PopupDialog.md))
 				
 
