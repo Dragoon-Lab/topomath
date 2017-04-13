@@ -899,7 +899,7 @@ define([
 			if(type == "equation"){
 				if( modelType == "given"){
 					registry.byId(this.controlMap.description).set("disabled", true);
-					registry.byId(this.controlMapts.description).set("status", '');
+					registry.byId(this.controlMap.description).set("status", '');
 				}else if (modelType == "correct"){
 					registry.byId(this.controlMap.description).set("disabled", false);
 					registry.byId(this.controlMap.description).set("status", "entered");

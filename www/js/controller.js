@@ -1081,6 +1081,8 @@ define([
 		*/
 		logSolutionStep: function(obj){
 			//Stub for logging the messages, updated in con-author and con-student
+			if(!obj.property) return null;
+
 			var property = obj.property;
 			// if node ID was not in the object then send node ID as the current ID.
 			// used for auto created nodes.
@@ -1088,12 +1090,9 @@ define([
 				obj.nodeID = this.currentID;
 				obj.node = this._model.authored.getVariable(this.currentID);
 			}
-			if(property){
-				if(!obj.value) obj.value = registry.byId(this.controlMap[property]).get("value");
-				obj.type = this._model.active == this._model.authored ? "solution-enter" : "solution-check";
-			} else {
-				return null;
-			}
+			if(!obj.value) obj.value = registry.byId(this.controlMap[property]).get("value");
+			obj.type = this._model.active == this._model.authored ? "solution-enter" : "solution-check";i
+
 			return obj;
 		}
 	});
