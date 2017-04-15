@@ -1091,7 +1091,7 @@ define([
 				obj.node = this._model.authored.getVariable(this.currentID);
 			}
 			if(!obj.value) obj.value = registry.byId(this.controlMap[property]).get("value");
-			obj.type = this._model.active == this._model.authored ? "solution-enter" : "solution-check";i
+			obj.type = this._model.active == this._model.authored ? "solution-enter" : "solution-check";
 
 			return obj;
 		}

@@ -323,7 +323,7 @@ define([
 			// Summary: Sets the current node to be parent node
 			console.log("********************* in handleRoot", root);
 			this._model.authored.setRoot(this.currentID, root);
-			this.logSolutionStep("solution-step", {
+			this.logSolutionStep({
 				property: "root",
 				value: root
 			});
@@ -353,6 +353,10 @@ define([
 				style.set('valueInputboxContainer','display','none');
 				this.handleValue(null);
 			}
+			this.logSolutionStep({
+				property: "variableType",
+				value: _variableType
+			});
 		},
 
 		handleSetStudentNode: function(checked){
