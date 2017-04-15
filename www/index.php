@@ -185,8 +185,8 @@
 			<div id="modelSelectorContainer" class="fieldgroup" style="display:none" >
 				<label for="modelSelector">Select Model</label>
 				<select id="modelSelector" data-dojo-type="dijit/form/Select">
-					<option value='correct' selected>Author's Values</option>
-					<option value='given'>Initial Student Values</option>
+					<option value='authored' selected>Author's Values</option>
+					<option value='student'>Initial Student Values</option>
 				</select>
 			</div>
 
@@ -210,6 +210,15 @@
 					</span>
 					<input id="descriptionInputbox" data-dojo-type="dijit/form/ComboBox">
 				</div>
+			</div>
+
+			<div id="variableTypeContainer" class="fieldgroup" style="display: none;">
+				<input type="radio" data-dojo-type="dijit/form/RadioButton" name="variableType" id="unknownType" value="unknown"/> 
+				<label for="unknownType">Unknown</label> 
+    			<input type="radio" data-dojo-type="dijit/form/RadioButton" name="variableType" id="parameterType" value="parameter"/> 
+    			<label for="parameterType">Parameter</label> 
+    			<input type="radio" data-dojo-type="dijit/form/RadioButton" name="variableType" id="dynamicType" value="dynamic"/> 
+    			<label for="dynamicType">Dynamic</label> 
 			</div>
 
 			<div class="fieldgroup" id="valueUnitsContainer" style="display: none;">
@@ -245,13 +254,7 @@
 				<input id ="rootNodeToggleCheckbox" name ="markRootNode" data-dojo-type="dijit/form/CheckBox" value="agreed" checked="false"/>
 				<div id="questionMarkRoot" class="questionMark"></div>
 			</div>
-
-			<div id="dynamicNodeToggleContainer" class="fieldgroup" style="display: none;">
-				<label for ="dynamicNodeToggleCheckbox" title ="Mark this node as a root node.">Dynamic:</label>
-				<input id ="dynamicNodeToggleCheckbox" name ="markDynamicNode" data-dojo-type="dijit/form/CheckBox" value="agreed" checked="false"/>
-				<div id="questionMarkDynamic" class="questionMark"></div>
-			</div>
-
+			
 			<div class="equationInputsContainer" id="expressionDiv" style="display: none;">
 				<div class="fieldgroup">
 					 <div class="vertical">

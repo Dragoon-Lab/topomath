@@ -5,6 +5,7 @@ TopoMath is an Intelligent Tutoring System which will teach students dynamic sys
 ### Modules ###
 Major modules of the system are :
 
+* [Session](sessions.md)
 * [Model Object - Author and Student](model.md)
 * [Node Editor](node_editor.md)
 * [User interface - Model](ui_model.md)

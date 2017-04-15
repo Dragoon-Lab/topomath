@@ -39,7 +39,7 @@ define([
 				case "quantity":
 					nodeString.value = this.getDomUIStrings(model, "variable", nodeID);
 					if(model.getVariable(nodeID))
-						if(model.isAccumulator(nodeID)){
+						if(model.isAccumulator(nodeID) && model.getValue(nodeID)){
 							nodeString.initial = this.getDomUIStrings(model, "value", nodeID);
 							createInitial = true;
 						} else {
