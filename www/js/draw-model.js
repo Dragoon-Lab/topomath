@@ -158,43 +158,50 @@ define([
 			}
 
 			//update value or update dynamic
+			var initialNode = dom.byId(domIDTags['parentInitial']);
 			if(node.type && node.type == "quantity" && (cachedNode.value != node.value ||
 				cachedNode.accumulator != node.accumulator)){
-				var initialNode = dom.byId(domIDTags['parentInitial']);
 				if(node.accumulator){
-					if(node.value){
+					//if(node.value){
 						// here we need to update the initial value node as well.
-						if(initialNode){
-							dom.byId(domIDTags['initialNode']).innerHTML = graphObjects.getDomUIStrings(this._model, "value", node.ID);
-						} else {
-							//this part of the code creates a new node with initial value when a node is added as dynamic
-							//explicitly picking up the second value as that is the one to be added
-							var initialNodeString = graphObjects.getNodeHTML(this._model, node.ID)[1];
-							// TODO: the handler for accumulator/dynamic will ensure that a new position is created for the initial node.
-							// draw-model does not and should not have access to that part of the node, hence it needs to be done by the handler
-							this.createNodeDOM(node, initialNodeString, true);
-						}
-					} else if(initialNode && (!node.value || node.value == "")) {
+					if(initialNode){
+						dom.byId(domIDTags['initialNode']).innerHTML = graphObjects.getDomUIStrings(this._model, "value", node.ID);
+					} else {
+						//this part of the code creates a new node with initial value when a node is added as dynamic
+						//explicitly picking up the second value as that is the one to be added
+						var initialNodeString = graphObjects.getNodeHTML(this._model, node.ID)[1];
+						// draw-model does not and should not have access to that part of the node, hence it needs to be done by the handler
+						initialNode = this.createNodeDOM(node, initialNodeString, true);
+					}
+					dom.byId(domIDTags['nodeDOM']).innerHTML = graphObjects.getDomUIStrings(this._model, "variable", node.ID);
+					// this is the code with node.value logic
+					// where if node.value is not necessary for the initial node to show up
+					// leaving this code here until sure that it wont be needed anymore.
+					//} else if(initialNode && (!node.value || node.value == "")) {
 						// the case when the value of the node is removed
 						// this should delete the initial node
-						this.deleteNode(domIDTags['parentInitial'], true);
-					}
+					//	this.deleteNode(domIDTags['parentInitial'], true);
+					//}
 				} else {
 					dom.byId(domIDTags['nodeDOM']).innerHTML = graphObjects.getDomUIStrings(this._model, "value", node.ID);
-					if(initialNode) this.deleteNode(domIDTags['parentInitial'], true);
+					if(initialNode){
+						this.deleteNode(domIDTags['parentInitial'], true);
+						initialNode = null;
+					}
 				}
 			} else if(node.type && node.type == "equation" && cachedNode.equation != node.equation){
 				dom.byId(domIDTags['nodeDOM']).innerHTML = graphObjects.getDomUIStrings(this._model, "equation", node.ID);
-				// TODO : need to check how and where the connections are set
-				
 			}
 			//update border
 			var isComplete = this._model.isComplete(node.ID);
 			var hasClass = domClass.contains(domIDTags['parentDOM'], "incomplete");
+			var initialHasClass = initialNode && domClass.contains(domIDTags['parentInitial'], "incomplete");
 			if(hasClass && isComplete){
 				domClass.remove(domIDTags['parentDOM'], "incomplete");
+				if(initialHasClass) domClass.remove(domIDTags['parentInitial'], "incomplete");
 			} else if (!hasClass && !isComplete){
 				domClass.add(domIDTags['parentDOM'], "incomplete");
+				if(initialNode) domClass.add(domIDTags['parentInitial'], "incomplete");
 			}
 
 			//add to cache for next time
