@@ -18,7 +18,7 @@ define([
 			name: 'node-editor', 
 			nodeID: id,
 			nodeType: this._model.active.getType(id),
-			node: this._model.active.getVariable || this._model.active.getDescription(id)
+			node: this._model.active.getVariable(id) || this._model.active.getDescription(id)
 		});
 	}, true);
 
