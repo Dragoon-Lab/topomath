@@ -357,6 +357,7 @@ define([
 				property: "variableType",
 				value: _variableType
 			});
+			this.updateNodeView(this._model.active.getNode(this.currentID));
 		},
 
 		handleSetStudentNode: function(checked){
