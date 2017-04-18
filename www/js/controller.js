@@ -860,6 +860,8 @@ define([
 				this._model.active.setEquation(this.currentID, inputEquation);
 				if(err.message.includes("unexpected variable"))
 					directives.push({id: 'message', attribute: 'append', value: 'The value entered for the equation is incorrect'});
+				else if(err.message.includes("Please make a node dynamic before")) //This case occurs when an equation used prior(node) but that quantity node is not set to be dynamic
+					directives.push({id: 'message', attribute: 'append', value: 'Please make a node dynamic before using it in prior function'});
 				else
 					directives.push({id: 'message', attribute: 'append', value: 'Incorrect equation syntax.'});
 				directives.push({id: 'equation', attribute: 'status', value: 'incorrect'});
@@ -1043,6 +1045,13 @@ define([
 						this.setNodeDescription(newNode.id,newNode.variable);
 					}, this);
 				}
+				var dynamicList = parseObject.dynamicList;
+				array.forEach(dynamicList, lang.hitch(this,function(prior){
+					this._model.authored.setVariableType(prior.id,"dynamic");
+					this._model.authored.setAccumulator(prior.id, true);
+					console.log("prior id", prior.id);
+					this.updateNode(prior.id);
+				}));
 
 				if(directives.length > 0){
 					this._model.active.setEquation(this.currentID, inputEquation);
@@ -1061,6 +1070,7 @@ define([
 
 				var inputs = parseObject.connections;
 				// Update inputs and connections
+				console.log("inputs for" ,this.currentID,inputs);
 				this._model.active.setLinks(inputs, this.currentID);
 				this.setConnections(this._model.active.getLinks(this.currentID), this.currentID);
 				// console.log("************** equationAnalysis directives ", directives);
@@ -1074,13 +1084,7 @@ define([
 					this.nodeConnections.push(n);
 				}));
 
-				var dynamicList = parseObject.dynamicList;
-				array.forEach(dynamicList, lang.hitch(this,function(prior){
-					this._model.authored.setAccumulator(prior.id, true);
-					//this._model.authored.setDescription(prior.id, prior.variable);
-					//this._model.authored.setValue(prior.id,3);
-					this.updateNode(prior.id);
-				}));
+
 
 			}
 		}

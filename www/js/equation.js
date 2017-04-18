@@ -64,6 +64,7 @@ define([
 						console.log("prior node id and name", priorNodeId, prior);
 						if(priorNodeId && !subModel.getAccumulator(priorNodeId)){
 							throw new Error("Please make a node dynamic before using it in prior function");
+							return;
 						}
 					});
 				}
@@ -79,6 +80,14 @@ define([
 						var nodeId = subModel.getNodeIDByName(variable);
 						if(nodeId){
 							expr.substitute(variable,nodeId);
+							if(currentPriorList.length>0){
+								currentPriorList.some(function(eachPrior){
+									if(eachPrior === variable){
+										//dynamicList.push({ "id": newId, "variable":variable});
+										expr.substitutePrior(nodeId+"_initial");		
+									}
+								});
+							}
 						}
 						else{ //this is the case where node does not exist and has to be created
 							//verify if autocreatenodes is enabled
