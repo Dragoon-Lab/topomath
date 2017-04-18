@@ -19,9 +19,10 @@ define([
 	'./draw-model',
 	'./con-author',
 	'./logging',
-	'./popup-dialog'
+	'./popup-dialog',
+	'./event-logs'
 ], function(array, geometry, dom, style, aspect, ready, registry, event, ioQuery, on, Button, domConstruct, lang,
-			menu, session, model, equation, drawModel, controlAuthor, logging, popupDialog){
+			menu, session, model, equation, drawModel, controlAuthor, logging, popupDialog, eventLogs){
 	
 	console.log("load main.js");
 	// Get session parameters
@@ -88,6 +89,7 @@ define([
 			* to set the logger for equation.
 			*/
 			equation.setLogging(_logger);
+			eventLogs.setLogging();
 			//remove the loading division, now that the problem is being loaded
 			var loading = document.getElementById('loadingOverlay');
 			loading.style.display = "none";
@@ -223,6 +225,9 @@ define([
 
 			aspect.after(controllerObject, "setConnections",
 				lang.hitch(dm, dm.updateNodeConnections), true);
+
+			aspect.after(controllerObject, "updateNodeView",
+				lang.hitch(dm, dm.updateNode), true);
 
 			aspect.after(dm, "deleteNode", function(){
 				_session.saveModel(_model.model);

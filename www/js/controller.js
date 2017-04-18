@@ -1087,6 +1087,31 @@ define([
 
 
 			}
+		},
+		/**
+		* creates the object to be logged after each solution step.
+		* @params - obj -   object to be logged. Important parameter in the object is property of the node.
+		*                   without which the logged object wont be sent.
+		*           return obj - complete object which should be used by aspect.after to send it to logs.
+		*/
+		logSolutionStep: function(obj){
+			//Stub for logging the messages, updated in con-author and con-student
+			if(!obj.property) return null;
+
+			var property = obj.property;
+			// if node ID was not in the object then send node ID as the current ID.
+			// used for auto created nodes.
+			if(!obj.nodeID){
+				obj.nodeID = this.currentID;
+				obj.node = this._model.authored.getVariable(this.currentID);
+			}
+			if(!obj.value) obj.value = registry.byId(this.controlMap[property]).get("value");
+			obj.type = this._model.active == this._model.authored ? "solution-enter" : "solution-check";
+
+			return obj;
+		},
+		updateNodeView: function(node){
+			// stub for calling draw model update node
 		}
 	});
 });

@@ -247,13 +247,10 @@ define([
 			
 			
 			logObj = lang.mixin({
-				type: "solution-enter",
-				nodeID: this.currentID,
-				propoerty: "name",
-				node: name,
+				property: "variable",
 				value: name
 			}, logObj);
-			//this.logging.log('solution-step', logObj);
+			this.logSolutionStep(logObj);
 		},
 
 		handleExplanationName: function(name){
@@ -275,11 +272,10 @@ define([
 		handleKind: function(kind){
 			console.log("**************** in handleKind ", kind);
 			if(kind == "defaultSelect" || kind == ''){
-				/*
-				this.logging.clientLog("error", {
+				this._logging.logClientMessages("error", {
 					message: "no kind selected for author node type",
 					functionTag: "handleKind"
-				}); */
+				});
 				kind = "defaultSelect";
 				this._model.authored.setGenus(this.currentID, kind);
 			}else{
@@ -287,15 +283,10 @@ define([
 				this.applyDirectives(this. authorPM.process(this.currentID, "kind", kind));
 			}
 
-			/*
-			this.logging.log('solution-step', {
-				type: "solution-enter",
-				nodeID: this.currentID,
+			this.logSolutionStep('solution-step', {
 				property: "kind",
-				node: this._model.given.getName(this.currentID),
 				value: kind
 			});
-			*/
 		},
 
 		handleDescription: function(description){
@@ -311,31 +302,20 @@ define([
 
 			if(!this._model.active.getNodeIDByDescription(description)){
 				this._model.active.setDescription(this.currentID, description);
-				/*
 				logObj = {
 					error: false
 				};
-				*/
 			}else {
 				console.warn("In AUTHOR mode. Attempted to use description that already exists: " + description);
-				/*
 				logObj = {
 					error: true,
 					message: "duplication"
 				};
-				*/
 			}
-			/*
 			logObj = lang.mixin({
-				type: "solution-enter",
-				nodeID: this.currentID,
 				property: "description",
-				node: this._model.given.getName(this.currentID),
-				value: description
 			}, logObj);
-			
-			this.logging.log('solution-step', logObj);
-			*/
+			this.logSolutionStep(logObj);
 			this.enableDisableSetStudentNode();
 		},
 		
@@ -343,15 +323,10 @@ define([
 			// Summary: Sets the current node to be parent node
 			console.log("********************* in handleRoot", root);
 			this._model.authored.setRoot(this.currentID, root);
-			/*
-			this.logging.log("solution-step", {
-				type: "solution-enter",
-				nodeID: this.currentID,
+			this.logSolutionStep({
 				property: "root",
-				node: this._model.given.getName(this.currentID),
 				value: root
 			});
-			*/
 		},
 
 		handleVariableType: function(event){
@@ -378,6 +353,11 @@ define([
 				style.set('valueInputboxContainer','display','none');
 				this.handleValue(null);
 			}
+			this.logSolutionStep({
+				property: "variableType",
+				value: _variableType
+			});
+			this.updateNodeView(this._model.active.getNode(this.currentID));
 		},
 
 		handleSetStudentNode: function(checked){
@@ -451,17 +431,11 @@ define([
 			}
 
 			//TODO : update student node status
-			/*
 			var valueFor = modelType == "given" ? "student-model": "author-model";
-			this.logging.log("solution-step", {
-				type: "solution-enter",
-				nodeID: this.currentID,
+			this.logSolutionStep({
 				property: "units",
-				value: units,
-				node: this._model.given.getName(this.currentID),
 				usage: valueFor
 			});
-			*/
 		},
 		/*
 		 Handler for value input
@@ -525,19 +499,14 @@ define([
 					message: valueFlag.errorType
 				};
 			}
-			/*
+
 			var valueFor = modelType == "authored" ? "student-model": "author-model";
 			logObj = lang.mixin({
-				type: "solution-enter",
-				node: this._model.active.getName(this.currentID),
-				nodeID: this.currentID,
 				property: "value",
-				value: value,
 				usage: valueFor
 			}, logObj);
 
-			this._logger.log("solution-step", logObj);
-			*/
+			this.logSolutionStep(logObj);
 		},
 
 		handleInputs: function(name){
@@ -619,17 +588,13 @@ define([
 					 this._model.student.setEquation(studentNodeID, "");
 				}
 			}
-			var valueFor = model == "given" ? "student-model": "author-model";
+			*/
+			var valueFor = model == "authored" ? "student-model": "author-model";
 			logObj = lang.mixin({	
-				type: "solution-enter",
-				nodeID: this.currentID,
-				node: this._model.given.getName(this.currentID),
 				property: "equation",
-				value: registry.byId(this.controlMap.equation).get("value"),
 				usage: valueFor
 			}, logObj);
-			this.logging.log("solution-step", logObj);
-			*/
+			this.logSolutionStep(logObj);
 		},
 		
 		handleGivenEquation: function(equation){
@@ -1034,8 +999,6 @@ define([
 					this._model.student.setStatus(studentNodeID, control, {"disabled": true,"status":"correct"});
 				}
 			}
-		},
-
-
+		}
 	});
 });
