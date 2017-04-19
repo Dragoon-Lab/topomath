@@ -153,6 +153,16 @@ define([
 		};
 
 		var both = {
+			/**
+			* wrapper to get ID given all types of node ID with or without the initial String
+			* @params - id - node ID may or may not have initial in its ID string
+			*			id - returns the id with removed string
+			*/
+			getID: function(/* string */ id){
+				var initialNodeString = this.getInitialNodeIDString();
+				return id.indexOf(initialNodeString) > 0 ?
+							id.replace(initialNodeString, "") : id;
+			},
 			getNode: function(/* string */ id){
 				var nodes = this.getNodes();
 				var l = nodes.length;
@@ -207,6 +217,10 @@ define([
 				var node = this.getNode(id);
 				return node && node.expression;
 			},
+			getVariableType: function(/*string*/ id){
+				var node = this.getNode(id);
+				return node && node.variableType;
+			},
 			isNode: function(/* string */ id){
 				return array.some(this.getNodes(), function(node){
 					return node.ID === id;
@@ -220,19 +234,43 @@ define([
 				var node = this.getNode(id);
 				return node && node.color;
 			},
+			/**
+			* gets the nodes where node corresponding to the id is part of the links to any other node
+			* - used for updating the corresponding equations if the node variables are updated
+			* @params -	id - quantity node ID whose variable name has been changed
+			*			nodes - nodes for which the equation has to be updated
+			*/
+			getLinksFromID: function(/* string */ id){
+				var nodes = [];
+				var temp = array.map(this.getNodes(), function(node){
+					var found = false;
+					found = array.some(node.links, function(link){
+						return (link.ID === id);
+					});
+					if(found) return node.ID;
+				});
+				array.forEach(temp, function(t){
+					if(t) nodes.push(t);
+				});
+
+				return nodes;
+			},
 			isAccumulator: function(/* string */ id){
 				var node = this.getNode(id);
 				return node && node.accumulator;
 			},
 			deleteNode: function(/*string*/ id){
 				var nodes = this.getNodes();
+				var isDeleteInitialNode = id.indexOf(this.getInitialNodeIDString()) > 0;
 				var l = nodes.length;
 				var index = -1;
 				var updateNodes = [];
 				for(var i = 0; i < l; i++){
 					var found = false;
-					if(nodes[i].ID === id){
-						index = i;
+					if(!isDeleteInitialNode){
+						if(nodes[i].ID === id){
+							index = i;
+						}
 					}
 					array.forEach(nodes[i].links, function(link){
 						if(link.ID.indexOf(id) > -1){
@@ -249,7 +287,8 @@ define([
 						};*/
 					}
 				}
-				nodes.splice(index, 1);
+				if(!isDeleteInitialNode)
+					nodes.splice(index, 1);
 
 				return updateNodes;
 			},
@@ -268,10 +307,33 @@ define([
 					}, this);
 				}
 			},
+			updateLinks: function(/*string*/ id){
+				// Summary : Update links when variableType is set to some other value
+				// 			 after initially assigning to dynamic.
+				var nodes = this.getNodes();
+				var removeId = id + this.getInitialNodeIDString();
+				array.forEach(nodes, function(node){
+					var links = node.links;	
+					if(links && links.length > 0){
+						var index = links.findIndex(function(link){
+							console.log(link.ID);
+							return link.ID === removeId;
+						}, this);
+						links.splice(index,1);
+					}
+				}, this);
+				
+			},
 			setType: function(/*string*/ id, /*string*/ type){
 				var ret = this.getNode(id);
 				if(ret)
 					ret.type = type;
+			},
+			setVariableType: function(/*string*/ id, /*string*/ variableType ){
+				var node = this.getNode(id);
+				if( node){
+					node.variableType = variableType;	
+				} 
 			},
 			setPosition: function(/*string*/ id, /*integer*/ index, /*object*/ positionObject){
 				// Summary: sets the "X" and "Y" values of a node's position
@@ -310,6 +372,18 @@ define([
 				obj.model.authorModelNodes.push(newNode);
 				console.log("node added", newNode.ID, newNode.type);
 				return newNode.ID;
+			},
+			updatePositionXY: function(/*string */ id){
+				// Summary : - Updates the position explicitly for the next node on UI.
+				// 			 - Used to position the initial/prior node of dynamic node so that
+				// 			   it does not overlap with the other existing nodes
+				console.log(obj);
+				obj._updateNextXYPosition();
+				var _position = {
+					x: obj.x,
+					y: obj.y
+				};
+				this.setPosition(id, 1, _position);
 			},
 			getNodes: function(){
 				return obj.model.authorModelNodes;
@@ -413,9 +487,6 @@ define([
 			setUnits: function(/*string*/ id, /*string*/ units){
 				this.getNode(id).units = units;
 			},
-			setValue: function(/*string*/ id, /*float*/ value){
-				this.getNode(id).value = value;
-			},
 			setEquation: function(/*string*/ id, /*string | object*/ equation){
 				this.getNode(id).equation = equation;
 			},
@@ -436,16 +507,22 @@ define([
 				// if units were not entered even then it would show node complete
 				var unitsOptional = true;
 				var returnFlag = '';
-
 				var nameEntered = node.type && node.type == "equation" || node.variable;
-				// TODO : logic for value is still incomplete
-				// needs to incorporate values of function, accumulator and parameters
 				// as seen in Dragoon.
-				var valueEntered = node.type && node.type == "equation" || node.accumulator || node.value;
+				// variableType and value combined defines node completion
+				// node is complete in following cases
+				// 1. variableType Unknown and no value 
+				// 2. variableType dynamic and value is valid 
+				// 3. variableType parameter and value is valid
+				
+				var valueEntered = node.type && node.type == "equation" || (node.accumulator && node.value) 
+				|| (node.value && node.variableType == "unknown") ||
+				(node.value && node.variableType == "parameter") ;
+				
 				var equationEntered = node.type && node.type == "quantity" || node.equation;
 				if(node.genus == "required" || node.genus == "allowed"){
 					returnFlag = nameEntered && (node.description || node.explanation) &&
-						node.type && (valueEntered || typeof valueEntered === "number") &&
+						node.type && ( node.variableType == "unknown" || valueEntered || typeof valueEntered === "number" ) &&
 						(unitsOptional || nodes.units) && equationEntered;
 				} else {
 					// if genus is irrelevant
@@ -455,7 +532,7 @@ define([
 					return true;
 				else
 					return false;
-			}
+			},
 		}, both);
 
 		obj.student = lang.mixin({
@@ -478,12 +555,12 @@ define([
 				return obj.model.studentModelNodes;
 			},
 			getNodeIDFor: function(givenID){
-				// Summary: returns the id of a student node having a matching descriptionID;
+				// Summary: returns the id of a student node having a matching authoredID;
 				//			return null if no match is found.
 				var id;
 				var gotIt = array.some(this.getNodes(), function(node){
 					id = node.ID;
-					return node.descriptionID == givenID;
+					return node.authoredID == givenID;
 				});
 				return gotIt ? id : null;
 			},
@@ -536,8 +613,8 @@ define([
 				}
 				nodes.splice(index, 1);
 			},
-			setDescriptionID: function(/*string*/ id, /*string*/ descriptionID){
-				this.getNode(id).descriptionID = descriptionID;
+			setAuthoredID: function(/*string*/ id, /*string*/ authoredID){
+				this.getNode(id).authoredID = authoredID;
 			},
 			setInitial: function(/*string*/ id, /*float*/ initial){
 				this.getNode(id).initial = initial;
@@ -557,6 +634,9 @@ define([
 			},
 			setEquation: function(/*string*/ id, /*string | object*/ equation){
 				this.getNode(id).equation = equation;
+			},
+			setValue: function(/*string*/ id, /*float*/ value){
+				this.getNode(id).value = value;
 			},
 		}, both);
 

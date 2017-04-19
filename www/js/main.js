@@ -21,9 +21,10 @@ define([
 	'./draw-model',
 	'./con-author',
 	'./logging',
-	'./popup-dialog'
+	'./popup-dialog',
+	'./event-logs'
 ], function(array, geometry, dom, style, aspect, ready, registry, event, ioQuery, on, Button, domConstruct, lang, domClass, toolTip,
-			menu, session, model, equation, drawModel, controlAuthor, logging, popupDialog){
+			menu, session, model, equation, drawModel, controlAuthor, logging, popupDialog, eventLogs){
 	
 	console.log("load main.js");
 	// Get session parameters
@@ -90,6 +91,7 @@ define([
 			* to set the logger for equation.
 			*/
 			equation.setLogging(_logger);
+			eventLogs.setLogging();
 			//remove the loading division, now that the problem is being loaded
 			var loading = document.getElementById('loadingOverlay');
 			loading.style.display = "none";
@@ -235,13 +237,6 @@ define([
 				console.log("uncomment code to close");
 			});
 
-			//TODO: uncomment this after node_editor2 is merged
-			//all the things we need to do once node is closed
-			aspect.after(registry.byId('nodeEditor'), "hide", function(){
-				_session.saveModel(_model.model);
-				dm.updateNode(_model.active.getNode(controllerObject.currentID));
-			});
-
 			menu.add("DoneButton", function (e) {
 				event.stop(e);
 				// This should return an object kind of structure and
@@ -268,9 +263,8 @@ define([
 					"inputsQuestionMark": "Select a quantity to enter into the expression above.  Much faster than typing.",
 					"valueQuestionMark": "This is a number, typically given to you in the system description.",
 					"operationsQuestionMark": "Click one of these to enter it in the expression above. <br> See the Help menu at the top of the screen for a list of other mathematical operators and functions that you can type in.",
-					"questionMarkRoot": "TODO",
-					"questionMarkDynamic": "TODO"
-				};
+					"questionMarkRoot": "TODO"
+			};
 			var toggleTooltip = function(id){
 				//Hide Tooltip
 				var _position="before-centered";
@@ -293,7 +287,18 @@ define([
 			//Add event handlers on questionmark buttons
 			array.forEach(Object.keys(questionMarkButtons), function(buttonID){
 				on(dom.byId(buttonID), "click", function(evt){
-					toggleTooltip(buttonID)
+					toggleTooltip(buttonID);
+				});
+			});
+
+			//TODO: uncomment this after node_editor2 is merged
+			//all the things we need to do once node is closed
+			aspect.after(registry.byId('nodeEditor'), "hide", function(){
+				_session.saveModel(_model.model);
+				dm.updateNode(_model.active.getNode(controllerObject.currentID));
+				array.forEach(Object.keys(questionMarkButtons), function(buttonID){
+					domClass.remove(dom.byId(buttonID), "active");
+					toolTip.hide(dom.byId(buttonID));
 				});
 			});
 		});

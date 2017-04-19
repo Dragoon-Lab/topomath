@@ -883,9 +883,9 @@ define([
 			/*
 			var cancelUpdate = false;
 			var resetEquation = false;
-			var descriptionID = this._model.student.getDescriptionID(this.currentID);
+			var authoredID = this._model.student.getAuthoredID(this.currentID);
 
-			var mapID = this._model.active.getDescriptionID || function(x){ return x; };
+			var mapID = this._model.active.getAuthoredID || function(x){ return x; };
 			var unMapID = this._model.active.getNodeIDFor || function(x){ return x; };
 			//there is no error in parse. We check equation for validity
 			//Check 1 - accumulator equation is not set to 0, basically the type of a node should be parameter.
@@ -916,7 +916,7 @@ define([
 				if(!givenID){
 					if(!ignoreUnknownTest){
 						// Check for number of unknown var, only in student mode.
-						badVarCount = this._model.given.getAttemptCount(descriptionID, "unknownVar");
+						badVarCount = this._model.given.getAttemptCount(authoredID, "unknownVar");
 					}
 					cancelUpdate = true;  // Don't update model or send ot PM.
 
@@ -924,15 +924,15 @@ define([
 					//		To organize this better in the future we may want to move this check into another file with the code from
 					//		pedagogical_module.js that is responsible for deciding the correctness of a student's response.
 					if(badVarCount){
-						this._model.given.setAttemptCount(descriptionID, "unknownVar", badVarCount+1);
+						this._model.given.setAttemptCount(authoredID, "unknownVar", badVarCount+1);
 						if(badVarCount > 2){
 							//resetEquation = true;
 						//} else {
-							this._model.given.setAttemptCount(descriptionID, "equation", badVarCount+1);
+							this._model.given.setAttemptCount(authoredID, "equation", badVarCount+1);
 							cancelUpdate = false;
 						}
 					}else{
-						this._model.given.setAttemptCount(descriptionID, "unknownVar", 1);
+						this._model.given.setAttemptCount(authoredID, "unknownVar", 1);
 						//resetEquation = true;
 					}
 					directives.push({id: 'equation', attribute: 'status', value: 'incorrect'});
@@ -1072,6 +1072,28 @@ define([
 				}));
 
 			}
+		},
+		/**
+		* creates the object to be logged after each solution step.
+		* @params - obj -   object to be logged. Important parameter in the object is property of the node.
+		*                   without which the logged object wont be sent.
+		*           return obj - complete object which should be used by aspect.after to send it to logs.
+		*/
+		logSolutionStep: function(obj){
+			//Stub for logging the messages, updated in con-author and con-student
+			if(!obj.property) return null;
+
+			var property = obj.property;
+			// if node ID was not in the object then send node ID as the current ID.
+			// used for auto created nodes.
+			if(!obj.nodeID){
+				obj.nodeID = this.currentID;
+				obj.node = this._model.authored.getVariable(this.currentID);
+			}
+			if(!obj.value) obj.value = registry.byId(this.controlMap[property]).get("value");
+			obj.type = this._model.active == this._model.authored ? "solution-enter" : "solution-check";
+
+			return obj;
 		}
 	});
 });

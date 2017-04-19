@@ -75,6 +75,12 @@ html, body, #main{
     width: 16ex;
 }
 
+.sameedit #variableTypeContainer.fieldgroup label:not(:first-child){
+    width: 10ex;
+    margin-left: 0.5ex;
+    margin-right: 0.5ex;
+}
+
 .sameedit .fieldgroup > * {
     display:inline-block;
     vertical-align:top

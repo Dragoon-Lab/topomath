@@ -185,8 +185,8 @@
 			<div id="modelSelectorContainer" class="fieldgroup" style="display:none" >
 				<label for="modelSelector">Select Model</label>
 				<select id="modelSelector" data-dojo-type="dijit/form/Select">
-					<option value='correct' selected>Author's Values</option>
-					<option value='given'>Initial Student Values</option>
+					<option value='authored' selected>Author's Values</option>
+					<option value='student'>Initial Student Values</option>
 				</select>
 			</div>
 
@@ -214,6 +214,16 @@
 				<label for="variableInputbox">Variable</label>
 				<input id="variableInputbox" data-dojo-type="dijit/form/ComboBox">
 			</div> 
+
+			<div id="variableTypeContainer" class="fieldgroup" style="display: none;">
+				<label> Variable Type</label>
+				<input type="radio" data-dojo-type="dijit/form/RadioButton" name="variableType" id="unknownType" value="unknown"/> 
+				<label for="unknownType">Unknown</label> 
+    			<input type="radio" data-dojo-type="dijit/form/RadioButton" name="variableType" id="parameterType" value="parameter"/> 
+    			<label for="parameterType">Parameter</label> 
+    			<input type="radio" data-dojo-type="dijit/form/RadioButton" name="variableType" id="dynamicType" value="dynamic"/> 
+    			<label for="dynamicType">Dynamic</label> 
+			</div>
 
 			<div class="fieldgroup" id="valueUnitsContainer" style="display: none;">
 				<!-- adding a div for value field to control its display in UI -->
@@ -248,14 +258,6 @@
 					<label for ="rootNodeToggleCheckbox" title ="Mark this node as a root node.">Root</label>
 				</span>
 				<input id ="rootNodeToggleCheckbox" name ="markRootNode" data-dojo-type="dijit/form/CheckBox" value="agreed" checked="false"/>
-			</div>
-
-			<div id="dynamicNodeToggleContainer" class="fieldgroup" style="display: none;">
-				<span class="fixedwidth">
-					<div id="questionMarkDynamic" class="questionMark"></div>
-					<label for ="dynamicNodeToggleCheckbox" title ="Mark this node as a root node.">Dynamic</label>
-				</span>
-				<input id ="dynamicNodeToggleCheckbox" name ="markDynamicNode" data-dojo-type="dijit/form/CheckBox" value="agreed" checked="false"/>
 			</div>
 
 			<div class="equationInputsContainer" id="expressionDiv" style="display: none;">

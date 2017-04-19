@@ -132,7 +132,7 @@ define([
 		},
 
 		resettableControls: ["variable","description","value","units","equation"],
-		variableNodeControls: ["variable","value","units","kind","dynamic","root"],
+		variableNodeControls: ["variable","value","units","kind","root"],
 		equationNodeControls: ["inputs","equation"],
 		commonNodeControls: ["setStudent","modelType","description"],
 
@@ -144,7 +144,6 @@ define([
 			kind: "optionalitySelector",
 			units: "unitsSelector",
 			root: "rootNodeToggleCheckbox",
-			dynamic: "dynamicNodeToggleCheckbox",
 			setStudent: "givenToStudentCheckbox",
 			modelType: "modelSelector",
 		},
@@ -177,27 +176,27 @@ define([
 
 			var root_check = registry.byId(this.controlMap.root);
 			root_check.on('Change', lang.hitch(this, function(checked){
-					return this.disableHandlers || this.handleRoot(checked);
+				return this.disableHandlers || this.handleRoot(checked);
 			}));
 
-			var dynamic_check = registry.byId(this.controlMap.dynamic);
-			dynamic_check.on('Change', lang.hitch(this, function(checked){
-					return this.disableHandlers || this.handleDynamic(checked);
+			var variableTypeToggle = dojo.query("input[type=radio][name=variableType]");
+			variableTypeToggle.on('change', lang.hitch(this, function(){
+				return this.disableHandlers || this.handleVariableType(event);
 			}));
 
 			var setStudentNode = registry.byId(this.controlMap.setStudent);
 			setStudentNode.on('Change', lang.hitch(this, function(checked){
-					return this.disableHandlers || this.handleSetStudentNode(checked);
+				return this.disableHandlers || this.handleSetStudentNode(checked);
 			}));
 
 			var givenEquation = registry.byId("equationInputbox");
 			givenEquation.on('Change', lang.hitch(this, function(){
-					return this.disableHandlers || this.handleGivenEquation.apply(this, arguments);
+				return this.disableHandlers || this.handleGivenEquation.apply(this, arguments);
 			}));
 
 			var selectModel = registry.byId(this.controlMap.modelType);
 			selectModel.on('Change', lang.hitch(this, function(){
-					return this.disableHandlers || this.handleSelectModel.apply(this, arguments);
+				return this.disableHandlers || this.handleSelectModel.apply(this, arguments);
 			}));
 
 			this.handleErrorMessage(); //binds a function to Display Error message if expression is cleared.
@@ -249,13 +248,10 @@ define([
 			
 			
 			logObj = lang.mixin({
-				type: "solution-enter",
-				nodeID: this.currentID,
-				propoerty: "name",
-				node: name,
+				property: "variable",
 				value: name
 			}, logObj);
-			//this.logging.log('solution-step', logObj);
+			this.logSolutionStep(logObj);
 		},
 
 		handleExplanationName: function(name){
@@ -277,11 +273,10 @@ define([
 		handleKind: function(kind){
 			console.log("**************** in handleKind ", kind);
 			if(kind == "defaultSelect" || kind == ''){
-				/*
-				this.logging.clientLog("error", {
+				this._logging.logClientMessages("error", {
 					message: "no kind selected for author node type",
 					functionTag: "handleKind"
-				}); */
+				});
 				kind = "defaultSelect";
 				this._model.authored.setGenus(this.currentID, kind);
 			}else{
@@ -289,23 +284,18 @@ define([
 				this.applyDirectives(this. authorPM.process(this.currentID, "kind", kind));
 			}
 
-			/*
-			this.logging.log('solution-step', {
-				type: "solution-enter",
-				nodeID: this.currentID,
+			this.logSolutionStep('solution-step', {
 				property: "kind",
-				node: this._model.given.getName(this.currentID),
 				value: kind
 			});
-			*/
 		},
 
 		handleDescription: function(description){
 			// Summary: Checks to see if the given quantity node description exists; if the
 			//		description doesn't exist, it sets the description of the current node.
-			var descriptionID = this._model.authored.getNodeIDByDescription(description);
-			// If descriptionID is falsy give "null"; if it doesn't match, give "false"
-			var returnObj = this.authorPM.process(descriptionID?!(descriptionID==this.currentID):null, "description", description);
+			var authoredID = this._model.authored.getNodeIDByDescription(description);
+			// If authoredID is falsy give "null"; if it doesn't match, give "false"
+			var returnObj = this.authorPM.process(authoredID?!(authoredID==this.currentID):null, "description", description);
 			console.log("return obj for quantity description", returnObj);
 			this.applyDirectives(returnObj);
 			
@@ -313,31 +303,20 @@ define([
 
 			if(!this._model.active.getNodeIDByDescription(description)){
 				this._model.active.setDescription(this.currentID, description);
-				/*
 				logObj = {
 					error: false
 				};
-				*/
 			}else {
 				console.warn("In AUTHOR mode. Attempted to use description that already exists: " + description);
-				/*
 				logObj = {
 					error: true,
 					message: "duplication"
 				};
-				*/
 			}
-			/*
 			logObj = lang.mixin({
-				type: "solution-enter",
-				nodeID: this.currentID,
 				property: "description",
-				node: this._model.given.getName(this.currentID),
-				value: description
 			}, logObj);
-			
-			this.logging.log('solution-step', logObj);
-			*/
+			this.logSolutionStep(logObj);
 			this.enableDisableSetStudentNode();
 		},
 		
@@ -345,31 +324,40 @@ define([
 			// Summary: Sets the current node to be parent node
 			console.log("********************* in handleRoot", root);
 			this._model.authored.setRoot(this.currentID, root);
-			/*
-			this.logging.log("solution-step", {
-				type: "solution-enter",
-				nodeID: this.currentID,
+			this.logSolutionStep({
 				property: "root",
-				node: this._model.given.getName(this.currentID),
 				value: root
 			});
-			*/
 		},
 
-		handleDynamic: function(dynamic){
-			// Summary: Sets the current node to be parent node
-			console.log("********************* in handleDynamic", dynamic);
-			this._model.authored.setAccumulator(this.currentID, dynamic);
-			/*TODO : Add code to update position of the node*/
-			/*
-			this.logging.log("solution-step", {
-				type: "solution-enter",
-				nodeID: this.currentID,
-				property: "dynamic",
-				node: this._model.given.getName(this.currentID),
-				value: dynamic
+		handleVariableType: function(event){
+			// Summary : Sets variableType to Unknown/Parameter/Dynamic
+			// Value is not allowed when variableType is Unknown
+			// Value is handled when variableType is parameter or dynamic.
+			console.log("********************* in handleVariableType");
+			var _variableType = event.target.value;
+			registry.byId(this.controlMap.value).set('status','');
+			this._model.authored.setVariableType(this.currentID, _variableType);
+			this._model.authored.setAccumulator(this.currentID, false);
+			if( _variableType == "parameter" || _variableType == "dynamic"){
+				style.set('valueInputboxContainer','display','block');
+				if(_variableType == "dynamic"){
+					this._model.authored.setAccumulator(this.currentID, true);
+					// Update position to avoid overlap of node
+					this._model.authored.updatePositionXY(this.currentID);
+				}
+			}else{
+				// Find all nodes that have reference to the initial node of this node and delete links to them
+				this._model.authored.updateLinks(this.currentID);
+				registry.byId(this.controlMap.value).set('value','');
+				this._model.active.setValue(this.currentID, '');
+				style.set('valueInputboxContainer','display','none');
+				this.handleValue(null);
+			}
+			this.logSolutionStep({
+				property: "variableType",
+				value: _variableType
 			});
-			*/
 		},
 
 		handleSetStudentNode: function(checked){
@@ -382,7 +370,7 @@ define([
 				}
 			}else{
 				this._model.active = this._model.authored;
-				registry.byId("modelSelector").set('value',"correct");
+				registry.byId("modelSelector").set('value',"authored");
 				style.set('modelSelectorContainer', 'display', 'none');
 				this.removeStudentNode(this.currentID);
 				//TODO : also show the waveform assignment button and image
@@ -391,7 +379,7 @@ define([
 
 		handleSelectModel: function(modelType){
 			console.log("********************* in handle select model", modelType);
-			if(modelType === "correct"){
+			if(modelType === "authored"){
 				this.controlMap.equation = "equationInputbox";
 				style.set('equationInputbox', 'display', 'block');		//show EquationBox
 				style.set('givenEquationInputbox', 'display', 'none');	//hide GivenEquationBox
@@ -401,7 +389,7 @@ define([
 				this.populateNodeEditorFields(this.currentID);
 
 			}
-			else if(modelType === "given"){
+			else if(modelType === "student"){
 				var equation = registry.byId("equationInputbox");
 				style.set('givenEquationInputbox', 'display', 'block'); //show GivenEquationBox
 				style.set('equationInputbox', 'display', 'none');	   //hide EquationBox
@@ -412,7 +400,7 @@ define([
 						id: "crisisAlert", attribute:
 						"open", value: "Your expression has not been checked!  Go back and check your expression to verify it is correct, or delete the expression, before closing the node editor."
 					}]);
-					registry.byId("modelSelector").set('value',"correct");
+					registry.byId("modelSelector").set('value',"authored");
 				}
 				else{
 					this._model.active = this._model.student;
@@ -443,17 +431,11 @@ define([
 			}
 
 			//TODO : update student node status
-			/*
 			var valueFor = modelType == "given" ? "student-model": "author-model";
-			this.logging.log("solution-step", {
-				type: "solution-enter",
-				nodeID: this.currentID,
+			this.logSolutionStep({
 				property: "units",
-				value: units,
-				node: this._model.given.getName(this.currentID),
 				usage: valueFor
 			});
-			*/
 		},
 		/*
 		 Handler for value input
@@ -463,7 +445,6 @@ define([
 			// value handler for quantity node
 
 			//valueFlag contains the status and value
-
 			var modelType = this.getModelType();
 			console.log("model type is", modelType);
 			var tempValId = dom.byId(this.widgetMap.value);
@@ -474,7 +455,7 @@ define([
 				
 				valueFlag = typechecker.checkNumericValue(this.widgetMap.value, this.lastValue);
 				
-				if((valueFlag.errorType === undefined) && (valueFlag.status === undefined)){
+				if(valueFlag && (valueFlag.errorType === undefined) && (valueFlag.status === undefined)){
 					// check for last input value matching
 					valueFlag = typechecker.checkLastInputValue(this.widgetMap.value, this.lastValue);
 				}
@@ -495,8 +476,8 @@ define([
 				
 				var studentNodeID = this._model.student.getNodeIDFor(this.currentID);
 				var studNodeValue = this._model.student.getValue(studentNodeID);
-				if(modelType == "authored"){
-					//if the model type is authored , the last value is the new student model value
+				if(modelType == "student"){
+					//if the model type is given , the last value is the new student model value
 					//which in this case is second parameter
 					this._model.active.setValue(studentNodeID, newValue);
 					this.updateStatus("value", this._model.authored.getValue(this.currentID), newValue);
@@ -518,19 +499,14 @@ define([
 					message: valueFlag.errorType
 				};
 			}
-			/*
+
 			var valueFor = modelType == "authored" ? "student-model": "author-model";
 			logObj = lang.mixin({
-				type: "solution-enter",
-				node: this._model.active.getName(this.currentID),
-				nodeID: this.currentID,
 				property: "value",
-				value: value,
 				usage: valueFor
 			}, logObj);
 
-			this._logger.log("solution-step", logObj);
-			*/
+			this.logSolutionStep(logObj);
 		},
 
 		handleInputs: function(name){
@@ -543,7 +519,7 @@ define([
 
 		equationDoneHandler: function(){
 			var model = registry.byId("modelSelector").value;
-			if(model && model == "correct"){
+			if(model && model == "authored"){
 				var directives = [];
 				var logObj = {};
 				//if parse is successful, equation analysis returns an object with parameters for creating expression nodes further
@@ -612,17 +588,13 @@ define([
 					 this._model.student.setEquation(studentNodeID, "");
 				}
 			}
-			var valueFor = model == "given" ? "student-model": "author-model";
+			*/
+			var valueFor = model == "authored" ? "student-model": "author-model";
 			logObj = lang.mixin({	
-				type: "solution-enter",
-				nodeID: this.currentID,
-				node: this._model.given.getName(this.currentID),
 				property: "equation",
-				value: registry.byId(this.controlMap.equation).get("value"),
 				usage: valueFor
 			}, logObj);
-			this.logging.log("solution-step", logObj);
-			*/
+			this.logSolutionStep(logObj);
 		},
 		
 		handleGivenEquation: function(equation){
@@ -635,7 +607,7 @@ define([
 
 		initialViewSettings: function(type){
 			//make display none for all fields initially
-			var qtyElements = ["variableOptionalityContainer","descriptionInputboxContainer","variableInputboxContainer","valueUnitsContainer","rootNodeToggleContainer","dynamicNodeToggleContainer"];
+			var qtyElements = ["variableOptionalityContainer","descriptionInputboxContainer","variableTypeContainer","variableInputboxContainer","valueUnitsContainer","rootNodeToggleContainer"];
 			var eqElements = ["descriptionInputboxContainer","expressionDiv"];
 		
 			if(type == "quantity"){
@@ -690,6 +662,7 @@ define([
 				checked = array.some(studentNodes, function(node){
 					return node.authoredID === givenNode.ID;
 				}, this);
+				
 				registry.byId(this.controlMap.setStudent).set('value', checked);
 				this.handleSetStudentNode(checked);
 			
@@ -726,8 +699,15 @@ define([
 				// Initialize root node checkbox
 				registry.byId(this.controlMap.root).set('value', this._model.authored.isRoot(nodeid));
 
-				//Initialize dynamic node checkbox
-				registry.byId(this.controlMap.dynamic).set('value', this._model.authored.isAccumulator(nodeid));
+				// Initialize variableType to 'Unknown' by default / retrieve previous value
+				var _variableType = this._model.authored.getVariableType(nodeid);
+				if(!_variableType && this._model.authored.getValue(nodeid) == undefined){
+					_variableType = "unknown";
+					this._model.authored.setVariableType(nodeid, _variableType);
+					this._model.authored.setValue(nodeid,'');
+				}
+
+				dojo.query("input[type=radio][name=variableType][value="+_variableType+"]")[0].checked=true;
 
 				// populate inputs
 			
@@ -789,8 +769,16 @@ define([
 					this.applyDirectives(this.authorPM.process(this.currentID, 'units', this._model.authored.getUnits(this.currentID)));
 				}
 				//color value widget
-				if(typeof this._model.authored.getValue(this.currentID) === "number"){
-					this.applyDirectives(this.authorPM.process(this.currentID, 'value', this._model.authored.getValue(this.currentID), true));
+				
+				if(_variableType == "unknown"){
+					registry.byId(this.controlMap.value).set('value','');
+					style.set('valueInputboxContainer','display','none');
+				}else{
+					style.set('valueInputboxContainer','display','block');
+					if(typeof this._model.authored.getValue(this.currentID) === "number"){
+						this.applyDirectives(this.authorPM.process(this.currentID, 'value', this._model.authored.getValue(this.currentID), true));
+					}
+
 				}
 				
 			}
@@ -847,7 +835,7 @@ define([
 		},
 		*/
 		getModelType: function(){
-			return (registry.byId(this.controlMap.setStudent).checked ? registry.byId(this.controlMap.modelType).value : "correct");
+			return (registry.byId(this.controlMap.setStudent).checked ? registry.byId(this.controlMap.modelType).value : "authored");
 		},
 
 		addStudentNode: function(nodeid){
@@ -856,7 +844,7 @@ define([
 			var newNodeID = this._model.student.addNode();
 
 			//copy correct values into student node
-			this._model.student.setDescriptionID(newNodeID, currentNode.ID);
+			this._model.student.setAuthoredID(newNodeID, currentNode.ID);
 			this._model.student.setInitial(newNodeID, currentNode.initial);
 			this._model.student.setUnits(newNodeID, currentNode.units);
 			
@@ -914,7 +902,7 @@ define([
 						}
 					});
 					if(found){
-						this.errorStatus.push({"id": nodes[i].descriptionID, "isExpressionCleared":true});
+						this.errorStatus.push({"id": nodes[i].authoredID, "isExpressionCleared":true});
 						console.log("error status: ", this.errorStatus);
 					}
 				}
@@ -943,24 +931,22 @@ define([
 			//Summary: enable disable fields in the node editor based on selected model value
 			type = this._model.authored.getType(this.currentID);
 			if(type == "equation"){
-				if( modelType == "given"){
+				if( modelType == "student"){
 					registry.byId(this.controlMap.description).set("disabled", true);
 					registry.byId(this.controlMap.description).set("status", '');
-				}else if (modelType == "correct"){
+				}else if (modelType == "authored"){
 					registry.byId(this.controlMap.description).set("disabled", false);
 					registry.byId(this.controlMap.description).set("status", "entered");
 				}
 			}else{
-				if(modelType == "given"){
+				if(modelType == "student"){
 					registry.byId(this.controlMap.variable).set("disabled",true);
 					registry.byId(this.controlMap.description).set("disabled",true);
 					registry.byId(this.controlMap.variable).set("status",'');
 					registry.byId(this.controlMap.kind).set("disabled",true);
 					registry.byId(this.controlMap.root).set("disabled",true);
-					registry.byId(this.controlMap.dynamic).set("disabled",true);
-					registry.byId(this.controlMap.dynamic).set("checked",false);
 				}
-				else if(modelType == "correct"){
+				else if(modelType == "authored"){
 					registry.byId(this.controlMap.variable).set("disabled",false);
 					registry.byId(this.controlMap.description).set("disabled",false);
 					registry.byId(this.controlMap.variable).set("status","entered");
@@ -1013,8 +999,6 @@ define([
 					this._model.student.setStatus(studentNodeID, control, {"disabled": true,"status":"correct"});
 				}
 			}
-		},
-
-
+		}
 	});
 });
