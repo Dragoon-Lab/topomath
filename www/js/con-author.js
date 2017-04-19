@@ -180,6 +180,7 @@ define([
 
 			var variableTypeToggle = dojo.query("input[type=radio][name=variableType]");
 			variableTypeToggle.on('change', lang.hitch(this, function(){
+				console.log("handle variable type called");
 				return this.disableHandlers || this.handleVariableType(event);
 			}));
 

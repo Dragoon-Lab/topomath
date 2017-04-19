@@ -49,25 +49,6 @@ define([
 				var dynamicList = []; //this list holds the prior nodes which are to be created further in controller
 				var priorVariableList = []; // this holds the prior variables list or where prior value of a variable has to be used
 
-				
-				// Throw an error when an existing variable (node) from the equation is part of prior function 
-				// "but" that node is not set to be dynamic
-
-				array.forEach(expressions, function(expr){
-					priorVariableList = priorVariableList.concat(expr.priors());
-					console.log("prior variables are", priorVariableList);
-				}); 
-
-				if(priorVariableList.length > 0){
-					array.forEach(priorVariableList, function(prior){
-						var priorNodeId = subModel.getNodeIDByName(prior);
-						console.log("prior node id and name", priorNodeId, prior);
-						if(priorNodeId && !subModel.getAccumulator(priorNodeId)){
-							throw new Error("Please make a node dynamic before using it in prior function");
-							return;
-						}
-					});
-				}
 
 				array.forEach(expressions, function(expr){
 					variableList = variableList.concat(expr.variables());
@@ -78,12 +59,20 @@ define([
 						//In such situation convert name to id
 						console.log("current variable",variable, expr.toString());
 						var nodeId = subModel.getNodeIDByName(variable);
-						if(nodeId){
+						if(nodeId){ //if the node already exists
 							expr.substitute(variable,nodeId);
 							if(currentPriorList.length>0){
 								currentPriorList.some(function(eachPrior){
 									if(eachPrior === variable){
-										//dynamicList.push({ "id": newId, "variable":variable});
+										//If the current variable is a part of prior function,
+										// check if the corresponding node has accumulator set (is dynamic)
+										// If not, throw an error indicating the same
+										if(!subModel.getAccumulator(nodeId)){
+											throw new Error("Please make a node dynamic before using it in prior function");
+											return;
+										}
+										//if the current occurence of the node is part of prior function
+										//it has to be replaced with node_initial in the model
 										expr.substitutePrior(nodeId+"_initial");		
 									}
 								});
@@ -104,6 +93,8 @@ define([
 								if(currentPriorList.length>0){
 									currentPriorList.some(function(eachPrior){
 										if(eachPrior === variable){
+											// In this case along with new node a corresponding prior node has to be created
+											// We store the node data into dynamicList and send to controller where it further makes UI changes for prior node
 											dynamicList.push({ "id": newId, "variable":variable});
 											expr.substitutePrior(newId+"_initial");		
 										}

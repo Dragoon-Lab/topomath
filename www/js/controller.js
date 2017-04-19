@@ -1044,15 +1044,18 @@ define([
 						this.addNode(this._model.active.getNode(newNode.id));
 						this.setNodeDescription(newNode.id,newNode.variable);
 					}, this);
+					
+					//dynamicList contains those nodes for which prior node UI changes have to be made
+					//Accordingly, make the node dynamic by changing the variable type and setting the accumulator
+					//Also updateNodeView makes sure changes are reflected instantly on the UI
+					var dynamicList = parseObject.dynamicList;
+					array.forEach(dynamicList, lang.hitch(this,function(prior){
+						this._model.authored.setVariableType(prior.id,"dynamic");
+						this._model.authored.setAccumulator(prior.id, true);
+						console.log("prior id", prior.id);
+						this.updateNodeView(this._model.active.getNode(prior.id));
+					}));
 				}
-				var dynamicList = parseObject.dynamicList;
-				array.forEach(dynamicList, lang.hitch(this,function(prior){
-					this._model.authored.setVariableType(prior.id,"dynamic");
-					this._model.authored.setAccumulator(prior.id, true);
-					console.log("prior id", prior.id);
-					this.updateNode(prior.id);
-				}));
-
 				if(directives.length > 0){
 					this._model.active.setEquation(this.currentID, inputEquation);
 					this.applyDirectives(directives);
@@ -1070,7 +1073,7 @@ define([
 
 				var inputs = parseObject.connections;
 				// Update inputs and connections
-				console.log("inputs for" ,this.currentID,inputs);
+				console.log("inputs for" ,this.currentID,inputs,this._model.authored.getNodes());
 				this._model.active.setLinks(inputs, this.currentID);
 				this.setConnections(this._model.active.getLinks(this.currentID), this.currentID);
 				// console.log("************** equationAnalysis directives ", directives);
@@ -1083,8 +1086,6 @@ define([
 				array.forEach(variableList, lang.hitch(this, function(n){
 					this.nodeConnections.push(n);
 				}));
-
-
 
 			}
 		},
