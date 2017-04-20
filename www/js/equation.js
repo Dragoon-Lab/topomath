@@ -68,6 +68,12 @@ define([
 										// check if the corresponding node has accumulator set (is dynamic)
 										// If not, throw an error indicating the same
 										if(!subModel.getAccumulator(nodeId)){
+											//Also since there is an error with the current node, already created nodes part of the equation should be deleted
+											//nodeList contains the new nodes added to the model which are part of the current equation
+											array.forEach(nodeList,function(delNode){
+												subModel.deleteNode(delNode.id);
+												console.log("deleted", delNode.id, "because of error in equation parsing")
+											});
 											throw new Error("Please make a node dynamic before using it in prior function");
 											return;
 										}

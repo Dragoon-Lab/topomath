@@ -857,7 +857,8 @@ define([
 				console.log("Parser error: ", err);
 				console.log(err.message);
 				console.log(err.Error);
-				this._model.active.setEquation(this.currentID, inputEquation);
+				//error by definition says equation is unacceptable
+				//this._model.active.setEquation(this.currentID, inputEquation);
 				if(err.message.includes("unexpected variable"))
 					directives.push({id: 'message', attribute: 'append', value: 'The value entered for the equation is incorrect'});
 				else if(err.message.includes("Please make a node dynamic before")) //This case occurs when an equation used prior(node) but that quantity node is not set to be dynamic
