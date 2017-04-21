@@ -39,7 +39,7 @@ define([
 				case "quantity":
 					nodeString.value = this.getDomUIStrings(model, "variable", nodeID);
 					if(model.getVariable(nodeID))
-						if(model.isAccumulator(nodeID) && model.getValue(nodeID)){
+						if(model.isAccumulator(nodeID)){
 							nodeString.initial = this.getDomUIStrings(model, "value", nodeID);
 							createInitial = true;
 						} else {
@@ -98,8 +98,9 @@ define([
 					var initial = model.getValue(nodeID);
 					initial = typeof(initial) === "number" ? initial : "";
 					value = model.getVariable(nodeID);
-					if(model.isAccumulator(nodeID) && initial){
-						value = model.getInitialNodeDisplayString() + value + " : " + initial;
+					if(model.isAccumulator(nodeID)){
+						if(!initial) initial = "??";
+						value = model.getInitialNodeDisplayString() + " " + value + " : " + initial;
 					} else if(initial) {
 						value += " = " + initial;
 					}

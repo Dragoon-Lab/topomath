@@ -228,6 +228,9 @@ define([
 			aspect.after(controllerObject, "setConnections",
 				lang.hitch(dm, dm.updateNodeConnections), true);
 
+			aspect.after(controllerObject, "updateNodeView",
+				lang.hitch(dm, dm.updateNode), true);
+
 			aspect.after(dm, "deleteNode", function(){
 				_session.saveModel(_model.model);
 			});

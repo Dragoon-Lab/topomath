@@ -344,7 +344,8 @@ define([
 				if(_variableType == "dynamic"){
 					this._model.authored.setAccumulator(this.currentID, true);
 					// Update position to avoid overlap of node
-					this._model.authored.updatePositionXY(this.currentID);
+					if(this._model.authored.getPosition(this.currentID).length === 1)
+						this._model.authored.updatePositionXY(this.currentID);
 				}
 			}else{
 				// Find all nodes that have reference to the initial node of this node and delete links to them
@@ -358,6 +359,7 @@ define([
 				property: "variableType",
 				value: _variableType
 			});
+			this.updateNodeView(this._model.active.getNode(this.currentID));
 		},
 
 		handleSetStudentNode: function(checked){

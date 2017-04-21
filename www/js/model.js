@@ -19,7 +19,7 @@ define([
 			nodeWidth: 250,
 			nodeHeight: 100,
 			initialNodeIDString: "_initial",
-			initialNodeDisplayString: "prior ",
+			initialNodeDisplayString: "prior",
 			_updateNextXYPosition: function(){
 				var pos = {
 					x: this.x,
