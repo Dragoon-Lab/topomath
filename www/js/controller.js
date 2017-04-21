@@ -1094,6 +1094,9 @@ define([
 			obj.type = this._model.active == this._model.authored ? "solution-enter" : "solution-check";
 
 			return obj;
+		},
+		updateNodeView: function(node){
+			// stub for calling draw model update node
 		}
 	});
 });

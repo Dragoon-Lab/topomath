@@ -88,11 +88,18 @@ define([
 						/* A student equation variable can be a student node id
 					 	or given (or extra) model node name (if the node has not been
 					 	defined by the student). */
-						if(subModel.isNode(variable)){
-							var nodeName = subModel.getName(variable);
+						var initialNodeID = variable.indexOf(subModel.getInitialNodeIDString()) > -1 ? 
+											subModel.getNodeID(variable) : "";
+						if(!initialNodeID && (subModel.isNode(variable))){
+							var nodeName = " " + subModel.getName(variable) + " ";
 							// console.log("=========== substituting ", variable, " -> ", nodeName);
 							expr.substitute(variable, nodeName);
 							// console.log("            result: ", expr);
+						} else if(initialNodeID && subModel.isNode(initialNodeID)) {
+							// this is the case when there is an _initial in the node name
+							var nodeName = " " + subModel.getInitialNodeDisplayString() + "(" +
+												subModel.getVariable(initialNodeID)+ ") ";
+							expr.substitute(variable, nodeName);
 						}
 					}, this);
 				}, this);
