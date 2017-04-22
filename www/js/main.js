@@ -199,7 +199,7 @@ define([
 					nodeType: "quantity"
 				});
 				controllerObject.showNodeEditor(id);	
-				controllerObject.addNode(_model.active.getNode(id));
+				dm.addNode(_model.active.getNode(id));
 			});
 
 			//next step is to add action to add equation
@@ -231,11 +231,6 @@ define([
 
 			aspect.after(dm, "deleteNode", function(){
 				_session.saveModel(_model.model);
-			});
-
-			aspect.after(controllerObject, "updateNode",function(){
-				_session.saveModel(_model.model);
-				dm.updateNode(_model.active.getNode(controllerObject.currentID));
 			});
 
 			on(registry.byId("closeButton"), "click", function(){
