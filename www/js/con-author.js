@@ -45,41 +45,40 @@ define([
 			process: function(nodeID, nodeType, value, validInput){
 				var returnObj=[];
 				switch(nodeType){
-				
-				case "value":
-					if(validInput){
-						returnObj.push({id:"value", attribute:"status", value:"entered"});
-					}else{
-						// This never happens
-						returnObj.push({id:"value", attribute:"status", value:"incorrect"});
-					}
-					break;
+					case "value":
+						if(validInput){
+							returnObj.push({id:"value", attribute:"status", value:"entered"});
+						}else{
+							// This never happens
+							returnObj.push({id:"value", attribute:"status", value:"incorrect"});
+						}
+						break;
 
 					case "description":
-					if(!value){
-						returnObj.push({id:"description", attribute:"status", value:""});
-					}else if(nodeID && value){
-						returnObj.push({id:"description", attribute:"status", value:"incorrect"});
-						returnObj.push({id:"message", attribute:"append", value:"Description is already in use"});
-					}else{
-						returnObj.push({id:"description", attribute:"status", value:"entered"});
-					}
-					break;
+						if(!value){
+							returnObj.push({id:"description", attribute:"status", value:""});
+						}else if(nodeID && value){
+							returnObj.push({id:"description", attribute:"status", value:"incorrect"});
+							returnObj.push({id:"message", attribute:"append", value:"Description is already in use"});
+						}else{
+							returnObj.push({id:"description", attribute:"status", value:"entered"});
+						}
+						break;
 
 					case "kind":
-					var message="";
-					returnObj.push({id:"kind", attribute:"status", value:"entered"});
-					if(value == "allowed"){
-						message	 = "One may include this quantity in a solution, but they can solve the problem without it.";
-					}else if(value == "irrelevant"){
-						message	 = "This quantity is not part of a valid solution and is not mentioned in the description.";
-					}else if(value == "required"){
-						message = "Solution quantity";
-					}else{
-						message = "Please select Kind of Quantity";
-					}
-					returnObj.push({id:"message", attribute:"append", value:message});
-					break;
+						var message="";
+						returnObj.push({id:"kind", attribute:"status", value:"entered"});
+						if(value == "allowed"){
+							message	 = "One may include this quantity in a solution, but they can solve the problem without it.";
+						}else if(value == "irrelevant"){
+							message	 = "This quantity is not part of a valid solution and is not mentioned in the description.";
+						}else if(value == "required"){
+							message = "Solution quantity";
+						}else{
+							message = "Please select Kind of Quantity";
+						}
+						returnObj.push({id:"message", attribute:"append", value:message});
+						break;
 
 					case "variableName":
 						if(!nodeID && validInput){
@@ -93,29 +92,29 @@ define([
 							returnObj.push({id:"variable", attribute:"status", value:"incorrect"});
 						}
 						console.log("return obj is",returnObj);
-					break;
+						break;
 
 					case "equation":
-					if(validInput === false){
-						returnObj.push({id:"equation", attribute:"status", value:"incorrect"});
-					}
-					else if(value){
-						returnObj.push({id:"equation", attribute:"status", value:"entered"});
-					} else {
-						returnObj.push({id:"equation", attribute:"status", value:""});
-					}
-					break;
+						if(validInput === false){
+							returnObj.push({id:"equation", attribute:"status", value:"incorrect"});
+						}
+						else if(value){
+							returnObj.push({id:"equation", attribute:"status", value:"entered"});
+						} else {
+							returnObj.push({id:"equation", attribute:"status", value:""});
+						}
+						break;
 
 					case "units":
-					if(value){
-						returnObj.push({id:"units", attribute:"status", value:"entered"});
-					}else{
-						returnObj.push({id:"units", attribute:"status", value:""});
-					}
-					break;
+						if(value){
+							returnObj.push({id:"units", attribute:"status", value:"entered"});
+						}else{
+							returnObj.push({id:"units", attribute:"status", value:""});
+						}
+						break;
 
-				default:
-					throw new Error("Unknown type: "+ nodeType + ".");
+					default:
+						throw new Error("Unknown type: "+ nodeType + ".");
 				}
 				return returnObj;
 			}

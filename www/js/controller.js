@@ -106,13 +106,7 @@ define([
 			ready(this, this._initHandles);
 			this.nodeConnections = [];
 			this._logger = clientLogging.getInstance();
-			
-			array.forEach(Object.keys(this.questionMarkButtons), lang.hitch(this, function(buttonID){
-				on(dom.byId(buttonID), "click", lang.hitch(this,function(evt){
-					this.toggleTooltip(buttonID);
-				}));
-			}));
-			
+			ready(this, this._attachTooltips);			
 		},
 
 		// A stub for connecting routine to draw new node.
@@ -171,10 +165,7 @@ define([
 		hideCloseNodeEditor: function(/* originical hide method*/ doHide){
 			doHide.apply(this._nodeEditor);
 			this.closeEditor.call(this);
-			array.forEach(Object.keys(this.questionMarkButtons), function(buttonID){
-					domClass.remove(dom.byId(buttonID), "active");
-					toolTip.hide(dom.byId(buttonID));
-				});
+			this._removeTooltips.call(this);
 		},
 
 		_setUpNodeEditor: function(){
@@ -1134,6 +1125,19 @@ define([
 				if(buttonID !== id) {
 					domClass.remove(dom.byId(buttonID), "active");
 				}
+			});
+		},
+		_attachTooltips: function(){
+			array.forEach(Object.keys(this.questionMarkButtons), lang.hitch(this, function(buttonID){
+				on(dom.byId(buttonID), "click", lang.hitch(this,function(evt){
+					this.toggleTooltip(buttonID);
+				}));
+			}));
+		},
+		_removeTooltips: function(){
+			array.forEach(Object.keys(this.questionMarkButtons), function(buttonID){
+				domClass.remove(dom.byId(buttonID), "active");
+				toolTip.hide(dom.byId(buttonID));
 			});
 		}
 	});
