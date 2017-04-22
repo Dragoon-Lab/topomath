@@ -450,8 +450,8 @@ define([
 			getParent: function(/*string*/ id){
 				return this.getNode(id).parentNode;
 			},
-			getAccumulator: function(/*string*/ id){
-				return this.getNode(id).accumulator;
+			getDynamic: function(/*string*/ id){
+				return this.getNode(id).dynamic;
 			},
 			isRoot: function(/* string */ id){
 				var node = this.getNode(id);
