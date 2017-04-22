@@ -257,7 +257,7 @@ define([
 			},
 			isAccumulator: function(/* string */ id){
 				var node = this.getNode(id);
-				return node && node.accumulator;
+				return node && node.variableType == "dynamic";
 			},
 			deleteNode: function(/*string*/ id){
 				var nodes = this.getNodes();
@@ -353,7 +353,7 @@ define([
 				var newNode = lang.mixin({
 					ID: "id" + obj._ID++,
 					genus: "required",
-					accumulator: false,
+					variableType: "unknown",
 					root: false,
 					links: [],
 					attemptCount: {
@@ -494,7 +494,7 @@ define([
 				this.getNode(id).root = isRoot;
 			},
 			setAccumulator: function(/*string*/ id, /*bool*/ isAccumulator){
-				this.getNode(id).accumulator = isAccumulator;
+				console.error("This function is not used anymore. Use setVariableType instead!");
 			},
 			setColor: function(/*string*/ id, /*string*/ color){
 				this.getNode(id).color = color;
@@ -515,7 +515,7 @@ define([
 				// 2. variableType dynamic and value is valid 
 				// 3. variableType parameter and value is valid
 				
-				var valueEntered = node.type && node.type == "equation" || (node.accumulator && node.value) 
+				var valueEntered = node.type && node.type == "equation" || (node.variableType == "dynamic" && node.value) 
 				|| (node.value && node.variableType == "unknown") ||
 				(node.value && node.variableType == "parameter") ;
 				

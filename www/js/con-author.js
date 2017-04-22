@@ -338,11 +338,9 @@ define([
 			var _variableType = event.target.value;
 			registry.byId(this.controlMap.value).set('status','');
 			this._model.authored.setVariableType(this.currentID, _variableType);
-			this._model.authored.setAccumulator(this.currentID, false);
 			if( _variableType == "parameter" || _variableType == "dynamic"){
 				style.set('valueInputboxContainer','display','block');
 				if(_variableType == "dynamic"){
-					this._model.authored.setAccumulator(this.currentID, true);
 					// Update position to avoid overlap of node
 					if(this._model.authored.getPosition(this.currentID).length === 1)
 						this._model.authored.updatePositionXY(this.currentID);

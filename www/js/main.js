@@ -12,8 +12,6 @@ define([
 	'dijit/form/Button',
 	'dojo/dom-construct',
 	'dojo/_base/lang',
-	'dojo/dom-class',
-	'dijit/Tooltip',
 	'./menu',
 	'./session',
 	'./model',
@@ -23,7 +21,7 @@ define([
 	'./logging',
 	'./popup-dialog',
 	'./event-logs'
-], function(array, geometry, dom, style, aspect, ready, registry, event, ioQuery, on, Button, domConstruct, lang, domClass, toolTip,
+], function(array, geometry, dom, style, aspect, ready, registry, event, ioQuery, on, Button, domConstruct, lang,
 			menu, session, model, equation, drawModel, controlAuthor, logging, popupDialog, eventLogs){
 	
 	console.log("load main.js");
@@ -260,49 +258,11 @@ define([
 					errDialog.showDialog(title, problemComplete.errorNotes, buttons, /*optional argument*/"Don't Exit");
 				}
 			});
-
-			var questionMarkButtons = {
-					"authorDescriptionQuestionMark": "The quantity computed by the node ",
-					"inputsQuestionMark": "Select a quantity to enter into the expression above.  Much faster than typing.",
-					"valueQuestionMark": "This is a number, typically given to you in the system description.",
-					"operationsQuestionMark": "Click one of these to enter it in the expression above. <br> See the Help menu at the top of the screen for a list of other mathematical operators and functions that you can type in.",
-					"questionMarkRoot": "TODO"
-			};
-			var toggleTooltip = function(id){
-				//Hide Tooltip
-				var _position="before-centered";
-				if(! domClass.contains(dom.byId(id), "active")) {
-					if(id==="operationsQuestionMark") _position="after";
-					toolTip.show(questionMarkButtons[id], dom.byId(id), [_position]);
-				}else{
-					toolTip.hide(dom.byId(id));
-				}
-				domClass.toggle(dom.byId(id), "active");
-
-				//Reset Buttons
-				array.forEach(Object.keys(questionMarkButtons), function(buttonID){
-					if(buttonID !== id) {
-						domClass.remove(dom.byId(buttonID), "active");
-					}
-				});
-			};
-
-			//Add event handlers on questionmark buttons
-			array.forEach(Object.keys(questionMarkButtons), function(buttonID){
-				on(dom.byId(buttonID), "click", function(evt){
-					toggleTooltip(buttonID);
-				});
-			});
-
 			//TODO: uncomment this after node_editor2 is merged
 			//all the things we need to do once node is closed
 			aspect.after(registry.byId('nodeEditor'), "hide", function(){
 				_session.saveModel(_model.model);
 				dm.updateNode(_model.active.getNode(controllerObject.currentID));
-				array.forEach(Object.keys(questionMarkButtons), function(buttonID){
-					domClass.remove(dom.byId(buttonID), "active");
-					toolTip.hide(dom.byId(buttonID));
-				});
 			});
 		});
 	});

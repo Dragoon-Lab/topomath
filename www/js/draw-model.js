@@ -129,7 +129,7 @@ define([
 				if(node.type && node.type == "quantity"){
 					dom.byId(domIDTags['nodeDOM']).innerHTML = graphObjects.getDomUIStrings(this._model, "variable", node.ID);
 					// updating the corresponsing initial node
-					if(node.value && node.accumulator && dom.byId(domIDTags['initialNode'])){
+					if(node.value && node.getVariableType(node.ID) == "dynamic" && dom.byId(domIDTags['initialNode'])){
 						dom.byId(domIDTags['initialNode']).innerHTML = graphObjects.getDomUIStrings(this._model, "value", node.ID);
 					}
 				}
@@ -159,8 +159,8 @@ define([
 			//update value or update dynamic
 			var initialNode = dom.byId(domIDTags['parentInitial']);
 			if(node.type && node.type == "quantity" && (cachedNode.value != node.value ||
-				cachedNode.accumulator != node.accumulator)){
-				if(node.accumulator){
+				(cachedNode.variableType != node.variableType ))){
+				if(node.variableType == "dynamic"){
 					//if(node.value){
 						// here we need to update the initial value node as well.
 					if(initialNode){
