@@ -238,13 +238,6 @@ define([
 				console.log("uncomment code to close");
 			});
 
-			//TODO: uncomment this after node_editor2 is merged
-			//all the things we need to do once node is closed
-			aspect.after(registry.byId('nodeEditor'), "hide", function(){
-				_session.saveModel(_model.model);
-				dm.updateNode(_model.active.getNode(controllerObject.currentID));
-			});
-
 			menu.add("DoneButton", function (e) {
 				event.stop(e);
 				// This should return an object kind of structure and
@@ -264,6 +257,12 @@ define([
 					buttons.push(exitButton);
 					errDialog.showDialog(title, problemComplete.errorNotes, buttons, /*optional argument*/"Don't Exit");
 				}
+			});
+			//TODO: uncomment this after node_editor2 is merged
+			//all the things we need to do once node is closed
+			aspect.after(registry.byId('nodeEditor'), "hide", function(){
+				_session.saveModel(_model.model);
+				dm.updateNode(_model.active.getNode(controllerObject.currentID));
 			});
 		});
 	});

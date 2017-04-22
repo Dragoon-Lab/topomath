@@ -34,9 +34,11 @@ define([
 	"dojo/dom-style",
 	"dojo/dom-construct",
 	"dojo/aspect",
+	"dojo/dom-class",
+	"dijit/Tooltip",
 	"./equation",
 	"./logging"
-], function(array, declare, lang, dom, keys, on, ready, registry, domStyle, domConstruct, aspect, 
+], function(array, declare, lang, dom, keys, on, ready, registry, domStyle, domConstruct, aspect, domClass, toolTip,
 	expression, clientLogging){
 
 	/* Summary:
@@ -81,6 +83,13 @@ define([
 		// attributes that should be saved in the status section
 		validStatus: {status: true, disabled: true},
 		
+		questionMarkButtons : {
+					"authorDescriptionQuestionMark": "The quantity computed by the node ",
+					"inputsQuestionMark": "Select a quantity to enter into the expression above.  Much faster than typing.",
+					"valueQuestionMark": "This is a number, typically given to you in the system description.",
+					"operationsQuestionMark": "Click one of these to enter it in the expression above. <br> See the Help menu at the top of the screen for a list of other mathematical operators and functions that you can type in.",
+					"questionMarkRoot": "TODO"
+		},
 		constructor: function(mode, model, ui_config){
 			console.log("+++++++++ In generic controller constructor");
 			lang.mixin(this.controlMap, this.genericControlMap);
@@ -97,6 +106,7 @@ define([
 			ready(this, this._initHandles);
 			this.nodeConnections = [];
 			this._logger = clientLogging.getInstance();
+			ready(this, this._attachTooltips);			
 		},
 
 		// A stub for connecting routine to draw new node.
@@ -155,6 +165,7 @@ define([
 		hideCloseNodeEditor: function(/* originical hide method*/ doHide){
 			doHide.apply(this._nodeEditor);
 			this.closeEditor.call(this);
+			this._removeTooltips.call(this);
 		},
 
 		_setUpNodeEditor: function(){
@@ -1097,6 +1108,37 @@ define([
 		},
 		updateNodeView: function(node){
 			// stub for calling draw model update node
+		},
+		toggleTooltip: function(id){
+			//Hide Tooltip
+			var _position="before-centered";
+			if(! domClass.contains(dom.byId(id), "active")) {
+				if(id==="operationsQuestionMark") _position="after";
+				toolTip.show(this.questionMarkButtons[id], dom.byId(id), [_position]);
+			}else{
+				toolTip.hide(dom.byId(id));
+			}
+			domClass.toggle(dom.byId(id), "active");
+
+			//Reset Buttons
+			array.forEach(Object.keys(this.questionMarkButtons), function(buttonID){
+				if(buttonID !== id) {
+					domClass.remove(dom.byId(buttonID), "active");
+				}
+			});
+		},
+		_attachTooltips: function(){
+			array.forEach(Object.keys(this.questionMarkButtons), lang.hitch(this, function(buttonID){
+				on(dom.byId(buttonID), "click", lang.hitch(this,function(evt){
+					this.toggleTooltip(buttonID);
+				}));
+			}));
+		},
+		_removeTooltips: function(){
+			array.forEach(Object.keys(this.questionMarkButtons), function(buttonID){
+				domClass.remove(dom.byId(buttonID), "active");
+				toolTip.hide(dom.byId(buttonID));
+			});
 		}
 	});
 });

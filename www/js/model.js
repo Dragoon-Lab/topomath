@@ -255,9 +255,15 @@ define([
 
 				return nodes;
 			},
+			/**
+			* this function will also be removed after changing accumulator to
+			* variable type. Due to testing overhead this has been kept and will
+			* be removed in due course of time.
+			*/
 			isAccumulator: function(/* string */ id){
+				console.warning("DEPRECATED - Please use getVariableType instead");
 				var node = this.getNode(id);
-				return node && node.accumulator;
+				return node && node.variableType == "dynamic";
 			},
 			deleteNode: function(/*string*/ id){
 				var nodes = this.getNodes();
@@ -331,7 +337,7 @@ define([
 			},
 			setVariableType: function(/*string*/ id, /*string*/ variableType ){
 				var node = this.getNode(id);
-				if( node){
+				if(node){
 					node.variableType = variableType;	
 				} 
 			},
@@ -353,7 +359,7 @@ define([
 				var newNode = lang.mixin({
 					ID: "id" + obj._ID++,
 					genus: "required",
-					accumulator: false,
+					variableType: "unknown",
 					root: false,
 					links: [],
 					attemptCount: {
@@ -493,8 +499,15 @@ define([
 			setRoot: function(/*string*/ id, /*bool*/ isRoot){
 				this.getNode(id).root = isRoot;
 			},
+			/**
+			* for now this function has been updated to handle new functionality
+			* this will set a node to be an accumulator that is the variableType to dynamic
+			* with time we want to remove this function completely
+			*/
 			setAccumulator: function(/*string*/ id, /*bool*/ isAccumulator){
-				this.getNode(id).accumulator = isAccumulator;
+				console.warning("DEPRECATED - This function is not used anymore. Use setVariableType instead!");
+				this.setVariableType(id, "dynamic");
+
 			},
 			setColor: function(/*string*/ id, /*string*/ color){
 				this.getNode(id).color = color;
@@ -507,7 +520,6 @@ define([
 				// if units were not entered even then it would show node complete
 				var unitsOptional = true;
 				var returnFlag = '';
-
 				var nameEntered = node.type && node.type == "equation" || node.variable;
 				// as seen in Dragoon.
 				// variableType and value combined defines node completion
@@ -516,7 +528,7 @@ define([
 				// 2. variableType dynamic and value is valid 
 				// 3. variableType parameter and value is valid
 				
-				var valueEntered = node.type && node.type == "equation" || (node.accumulator && node.value) 
+				var valueEntered = node.type && node.type == "equation" || (node.variableType == "dynamic" && node.value) 
 				|| (node.value && node.variableType == "unknown") ||
 				(node.value && node.variableType == "parameter") ;
 				

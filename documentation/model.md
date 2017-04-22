@@ -11,7 +11,7 @@ Both models contain nodes and these nodes have node properties that were filled 
             "variable": "Rabbits",
             "description": "The number of rabbits in the population",
             "type": "quantity",
-            "accumulator": true,
+            "variableType": "dynamic",
             "units": "rabbits",
             "value": 24, 
             "root": true,
@@ -28,11 +28,32 @@ Both models contain nodes and these nodes have node properties that were filled 
             }],
             "status": {}
         },
+        {
+            "ID": "id2",
+            "variable": "Birth Probability",
+            "description": "The number of additional rabbits per year per rabbit",
+            "type": "quantity",
+            "units": "1/year",
+            "links": "",
+            "equation": "",
+            "value": 0.3,
+            "root": false,
+            "genus": "required",
+            "color": "",
+            "variableType": "parameter",
+            "attemptCount": {
+            },
+            "position": [{
+                "x": 700,
+                "y": 100
+            }],
+            "status": {}
+        },
 		{
             "ID": "id4",
             "explanation": "The number of births is the number of rabbits times the birth probability",
             "type": "equation",
-            "accumulator": false,
+            "variableType": "unknown",
             "equation": "id3 = id1 * id2",
             "links": [{"ID": "id1"},{"ID": "id2"},{"ID": "id3"}],
             "root": false,

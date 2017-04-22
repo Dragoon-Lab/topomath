@@ -69,9 +69,16 @@ html, body, #main{
 }
 
 .sameedit .fieldgroup > label {
-    text-align:right;
+    text-align:left;
     margin-left:2ex;
     margin-right:1ex;
+    width: 16ex;
+}
+
+.sameedit #variableTypeContainer.fieldgroup label:not(:first-child){
+    width: 10ex;
+    margin-left: 0.5ex;
+    margin-right: 0.5ex;
 }
 
 .sameedit .fieldgroup > * {
@@ -80,20 +87,15 @@ html, body, #main{
 
 }
 
-.sameedit .fieldgroup > span{
-    text-align: right;
-   
-}
-
 .sameedit .fieldgroup > span label{
     vertical-align:top
 
 }
-
+/*
 .sameedit .fieldgroup > label:first-child {
     width:10ex;
 }
-
+*/
 .sameedit #equationText {
     max-width:40ex;
     border:solid black 1px;
@@ -106,7 +108,8 @@ html, body, #main{
     border:solid black 1px;
     overflow-y:scroll;
     height:50px;
-    width:20em
+    width:22em;
+    margin: 2px 5px 5px 0;
 }
 
 .sameedit .textscroll p {
@@ -123,13 +126,15 @@ html, body, #main{
 .sameedit .vertical {
     display:inline-block;
     vertical-align:top;
+    margin-left: 15px;
 }
 
 /* If we use float to horizontally align, there seems to be
    no way to vertically align the buttons.  */
 .sameedit .equationUndoDoneButtonsContainer {
     margin-left: 10px;
-    padding-top:10px;
+    padding-top: 0px;
+    margin-top: -5px;
 }
 
 .sameedit .equationUndoDoneButtonsContainer .dijitButtonContents{
@@ -137,8 +142,8 @@ html, body, #main{
 }
 
 .sameedit .fieldgroup > span.fixedwidth {
-    width: 14.3ex;
-    margin-right:3px;
+    width: 16ex;
+    margin-right: 20px;
 }
 
 /* Right align buttons */
@@ -291,4 +296,13 @@ input[type=radio]{
 /*Fix for tooltips to appear below  the dialogboxes */
 .dijitTooltipDialogPopup {
     z-index: 951 !important;
+}
+
+.questionMark{
+  width: 22px;
+  height: 22px;
+  margin: -6px -3px -6px 10px;
+  display: inline-block;
+  background-image: url(../images/help-inactive.png);
+  background-size: cover;
 }
