@@ -255,7 +255,13 @@ define([
 
 				return nodes;
 			},
+			/**
+			* this function will also be removed after changing accumulator to
+			* variable type. Due to testing overhead this has been kept and will
+			* be removed in due course of time.
+			*/
 			isAccumulator: function(/* string */ id){
+				console.warning("DEPRECATED - Please use getVariableType instead");
 				var node = this.getNode(id);
 				return node && node.variableType == "dynamic";
 			},
@@ -331,7 +337,7 @@ define([
 			},
 			setVariableType: function(/*string*/ id, /*string*/ variableType ){
 				var node = this.getNode(id);
-				if( node){
+				if(node){
 					node.variableType = variableType;	
 				} 
 			},
@@ -493,8 +499,15 @@ define([
 			setRoot: function(/*string*/ id, /*bool*/ isRoot){
 				this.getNode(id).root = isRoot;
 			},
+			/**
+			* for now this function has been updated to handle new functionality
+			* this will set a node to be an accumulator that is the variableType to dynamic
+			* with time we want to remove this function completely
+			*/
 			setAccumulator: function(/*string*/ id, /*bool*/ isAccumulator){
-				console.error("This function is not used anymore. Use setVariableType instead!");
+				console.warning("DEPRECATED - This function is not used anymore. Use setVariableType instead!");
+				this.setVariableType(id, "dynamic");
+
 			},
 			setColor: function(/*string*/ id, /*string*/ color){
 				this.getNode(id).color = color;
