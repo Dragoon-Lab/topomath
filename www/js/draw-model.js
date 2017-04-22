@@ -129,7 +129,9 @@ define([
 				if(node.type && node.type == "quantity"){
 					dom.byId(domIDTags['nodeDOM']).innerHTML = graphObjects.getDomUIStrings(this._model, "variable", node.ID);
 					// updating the corresponsing initial node
+					console.log("update initial node details",node.value, node.accumulator);
 					if(node.value && node.accumulator && dom.byId(domIDTags['initialNode'])){
+						console.log("updating initial node");
 						dom.byId(domIDTags['initialNode']).innerHTML = graphObjects.getDomUIStrings(this._model, "value", node.ID);
 					}
 				}
@@ -156,6 +158,7 @@ define([
 					this.addNodeDescription(node.ID);
 				}
 			}
+
 			//update value or update dynamic
 			var initialNode = dom.byId(domIDTags['parentInitial']);
 			if(node.type && node.type == "quantity" && (cachedNode.value != node.value ||
@@ -164,6 +167,7 @@ define([
 					//if(node.value){
 						// here we need to update the initial value node as well.
 					if(initialNode){
+						console.log("update value initial node", node.ID);
 						dom.byId(domIDTags['initialNode']).innerHTML = graphObjects.getDomUIStrings(this._model, "value", node.ID);
 					} else {
 						//this part of the code creates a new node with initial value when a node is added as dynamic
@@ -281,18 +285,8 @@ define([
 
 			// now we need to check if there is color and
 			// should the node be shown with color
-			var color;
-			if(hasDescription)
-				if(node.color){
-					color = node.color;
-					if(type == "quantity")
-						this._borderColor = this._colors.indexOf(node.color) - 1;
-					else
-						this._backgroundColor = this._colors.indexOf(node.color) + 1;
-				} else {
-					color = this.getNextColor(type && type == "equation");
-				}
-
+			var color = node.color && hasDescription ? node.color :
+					this.getNextColor(type && type == "equation");
 			if(type && type == "equation"){
 				obj.backgroundColor = color;
 				obj.borderColor = "black";
@@ -445,7 +439,6 @@ define([
 			domConstruct.destroy(nodeID);
 			// delete node from the model
 			var updateNodes = this._model.deleteNode(nodeID);
-			// updateNodes are the nodes for which the equations and links were updated.
 			console.log(updateNodes);
 			this.removeDescription(nodeID);
 			array.forEach(updateNodes, function(x){
