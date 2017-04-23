@@ -865,9 +865,12 @@ define([
 				console.log("Parser error: ", err);
 				console.log(err.message);
 				console.log(err.Error);
-				this._model.active.setEquation(this.currentID, inputEquation);
+				//error by definition says equation is unacceptable
+				//this._model.active.setEquation(this.currentID, inputEquation);
 				if(err.message.includes("unexpected variable"))
 					directives.push({id: 'message', attribute: 'append', value: 'The value entered for the equation is incorrect'});
+				else if(err.message.includes("Please make a node dynamic before")) //This case occurs when an equation used prior(node) but that quantity node is not set to be dynamic
+					directives.push({id: 'message', attribute: 'append', value: 'Please make a node dynamic before using it in prior function'});
 				else
 					directives.push({id: 'message', attribute: 'append', value: 'Incorrect equation syntax.'});
 				directives.push({id: 'equation', attribute: 'status', value: 'incorrect'});
@@ -1050,6 +1053,15 @@ define([
 						this.addNode(this._model.active.getNode(newNode.id));
 						this.setNodeDescription(newNode.id,newNode.variable);
 					}, this);
+					//dynamicList contains those nodes for which prior node UI changes have to be made
+					//Accordingly, make the node dynamic by changing the variable type and setting the accumulator
+					//Also updateNodeView makes sure changes are reflected instantly on the UI
+					var dynamicList = parseObject.dynamicList;
+					array.forEach(dynamicList, lang.hitch(this,function(prior){
+						this._model.authored.setVariableType(prior.id,"dynamic");
+						console.log("prior id", prior.id);
+						this.updateNodeView(this._model.active.getNode(prior.id));
+					}));
 				}
 
 				if(directives.length > 0){

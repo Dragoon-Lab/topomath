@@ -261,7 +261,7 @@ define([
 			* be removed in due course of time.
 			*/
 			isAccumulator: function(/* string */ id){
-				console.warning("DEPRECATED - Please use getVariableType instead");
+				console.warn("DEPRECATED - Please use getVariableType instead");
 				var node = this.getNode(id);
 				return node && node.variableType == "dynamic";
 			},
@@ -505,7 +505,7 @@ define([
 			* with time we want to remove this function completely
 			*/
 			setAccumulator: function(/*string*/ id, /*bool*/ isAccumulator){
-				console.warning("DEPRECATED - This function is not used anymore. Use setVariableType instead!");
+				console.warn("DEPRECATED - This function is not used anymore. Use setVariableType instead!");
 				this.setVariableType(id, "dynamic");
 
 			},
