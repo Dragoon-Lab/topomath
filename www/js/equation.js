@@ -45,7 +45,9 @@ define([
 				var variableList = []; // this holds the variable list
 				var connections = []; // this holds the input list
 				var dynamicList = []; //this list holds the prior nodes which are to be created further in controller
-
+				var priorError = false; //this is a special variable which indicates to the controller whether there is an error
+										// with using prior function on a variable which is non dynamic
+				
 				array.forEach(expressions, function(expr){
 					variableList = variableList.concat(expr.variables());
 					var currentPriorList = expr.priors();
@@ -61,20 +63,14 @@ define([
 									if(eachPrior === variable){
 										//If the current variable is a part of prior function,
 										// check if the corresponding node has accumulator set (is dynamic)
-										// If not, throw an error indicating the same
+										// If not, set priorError which will be handled later in controller without disturbing the flow
 										if(subModel.getVariableType(nodeId) !== "dynamic"){
-											//Also since there is an error with the current node, already created nodes part of the equation should be deleted
-											//nodeList contains the new nodes added to the model which are part of the current equation
-											array.forEach(nodeList,function(delNode){
-												subModel.deleteNode(delNode.id);
-												console.log("deleted", delNode.id, "because of error in equation parsing")
-											});
-											throw new Error("Please make a node dynamic before using it in prior function");
-											return;
+											priorError = true;
 										}
 										//if the current occurence of the node is part of prior function
 										//it has to be replaced with node_initial in the model
-										expr.substitutePrior(nodeId+"_initial");		
+										//getInitialNodeIDString gives the string notation we use for initial nodes
+										expr.substitutePrior(nodeId+subModel.getInitialNodeIDString());		
 									}
 								});
 							}
@@ -85,19 +81,19 @@ define([
 								//add node id to model
 								//name and type parameters attached
 								var newNodeOptions = {
-                                    variable: variable,
-                                    type: "quantity"
-                                };
-                                var newId = subModel.addNode(newNodeOptions);
-                                nodeList.push({ "id": newId, "variable":variable});
-                                expr.substitute(variable, newId);
-                                if(currentPriorList.length>0){
+									variable: variable,
+									type: "quantity"
+								};
+								var newId = subModel.addNode(newNodeOptions);
+								nodeList.push({ "id": newId, "variable":variable});
+								expr.substitute(variable, newId);
+								if(currentPriorList.length>0){
 									currentPriorList.some(function(eachPrior){
 										if(eachPrior === variable){
 											// In this case along with new node a corresponding prior node has to be created
 											// We store the node data into dynamicList and send to controller where it further makes UI changes for prior node
 											dynamicList.push({ "id": newId, "variable":variable});
-											expr.substitutePrior(newId+"_initial");		
+											expr.substitutePrior(newId+subModel.getInitialNodeIDString());		
 										}
 									});
 								}
@@ -112,15 +108,16 @@ define([
 					connections: connections,
 					parseSuccess: true,
 					dynamicList: dynamicList,
-					equation: expressions[0].toString() + " " + this.equalto + " " + expressions[1].toString()
+					equation: expressions[0].toString() + " " + this.equalto + " " + expressions[1].toString(),
+					priorError: priorError
 				};
 			}
 			else{
 				array.forEach(expressions, function(expr){
 					array.forEach(expr.variables(), function(variable){
 						/* A student equation variable can be a student node id
-					 	or given (or extra) model node name (if the node has not been
-					 	defined by the student). */
+						or given (or extra) model node name (if the node has not been
+						defined by the student). */
 						var initialNodeID = variable.indexOf(subModel.getInitialNodeIDString()) > -1 ? 
 											subModel.getNodeID(variable) : "";
 						if(!initialNodeID && (subModel.isNode(variable))){

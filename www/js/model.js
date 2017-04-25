@@ -459,6 +459,9 @@ define([
 			getDynamic: function(/*string*/ id){
 				return this.getNode(id).dynamic;
 			},
+			getAuthorStatus: function(/*string*/ id, /*string*/ part){
+				return this.getNode(id).authorStatus? this.getNode(id).authorStatus[part] : undefined ;
+			},
 			isRoot: function(/* string */ id){
 				var node = this.getNode(id);
 				return node && node.root;
@@ -514,6 +517,14 @@ define([
 			},
 			setExpression: function(/*string*/ id, /*string*/ expression){
 				this.getNode(id).expression = expression;
+			},
+			setAuthorStatus: function(/*string*/ id, /*string*/ part, /*string*/ status){
+				// Summary: function to set the status of node editor in author mode.
+				if(!this.getNode(id).authorStatus){
+					//backward compatibility
+					this.getNode(id).authorStatus = {};
+				}
+				this.getNode(id).authorStatus[part] = status;
 			},
 			isComplete: function(/*string*/ id){
 				var node = this.getNode(id);

@@ -865,12 +865,11 @@ define([
 				console.log("Parser error: ", err);
 				console.log(err.message);
 				console.log(err.Error);
+				this.setAuthorStatus(this.currentID,'equation','incorrect');
 				//error by definition says equation is unacceptable
 				//this._model.active.setEquation(this.currentID, inputEquation);
 				if(err.message.includes("unexpected variable"))
 					directives.push({id: 'message', attribute: 'append', value: 'The value entered for the equation is incorrect'});
-				else if(err.message.includes("Please make a node dynamic before")) //This case occurs when an equation used prior(node) but that quantity node is not set to be dynamic
-					directives.push({id: 'message', attribute: 'append', value: 'Please make a node dynamic before using it in prior function'});
 				else
 					directives.push({id: 'message', attribute: 'append', value: 'Incorrect equation syntax.'});
 				directives.push({id: 'equation', attribute: 'status', value: 'incorrect'});
@@ -1059,9 +1058,20 @@ define([
 					var dynamicList = parseObject.dynamicList;
 					array.forEach(dynamicList, lang.hitch(this,function(prior){
 						this._model.authored.setVariableType(prior.id,"dynamic");
+						if(this._model.authored.getPosition(prior.id).length === 1)
+							this._model.authored.updatePositionXY(prior.id);
 						console.log("prior id", prior.id);
 						this.updateNodeView(this._model.active.getNode(prior.id));
 					}));
+				}
+
+				if(parseObject.priorError){ //priorError specifically indicates if there is an error where in a non dynamic node/variable is used inside prior function
+					directives.push({id: 'message', attribute: 'append', value: 'Please make a node dynamic before using it in prior function'});
+					directives.push({id: 'equation', attribute: 'status', value: 'incorrect'});
+					this._model.authored.setAuthorStatus(this.currentID,'equation','incorrect');
+				}
+				else{
+					this._model.authored.setAuthorStatus(this.currentID,'equation','correct');
 				}
 
 				if(directives.length > 0){

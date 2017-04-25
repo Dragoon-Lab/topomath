@@ -802,8 +802,12 @@ define([
 				//color Equation widget
 				
 				if(this._model.authored.getEquation(this.currentID)){
-					console.log("equation returns",this._model.authored.getEquation(this.currentID));
-					this.applyDirectives(this.authorPM.process(this.currentID, 'equation', this._model.authored.getEquation(this.currentID), true));
+					//console.log("equation returns",this._model.authored.getEquation(this.currentID));
+					//getAuthorStatus returns whether the equation is incorrect
+					if(this._model.authored.getAuthorStatus(this.currentID,'equation') === 'incorrect')
+						this.applyDirectives(this.authorPM.process(this.currentID, 'equation', this._model.authored.getEquation(this.currentID), false));
+					else
+						this.applyDirectives(this.authorPM.process(this.currentID, 'equation', this._model.authored.getEquation(this.currentID), true));
 				}
 			}
 			
