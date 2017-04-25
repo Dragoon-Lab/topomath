@@ -38,7 +38,7 @@ define([
 					break;
 				case "quantity":
 					nodeString.value = this.getDomUIStrings(model, "variable", nodeID);
-					if(model.getVariable(nodeID))
+					//if(model.getVariable(nodeID))
 						if(model.isAccumulator(nodeID)){
 							nodeString.initial = this.getDomUIStrings(model, "value", nodeID);
 							createInitial = true;
@@ -79,11 +79,12 @@ define([
 			switch(field){
 				case "description":
 					var description = model.getDescription(nodeID);
+					var variable = model.getType(nodeID) == "equation" || model.getVariable(nodeID);
 					var type = model.getType(nodeID);
-					if(description){
+					if(variable && description){
 						value = description;
 						if(type == "quantity")
-							value = "<b>" + model.getVariable(nodeID) + "</b>: " + model.getDescription(nodeID);
+							value = "<b>" + variable + "</b>: " + description;
 					}
 					break;
 				case "variable":
@@ -97,11 +98,13 @@ define([
 				case "value":
 					var initial = model.getValue(nodeID);
 					initial = typeof(initial) === "number" ? initial : "";
-					value = model.getVariable(nodeID);
+					var variable = model.getVariable(nodeID);
+					value = variable ? variable : this.defaultString;
 					if(model.isAccumulator(nodeID)){
 						if(!initial) initial = "??";
-						value = model.getInitialNodeDisplayString() + " " + value + " : " + initial;
-					} else if(initial) {
+						if(value != this.defaultString)
+							value = model.getInitialNodeDisplayString() + " " + value + " : " + initial;
+					} else if(initial && value != this.defaultString) {
 						value += " = " + initial;
 					}
 					break;

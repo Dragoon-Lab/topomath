@@ -293,7 +293,7 @@ define([
 						};*/
 					}
 				}
-				if(!isDeleteInitialNode)
+				if(!isDeleteInitialNode && index != -1)
 					nodes.splice(index, 1);
 
 				return updateNodes;
