@@ -865,7 +865,7 @@ define([
 				console.log("Parser error: ", err);
 				console.log(err.message);
 				console.log(err.Error);
-				this.setAuthorStatus(this.currentID,'equation','incorrect');
+				this._model.authored.setAuthorStatus(this.currentID,'equation','incorrect');
 				//error by definition says equation is unacceptable
 				//this._model.active.setEquation(this.currentID, inputEquation);
 				if(err.message.includes("unexpected variable"))
