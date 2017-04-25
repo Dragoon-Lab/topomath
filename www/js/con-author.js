@@ -413,7 +413,6 @@ define([
 			console.log("**************** in handleUnits ", units);
 
 			var modelType = this.getModelType();
-			
 			var returnObj = this.authorPM.process(this.currentID, "units", units);
 			console.log("Returned from author PM : ", returnObj)
 			this.applyDirectives(returnObj);
@@ -421,16 +420,16 @@ define([
 			var studentNodeID = this._model.student.getNodeIDFor(this.currentID);
 
 			if(modelType == "authored"){
-				this._model.active.setUnits(studentNodeID, units);
-				this.updateStatus("units", this._model.authored.getUnits(this.currentID), units);
-			}
-			else{
 				this._model.active.setUnits(this.currentID, units);
 				if(studentNodeID) this.updateStatus("units", units, this._model.student.getUnits(studentNodeID));
 			}
+			else{
+				this._model.active.setUnits(studentNodeID, units);
+				this.updateStatus("units", this._model.authored.getUnits(this.currentID), units);
+			}
 
 			//TODO : update student node status
-			var valueFor = modelType == "given" ? "student-model": "author-model";
+			var valueFor = modelType == "student" ? "student-model": "author-model";
 			this.logSolutionStep({
 				property: "units",
 				usage: valueFor
