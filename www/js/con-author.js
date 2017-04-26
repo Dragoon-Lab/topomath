@@ -1001,6 +1001,19 @@ define([
 					this._model.student.setStatus(studentNodeID, control, {"disabled": true,"status":"correct"});
 				}
 			}
+		},
+		changeControlState: function(/*String*/control, /*String*/data, /*String*/value){
+			//changes control related "state" data, updates with the received value
+			console.log("in changeControlState");
+			switch(control){
+				case "equation":
+					if(data === "authorStatus"){
+						this._model.authored.setAuthorStatus(this.currentID,"equation",value);
+					}
+					break;
+				default:
+						throw new Error("Unknown control: "+ control );
+			}				
 		}
 	});
 });
