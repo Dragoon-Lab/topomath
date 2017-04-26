@@ -865,7 +865,8 @@ define([
 				console.log("Parser error: ", err);
 				console.log(err.message);
 				console.log(err.Error);
-				this._model.authored.setAuthorStatus(this.currentID,'equation','incorrect');
+				if(this._mode === "AUTHOR")
+					this._model.active.setAuthorStatus(this.currentID,'equation','incorrect');
 				//error by definition says equation is unacceptable
 				//this._model.active.setEquation(this.currentID, inputEquation);
 				if(err.message.includes("unexpected variable"))
@@ -1068,10 +1069,12 @@ define([
 				if(parseObject.priorError){ //priorError specifically indicates if there is an error where in a non dynamic node/variable is used inside prior function
 					directives.push({id: 'message', attribute: 'append', value: 'Please make a node dynamic before using it in prior function'});
 					directives.push({id: 'equation', attribute: 'status', value: 'incorrect'});
-					this._model.authored.setAuthorStatus(this.currentID,'equation','incorrect');
+					if(this._mode === "AUTHOR")
+						this._model.active.setAuthorStatus(this.currentID,'equation','incorrect');
 				}
 				else{
-					this._model.authored.setAuthorStatus(this.currentID,'equation','correct');
+					if(this._mode === "AUTHOR")
+						this._model.active.setAuthorStatus(this.currentID,'equation','correct');
 				}
 
 				if(directives.length > 0){
