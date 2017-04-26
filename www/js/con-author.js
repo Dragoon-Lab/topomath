@@ -413,7 +413,6 @@ define([
 			console.log("**************** in handleUnits ", units);
 
 			var modelType = this.getModelType();
-			
 			var returnObj = this.authorPM.process(this.currentID, "units", units);
 			console.log("Returned from author PM : ", returnObj)
 			this.applyDirectives(returnObj);
@@ -421,16 +420,16 @@ define([
 			var studentNodeID = this._model.student.getNodeIDFor(this.currentID);
 
 			if(modelType == "authored"){
-				this._model.active.setUnits(studentNodeID, units);
-				this.updateStatus("units", this._model.authored.getUnits(this.currentID), units);
-			}
-			else{
 				this._model.active.setUnits(this.currentID, units);
 				if(studentNodeID) this.updateStatus("units", units, this._model.student.getUnits(studentNodeID));
 			}
+			else{
+				this._model.active.setUnits(studentNodeID, units);
+				this.updateStatus("units", this._model.authored.getUnits(this.currentID), units);
+			}
 
 			//TODO : update student node status
-			var valueFor = modelType == "given" ? "student-model": "author-model";
+			var valueFor = modelType == "student" ? "student-model": "author-model";
 			this.logSolutionStep({
 				property: "units",
 				usage: valueFor
@@ -802,8 +801,12 @@ define([
 				//color Equation widget
 				
 				if(this._model.authored.getEquation(this.currentID)){
-					console.log("equation returns",this._model.authored.getEquation(this.currentID));
-					this.applyDirectives(this.authorPM.process(this.currentID, 'equation', this._model.authored.getEquation(this.currentID), true));
+					//console.log("equation returns",this._model.authored.getEquation(this.currentID));
+					//getAuthorStatus returns whether the equation is incorrect
+					if(this._model.authored.getAuthorStatus(this.currentID,'equation') === 'incorrect')
+						this.applyDirectives(this.authorPM.process(this.currentID, 'equation', this._model.authored.getEquation(this.currentID), false));
+					else
+						this.applyDirectives(this.authorPM.process(this.currentID, 'equation', this._model.authored.getEquation(this.currentID), true));
 				}
 			}
 			
@@ -998,6 +1001,19 @@ define([
 					this._model.student.setStatus(studentNodeID, control, {"disabled": true,"status":"correct"});
 				}
 			}
+		},
+		changeControlState: function(/*String*/control, /*String*/data, /*String*/value){
+			//changes control related "state" data, updates with the received value
+			console.log("in changeControlState");
+			switch(control){
+				case "equation":
+					if(data === "authorStatus"){
+						this._model.authored.setAuthorStatus(this.currentID,"equation",value);
+					}
+					break;
+				default:
+						throw new Error("Unknown control: "+ control );
+			}				
 		}
 	});
 });

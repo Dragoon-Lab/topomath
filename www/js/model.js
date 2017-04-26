@@ -261,7 +261,7 @@ define([
 			* be removed in due course of time.
 			*/
 			isAccumulator: function(/* string */ id){
-				console.warning("DEPRECATED - Please use getVariableType instead");
+				console.warn("DEPRECATED - Please use getVariableType instead");
 				var node = this.getNode(id);
 				return node && node.variableType == "dynamic";
 			},
@@ -293,7 +293,7 @@ define([
 						};*/
 					}
 				}
-				if(!isDeleteInitialNode)
+				if(!isDeleteInitialNode && index != -1)
 					nodes.splice(index, 1);
 
 				return updateNodes;
@@ -459,6 +459,9 @@ define([
 			getDynamic: function(/*string*/ id){
 				return this.getNode(id).dynamic;
 			},
+			getAuthorStatus: function(/*string*/ id, /*string*/ part){
+				return this.getNode(id).authorStatus? this.getNode(id).authorStatus[part] : undefined ;
+			},
 			isRoot: function(/* string */ id){
 				var node = this.getNode(id);
 				return node && node.root;
@@ -505,7 +508,7 @@ define([
 			* with time we want to remove this function completely
 			*/
 			setAccumulator: function(/*string*/ id, /*bool*/ isAccumulator){
-				console.warning("DEPRECATED - This function is not used anymore. Use setVariableType instead!");
+				console.warn("DEPRECATED - This function is not used anymore. Use setVariableType instead!");
 				this.setVariableType(id, "dynamic");
 
 			},
@@ -514,6 +517,14 @@ define([
 			},
 			setExpression: function(/*string*/ id, /*string*/ expression){
 				this.getNode(id).expression = expression;
+			},
+			setAuthorStatus: function(/*string*/ id, /*string*/ part, /*string*/ status){
+				// Summary: function to set the status of node editor in author mode.
+				if(!this.getNode(id).authorStatus){
+					//backward compatibility
+					this.getNode(id).authorStatus = {};
+				}
+				this.getNode(id).authorStatus[part] = status;
 			},
 			isComplete: function(/*string*/ id){
 				var node = this.getNode(id);

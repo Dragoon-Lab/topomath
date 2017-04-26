@@ -865,7 +865,9 @@ define([
 				console.log("Parser error: ", err);
 				console.log(err.message);
 				console.log(err.Error);
-				this._model.active.setEquation(this.currentID, inputEquation);
+				this.changeControlState("equation","authorStatus","incorrect");
+				//error by definition says equation is unacceptable
+				//this._model.active.setEquation(this.currentID, inputEquation);
 				if(err.message.includes("unexpected variable"))
 					directives.push({id: 'message', attribute: 'append', value: 'The value entered for the equation is incorrect'});
 				else
@@ -1050,6 +1052,26 @@ define([
 						this.addNode(this._model.active.getNode(newNode.id));
 						this.setNodeDescription(newNode.id,newNode.variable);
 					}, this);
+					//dynamicList contains those nodes for which prior node UI changes have to be made
+					//Accordingly, make the node dynamic by changing the variable type and setting the accumulator
+					//Also updateNodeView makes sure changes are reflected instantly on the UI
+					var dynamicList = parseObject.dynamicList;
+					array.forEach(dynamicList, lang.hitch(this,function(prior){
+						this._model.authored.setVariableType(prior.id,"dynamic");
+						if(this._model.authored.getPosition(prior.id).length === 1)
+							this._model.authored.updatePositionXY(prior.id);
+						console.log("prior id", prior.id);
+						this.updateNodeView(this._model.active.getNode(prior.id));
+					}));
+				}
+
+				if(parseObject.priorError){ //priorError specifically indicates if there is an error where in a non dynamic node/variable is used inside prior function
+					directives.push({id: 'message', attribute: 'append', value: 'Please make a node dynamic before using it in prior function'});
+					directives.push({id: 'equation', attribute: 'status', value: 'incorrect'});
+					this.changeControlState("equation","authorStatus","incorrect");
+				}
+				else{
+					this.changeControlState("equation","authorStatus","correct");
 				}
 
 				if(directives.length > 0){
@@ -1139,6 +1161,12 @@ define([
 				domClass.remove(dom.byId(buttonID), "active");
 				toolTip.hide(dom.byId(buttonID));
 			});
+		},
+		/** function: changeControlState
+		* this function udpates a control related data (like status, etc) for a specific control(like equation, description)
+		*/
+		changeControlState: function(control, data, value){
+			//this stub is defined individually mode specifically
 		}
 	});
 });

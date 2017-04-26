@@ -21,7 +21,7 @@ define([
 			"#ffd700", "#4b0082", "#800000", "#000080", "#808000", "#ffa500",
 			"#c0c0c0", "#ffc0cb", "#ff0000", "#800080", "#ffff00", "#00008b",
 			"#008b8b", "#f0ffff", "#006400", "#bdb76b", "#8b008b", "#556b2f",
-			"#ff8c00", "#9932cc", "#8b0000", "#e9967a", "#9400d3", "#ff00ff"
+			"#ff8c00", "#8b0000", "#e9967a", "#9400d3", "#ff00ff"
 		],
 		_incompleteColor: "#d3d3d3",
 		_borderColor: 39,
@@ -124,12 +124,13 @@ define([
 			}
 
 			var cachedNode = this._cache[node.ID];
+			var initialNode = dom.byId(domIDTags['parentInitial']);
 			// update variable name
 			if(cachedNode.variable != node.variable){
 				if(node.type && node.type == "quantity"){
 					dom.byId(domIDTags['nodeDOM']).innerHTML = graphObjects.getDomUIStrings(this._model, "variable", node.ID);
 					// updating the corresponsing initial node
-					if(node.value && node.getVariableType(node.ID) == "dynamic" && dom.byId(domIDTags['initialNode'])){
+					if(node.value && node.variableType == "dynamic" && dom.byId(domIDTags['initialNode'])){
 						dom.byId(domIDTags['initialNode']).innerHTML = graphObjects.getDomUIStrings(this._model, "value", node.ID);
 					}
 				}
@@ -153,11 +154,14 @@ define([
 					var ui = this.getNodeUIProperties(node);
 					domStyle.set(domIDTags['parentDOM'], "backgroundColor", ui.backgroundColor);
 					domStyle.set(domIDTags['parentDOM'], "borderColor", ui.borderColor);
+					if(initialNode){
+						domStyle.set(domIDTags['parentInitial'], "backgroundColor", ui.backgroundColor);
+						domStyle.set(domIDTags['parentInitial'], "borderColor", ui.borderColor);
+					}
 					this.addNodeDescription(node.ID);
 				}
 			}
 			//update value or update dynamic
-			var initialNode = dom.byId(domIDTags['parentInitial']);
 			if(node.type && node.type == "quantity" && (cachedNode.value != node.value ||
 				(cachedNode.variableType != node.variableType ))){
 				if(node.variableType == "dynamic"){
@@ -436,8 +440,7 @@ define([
 				ID = this._model.getID(nodeID);
 			}
 			var type = this._model.getType(ID);
-			if(!isDeleteInitialNode && type == "quantity" && this._model.isAccumulator(ID)
-				&& this._model.getValue(ID)){
+			if(!isDeleteInitialNode && dom.byId(ID+initialNodeIDString)){
 				ID += initialNodeIDString;
 				this.detachConnections(ID);
 				domConstruct.destroy(ID);
