@@ -238,6 +238,11 @@ define([
 				console.log("uncomment code to close");
 			});
 
+			on(registry.byId("deleteButton"), "click", function(){
+				registry.byId("nodeEditor").hide();
+				dm.deleteNode(controllerObject.currentID);
+			});
+
 			menu.add("DoneButton", function (e) {
 				event.stop(e);
 				// This should return an object kind of structure and
