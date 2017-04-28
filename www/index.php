@@ -217,12 +217,12 @@
 
 			<div id="variableTypeContainer" class="fieldgroup" style="display: none;">
 				<label> Variable Type</label>
-				<input type="radio" data-dojo-type="dijit/form/RadioButton" name="variableType" id="unknownType" value="unknown"/> 
-				<label for="unknownType">Unknown</label> 
-    			<input type="radio" data-dojo-type="dijit/form/RadioButton" name="variableType" id="parameterType" value="parameter"/> 
-    			<label for="parameterType">Parameter</label> 
-    			<input type="radio" data-dojo-type="dijit/form/RadioButton" name="variableType" id="dynamicType" value="dynamic"/> 
-    			<label for="dynamicType">Dynamic</label> 
+				<input data-dojo-type="dijit/form/RadioButton" name="variableType" class="handleVariable" id="unknownType" value="unknown"/>
+				<label for="unknownType">Unknown</label>
+				<input data-dojo-type="dijit/form/RadioButton" name="variableType" class="handleVariable" id="parameterType" value="parameter"/>
+				<label for="parameterType">Parameter</label>
+				<input data-dojo-type="dijit/form/RadioButton" name="variableType" class="handleVariable" id="dynamicType" value="dynamic"/>
+				<label for="dynamicType">Dynamic</label>
 			</div>
 
 			<div class="fieldgroup" id="valueUnitsContainer" style="display: none;">

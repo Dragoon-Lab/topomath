@@ -24,11 +24,12 @@ define([
 	'dojo/dom',
 	'dojo/dom-class',
 	'dijit/registry',
+	'dojo/NodeList-dom',
 	'./controller',
 	"./equation",
 	"./typechecker",
 	"dojo/domReady!",
-], function(array, declare, lang, style, keys, ready, on, memory, aspect, dom, domClass, registry, controller, equation, typechecker){
+], function(array, declare, lang, style, keys, ready, on, memory, aspect, dom, domClass, registry, domList, controller, equation, typechecker){
 
 	// Summary:
 	//			MVC for the node editor, for authors
@@ -178,10 +179,13 @@ define([
 				return this.disableHandlers || this.handleRoot(checked);
 			}));
 
-			var variableTypeToggle = dojo.query("input[type=radio][name=variableType]");
-			variableTypeToggle.on('change', lang.hitch(this, function(){
-				return this.disableHandlers || this.handleVariableType(event);
-			}));
+			debugger;
+			var variableTypeToggle = dojo.query(".handleVariable");
+			variableTypeToggle.forEach(function(toggleNode){
+				registry.byNode(toggleNode).on('click', lang.hitch(this, function(event){
+					return this.disableHandlers || this.handleVariableType(event);
+				}));
+			}, this);
 
 			var setStudentNode = registry.byId(this.controlMap.setStudent);
 			setStudentNode.on('Change', lang.hitch(this, function(checked){
@@ -335,6 +339,9 @@ define([
 			// Value is handled when variableType is parameter or dynamic.
 			console.log("********************* in handleVariableType");
 			var _variableType = event.target.value;
+			if(_variableType === this._model.authored.getVariableType(this.currentID)){
+				return;
+			}
 			registry.byId(this.controlMap.value).set('status','');
 			this._model.authored.setVariableType(this.currentID, _variableType);
 			if( _variableType == "parameter" || _variableType == "dynamic"){
