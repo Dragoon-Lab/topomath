@@ -179,7 +179,6 @@ define([
 				return this.disableHandlers || this.handleRoot(checked);
 			}));
 
-			debugger;
 			var variableTypeToggle = dojo.query(".handleVariable");
 			variableTypeToggle.forEach(function(toggleNode){
 				registry.byNode(toggleNode).on('click', lang.hitch(this, function(event){
