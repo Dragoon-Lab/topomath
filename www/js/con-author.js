@@ -341,20 +341,24 @@ define([
 			if(_variableType === this._model.authored.getVariableType(this.currentID)){
 				return;
 			}
+			this.variableTypeControls(this.currentID, _variableType);
+		},
+
+		variableTypeControls: function(id, _variableType){
 			registry.byId(this.controlMap.value).set('status','');
-			this._model.authored.setVariableType(this.currentID, _variableType);
+			this._model.authored.setVariableType(id, _variableType);
 			if( _variableType == "parameter" || _variableType == "dynamic"){
 				style.set('valueInputboxContainer','display','block');
 				if(_variableType == "dynamic"){
 					// Update position to avoid overlap of node
-					if(this._model.authored.getPosition(this.currentID).length === 1)
-						this._model.authored.updatePositionXY(this.currentID);
+					if(this._model.authored.getPosition(id).length === 1)
+						this._model.authored.updatePositionXY(id);
 				}
 			}else{
 				// Find all nodes that have reference to the initial node of this node and delete links to them
-				this._model.authored.updateLinks(this.currentID);
+				this._model.authored.updateLinks(id);
 				registry.byId(this.controlMap.value).set('value','');
-				this._model.active.setValue(this.currentID, '');
+				this._model.active.setValue(id, '');
 				style.set('valueInputboxContainer','display','none');
 				this.handleValue(null);
 			}
@@ -362,7 +366,7 @@ define([
 				property: "variableType",
 				value: _variableType
 			});
-			this.updateNodeView(this._model.active.getNode(this.currentID));
+			this.updateNodeView(this._model.active.getNode(id));
 		},
 
 		handleSetStudentNode: function(checked){

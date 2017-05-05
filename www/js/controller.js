@@ -1057,11 +1057,7 @@ define([
 					//Also updateNodeView makes sure changes are reflected instantly on the UI
 					var dynamicList = parseObject.dynamicList;
 					array.forEach(dynamicList, lang.hitch(this,function(prior){
-						this._model.authored.setVariableType(prior.id,"dynamic");
-						if(this._model.authored.getPosition(prior.id).length === 1)
-							this._model.authored.updatePositionXY(prior.id);
-						console.log("prior id", prior.id);
-						this.updateNodeView(this._model.active.getNode(prior.id));
+						this.variableTypeControls(prior.id, "dynamic");
 					}));
 				}
 
