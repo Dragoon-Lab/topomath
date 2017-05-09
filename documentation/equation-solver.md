@@ -41,7 +41,8 @@ does the whole algorithm takes.
 
 There are a particular smaller modules needed to be calculated and tested separately. They are:
 
-* Jacobian Matrix calculation - calculate the first order derivative of the function using
+* Jacobian Matrix calculation - calculate the first order derivative of the function using:
+	
 	![equation](images/derivative.png).
 * Inverse of the Jacobian Matrix calculation - This will be calculated using Gauss Jordan elimination
 method which is a known method for calculating inverse of the matrix.
