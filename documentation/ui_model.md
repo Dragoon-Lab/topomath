@@ -9,7 +9,7 @@ the descriptions are below the model, where as it was later decided to move the 
 to the left side of the screen. Implementing these requirements were divided into three
 major parts, which are described below.
 
-![Model UI](Capture.PNG)
+![Model UI](images/Capture.PNG)
 ### Implementation details ###
 
 The major modules are:
