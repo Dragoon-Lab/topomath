@@ -11,7 +11,7 @@ define([
 	"dijit/registry",
 	"dojo/html",
 	"dojo/aspect",
-	"dijit/form/Button",
+	"dijit/form/Button"
 ], function(array, declare, lang, on, dom, domConstruct,  query, registry, html, aspect, Button) {
 	/* Summary:
 	 * Returns methods for displaying, resetting Dialog

@@ -35,7 +35,7 @@ define([
 						x: this.x,
 						y: this.y,
 						nodeWidth: this.nodeWidth,
-						nodeHeight: this.nodeHeight,
+						nodeHeight: this.nodeHeight
 					};
 				}
 			},
@@ -55,7 +55,7 @@ define([
 					var x = position.x;
 					var y = position.y;
 					return (this.x > x - this.nodeWidth && this.x < x + this.nodeWidth &&
-						this.y > y - this.nodeHeight && this.y < y + this.nodeHeight)
+						this.y > y - this.nodeHeight && this.y < y + this.nodeHeight);
 				}, this);
 			},
 			loadModel: function(_model){
@@ -148,7 +148,7 @@ define([
 					}
 				}, this);
 				return unitList;
-			},
+			}
 
 		};
 
@@ -373,7 +373,7 @@ define([
 					position: [{
 						x: obj.x,
 						y: obj.y
-					}],
+					}]
 				}, options || {});
 				obj.model.authorModelNodes.push(newNode);
 				console.log("node added", newNode.ID, newNode.type);
@@ -556,7 +556,7 @@ define([
 					return true;
 				else
 					return false;
-			},
+			}
 		}, both);
 
 		obj.student = lang.mixin({
@@ -661,7 +661,7 @@ define([
 			},
 			setValue: function(/*string*/ id, /*float*/ value){
 				this.getNode(id).value = value;
-			},
+			}
 		}, both);
 
 		obj.constructor.apply(obj, arguments);

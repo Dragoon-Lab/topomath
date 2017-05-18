@@ -28,7 +28,7 @@ define([
 	'./controller',
 	"./equation",
 	"./typechecker",
-	"dojo/domReady!",
+	"dojo/domReady!"
 ], function(array, declare, lang, style, keys, ready, on, memory, aspect, dom, domClass, registry, domList, controller, equation, typechecker){
 
 	// Summary:
@@ -70,9 +70,9 @@ define([
 						var message="";
 						returnObj.push({id:"kind", attribute:"status", value:"entered"});
 						if(value == "allowed"){
-							message	 = "One may include this quantity in a solution, but they can solve the problem without it.";
+							message = "One may include this quantity in a solution, but they can solve the problem without it.";
 						}else if(value == "irrelevant"){
-							message	 = "This quantity is not part of a valid solution and is not mentioned in the description.";
+							message = "This quantity is not part of a valid solution and is not mentioned in the description.";
 						}else if(value == "required"){
 							message = "Solution quantity";
 						}else{
@@ -145,7 +145,7 @@ define([
 			units: "unitsSelector",
 			root: "rootNodeToggleCheckbox",
 			setStudent: "givenToStudentCheckbox",
-			modelType: "modelSelector",
+			modelType: "modelSelector"
 		},
 		authorControls: function(){
 			console.log("++++++++ Setting AUTHOR format in Node Editor.");
@@ -160,7 +160,6 @@ define([
 			style.set('inputSelectorContainer', 'display', 'block');
 
 		},
-		
 		initAuthorHandles: function(){
 
 			var variable_name = registry.byId(this.controlMap.variable);
@@ -204,17 +203,17 @@ define([
 			this.handleErrorMessage(); //binds a function to Display Error message if expression is cleared.
 		},
 		/*
-		 Handler for type selector
+		Handler for type selector
 		 */
 		handleVariableName: function(name){
 			console.log("**************** in handle Variable Name ", name);
-			/* check if node with name already exists and
-			 if name is parsed as valid variable
+			/*	check if node with name already exists and
+				if name is parsed as valid variable
 			 */
 			var nameID = this._model.authored.getNodeIDByName(name);
 			// If nameID is falsy give "null"; if it doesn't match, give "false"
 			console.log("nameID, currentID",nameID,this.currentID,equation.isVariable(name));
-			this.applyDirectives(this.authorPM.process(nameID?!(nameID==this.currentID):null,'variableName',name, equation.isVariable(name)));
+			this.applyDirectives(this.authorPM.process(nameID? !(nameID==this.currentID):null,'variableName',name, equation.isVariable(name)));
 			
 			//var logObj = {};
 			if(!this._model.authored.getNodeIDByName(name) && equation.isVariable(name)){
@@ -248,7 +247,6 @@ define([
 			}
 			this.enableDisableSetStudentNode();
 			
-			
 			logObj = lang.mixin({
 				property: "variable",
 				value: name
@@ -260,7 +258,6 @@ define([
 			console.log("**************** in handle Explanation Name ", name);
 
 		},
-
 		updateInputNode: function(/** auto node id **/ id, /**variable name**/ variable){
 			console.log("updating nodes in author controller");
 			//update the name for nodeid
@@ -270,8 +267,7 @@ define([
 			//this._model.active.setName(id, variable);
 			// update Node labels upon exit
 			//this.updateNodeLabel(id);
-		 },
-
+		},
 		handleKind: function(kind){
 			console.log("**************** in handleKind ", kind);
 			if(kind == "defaultSelect" || kind == ''){
@@ -291,7 +287,6 @@ define([
 				value: kind
 			});
 		},
-
 		handleDescription: function(description){
 			// Summary: Checks to see if the given quantity node description exists; if the
 			//		description doesn't exist, it sets the description of the current node.
@@ -316,7 +311,7 @@ define([
 				};
 			}
 			logObj = lang.mixin({
-				property: "description",
+				property: "description"
 			}, logObj);
 			this.logSolutionStep(logObj);
 			this.enableDisableSetStudentNode();
@@ -398,7 +393,7 @@ define([
 				var equation = registry.byId("equationInputbox");
 				style.set('givenEquationInputbox', 'display', 'block'); //show GivenEquationBox
 				style.set('equationInputbox', 'display', 'none');	   //hide EquationBox
-				this.controlMap.equation = "givenEquationInputbox"
+				this.controlMap.equation = "givenEquationInputbox";
 				if(equation.value && !this.equationEntered){
 					//Crisis alert popup if equation not checked
 					this.applyDirectives([{
@@ -420,7 +415,7 @@ define([
 
 			var modelType = this.getModelType();
 			var returnObj = this.authorPM.process(this.currentID, "units", units);
-			console.log("Returned from author PM : ", returnObj)
+			console.log("Returned from author PM : ", returnObj);
 			this.applyDirectives(returnObj);
 
 			var studentNodeID = this._model.student.getNodeIDFor(this.currentID);
@@ -523,9 +518,9 @@ define([
 
 		equationDoneHandler: function(){
 			var model = registry.byId("modelSelector").value;
+			var logObj = {};
 			if(model && model == "authored"){
 				var directives = [];
-				var logObj = {};
 				//if parse is successful, equation analysis returns an object with parameters for creating expression nodes further
 				var returnObj = this.equationAnalysis(directives, true);
 				if(returnObj){
@@ -534,7 +529,7 @@ define([
 					logObj = {
 						error: true,
 						message: "parse error"
-					}
+					};
 				}
 				console.log("directives are", directives);
 				this.applyDirectives(directives);

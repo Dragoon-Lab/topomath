@@ -64,7 +64,7 @@ define([
 		lastValue: {value: null},
 
 		genericControlMap: {
-			value: "valueInputbox",
+			value: "valueInputbox"
 		},
 		genericDivMap: {
 			value: "valueInputboxContainer",
@@ -206,7 +206,7 @@ define([
 							}
 						} // if the mode is author and user has selected to enter student values (" given ")
 						else if(myThis._mode == "AUTHOR" && registry.byId("modelSelector").value == "given"){
-							var equation = registry.byId("givenEquationInputbox");
+							equation = registry.byId("givenEquationInputbox");
 							
 							//equation value in this case if from givenEquationInputbox and check if the value is entered/checked
 							//if not throw a crisis alert message
@@ -573,7 +573,7 @@ define([
 						
 						if( _equation && _equation.search(_variable) > -1){
 							return true;
-						};
+						}
 					});
 					var obj = {};
 					obj[_variable] = tmp;
@@ -608,7 +608,7 @@ define([
 			if(_errorNotes && _errorNotes.length > 0){
 				array.forEach(_errorNotes, function(_error){
 					returnObj.errorNotes += "<li>" + _error + "</li>";
-				})
+				});
 			}
 			
 			console.log("returning ", returnObj);
@@ -859,7 +859,7 @@ define([
 					autoCreateNodes: true, // where do we get this input from 
 					nameToId: true,
 					subModel: this._model.active
-				}
+				};
 				returnObj = expression.convert(equationParams);
 			}catch(err){
 				console.log("Parser error: ", err);
@@ -1099,7 +1099,6 @@ define([
 					this.updateInputNode(node.id, node.variable);
 				}));
 
-				var variableList = parseObject.variableList;
 				array.forEach(variableList, lang.hitch(this, function(n){
 					this.nodeConnections.push(n);
 				}));
