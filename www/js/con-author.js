@@ -667,7 +667,7 @@ define([
 				}
 			}, this);
 			// Sort inputs in AUTHOR mode as alphabetic order
-			//this should go into equation editor into inputs and also quantity editor to variable list
+			//this should go into equation editor into inputs (discontinued use in quantity editor in variable field)
 			
 			inputs.sort(function(obj1, obj2){
 				return obj1.name > obj2.name;
@@ -718,14 +718,12 @@ define([
 					units.push({name: unit, id: unit});
 				}, this);
 
-				var m = new memory({data: descriptions});
-				descriptionWidget.set("store", m);
+				// memory wrapper for data provides full read and write capabilities
+				// In future if necessary we can store them in variables and exploit the capabilities (var a = new memory({data: descriptions}))
 
-				m = new memory({data: units});
-				unitsWidget.set("store", m);
+				descriptionWidget.set("store", new memory({data: descriptions}));
 
-				m = new memory({data: inputs});
-				varWidget.set("store", m);
+				unitsWidget.set("store", new memory({data: units}));
 
 				//node is not created for the first time. apply colors to widgets
 				//color name widget
