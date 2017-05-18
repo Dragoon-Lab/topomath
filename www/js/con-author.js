@@ -341,28 +341,7 @@ define([
 			if(_variableType === this._model.authored.getVariableType(this.currentID)){
 				return;
 			}
-			registry.byId(this.controlMap.value).set('status','');
-			this._model.authored.setVariableType(this.currentID, _variableType);
-			if( _variableType == "parameter" || _variableType == "dynamic"){
-				style.set('valueInputboxContainer','display','block');
-				if(_variableType == "dynamic"){
-					// Update position to avoid overlap of node
-					if(this._model.authored.getPosition(this.currentID).length === 1)
-						this._model.authored.updatePositionXY(this.currentID);
-				}
-			}else{
-				// Find all nodes that have reference to the initial node of this node and delete links to them
-				this._model.authored.updateLinks(this.currentID);
-				registry.byId(this.controlMap.value).set('value','');
-				this._model.active.setValue(this.currentID, '');
-				style.set('valueInputboxContainer','display','none');
-				this.handleValue(null);
-			}
-			this.logSolutionStep({
-				property: "variableType",
-				value: _variableType
-			});
-			this.updateNodeView(this._model.active.getNode(this.currentID));
+			this.variableTypeControls(this.currentID, _variableType);
 		},
 
 		handleSetStudentNode: function(checked){
