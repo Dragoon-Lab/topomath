@@ -1,0 +1,179 @@
+define([], function(){
+	/**
+	* adds the matrices
+	* @params -	a - matrix 1
+	* 			b - matrix 2
+	* @return -	c - answer - a + b
+	**/
+	function addition(/* Matrix */ a, /* Matrix */ b){
+		var isValid = _validateMatrices(a, b);
+		if(!isValid.add)
+			throw new Error("Matrices can not be added as dimensions do not match");
+
+		var c = new Matrix(a.rows, a.cols);
+		for(var i = 0; i < a.rows; i++)
+			for(var j = 0; j < a.cols; j++)
+				c[i][j] = a[i][j] + b[i][j];
+
+		return c;
+	}
+
+	/**
+	* subtracts the matrices
+	* @params -	a - matrix 1
+	* 			b - matrix 2
+	* @return -	c - answer - a - b
+	**/
+	function subtract(/* Matrix */ a, /* Matrix */ b){
+		var isValid = _validateMatrices(a, b);
+		if(!isValid.add)
+			throw new Error("Matrices can not be subtracted as dimensions do not match");
+
+		var c = new Matrix(a.rows, a.cols);
+		for(var i = 0; i < a.rows; i++)
+			for(var j = 0; j < a.cols; j++)
+				c[i][j] = a[i][j] - b[i][j];
+
+		return c;
+	}
+
+	/**
+	* multiplies the matrices
+	* requires that number of columns of a are equal to number of rows b
+	* @params -	a - matrix 1
+	* 			b - matrix 2
+	* @return -	c - answer - a * b
+	**/
+	function multiply(/* Matrix */ a, /* Matrix */ b){
+		var isValid = _validateMatrices(a, b);
+		if(!isValid.mul)
+			throw new Error("Matrices can not be multiplied as dimensions do not match");
+
+		var c = new Matrix(a.rows, a.cols, 0);
+		for(var i = 0; i < a.rows; i++)
+			for(var j = 0; j < b.cols; j++)
+				for(var k = 0; k < a.cols; k++)
+					c[i][j] += a[i][k]*b[k][j];
+
+		// TODO: update the multiplication algorithm from Intro to algorithms
+		// which is less than O(n^3)
+		return c;
+	}
+
+	/**
+	* Creates the matrix object. Has three basic constructors based on the
+	* parameters sent.
+	* The parameters are defined on each function in the object
+	* @return -	rows - number of rows in the matrix
+	*			cols - number of columns in the matrix
+	*			data - the values in the matrix
+	**/
+	function Matrix(arguments){
+		this.rows = Number.MIN_VALUE;
+		this.cols = Number.MIN_VALUE;
+		this.data = [];
+
+		/**
+		* constructor with one parameter
+		* @params -	data - the numbers stored in a matrix
+		**/
+		var _matrixOneArgument = function(/* 2D array*/ data){
+			if(!data)
+				throw new Error("No data provided to create the matrix");
+			this.rows = data.length;
+
+			// although this essentially means the same check as above
+			// keeping it so that we can be rest assured
+			// that data is not empty
+			if(this.rows == 0)
+				throw new Error("No data provided to create the matrix");
+
+			this.cols = data[0].length;
+			for(var i = 0; i < this.rows; i++)
+				if(data[i].length !== this.cols)
+					throw new Error("Matrix has varying number of columns");
+
+			this.data = data;
+		}
+
+		/**
+		* constructor with two parameters. values of the matrix are initialized to
+		* the value given by the user or Number.MIN_VALUE.
+		* Reason to initialize these values is to ensure that the size of the matrix
+		* is fixed.
+		* @params -	rows - number of rows
+		*			cols - number of columns
+		**/
+		var _matrixThreeArgument = function(/* integer */ rows, /* integer */ cols, /* number*/ initialization){
+			var initialValue = initialization || Number.MIN_VALUE;
+			this.rows = rows;
+			this.cols = cols;
+			for(var i = 0; i < rows; i++){
+				this.data[i] = [];
+				for(var j = 0; j < cols; j++){
+					this.data[i][j] = initialValue;
+				}
+			}
+		}
+
+		/**
+		* switch case to handle the constructors as per the parameters sent to create the class.
+		**/
+		switch(arguments.length){
+			case 1:
+				_matrixOneArgument(arguments[0]);
+				break;
+			case 2:
+				_matrixThreeArgument(arguments[0], arguments[1]);
+				break;
+			case 3:
+				_matrixThreeArgument(arguments[0], arguments[1], arguments[2]);
+				break;
+			case default:
+				throw new Error("Wrong initialization of Matrix class");
+				break;
+		}
+
+	}
+	
+	/**
+	* operations that are availble. Have made this to be static and can be accessed directly from
+	* the Matrix class definition.
+	**/
+	Matrix.operations = {
+		add : addition,
+		sub : subtraction,
+		mul	: multiply
+	};
+
+	/**
+	* validates the matrices for operations.
+	* @params -	a - First matrix on the left side of the operator.
+	* 			b - Second matrix on the right side of operator.
+	* @return -	isValid - object which tells whether the matrices can be 
+	*					added subtracted and multiplied or not.
+	**/
+	function _validateMatrices(/* Matrix */ a, /* Matrix */ b){
+		var isValid = {
+			add : false,
+			mul : false
+		};
+
+		if(!a || !b)
+			return isValid;
+
+		// Case 1 - square matrix with equal rows and columns in both 3X3 matrices
+		// Case 2 - rows and columns of both the matrices are same like 3X4 and 3X4 matrices
+		// Case 3 - columns of first are equal to rows of the second 3X4 and 4X3 matrices
+		if(a.rows == b.rows && a.cols == b.cols && a.rows = a.cols){
+			isValid.add = true;
+			isValid.mul = true;
+		} else if(a.rows == b.rows && a.cols == b.cols){
+			isValid.add = true;
+		} else if(a.cols = b.rows){
+			isValid.mul = true;
+		}
+
+		return isValid;
+	}
+});
