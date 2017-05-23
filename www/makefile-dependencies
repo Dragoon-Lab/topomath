@@ -1,5 +1,5 @@
 # Packages to install for build to work
-# execute 'make' in terminal to run this
+# execute 'make -f makefile-dependencies' in terminal to run this
 # run this in /www folder
 install:
 	npm install gulp --save-dev

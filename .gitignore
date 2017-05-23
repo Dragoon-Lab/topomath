@@ -9,6 +9,7 @@ www/dojox
 www/jsPlumb
 www/util
 www/math-parser
+www/node_modules
 
 #OS specific files
 .DS_Store
