@@ -306,3 +306,35 @@ input[type=radio]{
   background-image: url(../images/help-inactive.png);
   background-size: cover;
 }
+
+/* Feedback Icons*/
+.topomath-feedback{
+  position: absolute;
+  left: -15px;
+  top: -15px;
+  padding: 4px;
+  font-size: 14px;
+  background: white;
+  border-radius: 32%;
+  border: 2px solid black;
+}
+.topomath-feedback.fa-star{
+  color: rgb(153, 134, 9);
+  box-shadow: 2px 2px 2px darkolivegreen;
+  border-color: forestgreen;
+}
+.topomath-feedback.fa-check{
+  color: green;
+  box-shadow: 2px 2px 2px darkolivegreen;
+  border-color: green;
+}
+.topomath-feedback.fa-times{
+  color: red;
+  box-shadow: 2px 2px 2px red;
+  border-color: red;
+}
+.topomath-feedback.fa-minus{
+  color: orange;
+  box-shadow: 2px 2px 2px orange;
+  border-color: orange;
+}

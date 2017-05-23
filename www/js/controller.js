@@ -808,6 +808,31 @@ define([
 		addQuantity: function(source, destinations){
 		},
 
+		variableTypeControls: function(id, _variableType){
+			registry.byId(this.controlMap.value).set('status','');
+			this._model.authored.setVariableType(id, _variableType);
+			if( _variableType == "parameter" || _variableType == "dynamic"){
+				domStyle.set('valueInputboxContainer','display','block');
+				if(_variableType == "dynamic"){
+					// Update position to avoid overlap of node
+					if(this._model.authored.getPosition(id).length === 1)
+						this._model.authored.updatePositionXY(id);
+				}
+			}else{
+				// Find all nodes that have reference to the initial node of this node and delete links to them
+				this._model.authored.updateLinks(id);
+				registry.byId(this.controlMap.value).set('value','');
+				this._model.active.setValue(id, '');
+				domStyle.set('valueInputboxContainer','display','none');
+				this.handleValue(null);
+			}
+			this.logSolutionStep({
+				property: "variableType",
+				value: _variableType
+			});
+			this.updateNodeView(this._model.active.getNode(id));
+		},
+
 		handleEquation: function(equation){
 			console.log("inside equation handler");
 			var w = registry.byId(this.widgetMap.equation);
@@ -1057,11 +1082,7 @@ define([
 					//Also updateNodeView makes sure changes are reflected instantly on the UI
 					var dynamicList = parseObject.dynamicList;
 					array.forEach(dynamicList, lang.hitch(this,function(prior){
-						this._model.authored.setVariableType(prior.id,"dynamic");
-						if(this._model.authored.getPosition(prior.id).length === 1)
-							this._model.authored.updatePositionXY(prior.id);
-						console.log("prior id", prior.id);
-						this.updateNodeView(this._model.active.getNode(prior.id));
+						this.variableTypeControls(prior.id, "dynamic");
 					}));
 				}
 

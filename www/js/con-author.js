@@ -336,28 +336,7 @@ define([
 			if(_variableType === this._model.authored.getVariableType(this.currentID)){
 				return;
 			}
-			registry.byId(this.controlMap.value).set('status','');
-			this._model.authored.setVariableType(this.currentID, _variableType);
-			if( _variableType == "parameter" || _variableType == "dynamic"){
-				style.set('valueInputboxContainer','display','block');
-				if(_variableType == "dynamic"){
-					// Update position to avoid overlap of node
-					if(this._model.authored.getPosition(this.currentID).length === 1)
-						this._model.authored.updatePositionXY(this.currentID);
-				}
-			}else{
-				// Find all nodes that have reference to the initial node of this node and delete links to them
-				this._model.authored.updateLinks(this.currentID);
-				registry.byId(this.controlMap.value).set('value','');
-				this._model.active.setValue(this.currentID, '');
-				style.set('valueInputboxContainer','display','none');
-				this.handleValue(null);
-			}
-			this.logSolutionStep({
-				property: "variableType",
-				value: _variableType
-			});
-			this.updateNodeView(this._model.active.getNode(this.currentID));
+			this.variableTypeControls(this.currentID, _variableType);
 		},
 
 		handleSetStudentNode: function(checked){
@@ -683,7 +662,7 @@ define([
 				}
 			}, this);
 			// Sort inputs in AUTHOR mode as alphabetic order
-			//this should go into equation editor into inputs and also quantity editor to variable list
+			//this should go into equation editor into inputs (discontinued use in quantity editor in variable field)
 			
 			inputs.sort(function(obj1, obj2){
 				return obj1.name > obj2.name;
@@ -734,14 +713,12 @@ define([
 					units.push({name: unit, id: unit});
 				}, this);
 
-				var m = new memory({data: descriptions});
-				descriptionWidget.set("store", m);
+				// memory wrapper for data provides full read and write capabilities
+				// In future if necessary we can store them in variables and exploit the capabilities (var a = new memory({data: descriptions}))
 
-				m = new memory({data: units});
-				unitsWidget.set("store", m);
+				descriptionWidget.set("store", new memory({data: descriptions}));
 
-				m = new memory({data: inputs});
-				varWidget.set("store", m);
+				unitsWidget.set("store", new memory({data: units}));
 
 				//node is not created for the first time. apply colors to widgets
 				//color name widget

@@ -212,7 +212,7 @@
 
 			<div id="variableInputboxContainer" class="fieldgroup" style="display: none;">
 				<label for="variableInputbox">Variable</label>
-				<input id="variableInputbox" data-dojo-type="dijit/form/ComboBox">
+				<input id="variableInputbox" data-dojo-type="dijit/form/TextBox">
 			</div> 
 
 			<div id="variableTypeContainer" class="fieldgroup" style="display: none;">
