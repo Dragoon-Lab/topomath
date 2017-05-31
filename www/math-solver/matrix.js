@@ -105,7 +105,7 @@ define([], function(){
 		*			cols - number of columns
 		**/
 		var _matrixThreeArgument = function(/* integer */ rows, /* integer */ cols, /* number*/ initialization){
-			var initialValue = initialization || Number.MIN_VALUE;
+			var initialValue = (initialization !== NaN) ? initialization : Number.MIN_VALUE;
 			this.rows = rows;
 			this.cols = cols;
 			for(var i = 0; i < rows; i++){
@@ -135,7 +135,7 @@ define([], function(){
 		}
 
 	}
-	
+
 	/**
 	* operations that are availble. Have made this to be static and can be accessed directly from
 	* the Matrix class definition.
@@ -146,12 +146,15 @@ define([], function(){
 		mul: multiply
 	};
 
+	/**
+	* creates a square matrix with all values holding same data.
+	**/
 	Matrix.createSquareMatrix = function(/* integer */ size, /* number */ value){
 		return new Matrix(size, size, value);
 	};
 
 	Matrix.createIdentityMatrix = function(/* integer */ size){
-		var I = new Matrix(size, size, 0);
+		var I = new Matrix.createSquareMatrix(size, 0);
 		for(var i = 0; i < size; i++)
 			I[i][i] = 1;
 
@@ -194,6 +197,42 @@ define([], function(){
 		**/
 		isSquare: function(){
 			return this.rows && this.rows == this.cols;
+		},
+
+		/**
+		* print the matrix in either JavaScript 2D-array format or in Matlab Matrix format
+		* @params -	divID - the id of the div in which the matrix is to be printed
+		*			isJS - print matrix in JS (true) format or in Matlab (false) format
+		**/
+		print: function(/* string */ divID, /* boolean */ isJS){
+			var div = document.getElementByID(divID);
+
+			if(!div){
+				var div = document.createElement('div');
+			}
+			var html = '[';
+
+			var rowBreak = isJS ? "]," : ";";
+			for(var i = 0; i < this.rows; i++){
+				html += '[';
+				for(var j = 0; j < this.cols; j++){
+					if(j == this.cols - 1)
+						html += this.data[i][j];
+					else
+						html += this.data[i][j] + ", ";
+				}
+				if(i === this.rows -1)
+					html += rowBreak;
+				else
+					html += rowBreak + "\n";
+			}
+			if(isJS)
+				html = html.splice(0, -1);
+
+			html += ']';
+
+			div.innerHTML = html;
+			document.body.appendChild(div);
 		}
 	};
 
