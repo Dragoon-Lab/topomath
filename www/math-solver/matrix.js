@@ -141,9 +141,60 @@ define([], function(){
 	* the Matrix class definition.
 	**/
 	Matrix.operations = {
-		add : addition,
-		sub : subtraction,
-		mul	: multiply
+		add: addition,
+		sub: subtraction,
+		mul: multiply
+	};
+
+	Matrix.createSquareMatrix = function(/* integer */ size, /* number */ value){
+		return new Matrix(size, size, value);
+	};
+
+	Matrix.createIdentityMatrix = function(/* integer */ size){
+		var I = new Matrix(size, size, 0);
+		for(var i = 0; i < size; i++)
+			I[i][i] = 1;
+
+		return I;
+	};
+
+	Matrix.prototype = {
+		/**
+		* gets the column data for a matrix
+		* @params -	index - column index that is needed for the matrix
+		* @return -	colData - array of data in the column at the index.
+		*					if the index is greater than column then returns an empty array.
+		**/
+		getColumn: function(/* integer */ index){
+			var colData = [];
+			if(index < this.cols)
+				for(var i = 0; i < this.cols; i++)
+					colData[i] = this.data[i][index];
+
+			return colData;
+		},
+		/**
+		* gets the row data for a matrix
+		* @params -	index - row index that is needed for the matrix
+		* @return -	colData - array of data in the row at the index.
+		*					if the index is greater than row then returns an empty array.
+		**/
+		getRow: function(/* integer */ index){
+			var rowData = [];
+			if(index < this.rows)
+				for(var i = 0; i < this.rows; i++)
+					rowData[i] = this.data[index][i];
+
+			return rowData;
+		},
+
+		/**
+		* checks whether the matrix is square or not.
+		* @return - boolean value if number of rows are equal to number of columns
+		**/
+		isSquare: function(){
+			return this.rows && this.rows == this.cols;
+		}
 	};
 
 	/**
@@ -156,8 +207,14 @@ define([], function(){
 	function _validateMatrices(/* Matrix */ a, /* Matrix */ b){
 		var isValid = {
 			add : false,
-			mul : false
+			mul : false,
+			inv : false
 		};
+		// Case for inversion, there is only one matrix sent in input
+		if(!b){
+			isValid.inv = a.isSquare();
+			return isValid;
+		}
 
 		if(!a || !b)
 			return isValid;
