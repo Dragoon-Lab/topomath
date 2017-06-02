@@ -10,3 +10,14 @@ install:
 	npm install gulp-zip --save-dev
 	npm install fs --save-dev
 	npm install jshint-stylish --save-dev
+	npm install chai --save-dev
+	npm install connect --save-dev
+	npm install gulp-mocha --save-dev
+	npm install webdriver --save-dev
+	npm install webdriverio --save-dev
+	npm install semver --save-dev
+	npm install serve-static --save-dev
+	npm install wdio-mocha-framework --save-dev
+	npm install wdio-screenshot --save-dev
+	npm install wdio-selenium-standalone-service --save-dev
+	npm install wdio-spec-reporter --save-dev

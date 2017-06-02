@@ -10,6 +10,7 @@ www/jsPlumb
 www/util
 www/math-parser
 www/node_modules
+www/errorShots
 
 #OS specific files
 .DS_Store

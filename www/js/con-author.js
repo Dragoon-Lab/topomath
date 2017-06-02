@@ -685,7 +685,7 @@ define([
 					this._model.authored.setValue(nodeid,'');
 				}
 
-				dojo.query("input[type=radio][name=variableType][value="+_variableType+"]")[0].checked=true;
+				registry.byId(_variableType+"Type").set('checked','checked');
 
 				// populate inputs
 			
