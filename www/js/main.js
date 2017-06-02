@@ -115,7 +115,7 @@ define([
 				console.log("Update model coordinates for ", mover);
 				var scrollTop = document.getElementById("drawingPane").scrollTop;
 				var id = mover.node.id;
-				var index = 0
+				var index = 0;
 				var initialString = _model.active.getInitialNodeIDString();
 				if(id.indexOf(initialString) > -1){
 					id = id.replace(initialString, "");
@@ -295,6 +295,6 @@ define([
 			else
 				window.history.back();
 		}
-	}
+	};
 	
 });

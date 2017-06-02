@@ -10,7 +10,7 @@ define([
 	"dijit/Menu",
 	"dijit/MenuItem",
 	"./graph-objects",
-	"jsPlumb/jsPlumb",
+	"jsPlumb/jsPlumb"
 ], function(declare, array, lang, attr, domConstruct, domClass, dom, domStyle, Menu, MenuItem, graphObjects){
 	return declare(null, {
 		_instance: null,
@@ -34,7 +34,7 @@ define([
 				'description': nodeID+'_description',
 				'parentDOM': nodeID,
 				'parentInitial': nodeID + this.initialNodeIDTag
-			}
+			};
 		},
 
 		constructor: function(model){
@@ -145,7 +145,7 @@ define([
 			var cachedDescription = cachedNode.description || cachedNode.explanation;
 			var description = node.description || node.explanation;
 			if(cachedDescription != description || (cachedNode.variable != node.variable && description != "")){
-				var description = graphObjects.getDomUIStrings(this._model, "description", node.ID);
+				description = graphObjects.getDomUIStrings(this._model, "description", node.ID);
 				var descriptionDOM = dom.byId(domIDTags['description']);
 				if(descriptionDOM)
 					descriptionDOM.innerHTML = description;
@@ -255,7 +255,7 @@ define([
 			pMenu.addChild(new MenuItem({
 				label: "Delete Node",
 				onClick: lang.hitch(this, function(){
-					this.deleteNode(node.ID)
+					this.deleteNode(node.ID);
 				})
 			}));
 
@@ -400,7 +400,7 @@ define([
 				maxConnections: 6,
 				onMaxConnections: function(info, e){
 					alert("Maximum connections (" + info.maxConnections + ") reached");
-				},
+				}
 			});
 
 			inst.makeTarget(vertex, {
