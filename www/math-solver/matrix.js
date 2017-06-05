@@ -1,4 +1,7 @@
 define([], function(){
+	// this is the value less than which we will try to find a different pivot
+	var _epsilon = 0.01;
+
 	/**
 	* adds the matrices
 	* @params -	a - matrix 1
@@ -61,17 +64,147 @@ define([], function(){
 	}
 
 	/**
+	* inverts a given square matrix using LU decomposition and partial pivoting.
+	* validateMatrices checks whether a matrix is square or not. Throws an error
+	* if the matrix is not square.
+	* @params -	a - Matrix to be inverted
+	* @return -	c - Inverted matrix
+	**/
+	function invert(/* Matrix */ a){
+		var isValid = _validateMatrices(a);
+
+		if(!isValid.inv)
+			throw new Error("Matrix can not be inverted as it is not a square Matrix");
+
+		var c = new Matrix(a.rows, a.cols, 0);
+		var decomposition = _LUdecomposition(a);
+		var I = Matrix.identity(a.rows);
+		var pivot;
+		for(pivot in pivots){
+			var temp = pivot.split("|");
+			I.swap(temp[0], temp[1]);
+		}
+
+		for(var i = 0; i < a.cols; i++){
+			var col = _solve(decomposition.L, decomposition.U, I.getColumn(i));
+			c.setColumn(i, col);
+		}
+
+		return c;
+	}
+
+	/**
+	* solves the equation of the form Ax = b using LU decomposition.
+	* due to decomposition solution is calculated in two steps
+	* Ld = b, calculate d vector in this, then Ux = d calculate x in this.
+	* @params -	L - Lower triangle matrix with diagonals equal to 1
+	*			U - Upper triangle matrix
+	*			b - Right hand side vector of the equation Ax = b
+	* @return -	x - solution vector calculated as per above steps
+	**/
+	function _solve(/* Matrix */ L, /* Matrix */ U, /* Matrix or col vector */ b){
+		var d = [];
+		d[0] = b[0];
+		for(var i = 1; i < L.rows; i++){
+			var sum = 0;
+			for(var j = 0; j < i; j++){
+				sum += L.m[i][j]*d[j];
+			}
+			d[i] = b[i] - sum;
+		}
+
+		var x = [];
+		x[U.rows - 1] = d[L.rows - 1];
+		for(i = U.rows - 2; i >= 0; i--){
+			sum = 0;
+			for(j = U.rows - 1; j > i; j--){
+				sum += U.m[i][j] * x[j];
+			}
+			x[i] = (d[i] - sum)/U[i][i];
+		}
+
+		return x;
+	}
+
+	/**
+	* calculated LU decomposition of any given square matrix (A). Initially L is set to
+	* identity matrix and U is set to A matrix. Iterative calculations are done using
+	* equations from LU = A. Pivots are corrected if diagonal elements go below 0.01.
+	* @params -	a - Matrix whose inverse is to be calculated
+	* @return -	obj - a JSON object which holds -
+	*				L - Lower triangle matrix for the decomposition
+	*				U - Upper triangle matrix for the decomposition
+	*				pivots - row exchanges that were needed for the inverse calculation
+	**/
+	function _LUdecomposition(/* Matrix */ a){
+		var L = Matrix.identity(a.rows);
+		var U = Matrix.copy(a);
+		var pivots = [];
+
+		for(var i = 0; i < a.cols - 1; ){
+			if(U[i][i] > _epsilon){
+				for(var j = i+1; j < a.rows; j++){
+					L[j][i] = U[j][i] / U[i][i];
+					for(var k = i; k < a.cols; k++)
+						U[j][k] = U[j][k] - L[j][k]*U[i][k];
+				}
+				i++;
+			} else {
+				var pivot = _pivot(U, i);
+				if(pivot == i)
+					throw new Error("Singular matrix, LU decomposition not feasible");
+				pivots.push(i + "|" +  pivot);
+				U.swap(i, pivot);
+				L.swap(i, pivot);
+				// resetting the values of diagonals to be 1 as swapping will lead to issues
+				L.m[i][i] = 1;
+				L.m[pivot][pivot] = 1;
+				L.m[i][pivot] = 0;
+			}
+		}
+
+		return {
+			L: L,
+			U: U,
+			pivots: pivots
+		};
+	}
+
+	/**
+	* finds the row which should be switched with the diagonal element of the matrix.
+	* calculated by finding maximum number after diagonal element which is to be swapped.
+	* @params -	a - matrix for which pivot is to swapped.
+	* 			index - index of the pivot element which is to be swapped.
+	* @return -	returnIndex - new pivot index that is calculated. If all the
+	*				values are less than _epsilon value set at the top,
+	*				then index is returned which is the error case.
+	**/
+	function _pivot(/* Matrix */ a, /* integer */ index){
+		var returnIndex = index;
+		var value = Math.abs(a.m[index][index]);
+		for(var i = index + 1; i < a.rows; i++){
+			var temp = Math.abs(a.m[i][index]);
+			if(temp > _epsilon && temp > value){
+				value = temp;
+				returnIndex = i;
+			}
+		}
+
+		return returnIndex;
+	}
+
+	/**
 	* Creates the matrix object. Has three basic constructors based on the
 	* parameters sent.
 	* The parameters are defined on each function in the object
 	* @return -	rows - number of rows in the matrix
 	*			cols - number of columns in the matrix
-	*			data - the values in the matrix
+	*			m - the values in the matrix
 	**/
 	function Matrix(arguments){
 		this.rows = Number.MIN_VALUE;
 		this.cols = Number.MIN_VALUE;
-		this.data = [];
+		this.m = [];
 
 		/**
 		* constructor with one parameter
@@ -93,7 +226,7 @@ define([], function(){
 				if(data[i].length !== this.cols)
 					throw new Error("Matrix has varying number of columns");
 
-			this.data = data;
+			this.m = data;
 		}
 
 		/**
@@ -105,13 +238,13 @@ define([], function(){
 		*			cols - number of columns
 		**/
 		var _matrixThreeArgument = function(/* integer */ rows, /* integer */ cols, /* number*/ initialization){
-			var initialValue = (initialization !== NaN) ? initialization : Number.MIN_VALUE;
+			var initialValue = !isNaN(initialization) ? initialization : Number.MIN_VALUE;
 			this.rows = rows;
 			this.cols = cols;
 			for(var i = 0; i < rows; i++){
-				this.data[i] = [];
+				this.m[i] = [];
 				for(var j = 0; j < cols; j++){
-					this.data[i][j] = initialValue;
+					this.m[i][j] = initialValue;
 				}
 			}
 		}
@@ -133,7 +266,6 @@ define([], function(){
 				throw new Error("Wrong initialization of Matrix class");
 				break;
 		}
-
 	}
 
 	/**
@@ -148,12 +280,21 @@ define([], function(){
 
 	/**
 	* creates a square matrix with all values holding same data.
+	* @params -	size - size of the square matrix
+	* 			value - single value that is to be added to each data point.
+	* @return -	Matrix - a matrix which is a square matrix.
 	**/
-	Matrix.createSquareMatrix = function(/* integer */ size, /* number */ value){
+	Matrix.square = function(/* integer */ size, /* number */ value){
 		return new Matrix(size, size, value);
 	};
 
-	Matrix.createIdentityMatrix = function(/* integer */ size){
+	/**
+	* creates an identity matrix with diagonal values set to 1 and rest of the values
+	* set to 0.
+	* @params - size - number of rows and columns in the matrix.
+	* @return -	I - identity matrix.
+	**/
+	Matrix.identity = function(/* integer */ size){
 		var I = new Matrix.createSquareMatrix(size, 0);
 		for(var i = 0; i < size; i++)
 			I[i][i] = 1;
@@ -161,34 +302,79 @@ define([], function(){
 		return I;
 	};
 
+	/**
+	* copies a given matrix to a new matrix. Used to copy A to U for LU decomposition
+	* @params -	a - Matrix to be copied
+	* @return -	mat - new Matrix created after copying.
+	**/
+	Matrix.copy = function(/* Matrix */ a){
+		var mat = new Matrix(a.rows, a.cols);
+		for(var i = 0; i < a.rows; i++)
+			mat.m[i] = a[i].slice(0);
+
+		return mat;
+	};
+
 	Matrix.prototype = {
 		/**
 		* gets the column data for a matrix
 		* @params -	index - column index that is needed for the matrix
 		* @return -	colData - array of data in the column at the index.
-		*					if the index is greater than column then returns an empty array.
+		*				if the index is greater than column then returns an empty array.
 		**/
 		getColumn: function(/* integer */ index){
 			var colData = [];
 			if(index < this.cols)
 				for(var i = 0; i < this.cols; i++)
-					colData[i] = this.data[i][index];
+					colData[i] = this.m[i][index];
 
 			return colData;
 		},
 		/**
 		* gets the row data for a matrix
 		* @params -	index - row index that is needed for the matrix
-		* @return -	colData - array of data in the row at the index.
-		*					if the index is greater than row then returns an empty array.
+		* @return -	rowData - array of data in the row at the index.
+		*				if the index is greater than row then returns an empty array.
 		**/
 		getRow: function(/* integer */ index){
 			var rowData = [];
 			if(index < this.rows)
 				for(var i = 0; i < this.rows; i++)
-					rowData[i] = this.data[index][i];
+					rowData[i] = this.m[index][i];
 
 			return rowData;
+		},
+
+		/**
+		* sets a column of a Matrix
+		* @params -	index - index at which the column has to be set.
+		*			col - column vector that has to be set at index.
+		* @return -	boolean value -	0 - not successful due to size mismatch
+		*							1 - successful
+		**/
+		setColumn: function(/* integer */ index, /* 1D array */ col){
+			if(col.length != this.rows)
+				return 0;
+
+			for(var i = 0; i < this.rows; i++)
+				this.m[i][index] = col[i];
+			return 1;
+		},
+
+		/**
+		* sets a row of a Matrix
+		* @params -	index - index at which the row has to be set.
+		*			row - row vector that has to be set at index.
+		* @return -	boolean value -	0 - not successful due to size mismatch
+		*							1 - successful
+		**/
+		setRow: function(/* integer */ index, /* 1D array */ row){
+			if(row.length != this.cols)
+				return 0;
+
+			for(var i = 0; i < this.cols; i++)
+				this.m[index][i] = row[i];
+			return 1;
 		},
 
 		/**
@@ -214,12 +400,12 @@ define([], function(){
 
 			var rowBreak = isJS ? "]," : ";";
 			for(var i = 0; i < this.rows; i++){
-				html += '[';
+				html += isJS ? '[' : '';
 				for(var j = 0; j < this.cols; j++){
 					if(j == this.cols - 1)
-						html += this.data[i][j];
+						html += this.m[i][j];
 					else
-						html += this.data[i][j] + ", ";
+						html += this.m[i][j] + ", ";
 				}
 				if(i === this.rows -1)
 					html += rowBreak;
@@ -233,6 +419,30 @@ define([], function(){
 
 			div.innerHTML = html;
 			document.body.appendChild(div);
+		},
+
+		/**
+		* swap row i and row j
+		* @params -	i - first index of the rows
+		* 			j - second index to swap the rows
+		* @return -	flag - values to tell whether swap was successful or not
+		* 				0 - there was an error, which is i and j were greater than
+		* 				the number of rows or i and j were less than 0.
+		*				1 - swap was successful.
+		**/
+		swap: function(/* integer */ i, /* integer */ j){
+			var flag = 0;
+			if(i >= this.rows || j >= this.rows || i < 0 || j < 0)
+				return flag;
+
+			for(var k = 0; k < this.rows; k++){
+				var temp = this.m[i][k];
+				this.m[i][k] = this.m[j][k];
+				this.m[j][k] = temp;
+			}
+
+			flag = 1;
+			return flag;
 		}
 	};
 
