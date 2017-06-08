@@ -16,7 +16,7 @@ define([], function(){
 		var c = new Matrix(a.rows, a.cols);
 		for(var i = 0; i < a.rows; i++)
 			for(var j = 0; j < a.cols; j++)
-				c[i][j] = a[i][j] + b[i][j];
+				c.m[i][j] = a.m[i][j] + b.m[i][j];
 
 		return c;
 	}
@@ -35,7 +35,7 @@ define([], function(){
 		var c = new Matrix(a.rows, a.cols);
 		for(var i = 0; i < a.rows; i++)
 			for(var j = 0; j < a.cols; j++)
-				c[i][j] = a[i][j] - b[i][j];
+				c.m[i][j] = a.m[i][j] - b.m[i][j];
 
 		return c;
 	}
@@ -56,7 +56,7 @@ define([], function(){
 		for(var i = 0; i < a.rows; i++)
 			for(var j = 0; j < b.cols; j++)
 				for(var k = 0; k < a.cols; k++)
-					c[i][j] += a[i][k]*b[k][j];
+					c.m[i][j] += a.m[i][k]*b.m[k][j];
 
 		// TODO: update the multiplication algorithm from Intro to algorithms
 		// which is less than O(n^3)
@@ -80,7 +80,7 @@ define([], function(){
 		var decomposition = _LUdecomposition(a);
 		var I = Matrix.identity(a.rows);
 		var pivot;
-		for(pivot in pivots){
+		for(pivot in decomposition.pivots){
 			var temp = pivot.split("|");
 			I.swap(temp[0], temp[1]);
 		}
@@ -142,11 +142,11 @@ define([], function(){
 		var pivots = [];
 
 		for(var i = 0; i < a.cols - 1; ){
-			if(U[i][i] > _epsilon){
+			if(U.m[i][i] > _epsilon){
 				for(var j = i+1; j < a.rows; j++){
-					L[j][i] = U[j][i] / U[i][i];
+					L.m[j][i] = U.m[j][i] / U.m[i][i];
 					for(var k = i; k < a.cols; k++)
-						U[j][k] = U[j][k] - L[j][k]*U[i][k];
+						U.m[j][k] = U.m[j][k] - L.m[j][k]*U.m[i][k];
 				}
 				i++;
 			} else {
@@ -201,10 +201,10 @@ define([], function(){
 	*			cols - number of columns in the matrix
 	*			m - the values in the matrix
 	**/
-	function Matrix(arguments){
-		this.rows = Number.MIN_VALUE;
-		this.cols = Number.MIN_VALUE;
-		this.m = [];
+	function Matrix(){
+		var rows = Number.MIN_VALUE;
+		var cols = Number.MIN_VALUE;
+		var m = [];
 
 		/**
 		* constructor with one parameter
@@ -213,7 +213,7 @@ define([], function(){
 		var _matrixOneArgument = function(/* 2D array*/ data){
 			if(!data)
 				throw new Error("No data provided to create the matrix");
-			this.rows = data.length;
+			rows = data.length;
 
 			// although this essentially means the same check as above
 			// keeping it so that we can be rest assured
@@ -221,12 +221,12 @@ define([], function(){
 			if(this.rows == 0)
 				throw new Error("No data provided to create the matrix");
 
-			this.cols = data[0].length;
+			cols = data[0].length;
 			for(var i = 0; i < this.rows; i++)
 				if(data[i].length !== this.cols)
 					throw new Error("Matrix has varying number of columns");
 
-			this.m = data;
+			m = data;
 		}
 
 		/**
@@ -237,14 +237,14 @@ define([], function(){
 		* @params -	rows - number of rows
 		*			cols - number of columns
 		**/
-		var _matrixThreeArgument = function(/* integer */ rows, /* integer */ cols, /* number*/ initialization){
+		var _matrixThreeArgument = function(/* integer */ _rows, /* integer */ _cols, /* number*/ initialization){
 			var initialValue = !isNaN(initialization) ? initialization : Number.MIN_VALUE;
-			this.rows = rows;
-			this.cols = cols;
+			rows = _rows;
+			cols = _cols;
 			for(var i = 0; i < rows; i++){
-				this.m[i] = [];
+				m[i] = [];
 				for(var j = 0; j < cols; j++){
-					this.m[i][j] = initialValue;
+					m[i][j] = initialValue;
 				}
 			}
 		}
@@ -262,10 +262,14 @@ define([], function(){
 			case 3:
 				_matrixThreeArgument(arguments[0], arguments[1], arguments[2]);
 				break;
-			case default:
+			default:
 				throw new Error("Wrong initialization of Matrix class");
 				break;
 		}
+
+		this.rows = rows;
+		this.cols = cols;
+		this.m = m;
 	}
 
 	/**
@@ -274,8 +278,9 @@ define([], function(){
 	**/
 	Matrix.operations = {
 		add: addition,
-		sub: subtraction,
-		mul: multiply
+		sub: subtract,
+		mul: multiply,
+		inv: invert
 	};
 
 	/**
@@ -295,9 +300,9 @@ define([], function(){
 	* @return -	I - identity matrix.
 	**/
 	Matrix.identity = function(/* integer */ size){
-		var I = new Matrix.createSquareMatrix(size, 0);
+		var I = new Matrix.square(size, 0);
 		for(var i = 0; i < size; i++)
-			I[i][i] = 1;
+			I.m[i][i] = 1;
 
 		return I;
 	};
@@ -310,7 +315,7 @@ define([], function(){
 	Matrix.copy = function(/* Matrix */ a){
 		var mat = new Matrix(a.rows, a.cols);
 		for(var i = 0; i < a.rows; i++)
-			mat.m[i] = a[i].slice(0);
+			mat.m[i] = a.m[i].slice(0);
 
 		return mat;
 	};
@@ -391,13 +396,23 @@ define([], function(){
 		*			isJS - print matrix in JS (true) format or in Matlab (false) format
 		**/
 		print: function(/* string */ divID, /* boolean */ isJS){
-			var div = document.getElementByID(divID);
+			var div = document.getElementById(divID);
 
 			if(!div){
 				var div = document.createElement('div');
 			}
-			var html = '[';
 
+			div.innerHTML = this.getHTML(isJS);
+			document.body.appendChild(div);
+		},
+
+		/**
+		* create HTML string in either JavaScript 2D-array format or in Matlab Matrix format
+		* @params -	isJS - print matrix in JS (true) format or in Matlab (false) format
+		* @return -	html - returns the html string to be printed
+		**/
+		getHTML: function(isJS){
+			var html = '[';
 			var rowBreak = isJS ? "]," : ";";
 			for(var i = 0; i < this.rows; i++){
 				html += isJS ? '[' : '';
@@ -413,12 +428,10 @@ define([], function(){
 					html += rowBreak + "\n";
 			}
 			if(isJS)
-				html = html.splice(0, -1);
+				html = html.slice(0, -1);
 
 			html += ']';
-
-			div.innerHTML = html;
-			document.body.appendChild(div);
+			return html;
 		},
 
 		/**
@@ -471,7 +484,7 @@ define([], function(){
 		// Case 1 - square matrix with equal rows and columns in both 3X3 matrices
 		// Case 2 - rows and columns of both the matrices are same like 3X4 and 3X4 matrices
 		// Case 3 - columns of first are equal to rows of the second 3X4 and 4X3 matrices
-		if(a.rows == b.rows && a.cols == b.cols && a.rows = a.cols){
+		if(a.rows == b.rows && a.cols == b.cols && a.rows == a.cols){
 			isValid.add = true;
 			isValid.mul = true;
 		} else if(a.rows == b.rows && a.cols == b.cols){
@@ -482,4 +495,6 @@ define([], function(){
 
 		return isValid;
 	}
+
+	return Matrix;
 });
