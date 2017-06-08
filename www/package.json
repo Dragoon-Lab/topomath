@@ -1,0 +1,35 @@
+{
+  "name": "topomath",
+  "version": "1.0.0",
+  "description": "Topomath",
+  "main": "gulpfile.js",
+  "engines": {
+    "node": ">=7.10.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Dragoon-Lab/topomath.git"
+  },
+  "keywords": [
+    "Topomath"
+  ],
+  "author": "Topomath",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Dragoon-Lab/topomath/issues"
+  },
+  "homepage": "https://github.com/Dragoon-Lab/topomath#readme",
+  "devDependencies": {
+    "fs": "0.0.1-security",
+    "gulp": "^3.9.1",
+    "gulp-cached": "^1.1.1",
+    "gulp-jshint-cached": "^1.4.2",
+    "gulp-replace": "^0.5.4",
+    "gulp-shell": "^0.6.3",
+    "gulp-zip": "^4.0.0",
+    "jshint-stylish": "^2.2.1"
+  }
+}

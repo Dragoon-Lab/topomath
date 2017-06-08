@@ -1,0 +1,72 @@
+<html>
+<head>
+<style>
+	.black, .white{
+		width: 200px;
+		border: 3px solid black;
+		padding : 5px 2px;
+		display: block;
+		float: left;
+	}
+	.white{
+		color: white;
+		margin-left: 5px;
+	}
+	.black{
+		border-radius: 500px;
+	}
+	.wrap{
+		margin-bottom: 5px;
+		display: block;
+	}
+	.clear{
+		clear: both;
+		height: 2px;
+	}
+	.text{
+		width: 90%;
+		margin: 0 auto 1px auto;
+		font: 10pt Arial,Myriad,Tahoma,Verdana,sans-serif !important;
+		text-align: center;
+	}
+</style>
+<script type = "text/javascript">
+	var _colors = [
+		"#00ffff", "#f0e68c", "#add8e6", "#e0ffff", "#90ee90", "#ffb6c1",
+		"#ffffe0", "#00ff00", "#f5f5dc", "#0000ff", "#8b0000", "#ff8c00",
+		"#ffd700", "#9400d3", "#808000", "#c0c0c0", "#ffc0cb", "#ff0000",
+		"#ffff00", "#008b8b", "#008000", "#f0ffff", "#bdb76b", "#ffa500",
+		"#e9967a", "#556b2f", "#ff00ff"
+	];
+	var getBody = function(index){
+		var html = 	"<span class='black' style='background-color: "+_colors[index]+"'><div class='text'>" +(index+1)+ ") <b>Quantity:</b> This is black text with color "+_colors[index]+" </div></span>"+
+					"<span class='white' style='background-color: "+_colors[index]+"'><div class='text'>" +(index+1)+ ") Equation: This is white text with color "+_colors[index]+"</div></span>";
+		return html;
+	};
+	var createElement = function(index){
+		var id = "wrapper"+index;
+		var wrapper = document.createElement("div");
+		wrapper.setAttribute("id", id);
+		wrapper.setAttribute("class", "wrap");
+		wrapper.setAttribute("style", "width: 100%");
+		wrapper.innerHTML = getBody(index);
+		document.getElementById("color-pallete").appendChild(wrapper);
+		var clear = document.createElement("div");
+		clear.setAttribute("class", "clear");
+		document.getElementById("color-pallete").appendChild(clear);
+
+	};
+	var main = function(){
+		for(var i = 0; i < _colors.length; i++){
+			createElement(i);
+		}
+	};
+</script>
+</head>
+<body>
+<div id = "color-pallete"></div>
+<script>
+	main();
+</script>
+</body>
+</html>

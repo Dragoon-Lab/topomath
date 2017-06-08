@@ -61,7 +61,7 @@ define([
 			var description = this.getDomUIStrings(model, "description", nodeID);
 			var html = "";
 			if(type && description){
-				html = '<div id = "'+nodeID+'_description" class="'+type+'Description">'+description+'</div>';
+				html = '<div id = "'+nodeID+'_description" class="'+type+'Description"><div class="descriptionText">'+description+'</div></div>';
 			}
 
 			return html;
