@@ -102,7 +102,7 @@ define([
 			var html = "";
 			if(doPrint){
 				html += printMatrix(_matA, format, "Matrix A");
-				html += printMatrix(_matB, format, "Matrix B");
+				html += operator != "inv" ? printMatrix(_matB, format, "Matrix B") : "";
 			}
 
 			html += printMatrix(_matR, format, operatorTitle);

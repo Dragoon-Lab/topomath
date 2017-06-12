@@ -80,8 +80,9 @@ define([], function(){
 		var decomposition = _LUdecomposition(a);
 		var I = Matrix.identity(a.rows);
 		var pivot;
+		console.log(a, " matrix ", decomposition);
 		for(pivot in decomposition.pivots){
-			var temp = pivot.split("|");
+			var temp = decomposition.pivots[pivot].split("|");
 			I.swap(temp[0], temp[1]);
 		}
 
@@ -114,13 +115,13 @@ define([], function(){
 		}
 
 		var x = [];
-		x[U.rows - 1] = d[L.rows - 1];
+		x[U.rows - 1] = d[L.rows - 1]/U.m[U.rows-1][U.rows-1];
 		for(i = U.rows - 2; i >= 0; i--){
 			sum = 0;
 			for(j = U.rows - 1; j > i; j--){
 				sum += U.m[i][j] * x[j];
 			}
-			x[i] = (d[i] - sum)/U[i][i];
+			x[i] = (d[i] - sum)/U.m[i][i];
 		}
 
 		return x;
@@ -142,18 +143,19 @@ define([], function(){
 		var pivots = [];
 
 		for(var i = 0; i < a.cols - 1; ){
-			if(U.m[i][i] > _epsilon){
+			var temp = Math.abs(U.m[i][i]);
+			if(temp > _epsilon){
 				for(var j = i+1; j < a.rows; j++){
 					L.m[j][i] = U.m[j][i] / U.m[i][i];
 					for(var k = i; k < a.cols; k++)
-						U.m[j][k] = U.m[j][k] - L.m[j][k]*U.m[i][k];
+						U.m[j][k] -= L.m[j][i]*U.m[i][k];
 				}
 				i++;
 			} else {
 				var pivot = _pivot(U, i);
 				if(pivot == i)
 					throw new Error("Singular matrix, LU decomposition not feasible");
-				pivots.push(i + "|" +  pivot);
+				pivots.push(i + "|" + pivot);
 				U.swap(i, pivot);
 				L.swap(i, pivot);
 				// resetting the values of diagonals to be 1 as swapping will lead to issues
