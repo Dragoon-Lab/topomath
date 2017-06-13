@@ -52,7 +52,7 @@ define([], function(){
 		if(!isValid.mul)
 			throw new Error("Matrices can not be multiplied as dimensions do not match");
 
-		var c = new Matrix(a.rows, a.cols, 0);
+		var c = new Matrix(a.rows, b.cols, 0);
 		for(var i = 0; i < a.rows; i++)
 			for(var j = 0; j < b.cols; j++)
 				for(var k = 0; k < a.cols; k++)
@@ -491,7 +491,7 @@ define([], function(){
 			isValid.mul = true;
 		} else if(a.rows == b.rows && a.cols == b.cols){
 			isValid.add = true;
-		} else if(a.cols = b.rows){
+		} else if(a.cols == b.rows){
 			isValid.mul = true;
 		}
 
