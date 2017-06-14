@@ -13,7 +13,8 @@ var gulp = require('gulp'),
 	mocha = require('gulp-mocha'),
 	version = require('./version.js'),
 	webdriver = require('gulp-webdriver'),
-	fs = require('fs');
+	fs = require('fs'),
+	testPaths = require('../tests/scripts/test-paths.js');
 
 //Set Configuration parameters
 var config = {
@@ -33,7 +34,7 @@ gulp.task('watch', ['lint'], function (){
 });
 
 gulp.task('test', function() {
-    return gulp.src('wdio.conf.js').pipe(webdriver({specs:['../tests/scripts/coreTests/*.js']}));
+    return gulp.src('wdio.conf.js').pipe(webdriver({specs:['../tests/scripts/coreTests/*.js'], baseUrl: testPaths.getLocalPath() }));
 });
 
 gulp.task('build', ['dojoBuild'], function (done){

@@ -17,3 +17,6 @@ www/errorShots
 *.swp
 *.jar
 Thumbs.db
+
+tests/scripts/test-paths.js
+

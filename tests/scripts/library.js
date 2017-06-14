@@ -62,9 +62,9 @@ function getUrlRoot(){
     if(testTarget === "devel"){
         return 'http://topomath.asu.edu/devel/index.php'
     }else if(testTarget === "demo"){
-        return 'http://localhost/topomath/index.php' // Demo URL
+        return testPath.getLocalPath(); // Demo URL if any
     }else if(testTarget === "local"){
-        return 'http://localhost/topomath/index.php'
+        return testPath.getLocalPath();
     }else{
         throw "Test target is not valid please check test-paths.js";
     }
