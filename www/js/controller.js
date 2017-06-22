@@ -655,11 +655,13 @@ define([
 			if(model.getNodeIDFor){
 				var d = registry.byId(this.controlMap.description);
 				array.forEach(this._model.authored.getDescriptions(), function(desc){
-					var exists =  model.getNodeIDFor(desc.value);
-					d.getOptions(desc).disabled=exists;
-					if(desc.value == nodeName){
-						d.getOptions(desc).disabled=false;
-						}
+					if(this._mode == "AUTHOR"){
+						var exists =  model.getNodeIDFor(desc.value);
+						d.getOptions(desc).disabled=exists;
+						if(desc.value == nodeName){
+							d.getOptions(desc).disabled=false;
+						}	
+					}
 				});
 			}
 
