@@ -47,10 +47,12 @@ define([
 						}
 					break;
 			}
-			html[0] = '<div id="'+nodeID+'Label" class = "bubble"><div class="'+ type +'Wrapper"><strong id = "'+nodeID+'Content" class = "nodeContent">' + nodeString.value + '</strong></div></div>';
+			
+			var feedbackHTML = '<i class="topomath-feedback fa" id="feedback'+nodeID+'" fa"></i>';
+			html[0] = feedbackHTML + '<div id="'+nodeID+'Label" class = "bubble"><div class="'+ type +'Wrapper"><strong id = "'+nodeID+'Content" class = "nodeContent">' + nodeString.value + '</strong></div></div>';
 
 			if(createInitial){
-				html[1] = '<div id="'+nodeID+'LabelInitial" class = "bubble"><div class="'+ type +'Wrapper"><strong id = "'+ nodeID +'ContentInitial" class = "nodeContent">' + nodeString.initial + '</strong></div></div>';
+				html[1] = feedbackHTML + '<div id="'+nodeID+'LabelInitial" class = "bubble"><div class="'+ type +'Wrapper"><strong id = "'+ nodeID +'ContentInitial" class = "nodeContent">' + nodeString.initial + '</strong></div></div>';
 			}
 
 			return html;
@@ -63,7 +65,6 @@ define([
 			if(type && description){
 				html = '<div id = "'+nodeID+'_description" class="'+type+'Description"><div class="descriptionText">'+description+'</div></div>';
 			}
-
 			return html;
 		},
 

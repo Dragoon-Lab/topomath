@@ -372,6 +372,12 @@ define([
 			 We could write a function to attach the handlers?
 			 */
 
+			var variable_name = registry.byId(this.controlMap.variable);
+			variable_name.on('Change', lang.hitch(this, function(){
+				console.log("handling variable name");
+				return this.disableHandlers || this.handleVariableName.apply(this, arguments);
+			}));
+
 			 //event handler for quantity node description field
 			var desc_qty = registry.byId(this.controlMap.description);
 			desc_qty.on('Change', lang.hitch(this, function(){
@@ -382,6 +388,12 @@ define([
 			 *	 event handler for 'value' field
 			 *	 'handleValue' will be called in either Student or Author mode
 			 * */
+				var variableTypeToggle = dojo.query(".handleVariable");
+				variableTypeToggle.forEach(function(toggleNode){
+				registry.byNode(toggleNode).on('click', lang.hitch(this, function(event){
+					return this.disableHandlers || this.handleVariableType(event);
+				}));
+			}, this);
 
 			var valueWidget = registry.byId(this.controlMap.value);
 			// This event gets fired if student hits TAB or input box
@@ -464,7 +476,6 @@ define([
 			}, this);
 
 		},
-
 		//show node editor
 		showNodeEditor: function(/*string*/ id){
 			console.log("showNodeEditor called for node ", id);
@@ -648,7 +659,8 @@ define([
 					d.getOptions(desc).disabled=exists;
 					if(desc.value == nodeName){
 						d.getOptions(desc).disabled=false;
-					}});
+						}
+				});
 			}
 
 			if(this.nodeType == "quantity"){
@@ -698,10 +710,12 @@ define([
 			// Apply directives, either from PM or the controller itself.
 			var tempDirective = null;
 			array.forEach(directives, function(directive) {
-				/*TODO : for now not using authorModelStatus, so updateModelStatus function has no significance
+
+				//TODO : for now not using authorModelStatus, so updateModelStatus function has no significance
+				
 				if(!noModelUpdate)
-					this.updateModelStatus(directive); */
-				if (directive.attribute != "display" && this.widgetMap[directive.id]) {
+					this.updateModelStatus(directive); 
+				if (directive.attribute != "display" && this.widgetMap[directive.id] && directive.id !== "variableType") {
 					var w = registry.byId(this.widgetMap[directive.id]);
 					if (directive.attribute == 'value') {
 						w.set("value", directive.value, false);
@@ -732,6 +746,13 @@ define([
 					if(this.genericDivMap[directive.id]){
 						domStyle.set(this.genericDivMap[directive.id], directive.attribute, directive.value);
 					}
+				}else if(directive.id == "variableType"){
+					if(directive.value == "dynamic" || directive.value == "parameter"){
+						style.set('valueInputboxContainer','display','block');
+					}else if(directive.value == "unknown"){
+						style.set('valueInputboxContainer','display','none');
+					}
+
 				}else{
 					//this code needs to be uncommented when logging module is included
 					/*
@@ -807,20 +828,42 @@ define([
 		/* Stub to update connections in graph */
 		addQuantity: function(source, destinations){
 		},
+		handleVariableType: function(event){
+			// Summary : Sets variableType to Unknown/Parameter/Dynamic
+			// Value is not allowed when variableType is Unknown
+			// Value is handled when variableType is parameter or dynamic.
+			console.log("********************* in handleVariableType");
+			var _variableType = event.target.value;
+			if(_variableType === this._model.active.getVariableType(this.currentID)){
+				return;
+			}
+			
+			this.variableTypeControls(this.currentID, _variableType);
+			if(this._mode !== "AUTHOR"){
+				this.applyDirectives(this._PM.processAnswer(this.currentID, 'variableType', _variableType));
+				var _variableTypes = ["unknown","parameter","dynamic"];
+				array.forEach(_variableTypes, function(_type){
+					if(_type !== _variableType){
+						registry.byId(_type+"Type").set('disabled',true);
+					}
+					
+				})
+			}
+		},
 
 		variableTypeControls: function(id, _variableType){
 			registry.byId(this.controlMap.value).set('status','');
-			this._model.authored.setVariableType(id, _variableType);
+			this._model.active.setVariableType(id, _variableType);
 			if( _variableType == "parameter" || _variableType == "dynamic"){
 				domStyle.set('valueInputboxContainer','display','block');
 				if(_variableType == "dynamic"){
 					// Update position to avoid overlap of node
-					if(this._model.authored.getPosition(id).length === 1)
-						this._model.authored.updatePositionXY(id);
+					if(this._model.active.getPosition(id).length === 1)
+						this._model.active.updatePositionXY(id);
 				}
 			}else{
 				// Find all nodes that have reference to the initial node of this node and delete links to them
-				this._model.authored.updateLinks(id);
+				this._model.active.updateLinks(id);
 				registry.byId(this.controlMap.value).set('value','');
 				this._model.active.setValue(id, '');
 				domStyle.set('valueInputboxContainer','display','none');
@@ -835,6 +878,7 @@ define([
 
 		handleEquation: function(equation){
 			console.log("inside equation handler");
+			
 			var w = registry.byId(this.widgetMap.equation);
 			this.equationEntered = false;
 			w.set('status','');
@@ -869,7 +913,7 @@ define([
 			var widget = registry.byId(this.controlMap.equation);
 			var inputEquation = widget.get("value");
 
-			//var parse = {};
+			//var parse = null;
 			var returnObj = {};
 			if (inputEquation == "") {
 				directives.push({id: 'message', attribute: 'append', value: 'There is no equation to check.'});
@@ -913,137 +957,8 @@ define([
 				return null;
 			}
 			//rest of the analysis is only needed for the student mode. So returning in case the active model is not student.
-			if(this._model.active != this._model.student){
 				return returnObj;
-			}
-			//TODO : as suggested in above comment if the mode is student we enable the below code
-			//For now, commenting
-			/*
-			var cancelUpdate = false;
-			var resetEquation = false;
-			var authoredID = this._model.student.getAuthoredID(this.currentID);
-
-			var mapID = this._model.active.getAuthoredID || function(x){ return x; };
-			var unMapID = this._model.active.getNodeIDFor || function(x){ return x; };
-			//there is no error in parse. We check equation for validity
-			//Check 1 - accumulator equation is not set to 0, basically the type of a node should be parameter.
-			if(this._model.active.getType(this.currentID) === "accumulator" &&
-				!parse.variables().length && parse.tokens.length == 1 && parse.tokens[0].number_ == 0){
-				cancelUpdate = true;
-				directives.push({id: 'equation', attribute: 'status', value: 'incorrect'});
-				directives.push({
-					id: 'crisisAlert',
-					attribute: 'open',
-					value: "Equation of accumulator can not be set to 0. If this is the case then please change the type of the node to parameter."
-				});
-				this.logging.log("solution-step", {
-					type: "zero-equation-accumulator",
-					node: this._model.active.getName(this.currentID),
-					nodeID: this.currentID,
-					property: "equation",
-					value: inputEquation,
-					correctResult: this._model.given.getEquation(this.currentID),
-					checkResult: "INCORRECT"
-				});
-			}
-			array.forEach(parse.variables(), function(variable){
-				var givenID = this._model.given.getNodeIDByName(variable);
-				var badVarCount = "";
-				// Check 2 - Checks for nodes referencing themselves; this causes problems because
-				//		functions will always evaluate to true if they reference themselves
-				if(!givenID){
-					if(!ignoreUnknownTest){
-						// Check for number of unknown var, only in student mode.
-						badVarCount = this._model.given.getAttemptCount(authoredID, "unknownVar");
-					}
-					cancelUpdate = true;  // Don't update model or send ot PM.
-
-					// The following if statement prevents a user from being endlessly stuck if he/she is using an incorrect variable.
-					//		To organize this better in the future we may want to move this check into another file with the code from
-					//		pedagogical_module.js that is responsible for deciding the correctness of a student's response.
-					if(badVarCount){
-						this._model.given.setAttemptCount(authoredID, "unknownVar", badVarCount+1);
-						if(badVarCount > 2){
-							//resetEquation = true;
-						//} else {
-							this._model.given.setAttemptCount(authoredID, "equation", badVarCount+1);
-							cancelUpdate = false;
-						}
-					}else{
-						this._model.given.setAttemptCount(authoredID, "unknownVar", 1);
-						//resetEquation = true;
-					}
-					directives.push({id: 'equation', attribute: 'status', value: 'incorrect'});
-					directives.push({id: 'message', attribute: 'append', value: "Unknown variable '" + variable + "'."});
-					directives.push({
-						id: 'crisisAlert',
-						attribute: 'open',
-						value: "Unknown variable '" + variable + "' entered in equation."
-					});
-					this.logging.log("solution-step", {
-						type: "unknown-variable",
-						node: this._model.active.getName(this.currentID),
-						nodeID: this.currentID,
-						property: "equation",
-						value: inputEquation,
-						correctResult: this._model.given.getEquation(this.currentID),
-						checkResult: "INCORRECT"
-					});
-				}
-
-				if(givenID && this._model.active.getType(this.currentID) === "function" &&
-					givenID === mapID.call(this._model.active, this.currentID)){
-					cancelUpdate = true;
-					directives.push({id: 'equation', attribute: 'status', value: 'incorrect'});
-					directives.push({id: 'message', attribute: 'append', value: "You cannot use '" + variable + "' in the equation. Function nodes cannot reference themselves."});
-					this.logging.log("solution-step", {
-						type: "self-referencing-function",
-						node: this._model.active.getName(this.currentID),
-						nodeID: this.currentID,
-						property: "equation",
-						value: inputEquation,
-						correctResult: this._model.given.getEquation(this.currentID),
-						checkResult: "INCORRECT"
-					});
-				}
-				//Check 3 - check if accumulator has a reference to itself as per the Trello card https://trello.com/c/0aqmwqqG
-				if(givenID && this._model.active.getType(this.currentID) === "accumulator" &&
-					givenID === mapID.call(this._model.active, this.currentID)){
-					cancelUpdate = true;
-					directives.push({id: 'equation', attribute: 'status', value: 'incorrect'});
-					directives.push({
-						id: 'crisisAlert',
-						attribute: 'open',
-						value: "The old value of the accumulator is already included in the expression, so you don't have to mention it in the expression.  Only put an expression for the change in the accumulators value."
-					});
-					this.logging.log("solution-step", {
-						type: "self-referencing-accumulator",
-						node: this._model.active.getName(this.currentID),
-						nodeID: this.currentID,
-						property: "equation",
-						value: inputEquation,
-						correctResult: this._model.given.getEquation(this.currentID),
-						checkResult: "INCORRECT"
-					});
-				}
-			}, this);
-
-			if(resetEquation){
-				this._model.active.setEquation(this.currentID, "");
-				directives.push({id: 'equation', attribute: 'value', value: ""});
-			}
-			// changing this as it is essential to update the equation using createExpressionNodes.
-			// otherwise equation with correct nodes not converted to their corresponding id stays in the equation of the model
-			// fix for bug : https://trello.com/c/bVYAQBKT ~ Sachin Grover
-			/*else if(cancelUpdate){
-				//in case we are not calling the pm then we need to save the equation to the model.
-				//this._model.active.setEquation(this.currentID, inputEquation);
-			}*/
-			//if(true || !cancelUpdate){
-			//return parse;
-			//}
-			//return null; */
-
+			
 		},
 		createExpressionNodes: function(parseObject, ignoreUnknownTest){
 			/*

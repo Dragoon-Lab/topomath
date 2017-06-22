@@ -149,6 +149,7 @@ define([
 		},
 		authorControls: function(){
 			console.log("++++++++ Setting AUTHOR format in Node Editor.");
+			style.set('givenToStudentToggleContainer', 'display', 'block');
 			style.set('variableOptionalityContainer', 'display', 'block');
 			style.set('descriptionInputboxContainer', 'display', 'inline-block');
 			style.set('variableInputboxContainer', 'display', 'inline-block');
@@ -162,12 +163,6 @@ define([
 		},
 		initAuthorHandles: function(){
 
-			var variable_name = registry.byId(this.controlMap.variable);
-			variable_name.on('Change', lang.hitch(this, function(){
-				console.log("handling variable name");
-				return this.disableHandlers || this.handleVariableName.apply(this, arguments);
-			}));
-
 			var kind = registry.byId(this.controlMap.kind);
 			kind.on('Change', lang.hitch(this, function(){
 				return this.disableHandlers || this.handleKind.apply(this, arguments);
@@ -177,13 +172,6 @@ define([
 			root_check.on('Change', lang.hitch(this, function(checked){
 				return this.disableHandlers || this.handleRoot(checked);
 			}));
-
-			var variableTypeToggle = dojo.query(".handleVariable");
-			variableTypeToggle.forEach(function(toggleNode){
-				registry.byNode(toggleNode).on('click', lang.hitch(this, function(event){
-					return this.disableHandlers || this.handleVariableType(event);
-				}));
-			}, this);
 
 			var setStudentNode = registry.byId(this.controlMap.setStudent);
 			setStudentNode.on('Change', lang.hitch(this, function(checked){
@@ -325,18 +313,6 @@ define([
 				property: "root",
 				value: root
 			});
-		},
-
-		handleVariableType: function(event){
-			// Summary : Sets variableType to Unknown/Parameter/Dynamic
-			// Value is not allowed when variableType is Unknown
-			// Value is handled when variableType is parameter or dynamic.
-			console.log("********************* in handleVariableType");
-			var _variableType = event.target.value;
-			if(_variableType === this._model.authored.getVariableType(this.currentID)){
-				return;
-			}
-			this.variableTypeControls(this.currentID, _variableType);
 		},
 
 		handleSetStudentNode: function(checked){
@@ -825,7 +801,7 @@ define([
 
 			//copy correct values into student node
 			this._model.student.setAuthoredID(newNodeID, currentNode.ID);
-			this._model.student.setInitial(newNodeID, currentNode.initial);
+			this._model.student.setValue(newNodeID, currentNode.initial);
 			this._model.student.setUnits(newNodeID, currentNode.units);
 			
 			if(currentNode.equation){
@@ -898,7 +874,7 @@ define([
 				var type = this._model.student.getType(studentNodeID);
 				//registry.byId(this.controlMap.type).set('value', type || "defaultSelect");
 				registry.byId(this.controlMap.equation).set("disabled", false);
-				var initial = this._model.student.getInitial(studentNodeID);
+				var initial = this._model.student.getValue(studentNodeID);
 				if(typeof initial !== "undefined" && initial != null){
 					registry.byId(this.controlMap.initial).set('value', initial);
 				}

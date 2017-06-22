@@ -18,11 +18,12 @@ define([
 	'./equation',
 	'./draw-model',
 	'./con-author',
+	'./con-student',
 	'./logging',
 	'./popup-dialog',
 	'./event-logs'
 ], function(array, geometry, dom, style, aspect, ready, registry, event, ioQuery, on, Button, domConstruct, lang,
-			menu, session, model, equation, drawModel, controlAuthor, logging, popupDialog, eventLogs){
+			menu, session, model, equation, drawModel, controlAuthor, controlStudent, logging, popupDialog, eventLogs){
 	
 	console.log("load main.js");
 	// Get session parameters
@@ -53,12 +54,15 @@ define([
 			console.warn("Dragoon log files won't work since we can't set up a session.");
 			console.error("Function called without arguments");
 			// show error message and exit
-			var errorMessage = new messageBox("errorMessageBox", "error", "Missing information, please recheck the query");
+			/*var errorMessage = new messageBox("errorMessageBox", "error", "Missing information, please recheck the query");
 			errorMessage.show();
 			throw Error("please retry, insufficient information");
+			*/
 		}
 	}
 
+	// TO DO : Activity Parameters 
+	// TO DO : UI Parameters
 	var _session = session(query);
 	var _model = new model(query.m, query.p);
 	console.log(_model);
@@ -69,13 +73,55 @@ define([
 			try{
 				_model.loadModel(solutionGraph);
 			} catch(err){
-				throw Error(err);
+				if (query.m == "AUTHOR") {
+					//var errorMessage = new messageBox("errorMessageBox", "error", error.message);
+					//errorMessage.show();
+					throw Error(err);
+				} else {
+					//var errorMessage = new messageBox("errorMessageBox", "error", "This problem could not be loaded. Please contact the problem's author.");
+					//errorMessage.show();
+					throw Error("Model could not be loaded.");
+				}
 			}
+			// This version of code addresses loading errors in cases where problem is empty, incomplete or has no root node in coached mode
+			if (query.m !== "AUTHOR") {
+				//check if the problem is empty
+				try {
+					console.log("checking for emptiness");
+					var count = 0;
+					array.forEach(_model.authored.getNodes(), function (node) {
+						//for each node increment the counter
+						count++;
+					});
+					console.log("count of nodes is", count);
+					if (count == 0) {
+						//if count is zero we throw a error
+						throw new Error("Problem is Empty");
+					}
+					//check for completeness of all nodes
+					console.log("inside completeness verifying function");
+					array.forEach(_model.authored.getNodes(), function (node) {
+						console.log("node is", node, _model.authored.isComplete(node.ID));
+						if (!_model.authored.isComplete(node.ID)) {
+							throw new Error("Problem is Incomplete");
+						}
+					});
+					
+				}catch (error) {
+					console.log("Incomplete!");
+					//var errorMessage = new messageBox("errorMessageBox", "error", error.message);
+					//errorMessage.show();
+				}
+			}
+
 		} else {
 			console.log("Its a new problem");
 			// TODO: show the message box at the top to say that its a new problem.
+			// Add message box in student mode
 		}
-	
+		
+
+
 		//The following code follows sachin code after the model has been rendered according to query parameters
 		ready(function(){
 			/**
@@ -94,7 +140,7 @@ define([
 			var loading = document.getElementById('loadingOverlay');
 			loading.style.display = "none";
 
-			var dm = new drawModel(_model.active);
+			var dm = new drawModel(_model.active, query.m);
 			var errDialog = new popupDialog();
 
 			/*********  below this part are the event handling *********/
@@ -183,8 +229,14 @@ define([
 			var ui_config = "";
 
 			//For now using empty  ui_config 
+			var controllerObject = (query.m == 'AUTHOR') ?
+				new controlAuthor(query.m, _model, ui_config) :
+				new controlStudent(query.m, _model, ui_config);
 
-			var controllerObject = new controlAuthor(query.m, _model, ui_config);
+			if(query.m != 'AUTHOR'){
+				//controllerObject.setAssessment(session); //set up assessment for student.
+			}
+			//                                                                                            var controllerObject = new controlAuthor(query.m, _model, ui_config);
 			//next step is to add action to add quantity
 			menu.add("createQuantityNodeButton", function(e){
 				event.stop(e);

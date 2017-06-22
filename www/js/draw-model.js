@@ -33,12 +33,14 @@ define([
 				'initialNode': nodeID+'ContentInitial',
 				'description': nodeID+'_description',
 				'parentDOM': nodeID,
-				'parentInitial': nodeID + this.initialNodeIDTag
+				'parentInitial': nodeID + this.initialNodeIDTag,
+				'topomathFeedback' : 'feedback'+nodeID
 			};
 		},
 
-		constructor: function(model){
+		constructor: function(model, mode){
 			this._model = model;
+			this._mode = mode;
 			this.initialNodeIDTag = this._model.getInitialNodeIDString();
 			this._borderColor = this._colors.length - 1;
 			this.connectorUI = {
@@ -50,14 +52,15 @@ define([
 				HoverPaintStyle : {strokeStyle:"#1e8151", lineWidth:2 },
 				Container:"statemachine-demo"
 			});
-
 			this._instance = instance;
 			var vertices = [];
 			var temp = [];
 			vertices = array.map(model.getNodes(), function(node){
+				
 				temp = temp.concat(this.addNode(node));
 				return temp;
 			}, this);
+
 			vertices = vertices[vertices.length - 1]; //hack for keeping it one dimension
 			console.log(vertices);
 			
@@ -197,6 +200,10 @@ define([
 			//update border
 			var isComplete = this._model.isComplete(node.ID);
 			var hasClass = domClass.contains(domIDTags['parentDOM'], "incomplete");
+			if(this._mode !== "AUTHOR"){
+				var nodeStatusClass = this.getStatus(node);
+				domClass.add(domIDTags['topomathFeedback'], nodeStatusClass);
+			}
 			var initialHasClass = initialNode && domClass.contains(domIDTags['parentInitial'], "incomplete");
 			if(hasClass && isComplete){
 				domClass.remove(domIDTags['parentDOM'], "incomplete");
@@ -232,8 +239,10 @@ define([
 					y += 100;
 				}
 			}
-			if(!this._model.isComplete(node.ID))
+
+			if(!this._model.isComplete(node.ID)){
 				classTag += " incomplete";
+			}
 			var nodeDOM = domConstruct.create("div", {
 				id: idTag,
 				"class": classTag,
@@ -246,6 +255,10 @@ define([
 				innerHTML: innerHTML
 			}, "statemachine-demo");
 
+			if(this._mode !== "AUTHOR"){
+				var nodeStatusClass = this.getStatus(node);
+				nodeDOM.querySelector(".topomath-feedback").className += nodeStatusClass;
+			}
 			this.makeDraggable(nodeDOM);
 
 			// creating menu for each DOM element
@@ -479,6 +492,47 @@ define([
 		updateNodeConnections: function(from, to){
 			this.detachConnections(to);
 			this.setConnections(from, to);
+		},
+		getStatus: function(node){
+			var nodeStatus = node.status;
+			var nodeAttributesNumberExpected;
+			var variableType = this._model.getVariableType(node.ID);
+			var modelType = this._model.getType(node.ID);
+			if(variableType && modelType){
+				if(modelType === "quantity"){
+					if(variableType === "dynamic" || variableType === "parameter"){
+						nodeAttributesNumberExpected = 5;
+					}else{
+						nodeAttributesNumberExpected = 4;
+					}
+				}
+				if(modelType === "equation"){
+					nodeAttributesNumberExpected = 2;
+				}
+				var nodeAttributesNumber = Object.keys(nodeStatus).length;
+				var attributeCounter = 0;
+				for(var attribute in nodeStatus){
+					var _status = nodeStatus[attribute].status; 
+					if(_status !== undefined && _status === "correct"){ 
+						attributeCounter++;
+					}else if(_status !== undefined && _status === "incorrect"){
+						attributeCounter = -nodeAttributesNumber+1;
+					}
+				}
+				var nodeClass = "";
+				// TO DO :Consider attempts
+				if( attributeCounter === 0){
+					nodeClass = " fa-minus";	
+				}else if( attributeCounter !== 0 && attributeCounter === nodeAttributesNumber && nodeAttributesNumber === nodeAttributesNumberExpected /*Add attempt count here*/){
+					nodeClass = " fa-star";
+				}else if( attributeCounter < 0){
+					nodeClass = " fa-times";
+				}else{
+					nodeClass = " fa-check";
+				}
+				return nodeClass;
+
+			}
 		}
 	});
 });
