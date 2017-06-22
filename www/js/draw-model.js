@@ -202,6 +202,11 @@ define([
 			var hasClass = domClass.contains(domIDTags['parentDOM'], "incomplete");
 			if(this._mode !== "AUTHOR"){
 				var nodeStatusClass = this.getStatus(node);
+				var _feedbackTags = ['fa-check','fa-star','fa-times','fa-minus'];
+				/*Updating tags each time model gets updated*/
+				array.forEach(_feedbackTags, function(t){
+					domClass.remove(domIDTags['topomathFeedback'], t);
+				})
 				domClass.add(domIDTags['topomathFeedback'], nodeStatusClass);
 			}
 			var initialHasClass = initialNode && domClass.contains(domIDTags['parentInitial'], "incomplete");
@@ -498,41 +503,39 @@ define([
 			var nodeAttributesNumberExpected;
 			var variableType = this._model.getVariableType(node.ID);
 			var modelType = this._model.getType(node.ID);
-			if(variableType && modelType){
-				if(modelType === "quantity"){
-					if(variableType === "dynamic" || variableType === "parameter"){
-						nodeAttributesNumberExpected = 5;
-					}else{
-						nodeAttributesNumberExpected = 4;
-					}
-				}
-				if(modelType === "equation"){
-					nodeAttributesNumberExpected = 2;
-				}
-				var nodeAttributesNumber = Object.keys(nodeStatus).length;
-				var attributeCounter = 0;
-				for(var attribute in nodeStatus){
-					var _status = nodeStatus[attribute].status; 
-					if(_status !== undefined && _status === "correct"){ 
-						attributeCounter++;
-					}else if(_status !== undefined && _status === "incorrect"){
-						attributeCounter = -nodeAttributesNumber+1;
-					}
-				}
-				var nodeClass = "";
-				// TO DO :Consider attempts
-				if( attributeCounter === 0){
-					nodeClass = " fa-minus";	
-				}else if( attributeCounter !== 0 && attributeCounter === nodeAttributesNumber && nodeAttributesNumber === nodeAttributesNumberExpected /*Add attempt count here*/){
-					nodeClass = " fa-star";
-				}else if( attributeCounter < 0){
-					nodeClass = " fa-times";
+			if(modelType === "quantity"){
+				if(variableType === "dynamic" || variableType === "parameter"){
+					nodeAttributesNumberExpected = 5;
 				}else{
-					nodeClass = " fa-check";
+					nodeAttributesNumberExpected = 4;
 				}
-				return nodeClass;
-
 			}
+			if(modelType === "equation"){
+				nodeAttributesNumberExpected = 2;
+			}
+			var nodeAttributesNumber = Object.keys(nodeStatus).length;
+			var attributeCounter = 0;
+			for(var attribute in nodeStatus){
+				var _status = nodeStatus[attribute].status; 
+				if(_status !== undefined && _status === "correct"){ 
+					attributeCounter++;
+				}else if(_status !== undefined && _status === "incorrect"){
+					attributeCounter = -nodeAttributesNumber+1;
+				}
+			}
+			var nodeClass = "";
+			// TO DO :Consider attempts
+			if( attributeCounter === 0){
+				nodeClass = " fa-minus";	
+			}else if( attributeCounter !== 0 && attributeCounter === nodeAttributesNumber && nodeAttributesNumber === nodeAttributesNumberExpected /*Add attempt count here*/){
+				nodeClass = " fa-star";
+			}else if( attributeCounter < 0){
+				nodeClass = " fa-times";
+			}else{
+				nodeClass = " fa-check";
+			}
+			return nodeClass;
+
 		}
 	});
 });
