@@ -46,7 +46,7 @@ define([
 		//		All the actions remain same, only add additional field(s) in _getInterpretation and _enableNext
 		correct: {
 			feedback: function(obj, part){
-				state(obj, part, "correct");
+				state(obj, part, "correct", value);
 				message(obj, part, "correct");
 				disable(obj, part, true);
 			}
@@ -54,6 +54,7 @@ define([
 		incorrect: {
 			feedback: function(obj, part){
 				state(obj, part, "incorrect");
+				message(obj, part, "incorrect");
 			}
 		}
 	};
@@ -68,8 +69,12 @@ define([
 	 * Summary: The following four functions are used by the above tables to push
 	 *		statuses and messages to the return object array.
 	 *****/
-	function state(/*object*/ obj, /*string*/ nodePart, /*string*/ status){
-		obj.push({id: nodePart, attribute: "status", value: status});
+	function value(/*object*/ obj, /*string*/ nodePart, /*string*/ value){
+		obj.push({id: nodePart, attribute: "value", value: value});
+	}
+
+	function state(/*object*/ obj, /*string*/ nodePart, /*string*/ status, /*value*/ value){
+		obj.push({id: nodePart, attribute: "status", value: status, nodeValue: value});
 		if(status==="premature"){
 			obj.push({id: nodePart, attribute: "value", value: ""});
 		}
@@ -86,7 +91,7 @@ define([
 
 	function display(/*object*/ obj, /*string*/ nodeDiv, /*string*/ display){
 		obj.push({id: nodeDiv, attribute: "display", value: display});
-	}	
+	}
 
 	/*****
 	 *
@@ -120,11 +125,44 @@ define([
 			//var showCorrectAnswer = this.showCorrectAnswer;
 			// Retrieves the authoredID for the matching given model node
 			var authoredID = this.model.student.getAuthoredID(studentID);
+			var interpretation = "incorrect";
+			//var possibleInterpretations = ["correct"];
 
-			var possibleInterpretations = ["correct"];
+			//var interpretation =  possibleInterpretations[Math.floor(Math.random()*possibleInterpretations.length)]
+			
+			// Anonymous function assigned to interpret--used by most parts of the switch below
+			var interpret = function(correctAnswer){
+				//we create temporary answer and temporary correct answer both parsed as float to compare if the numbers are strings in case of execution
+				answer_temp1=parseFloat(answer);
+				correctAnswer_temp1=parseFloat(correctAnswer);
+				if(answer === correctAnswer || correctAnswer === true || answer_temp1 == correctAnswer_temp1){
+					interpretation = "correct";
+				}else{
+					interpretation = "incorrect";
+				}
+			};
 
-			var interpretation =  possibleInterpretations[Math.floor(Math.random()*possibleInterpretations.length)]
-
+			switch(nodePart){
+				case "description":
+					if(this.model.active.getType(studentID) === this.model.authored.getType(authoredID)){
+						interpretation = "correct";
+					}
+					break;
+				case "variable":
+					interpret(this.model.authored.getVariable(authoredID));
+					break;
+				case "variableType":
+					interpret(this.model.authored.getVariableType(authoredID));
+					break;
+				case "units":
+					interpret(this.model.authored.getUnits(authoredID));
+					break;
+				case "value":
+					interpret(this.model.authored.getValue(authoredID));
+					break;
+				case "equation":
+					break;
+			}
 			return interpretation;
 		},
 
@@ -142,9 +180,7 @@ define([
 			var interpretation = this._getInterpretation(id, nodePart, answer);
 			var obj = [];
 			var returnObj = [];
-			
-			nodeEditorActionTable[interpretation][this.userType](returnObj, nodePart);
-			
+			nodeEditorActionTable[interpretation][this.userType](returnObj, nodePart, answer);
 			console.log("Return Obj" , returnObj);
 			return returnObj;
 		},
@@ -158,7 +194,6 @@ define([
 			var actual_id = this.model.student.getAuthoredID(id);
 			console.log("actual id is",actual_id);
 			var interpretation = this._getInterpretation(id, nodePart, answer);
-			
 			var returnObj = [], currentStatus;
 			var givenID ;  // ID of the correct node, if it exists
 			var solutionGiven = false;
@@ -175,7 +210,6 @@ define([
 						}else{
 							model.authored.setStatus(givenID, nodePart, "incorrect");
 						}
-						model.authored.getStatus(givenID, nodePart)
 					}
 				});
 			};
@@ -197,8 +231,8 @@ define([
 				}else{
 					givenID = this.model.student.getAuthoredID(id);
 					console.assert(nodeEditorActionTable[interpretation], "processAnswer() interpretation '" + interpretation + "' not in table ", nodeEditorActionTable);
-					nodeEditorActionTable[interpretation][this.userType](returnObj, nodePart);
-					
+					nodeEditorActionTable[interpretation][this.userType](returnObj, nodePart, answer);
+					updateStatus(returnObj, this.model);
 					currentStatus = this.model.authored.getStatus(givenID, nodePart); //get current status set in given model
 					if (currentStatus !== "correct") {
 						for (var i = 0; i < returnObj.length; i++)
@@ -206,11 +240,8 @@ define([
 								// handle incorrect result - increment assistance score
 							}
 					}
-					updateStatus(returnObj, this.model);
-					
 				}
 			}
-			
 			return returnObj;
 		}
 	});

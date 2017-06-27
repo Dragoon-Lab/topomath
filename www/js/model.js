@@ -499,7 +499,9 @@ define([
 				// Note that the description may be empty.
 				// TODO:  The list should be sorted.
 				return array.map(this.getNodes(), function(node){
-					return {label: node.description, value: node.ID};
+
+					var desc = node.description !== undefined ? node.description : node.explanation;
+					return {label: desc, value: node.ID} ;
 				});
 			},
 			/*
@@ -675,11 +677,7 @@ define([
 				var ret = this.getNode(id);
 				return ret && ret.inputs;
 			},
-			getUnits: function(/*string*/ id){
-				return this.getNode(id).units;
-			},
 			deleteNode: function(/*string*/ id){
-				
 				var index;
 				var nodes = this.getNodes();
 				for(var i = 0; i < nodes.length; i++){

@@ -34,7 +34,8 @@ define([
 				'description': nodeID+'_description',
 				'parentDOM': nodeID,
 				'parentInitial': nodeID + this.initialNodeIDTag,
-				'topomathFeedback' : 'feedback'+nodeID
+				'topomathFeedback' : 'feedback'+nodeID,
+				'topomathFeedbackInitial' : 'feedback'+nodeID+'LabelInitial'
 			};
 		},
 
@@ -206,8 +207,14 @@ define([
 				/*Updating tags each time model gets updated*/
 				array.forEach(_feedbackTags, function(t){
 					domClass.remove(domIDTags['topomathFeedback'], t);
+					if(initialNode){
+						domClass.remove(domIDTags['topomathFeedbackInitial'], t);
+					}
 				})
 				domClass.add(domIDTags['topomathFeedback'], nodeStatusClass);
+				if(initialNode){
+					domClass.add(domIDTags['topomathFeedbackInitial'], nodeStatusClass);
+				}
 			}
 			var initialHasClass = initialNode && domClass.contains(domIDTags['parentInitial'], "incomplete");
 			if(hasClass && isComplete){

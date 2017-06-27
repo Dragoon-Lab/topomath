@@ -269,6 +269,7 @@ define([
 			}
 
 			var setEnableOption = function(value){
+				
 				console.log("++++ in setEnableOption, scope=", this);
 				array.forEach(this.options, function(option){
 					if((!value || option.value == value ) && option.value !== "defaultSelect")
@@ -277,6 +278,7 @@ define([
 				this.startup();
 			};
 			var setDisableOption = function(value){
+				
 				console.log("++++ in setDisableOption, scope=", this);
 				array.forEach(this.options, function(option){
 					if(!value || option.value == value)
@@ -526,12 +528,12 @@ define([
 			}
 			// Erase modifications to the control settings.
 			// Enable all options in select controls.
-			/* TODO: this enable/disable options looks like for student mode
+			//TODO: this enable/disable options looks like for student mode
 			array.forEach(this.selects, function(control){
 				var w = registry.byId(this.controlMap[control]);
 				w.set("enableOption", null);  // enable all options
 			}, this);
-			*/
+			
 			//for all controls corresponding to a node type , enable and remove colors
 			var allControls = (this.nodeType == "equation" ? this.equationNodeControls : this.variableNodeControls).concat(this.commonNodeControls);
 			console.log("all controls", allControls);
@@ -651,16 +653,16 @@ define([
 			 Set value for  value, equation (input),
 			 */
 
-
 			if(model.getNodeIDFor){
 				var d = registry.byId(this.controlMap.description);
 				array.forEach(this._model.authored.getDescriptions(), function(desc){
-					if(this._mode == "AUTHOR"){
-						var exists =  model.getNodeIDFor(desc.value);
+					var exists =  model.getNodeIDFor(desc.value);
+					
+					if(d.getOptions(desc)) {
 						d.getOptions(desc).disabled=exists;
 						if(desc.value == nodeName){
 							d.getOptions(desc).disabled=false;
-						}	
+						}
 					}
 				});
 			}
@@ -754,6 +756,14 @@ define([
 					}else if(directive.value == "unknown"){
 						style.set('valueInputboxContainer','display','none');
 					}
+					if(directive.attribute === "status" && directive.value === "correct"){
+						var _variableTypes = ["unknown","parameter","dynamic"];
+						array.forEach(_variableTypes, function(_type){
+							if(_type !== directive.nodeValue){
+								registry.byId(_type+"Type").set('disabled',true);
+							}
+						});
+					}
 
 				}else{
 					//this code needs to be uncommented when logging module is included
@@ -839,17 +849,9 @@ define([
 			if(_variableType === this._model.active.getVariableType(this.currentID)){
 				return;
 			}
-			
 			this.variableTypeControls(this.currentID, _variableType);
 			if(this._mode !== "AUTHOR"){
 				this.applyDirectives(this._PM.processAnswer(this.currentID, 'variableType', _variableType));
-				var _variableTypes = ["unknown","parameter","dynamic"];
-				array.forEach(_variableTypes, function(_type){
-					if(_type !== _variableType){
-						registry.byId(_type+"Type").set('disabled',true);
-					}
-					
-				})
 			}
 		},
 

@@ -102,6 +102,7 @@ define([
 			//  d.removeOption(d.getOptions()); // Delete all options
 
 			//get descriptions to sort as alphabetic order
+
 			var descriptions = this._model.authored.getDescriptions();
 			//create map of names for sorting
 			var descNameMap = {};
@@ -118,15 +119,14 @@ define([
 			array.forEach(descriptions, function (desc) {
 				if(desc.label !== undefined){
 					d.addOption(desc);
+					console.log("Description is : ", desc);
 					var name = this._model.authored.getName(desc.value);
 					var option = {label: name + " (" + desc.label + ")", value: desc.value};
 					console.log("option is",option);
 					t.addOption(option);
-					var v_option = {label: name , value: desc.value};
-					variableName.addOption(v_option);
-				}else{
-					desc.label = this._model.authored.getDescription(desc.value);
-					d.addOption(desc);
+					if(name !== undefined && name !== ""){
+						variableName.addOption({label: name , value: name});	
+					}
 				}
 
 			}, this);
@@ -149,17 +149,15 @@ define([
 			// This is only needed if the type has already been set,
 			// something that is generally only possible in TEST mode.
 			//this.updateEquationLabels();
-			this.applyDirectives(this._PM.processAnswer(this.currentID, 'description', selectDescription, this._model.authored.getName(selectDescription)));
+			this.applyDirectives(this._PM.processAnswer(this.currentID, 'description', selectDescription));
 		},
 		handleVariableName: function(name){
 			console.log("Handle variable Name ", name);
+			this._model.active.setVariable(this.currentID, name);
 			if (name == 'defaultSelect') {
 				return; // don't do anything if they choose default
 			}
-			var _name = this._model.authored.getVariable(name);
-			this.applyDirectives(this._PM.processAnswer(this.currentID, 'variable', variableInputboxStudent, this._model.authored.getName(variableInputboxStudent)));
-			
-			this._model.active.setVariable(this.currentID, _name);
+			this.applyDirectives(this._PM.processAnswer(this.currentID, 'variable', name));
 		},
 		handleValue: function(value){
 			console.log("Handle Value ", value);
@@ -277,12 +275,12 @@ define([
 			
 			// Set the selected value in the description.
 			var desc = this._model.student.getAuthoredID(nodeid);
-
+			var variableName = this._model.student.getVariable(nodeid);
 			console.log('description is', desc || "not set");
 			
 			registry.byId(this.controlMap.description).set('value', desc || 'defaultSelect', false);
 			
-			registry.byId(this.controlMap.variable).set('value', desc || 'defaultSelect', false);
+			registry.byId(this.controlMap.variable).set('value', variableName || 'defaultSelect', false);
 
 			var _variableTypes = ["unknown","parameter","dynamic"];
 			array.forEach(_variableTypes, function(_type){
