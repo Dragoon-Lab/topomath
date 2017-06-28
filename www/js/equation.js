@@ -190,6 +190,25 @@ define([
 			}, this);
 		},
 
+		/**
+		* function that will solve the system of equations. parameters have to be
+		* thought of.
+		* For now the system of equations will be passed here with the timestep and
+		* variable details, to be sent to math-solver.
+		**/
+		solve: function(){
+
+		},
+
+		/**
+		* to evaluate one equation from the student model and compare it with
+		* equation from the author model.
+		* TODO contemplating - whether to give equations to be compared here OR
+		* the model and he node ID.
+		**/
+		evaluate: function(){
+
+		},
 		setLogging: function(logger){
 			this._logger = logger;
 		}
