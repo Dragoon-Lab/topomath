@@ -507,41 +507,20 @@ define([
 		},
 		getStatus: function(node){
 			var nodeStatus = node.status;
-			var nodeAttributesNumberExpected;
-			var variableType = this._model.getVariableType(node.ID);
-			var modelType = this._model.getType(node.ID);
-			if(modelType === "quantity"){
-				if(variableType === "dynamic" || variableType === "parameter"){
-					nodeAttributesNumberExpected = 5;
-				}else{
-					nodeAttributesNumberExpected = 4;
-				}
+			var nodeID = node.ID;
+			var statusClassMap = {
+				"demo" : "fa-minus",
+				"incorrect" : "fa-times",
+				"correct" : "fa-check",
+				"perfect" : "fa-star"
 			}
-			if(modelType === "equation"){
-				nodeAttributesNumberExpected = 2;
+			nodeStatus = this._model.getCorrectness?this._model.getCorrectness(nodeID):"";
+			//Check for perfect node
+			if(this._model.isComplete(nodeID) && this._model.getAssistanceScore(nodeID) === 0 && this._model.getCorrectness(nodeID) === "correct"){
+				nodeStatus = "perfect";
 			}
-			var nodeAttributesNumber = Object.keys(nodeStatus).length;
-			var attributeCounter = 0;
-			for(var attribute in nodeStatus){
-				var _status = nodeStatus[attribute].status; 
-				if(_status !== undefined && _status === "correct"){ 
-					attributeCounter++;
-				}else if(_status !== undefined && _status === "incorrect"){
-					attributeCounter = -nodeAttributesNumber+1;
-				}
-			}
-			var nodeClass = "";
-			// TO DO :Consider attempts
-			if( attributeCounter === 0){
-				nodeClass = " fa-minus";	
-			}else if( attributeCounter !== 0 && attributeCounter === nodeAttributesNumber && nodeAttributesNumber === nodeAttributesNumberExpected /*Add attempt count here*/){
-				nodeClass = " fa-star";
-			}else if( attributeCounter < 0){
-				nodeClass = " fa-times";
-			}else{
-				nodeClass = " fa-check";
-			}
-			return nodeClass;
+			
+			return " "+statusClassMap[nodeStatus];
 
 		}
 	});

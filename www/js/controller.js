@@ -36,9 +36,10 @@ define([
 	"dojo/aspect",
 	"dojo/dom-class",
 	"dijit/Tooltip",
+	"dojo/_base/event",
 	"./equation",
 	"./logging"
-], function(array, declare, lang, dom, keys, on, ready, registry, domStyle, domConstruct, aspect, domClass, toolTip,
+], function(array, declare, lang, dom, keys, on, ready, registry, domStyle, domConstruct, aspect, domClass, toolTip, event,
 	expression, clientLogging){
 
 	/* Summary:
@@ -116,6 +117,9 @@ define([
 		},
 		// Stub to setting description for auto craeted nodes.
 		setNodeDescription: function(id, variable){
+			var authoredID = this._model.authored.getNodeIDByName(variable);
+			this._model.active.setAuthoredID(id, authoredID);
+			this._model.active.setDescription(id, this._model.authored.getDescription(authoredID));
 		},
 		// Stub to set connections in the graph
 		setConnections: function(from, to){
@@ -732,10 +736,14 @@ define([
 							this.updateDescription(directive.value);
 						}else if(w.id == 'equationBox'){
 							this.equationSet(directive.value);
+						}else if(w.id == 'variableInputboxStudent'){
+							this._model.active.setVariable(this.currentID, directive.value);
+						}else if(w.id == 'unitsSelectorStudent'){
+							this._model.active.setUnits(this.currentID, directive.value);
 						}
 						//TODO : update explanation function but right now no directives with att value for explanations not being processed 
 
-					}else{
+					} else{
 						console.log("w is",w);
 						w.set(directive.attribute, directive.value);
 						if(directive.attribute === "status"){
@@ -752,17 +760,25 @@ define([
 					}
 				}else if(directive.id == "variableType"){
 					if(directive.value == "dynamic" || directive.value == "parameter"){
-						style.set('valueInputboxContainer','display','block');
+						domStyle.set('valueInputboxContainer','display','block');
 					}else if(directive.value == "unknown"){
-						style.set('valueInputboxContainer','display','none');
+						domStyle.set('valueInputboxContainer','display','none');
 					}
-					if(directive.attribute === "status" && directive.value === "correct"){
+					if(directive.attribute === 'value'){
+						registry.byId(directive.value+'Type').set('checked','checked');
+						this._model.active.setVariableType(this.currentID, directive.value);
+					}
+					else if(directive.attribute === "disabled" && directive.value === true ){
 						var _variableTypes = ["unknown","parameter","dynamic"];
+						var _selectedVariableType = dojo.query("input[name='variableType']:checked")[0].value;
 						array.forEach(_variableTypes, function(_type){
-							if(_type !== directive.nodeValue){
+							if(_type !== _selectedVariableType){
 								registry.byId(_type+"Type").set('disabled',true);
 							}
 						});
+					}else if(directive.attribute === "status" && directive.value === "correct"){
+						var _selectedVariableType = dojo.query("input[name='variableType']:checked")[0].value;
+						registry.byId(_selectedVariableType	+'Type').set('checked','checked');
 					}
 
 				}else{
@@ -840,12 +856,12 @@ define([
 		/* Stub to update connections in graph */
 		addQuantity: function(source, destinations){
 		},
-		handleVariableType: function(event){
+		handleVariableType: function(e){
 			// Summary : Sets variableType to Unknown/Parameter/Dynamic
 			// Value is not allowed when variableType is Unknown
 			// Value is handled when variableType is parameter or dynamic.
 			console.log("********************* in handleVariableType");
-			var _variableType = event.target.value;
+			var _variableType = e.target.value;
 			if(_variableType === this._model.active.getVariableType(this.currentID)){
 				return;
 			}
@@ -979,7 +995,6 @@ define([
 
 			 */
 			if(parseObject){
-
 				var newNodesList = parseObject.newNodeList;
 				var variableList = parseObject.variableList;
 				var autoCreationFlag = true; //can be read from the source
@@ -995,6 +1010,7 @@ define([
 						//these nodes were added to model, substituted into equation but should be added here
 						this.addNode(this._model.active.getNode(newNode.id));
 						this.setNodeDescription(newNode.id,newNode.variable);
+						this.updateNodeView(this._model.active.getNode(newNode.id));
 					}, this);
 					//dynamicList contains those nodes for which prior node UI changes have to be made
 					//Accordingly, make the node dynamic by changing the variable type and setting the accumulator

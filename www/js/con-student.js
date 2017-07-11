@@ -123,9 +123,10 @@ define([
 					var name = this._model.authored.getName(desc.value);
 					var option = {label: name + " (" + desc.label + ")", value: desc.value};
 					console.log("option is",option);
-					t.addOption(option);
+					
 					if(name !== undefined && name !== ""){
-						variableName.addOption({label: name , value: name});	
+						variableName.addOption({label: name , value: name});
+						t.addOption(option);
 					}
 				}
 
@@ -344,7 +345,26 @@ define([
 
 				// console.warn("======= not saving in status, node=" + this.currentID + ": ", desc);
 			}
-		}
+		},
+		updateInputNode: function(/** auto node id **/ id, /**variable name**/ variable){
+			console.log("updating nodes in student controller");
+			//update the name for nodeid
+			// BvdS:  when we set the name we don't send to author PM
+			// since there is nothing to update in the node editor since
+			// this is a different node.
+			//this._model.active.setName(id, variable);
+			// update Node labels upon exit
+			//this.updateNodeLabel(id);
+			var authoredID = this._model.authored.getNodeIDByName(variable);
+			//console.log(id,descID,this._model.given.getName(descID));
+			var directives = this._PM.processAnswer(id, 'description', authoredID);
+			directives.push.apply(directives, this._PM.processAnswer(id, 'variable', variable));
+			// Need to send to PM and update status, but don't actually
+			// apply directives since they are for a different node.
+			array.forEach(directives, function (directive) {
+				this.updateModelStatus(directive, id);
+			}, this);
+		},
 	});
 });
 

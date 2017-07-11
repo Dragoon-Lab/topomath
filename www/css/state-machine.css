@@ -1,7 +1,7 @@
 .equation {
 	position: absolute;
 	border: 3px solid black;
-	padding: 4px 7px;
+	padding: 6px 12px;
 	box-shadow: 2px 2px 19px #e0e0e0;
 	-o-box-shadow: 2px 2px 19px #e0e0e0;
 	-webkit-box-shadow: 2px 2px 19px #e0e0e0;
@@ -9,7 +9,7 @@
 	opacity:0.8;
 	filter:alpha(opacity=80);
 	cursor: move;
-	font-size: 11px;
+	font-size: 12px;
 	text-align: center;
 	vertical-align: middle;
 	width: 100px;
@@ -31,7 +31,7 @@
 	*/
 	border-radius: 500px;
 	/*border-radius: 10%/50%; this is height dependent*/
-	padding: 4px 7px;
+	padding: 6px 12px;
 	text-align: center;
 	width: 100px;
 	height: auto;
@@ -43,7 +43,7 @@
 	opacity:0.8;
 	filter:alpha(opacity=80);
 	cursor: move;
-	font-size: 11px;
+	font-size: 12px;
 	text-align: center;
 	vertical-align: middle;
 	-webkit-transition:background-color 0.25s ease-in;

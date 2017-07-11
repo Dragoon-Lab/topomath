@@ -104,7 +104,7 @@ define([
 					if(model.isAccumulator(nodeID)){
 						if(!initial) initial = "??";
 						if(value != this.defaultString)
-							value = model.getInitialNodeDisplayString() + " " + value + " : " + initial;
+							value = "initial" + "(" + value + ") = " + initial;
 					} else if(initial && value != this.defaultString) {
 						value += " = " + initial;
 					}

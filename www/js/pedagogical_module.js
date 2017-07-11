@@ -1,6 +1,5 @@
 /**
- * Pedagogical Module class used to solve Dragoon problems
- * @author: Brandon Strong
+ * Pedagogical Module class used to solve Topomath  problems
  **/
 
 /* global define */
@@ -19,21 +18,36 @@ define([
 	// Tags:
 	//			pedagogical module (PM), student mode, coached mode
 
+	var hints = {
+		erasedCorrect: [
+			"Your choice did not match the author's answer so it is being given to you. However, your previous work matched the author's answer. It will continue to be marked this way."
+		],
+		erasedDemo: [
+			"Your choice matched the author's answer, however this part was previously completed by the model. It will continue to be marked this way."
+		]
+	};
+
 	var descriptionTable = {
 		// Summary: This table is used for determining the proper response to a student's 'description' answer (see 
 		//		'Pedagogical_Module.docx' in the documentation)
 		correct: {
 			feedback: function(obj, part){
-				state(obj, part, "correct");
-				message(obj, part, "correct");
-				disable(obj, part, true);
-				//disable(obj, "type", false);
+				followUpTasks(obj, part, /*state*/ "correct", /*message*/ "correct", /*disable*/ true);
 			}
 		},
-		incorrect: {
+		incorrect:{
 			feedback: function(obj, part){
-				state(obj, part, "incorrect");
-				message(obj, part, "incorrect");
+				followUpTasks(obj, part, /*state*/ "incorrect", /*message*/ "incorrect", /*disable*/ false);
+			}
+		},
+		firstFailure: {
+			feedback: function(obj, part){
+				followUpTasks(obj, part, /*state*/ "incorrect", /*message*/ "incorrect", /*disable*/ false);
+			}
+		},
+		secondFailure:{
+			feedback: function(obj, part){
+				followUpTasks(obj, part, /*state*/ "demo", /*message*/ "secondFailure", /*disable*/ true);
 			}
 		}
 	};
@@ -46,15 +60,22 @@ define([
 		//		All the actions remain same, only add additional field(s) in _getInterpretation and _enableNext
 		correct: {
 			feedback: function(obj, part){
-				state(obj, part, "correct", value);
-				message(obj, part, "correct");
-				disable(obj, part, true);
+				followUpTasks(obj, part, /*state*/ "correct", /*message*/ "correct", /*disable*/ true);
 			}
 		},
-		incorrect: {
+		incorrect:{
 			feedback: function(obj, part){
-				state(obj, part, "incorrect");
-				message(obj, part, "incorrect");
+				followUpTasks(obj, part, /*state*/ "incorrect", /*message*/ "incorrect", /*disable*/ false);
+			}
+		},
+		firstFailure: {
+			feedback: function(obj, part){
+				followUpTasks(obj, part, /*state*/ "incorrect", /*message*/ "incorrect", /*disable*/ false);
+			}
+		},
+		secondFailure:{
+			feedback: function(obj, part){
+				followUpTasks(obj, part, /*state*/ "demo", /*message*/ "secondFailure", /*disable*/ true);
 			}
 		}
 	};
@@ -62,8 +83,18 @@ define([
 	/*
 	 * Add additional tables for activities that does not use node editor.
 	 */
-	//Declare variable for accessing state.js module
-	var record = null;
+	function followUpTasks(obj , part, /*state*/ stateVal, /*message*/ messageVal, /*disable*/ disabledVal){
+		if(stateVal !== undefined || stateVal !== ""){
+			state(obj, part, stateVal);
+		}
+		if(messageVal !== undefined || messageVal !== ""){
+			message(obj, part, messageVal);
+		}
+		if(disabledVal !== undefined || disabledVal !== ""){
+			disable(obj, part, disabledVal);
+		}
+	}
+
 
 	/*****
 	 * Summary: The following four functions are used by the above tables to push
@@ -74,7 +105,7 @@ define([
 	}
 
 	function state(/*object*/ obj, /*string*/ nodePart, /*string*/ status, /*value*/ value){
-		obj.push({id: nodePart, attribute: "status", value: status, nodeValue: value});
+		obj.push({id: nodePart, attribute: "status", value: status});
 		if(status==="premature"){
 			obj.push({id: nodePart, attribute: "value", value: ""});
 		}
@@ -82,6 +113,9 @@ define([
 
 	function message(/*object*/ obj, /*string*/ nodePart, /*string*/ status){
 		// TO DO : Add Hint messages
+		if(status === "lastFailure" || status === "secondFailure"){
+			status = "incorrect. The correct answer has been given";
+		}
 		obj.push({id: "message", attribute: "append", value: "The value entered for the " + nodePart + " is " + status + "."});
 	}
 
@@ -102,7 +136,7 @@ define([
 		constructor: function(/*string*/ mode, /*model.js object*/ model){
 			this.model = model;
 			this.mode = mode;
-				
+			this.showCorrectAnswer = true;
 			this.enableNextFromAuthor = true;
 			this.userType = "feedback";
 		},
@@ -122,30 +156,42 @@ define([
 			// Tags: Private
 			var interpretation = null;
 			var model = this.model; //needed for anonymous function in the interpret variable.
-			//var showCorrectAnswer = this.showCorrectAnswer;
+			var showCorrectAnswer = this.showCorrectAnswer;
 			// Retrieves the authoredID for the matching given model node
 			var authoredID = this.model.student.getAuthoredID(studentID);
-			var interpretation = "incorrect";
-			//var possibleInterpretations = ["correct"];
 
-			//var interpretation =  possibleInterpretations[Math.floor(Math.random()*possibleInterpretations.length)]
-			
+			if(interpretation === "secondFailure"){
+				answer = this.model.student.getCorrectAnswer(id, nodePart);
+			}
+
 			// Anonymous function assigned to interpret--used by most parts of the switch below
 			var interpret = function(correctAnswer){
+				console.log("nodePart", nodePart);
 				//we create temporary answer and temporary correct answer both parsed as float to compare if the numbers are strings in case of execution
 				answer_temp1=parseFloat(answer);
 				correctAnswer_temp1=parseFloat(correctAnswer);
 				if(answer === correctAnswer || correctAnswer === true || answer_temp1 == correctAnswer_temp1){
 					interpretation = "correct";
 				}else{
-					interpretation = "incorrect";
+					if(model.authored.getAttemptCount(authoredID, nodePart) > 0 ){
+						interpretation = "secondFailure"
+					}else{
+						interpretation = "firstFailure";
+					}
 				}
 			};
 
 			switch(nodePart){
 				case "description":
+					this.descriptionCounter++;
 					if(this.model.active.getType(studentID) === this.model.authored.getType(authoredID)){
 						interpretation = "correct";
+					}else{
+						if(model.authored.getAttemptCount(authoredID, nodePart) > 0 ){
+							interpretation = "secondFailure"
+						}else{
+							interpretation = "firstFailure";
+						}
 					}
 					break;
 				case "variable":
@@ -199,6 +245,20 @@ define([
 			var solutionGiven = false;
 			var givenAnswer = answer; //keeping a copy of answer for logging purposes.
 			
+			if(interpretation === "lastFailure" || interpretation === "secondFailure"){
+				answer = this.model.student.getCorrectAnswer(id, nodePart);
+				/*TO DO : Add Equation*/
+				if(answer == null){
+					if(nodePart === "description"){
+						returnObj.push({id: "message", attribute: "append", value: "You have already created all the necessary nodes."});
+					}else
+						console.error("Unexpected null from model.getCorrectAnswer().");
+				}else{
+					returnObj.push({id: nodePart, attribute: "value", value: answer});
+					solutionGiven = true;
+				}
+			}
+
 			var updateStatus = function(returnObj, model){
 				
 				returnObj.forEach(function(i){
@@ -206,8 +266,27 @@ define([
 						if(i.value === "correct"){
 							if(model.authored.getStatus(givenID, nodePart) !== "demo"){
 								model.authored.setStatus(givenID, nodePart, "correct");
+							}else{
+								i.value = "demo";
+								returnObj.forEach(function(j){
+									if(j.id === "message"){
+										j.value = hints.erasedDemo;
+									}
+								});
 							}
-						}else{
+						}else if(i.value === "demo"){
+							if(model.authored.getStatus(givenID, nodePart) !== "correct")
+								model.authored.setStatus(givenID, nodePart, "demo");
+							else{
+								i.value = "correct";
+								returnObj.forEach(function(j){
+									if(j.id === "message"){
+										j.value = hints.erasedCorrect;
+									}
+								});
+							}
+						}
+						else{
 							model.authored.setStatus(givenID, nodePart, "incorrect");
 						}
 					}
@@ -232,14 +311,16 @@ define([
 					givenID = this.model.student.getAuthoredID(id);
 					console.assert(nodeEditorActionTable[interpretation], "processAnswer() interpretation '" + interpretation + "' not in table ", nodeEditorActionTable);
 					nodeEditorActionTable[interpretation][this.userType](returnObj, nodePart, answer);
-					updateStatus(returnObj, this.model);
+					
 					currentStatus = this.model.authored.getStatus(givenID, nodePart); //get current status set in given model
 					if (currentStatus !== "correct") {
+						this.model.authored.setAttemptCount(givenID, nodePart, this.model.authored.getAttemptCount(givenID, nodePart) + 1);
 						for (var i = 0; i < returnObj.length; i++)
 							if (returnObj[i].value === "incorrect") {
-								// handle incorrect result - increment assistance score
+								this.model.student.incrementAssistanceScore(id);
 							}
 					}
+					updateStatus(returnObj, this.model);
 				}
 			}
 			return returnObj;

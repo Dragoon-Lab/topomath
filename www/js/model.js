@@ -624,9 +624,14 @@ define([
 			isNodeAllowed: function(id){
 				var givenNode = this.getNode(id);
 				return (givenNode && givenNode.genus == "allowed");
+			},
+			getAttemptCount: function(/*string*/ id, /*string*/ part, /*boolean*/ ignoreExecution){
+					var node = this.getNode(id);
+					return node.attemptCount[part]? node.attemptCount[part]:0;
+			},
+			setAttemptCount: function(/*string*/ id, /*string*/ part, /*string*/ count){
+				this.getNode(id).attemptCount[part] = count;
 			}
-            
-
 		}, both);
 
 		obj.student = lang.mixin({
@@ -783,7 +788,59 @@ define([
 			isNodeAllowed: function(id){
 				var authoredID = this.getAuthoredID(id);
 				return authoredID || obj.authored.isNodeAllowed(authoredID);
+			},
+			getCorrectAnswer : function(/*string*/ studentID, /*string*/ part){
+				var id = this.getAuthoredID(studentID);
+				var node = obj.authored.getNode(id);
+				return node[part];
+			},
+			incrementAssistanceScore: function(/*string*/ id){
+				// Summary: Incremements a score of the amount of errors/hints that
+				//		a student receives, based on suggestions by Robert Hausmann;
+				//
+				// Note: This is used by the PM for all node parts except the description
+				var authoredID = this.getAuthoredID(id);
+				var node = obj.authored.getNode(authoredID);
+				node.attemptCount.assistanceScore = (node.attemptCount.assistanceScore || 0) + 1;
+			},
+			getAssistanceScore: function(/*string*/ id){
+				// Summary: Returns a score based on the amount of errors/hints that
+				//		a student receives, based on suggestions by Robert Hausmann;
+				//		a score of 0 means that a student did not have any errors;
+				var authoredID = this.getAuthoredID(id);
+				return obj.authored.getAttemptCount(authoredID, "assistanceScore");
+			},
+			getCorrectness: function(/*string*/ studentID){
+				var node = this.getNode(studentID);
+				var rank = {
+					"incorrect": 3,
+					"demo": 2,
+					"correct": 1,
+					"": 0
+				};
+				var bestStatus = "";
+				var update = function(attr, sattr){
+					// node.status always exists
+					var nsa = node.status[attr];
+					if(node[sattr || attr] !== null && nsa && nsa.status &&
+						rank[nsa.status] > rank[bestStatus]){
+						bestStatus = nsa.status;
+					}
+				};
+				var type = this.getType(studentID);
+				if(type === "quantity"){
+					update("description", "authoredID");
+					update("variable");
+					update("variableType");
+					update("value");
+					update("units");
+				}else if(type === "equation"){
+					update("description", "authoredID");
+					update("equation");
+				}
+				return bestStatus;
 			}
+
 		}, both);
 
 		obj.constructor.apply(obj, arguments);
