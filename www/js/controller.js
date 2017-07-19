@@ -89,7 +89,8 @@ define([
 					"inputsQuestionMark": "Select a quantity to enter into the expression above.  Much faster than typing.",
 					"valueQuestionMark": "This is a number, typically given to you in the system description.",
 					"operationsQuestionMark": "Click one of these to enter it in the expression above. <br> See the Help menu at the top of the screen for a list of other mathematical operators and functions that you can type in.",
-					"questionMarkRoot": "TODO"
+					"questionMarkRoot": "TODO",
+					"descriptionQuestionMark": "Select a description for node"
 		},
 		constructor: function(mode, model, ui_config){
 			console.log("+++++++++ In generic controller constructor");
@@ -111,21 +112,21 @@ define([
 		},
 
 		// A stub for connecting routine to draw new node.
-		
 		addNode: function(node, autoflag){
 			console.log("Node Editor calling addNode() for ", node.id);
 		},
+
 		// Stub to setting description for auto craeted nodes.
 		setNodeDescription: function(id, variable){
 			var authoredID = this._model.authored.getNodeIDByName(variable);
 			this._model.active.setAuthoredID(id, authoredID);
 			this._model.active.setDescription(id, this._model.authored.getDescription(authoredID));
 		},
+
 		// Stub to set connections in the graph
 		setConnections: function(from, to){
 			// console.log("======== setConnections fired for node" + to);
 		},
-
 
 		_initCrisisAlert: function(){
 			//Crisis Alert widget
@@ -552,87 +553,11 @@ define([
 			//TODO: check logging
 		},
 
-
-
+		// Stub to be overwritten by student or author mode-specific method.
 		checkDone: function () {
-			/*
-				When the author clicks on the main menu "Done" button,
-				the system checks that one variable is Root, 
-				and make sure every variable is part of at least one equation.
-			*/
-			console.log("Done Action called");
-			var returnObj = {};
-			returnObj.errorNotes = "";
-			var hasRootNode = false;
-			var _variables = [];
-			var _equations = [];
-			var _errorNotes = [];
-			
-			if( this._model ){
-				array.forEach(this._model.active.getNodes(), function (node) {
-					if(node.root){
-						hasRootNode = true;
-					}
-					console.log(node);
-
-					// get variables and equations
-					if(node.variable !== "" && node.genus && node.genus === "required" && node.type === "quantity"){
-						_variables.push(node.ID);
-					}else if(node.type === "equation"){
-						_equations.push(node.equation);
-					}
-
-				});
-				console.log("Equations : ", _equations);
-				// check if each variable is present in atleast one equation
-				var _usedVariables = _variables.map(function(_variable){
-					var tmp = array.some(_equations, function(_equation) {
-						
-						if( _equation && _equation.search(_variable) > -1){
-							return true;
-						}
-					});
-					var obj = {};
-					obj[_variable] = tmp;
-					return obj;
-				});
-
-				// for each variable if it is not present in any equation, add it to array 
-				var _requiredVariables = [];
-				array.forEach(_usedVariables, function(item){
-					
-					if(!Object.values(item)[0]){	
-						_requiredVariables.push(Object.keys(item)[0]);
-					}
-				});
-
-				// Add errorNote adding all unused variables
-				if( _requiredVariables && _requiredVariables.length > 0 ){
-					var errorNote = "Following variables are required, but unused by equations - ";
-					array.forEach(_requiredVariables,lang.hitch(this, function(id){
-						errorNote += this._model.active.getName(id) + ", ";
-					}));
-					errorNote = errorNote.slice(0, -2); // removing trailing comma and space
-					_errorNotes.push(errorNote);
-				}	
-			}
-
-			console.log("required" + _requiredVariables);
-
-			if(!hasRootNode){
-				_errorNotes.push("No variable is marked as Root");
-			}
-			if(_errorNotes && _errorNotes.length > 0){
-				array.forEach(_errorNotes, function(_error){
-					returnObj.errorNotes += "<li>" + _error + "</li>";
-				});
-			}
-			
-			console.log("returning ", returnObj);
-			return returnObj;
+			console.log("checkDone should be overwritten.");
 		},
-
-
+		
 		// Stub to be overwritten by student or author mode-specific method.
 		initialControlSettings: function(id){
 			console.error("initialControlSettings should be overwritten.");

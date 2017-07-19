@@ -365,6 +365,42 @@ define([
 				this.updateModelStatus(directive, id);
 			}, this);
 		},
+		checkDone: function(){
+			/*
+				When the student clicks on the main menu "Done" button,
+				the system checks whether everynode is complete, 
+				all quantity and equation nodes are created and exits
+			*/
+			var returnObj = {};
+			returnObj.errorNotes = "";
+			var isComplete = true;
+			var _errorNotes = [];
+			
+			if( this._model ){
+				array.forEach(this._model.active.getNodes(), lang.hitch(this,function (node) {
+					if(!this._model.active.isComplete(node.ID)){
+						isComplete = false;
+					}
+				}));
+			}
+
+			if(!isComplete){
+				_errorNotes.push("Nodes in the model are not complete");
+			}
+			if(this._model.model.authorModelNodes.length !== this._model.model.studentModelNodes.length){
+				_errorNotes.push("Complete all nodes in the model");
+				isComplete = false;
+			}
+
+			if(_errorNotes && _errorNotes.length > 0){
+				array.forEach(_errorNotes, function(_error){
+					returnObj.errorNotes += "<li>" + _error + "</li>";
+				});
+			}
+			
+			console.log("returning ", returnObj);
+			return returnObj;
+		}
 	});
 });
 
