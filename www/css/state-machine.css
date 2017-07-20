@@ -104,11 +104,17 @@
 }
 
 .equationDescription{
-	border: 1px black solid;
+	border: 3px solid;
 }
 
 .quantityDescription{
 	border: 3px solid;
+	border-radius: 500px;
+}
+
+.quantityDescription > .descriptionText{
+	width: 90%;
+	margin: 0 auto 1px auto;
 }
 
 .incomplete{

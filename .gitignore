@@ -11,6 +11,7 @@ www/util
 www/math-parser
 www/node_modules
 www/errorShots
+www/math-solver
 
 #OS specific files
 .DS_Store

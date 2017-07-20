@@ -17,11 +17,10 @@ define([
 		_model: null,
 		_colors:[
 			"#00ffff", "#f0e68c", "#add8e6", "#e0ffff", "#90ee90", "#ffb6c1",
-			"#ffffe0", "#00ff00", "#008000", "#f5f5dc", "#0000ff", "#a52a2a",
-			"#ffd700", "#4b0082", "#800000", "#000080", "#808000", "#ffa500",
-			"#c0c0c0", "#ffc0cb", "#ff0000", "#800080", "#ffff00", "#00008b",
-			"#008b8b", "#f0ffff", "#006400", "#bdb76b", "#8b008b", "#556b2f",
-			"#ff8c00", "#8b0000", "#e9967a", "#9400d3", "#ff00ff"
+			"#ffffe0", "#00ff00", "#f5f5dc", "#0000ff", "#8b0000", "#ff8c00",
+			"#ffd700", "#9400d3", "#808000", "#c0c0c0", "#ffc0cb", "#ff0000",
+			"#ffff00", "#008b8b", "#008000", "#f0ffff", "#bdb76b", "#ffa500",
+			"#e9967a", "#556b2f", "#ff00ff"
 		],
 		_incompleteColor: "#d3d3d3",
 		_borderColor: 39,
@@ -287,31 +286,36 @@ define([
 			// should the node be shown with color
 			var color;
 			if(hasDescription)
-				if(node.color){
+				color = node.color ? node.color :
+					this.getNextColor(type && type == "equation");
+				/*if(node.color){
 					color = node.color;
-					if(type == "quantity")
+					/*if(type == "quantity")
 						this._borderColor = this._colors.indexOf(node.color) - 1;
 					else
 						this._backgroundColor = this._colors.indexOf(node.color) + 1;
-				} else {
-					color = this.getNextColor(type && type == "equation");
-				}
-
-			if(type && type == "equation"){
-				obj.backgroundColor = color;
-				obj.borderColor = "black";
-				this._model.setColor(node.ID, obj.backgroundColor);
-			} else if (type && type == "quantity") {
+					this._backgroundColor = color;
+				}*/
+			/**
+			* logic for border and background color removed
+			* check issue - https://github.com/Dragoon-Lab/topomath/issues/121
+			*/
+			//if(type && type == "equation"){
+			obj.backgroundColor = color;
+			//obj.borderColor = "black";
+			this._model.setColor(node.ID, obj.backgroundColor);
+			/*} else if (type && type == "quantity") {
 				obj.backgroundColor = "white";
 				obj.borderColor = color;
 				this._model.setColor(node.ID, obj.borderColor);
-			}
+			}*/
 
 			return obj;
 		},
 
 		getNextColor: function(isBackground){
 			var index = isBackground ? this._backgroundColor++ : this._borderColor--;
+			console.log("get next color where color is for background ", index);
 			if(isBackground && index >= this._colors.length-1){
 				console.error("need more colors, last color returned");
 				// resetting the counter
@@ -414,10 +418,11 @@ define([
 				var parentDIV = type+"-description";
 				var replaceTag = descHTML ? "replace" : "last";
 				domConstruct.place(descriptionString, parentDIV, replaceTag);
-				if(type == "equation")
-					domStyle.set(domID, "background-color", this._model.getColor(ID));
-				else
+				//if(type == "equation")
+				domStyle.set(domID, "background-color", this._model.getColor(ID));
+				/*else
 					domStyle.set(domID, "border-color", this._model.getColor(ID));
+				*/
 			}
 		},
 
