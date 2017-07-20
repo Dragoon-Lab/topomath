@@ -113,7 +113,8 @@ define([
 			}, this);
 			descriptions.sort(function (obj1, obj2) {
 				//return obj1.label > obj2.label;
-				return descNameMap[obj1.value].toLowerCase().localeCompare(descNameMap[obj2.value].toLowerCase());
+				if(descNameMap[obj1.value] && descNameMap[obj2.value])
+					return descNameMap[obj1.value].toLowerCase().localeCompare(descNameMap[obj2.value].toLowerCase());
 			}, this);
 			
 			array.forEach(descriptions, function (desc) {

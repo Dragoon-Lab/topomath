@@ -211,9 +211,9 @@ define([
 							}
 						} // if the mode is author and user has selected to enter student values (" given ")
 						else if(myThis._mode == "AUTHOR" && registry.byId("modelSelector").value == "given"){
-							equation = registry.byId("givenEquationInputbox");
+							equation = registry.byId("equationInputboxStudent");
 							
-							//equation value in this case if from givenEquationInputbox and check if the value is entered/checked
+							//equation value in this case if from equationInputboxStudent and check if the value is entered/checked
 							//if not throw a crisis alert message
 							if(equation.value && !myThis.givenEquationEntered){
 								
@@ -522,7 +522,7 @@ define([
 				if(this.nodeType == "equation"){
 					this.controlMap.equation = "equationInputbox";
 					domStyle.set('equationInputbox', 'display', 'block');
-					domStyle.set('givenEquationInputbox', 'display', 'none');
+					domStyle.set('equationInputboxStudent', 'display', 'none');
 				}
 				/* check the usage of this code
 				var kind = registry.byId(this.controlMap.kind).value;
@@ -934,8 +934,11 @@ define([
 						//newNodeList containts those nodes which were not present when equation has been parsed
 						//these nodes were added to model, substituted into equation but should be added here
 						this.addNode(this._model.active.getNode(newNode.id));
-						this.setNodeDescription(newNode.id,newNode.variable);
-						this.updateNodeView(this._model.active.getNode(newNode.id));
+						// Auto-populate node description only in Student mode
+						if(this._mode != "AUTHOR"){
+							this.setNodeDescription(newNode.id,newNode.variable);
+							this.updateNodeView(this._model.active.getNode(newNode.id));	
+						}					
 					}, this);
 					//dynamicList contains those nodes for which prior node UI changes have to be made
 					//Accordingly, make the node dynamic by changing the variable type and setting the accumulator
