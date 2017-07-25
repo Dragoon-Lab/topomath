@@ -152,6 +152,8 @@ define([
 			// something that is generally only possible in TEST mode.
 			//this.updateEquationLabels();
 			this.applyDirectives(this._PM.processAnswer(this.currentID, 'description', selectDescription));
+			this.updateNodeView(this._model.active.getNode(this.currentID));
+
 		},
 		handleVariableName: function(name){
 			console.log("Handle variable Name ", name);

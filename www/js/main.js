@@ -128,6 +128,8 @@ define([
 			* this has to be the first to be instantiated
 			* so that session object is not to be passed again and again. ~ Sachin
 			*/
+			var _dragNodes = query.fp == "on"? false : true;
+			console.log("Fixing position of nodes ", _dragNodes);
 			var _logger = logging.getInstance(_session);
 			/**
 			* equation does not have a constructor because
@@ -140,7 +142,7 @@ define([
 			var loading = document.getElementById('loadingOverlay');
 			loading.style.display = "none";
 
-			var dm = new drawModel(_model.active, query.m);
+			var dm = new drawModel(_model.active, query.m, _dragNodes);
 			var errDialog = new popupDialog();
 
 			/*********  below this part are the event handling *********/
@@ -153,6 +155,10 @@ define([
 				} else {
 					console.log("menu open action for ", mover.node.id);
 				}
+			}, true);
+
+			aspect.after(dm, "checkNodeClick", function(node){
+				controllerObject.showNodeEditor(node.ID);
 			}, true);
 
 			aspect.after(dm, "onClickMoved", function(mover){

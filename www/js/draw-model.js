@@ -1,4 +1,4 @@
-define([
+define([	
 	"dojo/_base/declare",
 	"dojo/_base/array",
 	"dojo/_base/lang",
@@ -9,9 +9,10 @@ define([
 	"dojo/dom-style",
 	"dijit/Menu",
 	"dijit/MenuItem",
+	"dojo/on",
 	"./graph-objects",
-	"jsPlumb/jsPlumb"
-], function(declare, array, lang, attr, domConstruct, domClass, dom, domStyle, Menu, MenuItem, graphObjects){
+	"jsPlumb/jsPlumb",
+], function(declare, array, lang, attr, domConstruct, domClass, dom, domStyle, Menu, MenuItem, on, graphObjects){
 	return declare(null, {
 		_instance: null,
 		_model: null,
@@ -27,6 +28,7 @@ define([
 		_backgroundColor: 0,
 		_counter: 0,
 		_cache: {},
+		_dragNodes: true,
 		domIDs: function(nodeID){
 			return {
 				'nodeDOM': nodeID+'Content',
@@ -39,9 +41,10 @@ define([
 			};
 		},
 
-		constructor: function(model, mode){
+		constructor: function(model, mode, dragNodes){
 			this._model = model;
 			this._mode = mode;
+			this._dragNodes = dragNodes;
 			this.initialNodeIDTag = this._model.getInitialNodeIDString();
 			this._borderColor = this._colors.length - 1;
 			this.connectorUI = {
@@ -91,7 +94,6 @@ define([
 				conole.error("addNode called with a node without ID");
 				return;
 			}
-
 			console.log("Adding vertex to the canvas id = ", node.ID, " type = ", type);
 			console.log("Position for the vertex : ",node.ID, " position: x ", node.position[0].x, " y: " + node.position[0].y);
 			var properties = this.getNodeUIProperties(node);
@@ -128,6 +130,14 @@ define([
 
 			var cachedNode = this._cache[node.ID];
 			var initialNode = dom.byId(domIDTags['parentInitial']);
+			if(initialNode){
+				dojo.byId(domIDTags['parentInitial']).style.top = node.position[1].y+'px';
+				dojo.byId(domIDTags['parentInitial']).style.left = node.position[1].x+'px';
+			}else{
+				dojo.byId(domIDTags['parentDOM']).style.top = node.position[0].y+'px';
+				dojo.byId(domIDTags['parentDOM']).style.left = node.position[0].x+'px';
+			}
+			
 			// update variable name
 			if(cachedNode.variable != node.variable){
 				if(node.type && node.type == "quantity"){
@@ -198,6 +208,7 @@ define([
 			} else if(node.type && node.type == "equation" && cachedNode.equation != node.equation){
 				dom.byId(domIDTags['nodeDOM']).innerHTML = graphObjects.getDomUIStrings(this._model, "equation", node.ID);
 			}
+			
 			//update border
 			var isComplete = this._model.isComplete(node.ID);
 			var hasClass = domClass.contains(domIDTags['parentDOM'], "incomplete");
@@ -271,8 +282,18 @@ define([
 				var nodeStatusClass = this.getStatus(node);
 				nodeDOM.querySelector(".topomath-feedback").className += nodeStatusClass;
 			}
-			this.makeDraggable(nodeDOM);
-
+			if(this._dragNodes){
+				this.makeDraggable(nodeDOM);
+			}else{
+				var thisNodeID = dom.byId(node.ID);
+                console.log(thisNodeID + "created");
+                on(thisNodeID, "click", lang.hitch(this, function () {
+                    console.log(thisNodeID + "clicked");
+                    this.checkNodeClick(node);
+                }));
+                this.makeVertexSource(nodeDOM);
+			}
+			
 			// creating menu for each DOM element
 			pMenu = new Menu({
 				targetNodeIds: [idTag]
@@ -285,6 +306,10 @@ define([
 			}));
 
 			return nodeDOM;
+		},
+
+		checkNodeClick: function(node){
+			console.log("Stub for opening editor");
 		},
 
 		getNodeUIProperties: function(node){
@@ -372,8 +397,7 @@ define([
 				onMoveStart: lang.hitch(this, this.onMoveStart),
 				onMove: lang.hitch(this, this.onMove),
 				onMoveStop: lang.hitch(this, this.onMoveStop)
-			});
-
+			});	
 			this.makeVertexSource(vertex);
 		},
 

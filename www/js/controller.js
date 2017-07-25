@@ -121,6 +121,7 @@ define([
 			var authoredID = this._model.authored.getNodeIDByName(variable);
 			this._model.active.setAuthoredID(id, authoredID);
 			this._model.active.setDescription(id, this._model.authored.getDescription(authoredID));
+			this._model.active.setPosition(id, 0, this._model.authored.getPosition(authoredID,0));
 		},
 
 		// Stub to set connections in the graph
@@ -802,6 +803,8 @@ define([
 			if( _variableType == "parameter" || _variableType == "dynamic"){
 				domStyle.set('valueInputboxContainer','display','block');
 				if(_variableType == "dynamic"){
+					var givenID = this._model.active.getAuthoredID(id);
+					this._model.active.setPosition(id, 1, this._model.authored.getPosition(givenID, 1));
 					// Update position to avoid overlap of node
 					if(this._model.active.getPosition(id).length === 1)
 						this._model.active.updatePositionXY(id);

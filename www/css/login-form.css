@@ -81,6 +81,10 @@ h1 {
     height: 30px;
 }
 
+.problem-selection-form .fieldgroup #fixposition input{    float: left;
+    margin: 18px 40px;
+    height: initial;
+}
 .problem-selection-form .submit {
     padding: 10px;
     width: 220px;

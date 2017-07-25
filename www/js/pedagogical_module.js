@@ -298,27 +298,32 @@ define([
 					descriptionTable[interpretation][this.userType](returnObj, nodePart);
 					for(var i = 0; i < returnObj.length; i++){
 						if(returnObj[i].value === "correct"){
-							currentStatus = this.model.authored.getStatus(givenID, nodePart); //get current status set in given model
+							currentStatus = this.model.authored.getStatus(givenID, nodePart); //get current status set in given module
 							// Set failure attempts based on current status
 							if(currentStatus === "")
 								this.model.authored.setStatus(givenID, nodePart, returnObj[i].value);
 							else
 								updateStatus(returnObj, this.model);
 							this.descriptionCounter = 0;
+							this.model.active.setPosition(id, 0, this.model.authored.getPosition(givenID,0));
 						}
 					}
 				}else{
 					givenID = this.model.student.getAuthoredID(id);
 					console.assert(nodeEditorActionTable[interpretation], "processAnswer() interpretation '" + interpretation + "' not in table ", nodeEditorActionTable);
 					nodeEditorActionTable[interpretation][this.userType](returnObj, nodePart, answer);
-					
 					currentStatus = this.model.authored.getStatus(givenID, nodePart); //get current status set in given model
 					if (currentStatus !== "correct") {
 						this.model.authored.setAttemptCount(givenID, nodePart, this.model.authored.getAttemptCount(givenID, nodePart) + 1);
-						for (var i = 0; i < returnObj.length; i++)
+						for (var i = 0; i < returnObj.length; i++){
 							if (returnObj[i].value === "incorrect") {
 								this.model.student.incrementAssistanceScore(id);
 							}
+						}
+					}else if(currentStatus == "correct"){
+						if(nodePart === "variableType"){
+							this.model.active.setPosition(id, 1, this.model.authored.getPosition(givenID, 1));
+						}
 					}
 					updateStatus(returnObj, this.model);
 				}

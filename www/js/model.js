@@ -52,10 +52,12 @@ define([
 					return false;
 				}
 				return array.some(element.position, function(position){
-					var x = position.x;
-					var y = position.y;
-					return (this.x > x - this.nodeWidth && this.x < x + this.nodeWidth &&
-						this.y > y - this.nodeHeight && this.y < y + this.nodeHeight);
+					if(position){
+						var x = position.x;
+						var y = position.y;
+						return (this.x > x - this.nodeWidth && this.x < x + this.nodeWidth &&
+							this.y > y - this.nodeHeight && this.y < y + this.nodeHeight);
+					}
 				}, this);
 			},
 			loadModel: function(_model){
