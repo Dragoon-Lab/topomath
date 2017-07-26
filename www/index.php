@@ -318,7 +318,20 @@
 			<div id = "crisisMessage"> </div>
 			<button id="OkButton" type="button" data-dojo-type="dijit/form/Button">OK</button>
 		</div> 
-
+		<!-- Dialog showing plot or table of solution  -->
+		<div class="claro dijitLayoutContainer dijitDialog" id="solution" data-dojo-type="dijit.Dialog" style="min-width:70%; min-height: 80%; background-color: #FFFFFF">
+			<div id= 'graphErrorMessage'></div>
+			<div data-dojo-type= 'dijit/layout/ContentPane' style='overflow:visible; width:55%; min-height:95%; float:left; background-color: #FFFFFF;'>
+				<div id="GraphTabContainer" data-dojo-type='dijit/layout/TabContainer' style='overflow:visible; display:none;'>
+					<div id='GraphTab' data-dojo-type='dijit/layout/ContentPane' style='overflow:auto;' title="Graph"></div>
+					<div id='TableTab' data-dojo-type='dijit/layout/ContentPane' style='overflow:auto' title="Table"></div>
+					<div id='StaticTab' data-dojo-type='dijit/layout/ContentPane' style='overflow:auto' title="Static"></div>
+				</div>
+			</div>
+			<div id="SliderPane" data-dojo-type='dijit/layout/ContentPane' style='overflow:visible; min-height: 95%; width:40%; float:right; background-color: #FFFFFF'>
+				<div id= 'solutionMessage'></div>
+			</div>
+		</div>
 		<!-- popup Dialog to show unfinished tasks before closing -->
 		<div data-dojo-type="dijit/Dialog" data-dojo-id="popupDialog" id ="popupDialog" title="Message" data-dojo-props="closable:false">
 

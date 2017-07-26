@@ -11,35 +11,62 @@ define([
 		* html related dom elements for rendering.
 		**/
 		_model: null,
-		constructor: function(model){
-			this._model = model
-			// TODO: basically decide to call initialization or may be not
-			// - we can call initialize because that would change all the
-			// model equations to something that can be used by solver and equation.js
-			// - To not call initialize is only because there is a case where
-			// we can put equation validation here as well. that is checking whether
-			// a student mode equation is correct or not.
-			// - There would be a graph show function which will create the graph and
-			// table show function. That can call initialize
+		constructor: function(model, tab){
+			this._model = model;
+			this.showGraph = tab == "graph";
+			this.activeEquations = this.initialize(this._model.active);
+			this.authorEquations = this.initialize(this._model.authored);
+			this.isStudentMode = this._model.active === this._model.student;
 		},
 		/**
 		* function which finds the solution for the system of equations.
 		**/
-		findSolution: function(){
+		findSolution: function(isActive, id){
+			var equations = isActive ? this.activeEquations : this.authorEquations;
+			var solution;
+			try{
+				solution = equation.graph(equations, id);
+			} catch(e) {
+				console.error(e);
+			}
 
+			return lang.mixin(equations, solution);
 		},
 		/**
 		* it takes the equations in the model, validates them and creates an object
 		* that will be used for finding soltuion.
-		* TODO: timestep idea has to be formalized and there will be some code here
-		* for that.
-		* TODO: I am also thinking in case of parameters we can just replace them with
-		* the constant values and find the solutions for dynamic nodes only as that way
-		* we will decrease the pressure on the solver for creating the Jacobian matrix.
-		* This can be done here as well.
 		**/
-		initialize: function(){
+		initialize: function(subModel, id){
+			var initSolution = null;
+			initSolution = equation.initTimeStep(subModel);
+			initSolution.time = equation.initXAxis(subModel, id);
 
+			return initSolution;
+		},
+
+		//checks if the solution is static
+		checkForStatic: function(model, solution) {
+			var values = solution.plotValues;
+			var temp = 0;
+			var isStatic = true;
+			if(values.length == 0){
+				isStatic = false;
+			}
+			if(model.active.isVariableTypePresent("dynamic")){
+				return false;
+			}
+
+			array.forEach(solution.plotVariables, function(id){
+				var value = values[id];
+				var temp = value[0];
+				array.forEach(value, function(v){
+					if(v !== temp){
+						isStatic = false;
+					}
+					temp = num;
+				});
+			});
+			return isStatic;
 		}
 	});
 });

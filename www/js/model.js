@@ -8,6 +8,7 @@ define([
 				this.y = this.beginY;
 				this.model = {
 					taskName: name,
+					time: {start: 0, end: 10, step: 1.0, units: "seconds"},
 					authorModelNodes: [],
 					studentModelNodes: []
 				};
@@ -350,6 +351,19 @@ define([
 			},
 			getInitialNodeDisplayString: function(){
 				return obj.initialNodeDisplayString;
+			},
+			getTime: function(){
+				return this.model.time;
+			},
+			isVariableTypePresent: function(type){
+				var nodes = this.getNodes();
+				var length = nodes.length;
+				for(var node in nodes){
+					if(node.variableType && node.variableType == type)
+						return true;
+				}
+
+				return false;
 			}
 		};
 

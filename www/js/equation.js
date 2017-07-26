@@ -1,7 +1,8 @@
 define([
 	"dojo/_base/array",
-	"parser/parser"
-], function(array, Parser){
+	"parser/parser",
+	"solver/solver"
+], function(array, Parser, Solver){
 	return {
 		parse: function(equation){
 			return Parser.parse(equation);
@@ -9,6 +10,7 @@ define([
 		isVariable: Parser.isVariable,
 		equalto: "=",
 		_logger: null,
+		_numberOfEvaluations: 10,
 		/*
 		* Converts an equation with ids to corresponding variable names
 		* It splits the equation at = and then replaces the variables in
@@ -196,19 +198,204 @@ define([
 		* For now the system of equations will be passed here with the timestep and
 		* variable details, to be sent to math-solver.
 		**/
-		solve: function(){
+		solveTimeStep: function(equations){
+			array.forEach(equations.expressions, function(expression){
+				this.replace(expression, equations.values);
+			}, this);
 
+			var solution = {};
+			try{
+				var solver = new Solver(equation.expressions);
+				solution.point = solver.solve();
+				solution.vars = solution.xvars;
+			} catch(e) {
+				// Error handling has to be done for each error in Solver
+				console.log(e);
+			}
+
+			return solution;
 		},
 
+		graph: function(subModel, equations, staticID){
+			var solution = this.initSolution(subModel, equations);
+			var values = {};
+			solution.time = equations.time;
+
+			var timeSteps = solution.time.length;
+			/*array.forEach(equations.params, function(id){
+				values[id] = subModel.getValue(id);
+			});*/
+			for(var i = 1; i <= timeSteps; i++){
+				if(staticID)
+					values[staticID] = solution.time[i-1];
+				array.forEach(equations.xvars, function(id){
+					value[id+subModel.getInitialNodeIDString()] = solution[id][i-1];
+				});
+
+				equations.values = values;
+				var timeStepSolution = this.solveTimeStep(equations);
+				array.forEach(timeStepSolution.vars, function(id, counter){
+					solution.plotValues[id].push(timeStepSolution.point[counter]);
+				});
+			}
+
+			return solution;
+		},
+
+		initSolution: function(subModel, equations){
+			var solution = {};
+			// initialize the solution object
+			array.forEach(equations.xvars, function(id){
+				solution[id] = [];
+				solution[id].push(subModel.getValue(id));
+			});
+			array.forEach(equation.func, function(id){
+				solution[id] = [];
+			});
+
+			return solution;
+		},
 		/**
 		* to evaluate one equation from the student model and compare it with
 		* equation from the author model.
-		* TODO contemplating - whether to give equations to be compared here OR
-		* the model and he node ID.
 		**/
-		evaluate: function(){
+		evaluate: function(model, id){
+			var sEquation = model.student.getEquation(id);
+			var aEquation = model.author.getEquation(model.student.getAuthoredID(id));
 
+			if(!aEquation || !sEquation)
+				return false;
+
+			var aParse; var sParse;
+			try{
+				aParse = this.parseEquation(aEquation);
+				sParse = this.parseEquation(sEquation);
+			} catch(e){
+				console.log(e);
+				throw Error(e);
+			}
+
+			// create evaluation point
+			var variables = {};
+			var createEvaluationPoint = function(){
+				var addVariableValue = function(variable){
+					if(!(variable in variables))
+						variables[variable] = Math.random;
+				};
+				for(var i = 0; i < 2; i++){
+					array.forEach(aParse[i].variables(), function(v){
+						addVariableValue(v)
+					});
+					array.forEach(sParse[i].variables(), function(v)  {
+						addVariableValue(v);
+					});
+				}
+			};
+
+			var authorValue = [];
+			var studentValue = [];
+			for(var i = 0; i < this.numberOfEvaluations; i++){
+				createEvaluationPoint();
+				for(var j = 0; j < 2; j++){
+					var authorValue[i] = aParse[i].evaluate(variables);
+					var studentValue[i] = sParse[i].evaluate(variables);
+				}
+			}
+
+			return (authorValue[0] - authorValue[1]) === (studentValue[0] - studentValue[1]);
 		},
+
+		replace: function(expression, values){
+			array.forEach(expression, function(e){
+				array.forEach(e.variables(), function(variable, index){
+					if(values.hasOwnProperty(variable)){
+						e.substitute(variable, values[variable]);
+					}
+				});
+			});
+
+			return expression;
+		},
+
+		parseEquation: function(expression){
+			var eqArray = expression.split(this.equalto);
+			if(eqArray.length != 2)
+				throw Error("equation has more than one equal to symbol");
+			var parse = [];
+			for(var i = 0; i < 2; i++){
+				parse[i] = Parser.parse(eqArray[i]);
+			}
+
+			return parse;
+		},
+
+		initTimeStep: function(subModel){
+			var nodes = subModel.getNodes();
+			var equations = {
+				params: [],
+				func: [],
+				xvars: [],
+				plotVariables: [],
+				expressions: [],
+				values: {}
+			};
+
+			array.forEach(nodes, function(node){
+				if(node.genus === "required" || node.genus === "allowed"){
+					switch(node.type){
+						case "quantity":
+							switch(node.variableType){
+								case "parameter":
+									equations.params.push(node.ID);
+									equations.values[node.ID] = node.value;
+									break;
+								case "dynamic":
+									equations.xvars.push(node.ID);
+									equations.values[node.ID + subModel.getInitialNodeIDString()] = node.value;
+									break;
+								case "unknown":
+									equations.func.push(node.ID);
+									break;
+								case default:
+									console.error("Quantity node type not defined");
+							}
+						case "equation":
+							equations.expressions.push(this.parseEquation(node.equation));
+						case default:
+							console.error("Node type not defined");
+					}
+				}
+			}, this);
+			equations.plotVariables = equations.xvars.concat(equations.func);
+
+			return equations;
+		},
+
+		initXAxis: function(subModel, id){
+			var time = subModel.getTime();
+			var axis = [];
+			var start; var end; var step;
+			var points = 20;
+			if(!id){
+				start = time.start;
+				end = time.end;
+				step = time.step;
+			} else {
+				var value = subModel.getValue(id);
+				var flag = value > 0;
+				start = flag ? value / 10 : value * 10;
+				end = flag ? value * 10 : value / 10;
+				step = flag ? (start - end) : (end - start);
+				step = step/points;
+			}
+			var counter = 0;
+			for(var i = time.start; i < time.end; i += time.step){
+				axis[counter++] = i;
+			}
+
+			return series;
+		},
+
 		setLogging: function(logger){
 			this._logger = logger;
 		}
