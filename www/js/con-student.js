@@ -63,7 +63,7 @@ define([
 		controlMap: {
 			inputs: "inputSelectorStudent",
 			variable: "variableInputboxStudent",
-			equation: "equationInputbox",
+			equation: "equationInputboxStudent",
 			description: "selectDescription",
 			units: "unitsSelectorStudent",
 			modelType: "modelSelector",
@@ -77,7 +77,7 @@ define([
 			style.set('unitsSelectorContainerStudent', 'display', 'block');
 			style.set('expressionDiv', 'display', 'block');
 			style.set('inputSelectorContainerStudent', 'display', 'block');
-
+			style.set('equationInputboxStudent', 'display', 'block');
 		},
 		populateSelections: function () {
 			/*
@@ -222,18 +222,15 @@ define([
 			var parse = this.equationAnalysis(directives, false);
 			console.log("************",parse);
 			if (parse) {
-				//var dd = this._PM.processAnswer(
-				//this.currentID, 'equation', parse, registry.byId(this.controlMap.equation).get("value"));
-				//directives = directives.concat(dd);
+				var dd = this._PM.processAnswer(
+				this.currentID, 'equation', parse, registry.byId(this.controlMap.equation).get("value"));
+				directives = directives.concat(dd);
 				var context = this;
 			}
 			console.log(directives);
-			//this.applyDirectives(directives);
+			this.applyDirectives(directives);
 
-			var isDemo = false;
-			if (!isDemo) {
-				this.createExpressionNodes(parse, false);
-			}
+			this.createExpressionNodes(parse, false);
 
 			return directives;
 		},

@@ -159,6 +159,7 @@ define([
 			style.set('rootNodeToggleContainer', 'display', 'block');
 			style.set('expressionDiv', 'display', 'block');
 			style.set('inputSelectorContainer', 'display', 'block');
+			style.set('equationInputbox', 'display', 'block');
 
 		},
 		initAuthorHandles: function(){
@@ -337,7 +338,7 @@ define([
 			if(modelType === "authored"){
 				this.controlMap.equation = "equationInputbox";
 				style.set('equationInputbox', 'display', 'block');		//show EquationBox
-				style.set('givenEquationInputbox', 'display', 'none');	//hide GivenEquationBox
+				style.set('equationInputboxStudent', 'display', 'none');	//hide GivenEquationBox
 				
 				this._model.active = this._model.authored;
 				this.enableDisableFields(modelType);
@@ -346,9 +347,9 @@ define([
 			}
 			else if(modelType === "student"){
 				var equation = registry.byId("equationInputbox");
-				style.set('givenEquationInputbox', 'display', 'block'); //show GivenEquationBox
+				style.set('equationInputboxStudent', 'display', 'block'); //show GivenEquationBox
 				style.set('equationInputbox', 'display', 'none');	   //hide EquationBox
-				this.controlMap.equation = "givenEquationInputbox";
+				this.controlMap.equation = "equationInputboxStudent";
 				if(equation.value && !this.equationEntered){
 					//Crisis alert popup if equation not checked
 					this.applyDirectives([{
@@ -633,7 +634,8 @@ define([
 				if(desc.label){
 					var name = this._model.authored.getName(desc.value);
 					var obj = {name:name, id: desc.id};
-					inputs.push(obj);
+					
+					if(obj.name ) inputs.push(obj);
 					descriptions.push({name: this._model.authored.getDescription(desc.value), id: desc.id});
 				}
 			}, this);

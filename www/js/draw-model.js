@@ -45,6 +45,8 @@ define([
 			this._model = model;
 			this._mode = mode;
 			this._dragNodes = dragNodes;
+			this._quantityNodeCount = 0;
+			this._equationNodeCount = 0;
 			this.initialNodeIDTag = this._model.getInitialNodeIDString();
 			this._borderColor = this._colors.length - 1;
 			this.connectorUI = {
@@ -83,8 +85,14 @@ define([
 				if(links)
 					this.setConnections(links, vertex);
 			}, this);
+			this.addNodeCount();
 
 			return instance;
+		},
+
+		addNodeCount: function(){
+			dojo.byId('quantity-node-count').innerHTML = this._quantityNodeCount;
+			dojo.byId('equation-node-count').innerHTML = this._equationNodeCount;
 		},
 
 		addNode: function(/* object */ node){
@@ -304,7 +312,6 @@ define([
 					this.deleteNode(node.ID);
 				})
 			}));
-
 			return nodeDOM;
 		},
 
@@ -472,6 +479,12 @@ define([
 				/*else
 					domStyle.set(domID, "border-color", this._model.getColor(ID));
 				*/
+				if(type === 'quantity'){
+					this._quantityNodeCount++;
+				}else if(type === 'equation'){
+					this._equationNodeCount++;
+				}
+				this.addNodeCount();
 			}
 		},
 
@@ -500,6 +513,14 @@ define([
 				domConstruct.destroy(ID);
 			}
 			domConstruct.destroy(nodeID);
+			if(this._model.getColor(ID) !== undefined){
+				if(type === 'quantity'){
+					this._quantityNodeCount--;
+				}else if( type === 'equation'){
+					this._equationNodeCount--;
+				}
+				this.addNodeCount();
+			}
 			// delete node from the model
 			var updateNodes = this._model.deleteNode(nodeID);
 			// updateNodes are the nodes for which the equations and links were updated.

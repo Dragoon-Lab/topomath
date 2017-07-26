@@ -164,8 +164,21 @@
 			<div id="errorMessageBox"></div>
 			<!--<div id="tableGrid" data-dojo-type="dijit/layout/ContentPane" region="center"></div>-->
 			<!-- div for descriptions for each type -->
-			<div class = "quantity-description-wrapper" id="quantity-description"></div>
-			<div class = "equation-description-wrapper" id="equation-description"></div>
+			<div class = "quantity-description-wrapper" id="quantity-description">
+				
+				<div class="quantity-count">
+					<div>Quantities : 
+						<span id="quantity-node-count"></span>
+					</div>
+				</div>
+			</div>
+			<div class = "equation-description-wrapper" id="equation-description">
+				<div class="equation-count">
+					<div>Equations : 
+						<span id="equation-node-count">
+					</div>
+				</div>
+			</div>
 			<!-- Putting jsPlumb-stuff for demo -->
 			<div class="demo statemachine-demo" id="statemachine-demo">
 			</div>
@@ -278,7 +291,7 @@
 						<label for="equationInputbox">Equation</label>
 					</div>
 					<div id="equationInputboxContainer" class="fieldgroup">
-						<textarea id="equationInputbox" rows=4 cols=50 data-dojo-type="dijit/form/SimpleTextarea" style="min-height:60px;"></textarea>
+						<textarea id="equationInputbox" rows=4 cols=50 data-dojo-type="dijit/form/SimpleTextarea" style="min-height:60px;display: none;"></textarea>
 						<textarea id="equationInputboxStudent" rows=4 cols=50 data-dojo-type="dijit/form/SimpleTextarea" style="min-height:60px; display: none;"></textarea>
 					</div>
 				</div>

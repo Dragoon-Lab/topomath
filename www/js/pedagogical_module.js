@@ -207,6 +207,8 @@ define([
 					interpret(this.model.authored.getValue(authoredID));
 					break;
 				case "equation":
+					// Solver
+					interpretation = "correct";
 					break;
 			}
 			return interpretation;

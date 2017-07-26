@@ -444,7 +444,7 @@ define([
 
 			// When the equation box is enabled/disabled, do the same for
 			// the inputs widgets.
-			array.forEach(["nodeInputs"], function(input){
+			array.forEach(["inputSelectorStudent"], function(input){
 				var widget = registry.byId(input);
 				equationWidget.watch("disabled", function(attr, oldValue, newValue){
 					// console.log("************* " + (newValue?"dis":"en") + "able inputs");

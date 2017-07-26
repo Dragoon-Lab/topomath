@@ -70,7 +70,12 @@
 	line-height: 11px;        /* fallback */
 	max-height: 44px;
 }
-
+.quantity-count, .equation-count{
+	margin: 8px 0;
+    font-weight: bold;
+    font-size: 14px;
+    font-style: italic;
+}
 .circle{
 	width: 60px;
 	height: 60px;
