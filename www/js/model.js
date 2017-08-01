@@ -9,9 +9,10 @@ define([
 				this.model = {
 					taskName: name,
 					authorModelNodes: [],
-					studentModelNodes: []
+					studentModelNodes: [],
+					mode : (mode == "AUTHOR") ? "AUTHOR" : "STUDENT"
 				};
-				obj.active = (mode == "AUTHOR") ? obj.authored : obj.student;
+				obj.active = (this.model.mode == "AUTHOR") ? obj.authored : obj.student;
 			},
 			_ID: 1,
 			beginX: 450,
@@ -842,7 +843,6 @@ define([
 				}
 				return bestStatus;
 			}
-
 		}, both);
 
 		obj.constructor.apply(obj, arguments);

@@ -464,6 +464,18 @@ define([
 			this.logSolutionStep(logObj);
 		},
 
+		handleVariableType: function(e){
+			// Summary : Sets variableType to Unknown/Parameter/Dynamic
+			// Value is not allowed when variableType is Unknown
+			// Value is handled when variableType is parameter or dynamic.
+			console.log("********************* in handleVariableType");
+			var _variableType = e.target.value;
+			if(_variableType === this._model.active.getVariableType(this.currentID)){
+				return;
+			}
+			this.variableTypeControls(this.currentID, _variableType);
+		},
+
 		handleInputs: function(name){
 			this.equationInsert(name); 
 			// After variable input, reset control to its initial state.

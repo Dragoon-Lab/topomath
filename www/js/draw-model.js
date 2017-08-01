@@ -41,9 +41,8 @@ define([
 			};
 		},
 
-		constructor: function(model, mode, dragNodes){
+		constructor: function(model, dragNodes){
 			this._model = model;
-			this._mode = mode;
 			this._dragNodes = dragNodes;
 			this._quantityNodeCount = 0;
 			this._equationNodeCount = 0;
@@ -220,8 +219,8 @@ define([
 			//update border
 			var isComplete = this._model.isComplete(node.ID);
 			var hasClass = domClass.contains(domIDTags['parentDOM'], "incomplete");
-			if(this._mode !== "AUTHOR"){
-				var nodeStatusClass = this.getStatus(node);
+			if(this._model.mode !== "AUTHOR"){
+				var nodeStatusClass = this.getStatusClass(node.ID);
 				var _feedbackTags = ['fa-check','fa-star','fa-times','fa-minus'];
 				/*Updating tags each time model gets updated*/
 				array.forEach(_feedbackTags, function(t){
@@ -262,7 +261,7 @@ define([
 			var classTag = node.type;
 			if(isInitial){
 				idTag += this._model.getInitialNodeIDString();
-				if(node.position.length > 1){
+				if(node.position.length > 1 && node.position[1] !== null && node.position[1] !== undefined){
 					x = node.position[1].x;
 					y = node.position[1].y;
 				} else {
@@ -286,8 +285,8 @@ define([
 				innerHTML: innerHTML
 			}, "statemachine-demo");
 
-			if(this._mode !== "AUTHOR"){
-				var nodeStatusClass = this.getStatus(node);
+			if(this._model.mode !== "AUTHOR"){
+				var nodeStatusClass = this.getStatusClass(node.ID);
 				nodeDOM.querySelector(".topomath-feedback").className += nodeStatusClass;
 			}
 			if(this._dragNodes){
@@ -550,7 +549,8 @@ define([
 			this.detachConnections(to);
 			this.setConnections(from, to);
 		},
-		getStatus: function(node){
+		getStatusClass: function(studentID){
+			var node = this._model.getNode(studentID);
 			var nodeStatus = node.status;
 			var nodeID = node.ID;
 			var statusClassMap = {
@@ -560,13 +560,11 @@ define([
 				"perfect" : "fa-star"
 			}
 			nodeStatus = this._model.getCorrectness?this._model.getCorrectness(nodeID):"";
-			//Check for perfect node
-			if(this._model.isComplete(nodeID) && this._model.getAssistanceScore(nodeID) === 0 && this._model.getCorrectness(nodeID) === "correct"){
-				nodeStatus = "perfect";
-			}
-			
+           	//Check for perfect node
+			if(this._model.isComplete(nodeID) && this._model.getAssistanceScore(nodeID) === 0 && this._model.getCorrectness(nodeID)=== "correct"){
+                nodeStatus = "perfect";
+            }
 			return " "+statusClassMap[nodeStatus];
-
 		}
 	});
 });

@@ -61,8 +61,8 @@ define([
 		}
 	}
 
-	// TO DO : Activity Parameters 
-	// TO DO : UI Parameters
+	// TODO : Activity Parameters 
+	// TODO : UI Parameters
 	var _session = session(query);
 	var _model = new model(query.m, query.p);
 	console.log(_model);
@@ -73,7 +73,7 @@ define([
 			try{
 				_model.loadModel(solutionGraph);
 			} catch(err){
-				if (query.m == "AUTHOR") {
+				if (_model.model.mode == "AUTHOR") {
 					//var errorMessage = new messageBox("errorMessageBox", "error", error.message);
 					//errorMessage.show();
 					throw Error(err);
@@ -84,7 +84,7 @@ define([
 				}
 			}
 			// This version of code addresses loading errors in cases where problem is empty, incomplete or has no root node in coached mode
-			if (query.m !== "AUTHOR") {
+			if (_model.model.mode == "AUTHOR") {
 				//check if the problem is empty
 				try {
 					console.log("checking for emptiness");
@@ -142,7 +142,7 @@ define([
 			var loading = document.getElementById('loadingOverlay');
 			loading.style.display = "none";
 
-			var dm = new drawModel(_model.active, query.m, _dragNodes);
+			var dm = new drawModel(_model.active, _dragNodes);
 			var errDialog = new popupDialog();
 
 			/*********  below this part are the event handling *********/
@@ -235,14 +235,13 @@ define([
 			var ui_config = "";
 
 			//For now using empty  ui_config 
-			var controllerObject = (query.m == 'AUTHOR') ?
-				new controlAuthor(query.m, _model, ui_config) :
-				new controlStudent(query.m, _model, ui_config);
+			var controllerObject = (_model.model.mode == 'AUTHOR') ?
+				new controlAuthor(_model.model.mode, _model, ui_config) :
+				new controlStudent(_model.model.mode, _model, ui_config);
 
-			if(query.m != 'AUTHOR'){
+			if(_model.model.mode != 'AUTHOR'){
 				//controllerObject.setAssessment(session); //set up assessment for student.
 			}
-			//                                                                                            var controllerObject = new controlAuthor(query.m, _model, ui_config);
 			//next step is to add action to add quantity
 			menu.add("createQuantityNodeButton", function(e){
 				event.stop(e);

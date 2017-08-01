@@ -211,7 +211,7 @@ define([
 								myThis.hideCloseNodeEditor(doHide);
 							}
 						} // if the mode is author and user has selected to enter student values (" given ")
-						else if(myThis._mode == "AUTHOR" && registry.byId("modelSelector").value == "given"){
+						else if(myThis._model.mode == "AUTHOR" && registry.byId("modelSelector").value == "given"){
 							equation = registry.byId("equationInputboxStudent");
 							
 							//equation value in this case if from equationInputboxStudent and check if the value is entered/checked
@@ -515,7 +515,7 @@ define([
 
 		closeEditor: function(){ 
 			console.log("++++++++++ entering closeEditor");
-			if(this._mode == "AUTHOR"){
+			if(this._model.mode == "AUTHOR"){
 				//Reset to given on close of node editor
 				this._model.active = this._model.authored;
 				registry.byId("modelSelector").set('value',"correct");
@@ -779,22 +779,9 @@ define([
 			// add hook so we can do this in draw-model...
 			this.addQuantity(this.currentID, this._model.active.getLinks(this.currentID));
 		},
+		
 		/* Stub to update connections in graph */
 		addQuantity: function(source, destinations){
-		},
-		handleVariableType: function(e){
-			// Summary : Sets variableType to Unknown/Parameter/Dynamic
-			// Value is not allowed when variableType is Unknown
-			// Value is handled when variableType is parameter or dynamic.
-			console.log("********************* in handleVariableType");
-			var _variableType = e.target.value;
-			if(_variableType === this._model.active.getVariableType(this.currentID)){
-				return;
-			}
-			this.variableTypeControls(this.currentID, _variableType);
-			if(this._mode !== "AUTHOR"){
-				this.applyDirectives(this._PM.processAnswer(this.currentID, 'variableType', _variableType));
-			}
 		},
 
 		variableTypeControls: function(id, _variableType){
@@ -938,7 +925,7 @@ define([
 						//these nodes were added to model, substituted into equation but should be added here
 						this.addNode(this._model.active.getNode(newNode.id));
 						// Auto-populate node description only in Student mode
-						if(this._mode != "AUTHOR"){
+						if(this._model.mode != "AUTHOR"){
 							this.setNodeDescription(newNode.id,newNode.variable);
 							this.updateNodeView(this._model.active.getNode(newNode.id));	
 						}					

@@ -190,7 +190,15 @@ define([
 				// Log Error
 			}
 		},
-
+		handleVariableType: function(e){
+			// Summary : Sets variableType to Unknown/Parameter/Dynamic
+			// Value is not allowed when variableType is Unknown
+			// Value is handled when variableType is parameter or dynamic.
+			console.log("********************* in handleVariableType");
+			var _variableType = e.target.value;
+			this.variableTypeControls(this.currentID, _variableType);
+			this.applyDirectives(this._PM.processAnswer(this.currentID, 'variableType', _variableType));
+		},
 		handleUnits: function (unit) {
 			console.log("*******Student has chosen unit", unit, this);
 			this._model.student.setUnits(this.currentID,unit);
