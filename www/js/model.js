@@ -149,8 +149,10 @@ define([
 					}
 				}, this);
 				return unitList;
+			},
+			getTimeUnits: function(){
+				return obj.model.time.units || "seconds";
 			}
-
 		};
 
 		var both = {

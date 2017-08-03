@@ -1,8 +1,9 @@
 define([
 	"dojo/_base/declare",
 	"dojo/_base/lang",
+	"dojo/_base/array",
 	"./equation"
-], function(declare, lang, equation){
+], function(declare, lang, array, equation){
 	return declare(null, {
 		/**
 		* this is the common calculations file which is the interface for calling and
@@ -47,14 +48,14 @@ define([
 		},
 
 		//checks if the solution is static
-		checkForStatic: function(model, solution) {
+		checkForStatic: function(subModel, solution) {
 			var values = solution.plotValues;
 			var temp = 0;
 			var isStatic = true;
 			if(values.length == 0){
 				isStatic = false;
 			}
-			if(model.active.isVariableTypePresent("dynamic")){
+			if(subModel.isVariableTypePresent("dynamic")){
 				return false;
 			}
 
@@ -65,7 +66,7 @@ define([
 					if(v !== temp){
 						isStatic = false;
 					}
-					temp = num;
+					temp = v;
 				});
 			});
 			return isStatic;

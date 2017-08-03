@@ -232,13 +232,13 @@ define([
 			menu.add("graphButton", function(e){
 				event.stop(e);
 				console.log("Graph button clicked");
-				initSolution();
+				initSolution("graph");
 			});
 
 			menu.add("tableButton", function(e){
 				event.stop(e);
 				console.log("Table button clicked");
-				initSolution();
+				initSolution("table");
 			});
 
 			aspect.after(controllerObject, "addNode",

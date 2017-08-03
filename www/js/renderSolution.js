@@ -5,12 +5,14 @@ define([
 	"dojox/charting/Chart",
 	"dojox/charting/axis2d/Default",
 	"dojox/charting/plot2d/Lines",
-    "dojox/charting/plot2d/Grid",
-    "dojox/charting/widget/Legend",
+	"dojox/charting/plot2d/Grid",
+	"dojox/charting/widget/Legend",
+	"dojo/on",
 	"dojo/dom",
 	"dojo/dom-style",
-    "./calculation"
-], function(declare, array, registry, Chart, Default, Lines, Grid, Legend, dom, domStyle, calculations){
+	"dojo/dom-attr",
+	"./calculation"
+], function(declare, array, registry, Chart, Default, Lines, Grid, Legend, on, dom, domStyle, domAttr, calculations){
 	return declare(calculations, {
 		_colors: {
 			majorHLine: "#CACACA",
@@ -19,6 +21,9 @@ define([
 			correctGraph: "#5cd65c",
 			authorGraph: "black"
 		},
+		charts: {},
+		legends: {},
+		chart: {},
 
 		constructor: function(model){
 			if(this.activeEquations){
@@ -41,9 +46,13 @@ define([
 			}
 
 			this.initializeGraphTab();
+
+			this.createTable(this.activeSolution.plotVariables);
+
+			this.showHideGraphsHandler();
 			//checks if the given solution is a static solution
-			this.isStatic = isStudentMode ? this.checkForStatic(this.activeSolution) :
-				this.checkForStatic(this.authorSolution);
+			this.isStatic = !this.isStudentMode ? this.checkForStatic(this._model.active, this.activeSolution) :
+				this.checkForStatic(this._model.authored, this.authorSolution);
 
 			if(this.isStatic) {
 				//add static tab if solution is static
@@ -56,6 +65,9 @@ define([
 					registry.byId("StaticTab").destroyRecursive();
 				}
 			}
+
+			domStyle.set(this.tabContainer.domNode, "display", "block");
+			this.resizeWindow();
 		},
 
 		createChart: function(domNode, id, xAxis, yAxis, solution){
@@ -68,8 +80,8 @@ define([
 				hMinorLines: false,
 				vMajorLines: true,
 				vMinorLines: false,
-				majorHLine: { color: this._color.majorHLine, width: 1 },
-				majorVLine: { color: this._color.majorVLine, width: 1 }
+				majorHLine: { color: this._colors.majorHLine, width: 1 },
+				majorVLine: { color: this._colors.majorVLine, width: 1 }
 				//markers: activeSolution.times.length < 25
 			});
 
@@ -78,7 +90,7 @@ define([
 				titleOrientation: "away", titleGap: 5
 			});
 
-			var obj = this.getMinMaxFromArray(solution.plotValues[index]);
+			var obj = this.getMinMaxFromArray(solution.plotValues[id]);
 
 			chart.addAxis("y", {
 				vertical: true, // min: obj.min, max: obj.max,
@@ -94,22 +106,22 @@ define([
 				chart.addSeries(
 					"Your solution",
 					this.formatSeriesForChart(solution, id),
-					{stroke: this._color.correctGraph}
+					{stroke: this._colors.correctGraph}
 				);
 			}
 			else {
 				chart.addSeries(
 					"Your solution",
 					this.formatSeriesForChart(solution, id),
-					{stroke: this.color.incorrectGraph}
+					{stroke: this.colors.incorrectGraph}
 				);
 			}
 
 			if(this.isStudentMode && this.authorSolution.plotValues[id]){
 				chart.addSeries(
 					"Author's solution",
-					this.formatSeriesForChart(this.authorSolution, index),
-					{stroke: this._color.authorGraph}
+					this.formatSeriesForChart(this.authorSolution, id),
+					{stroke: this._colors.authorGraph}
 				);
 			}
 
@@ -124,9 +136,12 @@ define([
 		},
 
 		formatSeriesForChart: function(result, id){
-			return array.map(result.times, function(time, k){
+			console.log("sachin ", result);
+			var series = array.map(result.time, function(time, k){
 				return {x: time, y: result.plotValues[id][k]};
 			});
+			console.log(series);
+			return series;
 		},
 
 		initializeGraphTab: function(){
@@ -220,7 +235,7 @@ define([
 			tableString += "<tr style='overflow:visible'>";
 			//setup xunit (unit of timesteps)
 			tableString += "<th style='overflow:visible'>" + this.labelString() + "</th>";
-			array.forEach(this.plotVariables, function(id){
+			array.forEach(this.activeSolution.plotVariables, function(id){
 				tableString += "<th>" + this.labelString(id) + "</th>";
 			}, this);
 			tableString += "</tr>";
@@ -233,7 +248,8 @@ define([
 		setTableContent: function(){
 			var tableString="";
 			var errorMessage = null;
-			var solution = this.findSolution(true, this.plotVariables); // Return value from findSlution in calculation, returns an array and we check for status and any missing nodes
+			var solution = this.activeSolution;
+			//var solution = this.findSolution(true, this.plotVariables); // Return value from findSlution in calculation, returns an array and we check for status and any missing nodes
 			/*if(solution.status=="error" && solution.type=="missing"){
 				errorMessage = this.generateMissingErrorMessage(solution); //We show the error message like "A Node is Missing"
 				var errMessageBox = new messageBox("graphErrorMessage", "error", errorMessage, false);
@@ -249,13 +265,13 @@ define([
 				return "";
 			}*/
 			var j = 0;
-			for(var i=0; i<solution.times.length; i++){
+			for(var i=0; i<solution.time.length; i++){
 				tableString += "<tr style='overflow:visible'>";
-				tableString += "<td align='center' style='overflow:visible' id ='row" + i + "col0'>" + solution.times[i].toPrecision(4) + "</td>";
+				tableString += "<td align='center' style='overflow:visible' id ='row" + i + "col0'>" + solution.time[i].toPrecision(4) + "</td>";
 				//set values in table according to their table-headers
 				j = 1;
-				array.forEach(solution.plotValues, function(value){
-					tableString += "<td align='center' style='overflow:visible' id='row" + i + "col" + j + "'>" + value[i].toPrecision(3) + "</td>";
+				array.forEach(solution.plotVariables, function(id){
+					tableString += "<td align='center' style='overflow:visible' id='row" + i + "col" + j + "'>" + solution.plotValues[id][i].toPrecision(3) + "</td>";
 					j++;
 				});
 				tableString += "</tr>";
@@ -316,6 +332,12 @@ define([
 			return result;
 		},
 
+		//checks if the difference between min and max values for plot is not less than 10^-15
+		checkEpsilon: function(solution, id){
+			var obj = this.getMinMaxFromArray(solution.plotValues[id]);
+			return (obj.max - obj.min < Math.pow(10, -15)) && (obj.max != obj.min) && obj.max;
+		},
+
 		formatAxes: function(text, value, precision){
 			if(value > 10000){
 				return value.toPrecision(3);
@@ -327,34 +349,84 @@ define([
 			}
 		},
 
+		showHideGraphsHandler: function(){
+			//// The following loop makes sure legends of function node graphs are not visible initially
+			//// until the user requests, we use the display : none property
+			//// The legend div is replaced in the dom, so we must hide it dynamically.
+			array.forEach(this.activeSolution.plotVariables, function(id){
+				if(this._model.active.getVariableType(id) == "unknown"){
+					var leg_style = { display: "none" };
+					domAttr.set("legend" + id, "style", leg_style);
+					if(this.isStatic) {
+						domAttr.set("legendStatic" + id, "style", leg_style);
+					}
+				}
+				var check = registry.byId("sel" + id);
+				check.on("Change", function(checked){
+					if(checked) {
+						domAttr.remove("chart" + id, "style");
+						domAttr.remove("legend" + id, "style");
+					}else{
+						var obj = { display: "none" };
+						domAttr.set("chart" + id, "style", obj);
+						domAttr.set("legend" + id, "style", obj);
+					}
+				});
+				if(this.isStatic) {
+					var staticCheck = registry.byId("selStatic" + id);
+					staticCheck.on("Change", function (checked) {
+						if (checked) {
+							if (dom.byId("staticGraphMessage" + id).innerHTML == "") {
+								domAttr.remove("chartStatic" + id, "style");
+								domAttr.remove("legendStatic" + id, "style");
+							} else {
+								var obj = {display: "none"};
+								domAttr.set("chartStatic" + id, "style", obj);
+								domAttr.set("legendStatic" + id, "style", obj);
+								domAttr.remove("staticGraphMessage" + id, "style");
+							}
+						} else {
+							var obj = {display: "none"};
+							domAttr.set("chartStatic" + id, "style", obj);
+							domAttr.set("legendStatic" + id, "style", obj);
+							domAttr.set("staticGraphMessage" + id, "style", obj);
+						}
+					});
+				}
+			}, this);
+		},
+
 		labelString: function(id){
-            // Summary:  Return a string containing the quantity name and any units.
-            // id:  Node id for active model; null returns time label
-            var label = id?this._model.active.getName(id):"time";
-            var units = id?this._model.active.getUnits(id):this._model.getUnits();
-            if(units){
-                label += " (" + units + ")";
-            }
-            return label;
-        },
+			// Summary:  Return a string containing the quantity name and any units.
+			// id:  Node id for active model; null returns time label
+			var label = id?this._model.active.getName(id):"time";
+			var units = id?this._model.active.getUnits(id):this._model.getTimeUnits();
+			if(units){
+				label += " (" + units + ")";
+			}
+			return label;
+		},
 
 		resizeWindow: function(){
 			console.log("resizing window");
-			var dialogWindow = document.getElementById("solution");
-			dialogWindow.style.height = "770px";
-			dialogWindow.style.width = "70%";
-			dialogWindow.style.left = "0px";
-			dialogWindow.style.top = "0px";
+			//var dialogWindow = document.getElementById("solution");
+			//dialogWindow.style.height = "700px";
+			//dialogWindow.style.width = "95%";
+			//dialogWindow.style.left = "0px";
+			//dialogWindow.style.top = "0px";
 
 			var tabContainer = document.getElementById("GraphTabContainer");
 			tabContainer.style.height = "700px";
+
+			var graphTableTab = document.getElementById("GraphTab");
+			graphTableTab.style.height = "695px";
 			//tabContainer.style.height = "";
 
 		},
 
 		render: function(_tab){
 			var selectedTab = _tab == "graph" ? this.graphTab : this.tableTab;
-			this.tabContainer.selectChild(selectTab);
+			this.tabContainer.selectChild(selectedTab);
 			this.dialogWindow.show();
 		}
 	});
