@@ -353,7 +353,7 @@ define([
 				return obj.initialNodeDisplayString;
 			},
 			getTime: function(){
-				return this.model.time;
+				return obj.model.time;
 			},
 			isVariableTypePresent: function(type){
 				var nodes = this.getNodes();
@@ -464,7 +464,7 @@ define([
 				var node = this.getNode(id);
 				return node.explanation || node.description;
 			},
-			getAuthorID: function(/*string*/ id){
+			getAuthoredID: function(/*string*/ id){
 				return id;
 			},
 			getParent: function(/*string*/ id){

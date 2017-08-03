@@ -1,7 +1,7 @@
 define([
 	"dojo/_base/array",
 	"parser/parser",
-	"solver/solver"
+	"solver/newton-raphson"
 ], function(array, Parser, Solver){
 	return {
 		parse: function(equation){
@@ -199,19 +199,23 @@ define([
 		* variable details, to be sent to math-solver.
 		**/
 		solveTimeStep: function(equations){
-			array.forEach(equations.expressions, function(expression){
-				this.replace(expression, equations.values);
+			var equationArray = [];
+			array.forEach(equations.expressions, function(eq){
+				expression = this.parseEquation(eq);
+				expression = this.replace(expression, equations.values);
+				equationArray.push(expression);
 			}, this);
 
 			var solution = {};
 			try{
-				var solver = new Solver(equation.expressions);
+				var solver = new Solver(equationArray);
 				solution.point = solver.solve();
-				solution.vars = solution.xvars;
+				solution.vars = solver.xvars;
 			} catch(e) {
 				// Error handling has to be done for each error in Solver
 				console.log(e);
 			}
+			console.log(solution);
 
 			return solution;
 		},
@@ -219,25 +223,28 @@ define([
 		graph: function(subModel, equations, staticID){
 			var solution = this.initSolution(subModel, equations);
 			var values = {};
-			solution.time = equations.time;
+			var equationCopy = equations.expressions.slice(0);
 
-			var timeSteps = solution.time.length;
+			var timeSteps = equations.time.length;
 			/*array.forEach(equations.params, function(id){
 				values[id] = subModel.getValue(id);
 			});*/
+			values = equations.values;
 			for(var i = 1; i <= timeSteps; i++){
 				if(staticID)
-					values[staticID] = solution.time[i-1];
+					values[staticID] = equations.time[i-1];
 				array.forEach(equations.xvars, function(id){
-					value[id+subModel.getInitialNodeIDString()] = solution[id][i-1];
+					values[id+subModel.getInitialNodeIDString()] = solution[id][i-1];
 				});
-
+				console.log(" ---------- values ", values);
 				equations.values = values;
+				equations.expressions = equationCopy;
 				var timeStepSolution = this.solveTimeStep(equations);
 				array.forEach(timeStepSolution.vars, function(id, counter){
-					solution.plotValues[id].push(timeStepSolution.point[counter]);
+					solution[id].push(timeStepSolution.point.get(counter, 0));
 				});
 			}
+			console.log("solution for the system of equations ", solution);
 
 			return solution;
 		},
@@ -249,7 +256,7 @@ define([
 				solution[id] = [];
 				solution[id].push(subModel.getValue(id));
 			});
-			array.forEach(equation.func, function(id){
+			array.forEach(equations.func, function(id){
 				solution[id] = [];
 			});
 
@@ -297,8 +304,8 @@ define([
 			for(var i = 0; i < this.numberOfEvaluations; i++){
 				createEvaluationPoint();
 				for(var j = 0; j < 2; j++){
-					var authorValue[i] = aParse[i].evaluate(variables);
-					var studentValue[i] = sParse[i].evaluate(variables);
+					authorValue[i] = aParse[i].evaluate(variables);
+					studentValue[i] = sParse[i].evaluate(variables);
 				}
 			}
 
@@ -318,8 +325,11 @@ define([
 		},
 
 		parseEquation: function(expression){
+			if(!expression)
+				return null;
+
 			var eqArray = expression.split(this.equalto);
-			if(eqArray.length != 2)
+			if(eqArray && eqArray.length != 2)
 				throw Error("equation has more than one equal to symbol");
 			var parse = [];
 			for(var i = 0; i < 2; i++){
@@ -356,12 +366,14 @@ define([
 								case "unknown":
 									equations.func.push(node.ID);
 									break;
-								case default:
+								default:
 									console.error("Quantity node type not defined");
 							}
+							break;
 						case "equation":
-							equations.expressions.push(this.parseEquation(node.equation));
-						case default:
+							equations.expressions.push(node.equation);
+							break;
+						default:
 							console.error("Node type not defined");
 					}
 				}
@@ -393,7 +405,7 @@ define([
 				axis[counter++] = i;
 			}
 
-			return series;
+			return axis;
 		},
 
 		setLogging: function(logger){

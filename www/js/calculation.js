@@ -1,7 +1,8 @@
 define([
 	"dojo/_base/declare",
+	"dojo/_base/lang",
 	"./equation"
-], function(declare, equation){
+], function(declare, lang, equation){
 	return declare(null, {
 		/**
 		* this is the common calculations file which is the interface for calling and
@@ -11,32 +12,33 @@ define([
 		* html related dom elements for rendering.
 		**/
 		_model: null,
-		constructor: function(model, tab){
+		constructor: function(model){
 			this._model = model;
-			this.showGraph = tab == "graph";
-			this.activeEquations = this.initialize(this._model.active);
-			this.authorEquations = this.initialize(this._model.authored);
+			this.activeEquations = this.initializeSystem(this._model.active);
 			this.isStudentMode = this._model.active === this._model.student;
+			if(this.isStudentMode)
+				this.authorEquations = this.initialize(this._model.authored);
 		},
 		/**
 		* function which finds the solution for the system of equations.
 		**/
 		findSolution: function(isActive, id){
-			var equations = isActive ? this.activeEquations : this.authorEquations;
+			var system = isActive ? this.activeEquations : this.authorEquations;
+			var subModel = isActive ? this._model.active : this._model.authored;
 			var solution;
 			try{
-				solution = equation.graph(equations, id);
+				system.plotValues = equation.graph(subModel, system, id);
 			} catch(e) {
 				console.error(e);
 			}
 
-			return lang.mixin(equations, solution);
+			return system
 		},
 		/**
 		* it takes the equations in the model, validates them and creates an object
 		* that will be used for finding soltuion.
 		**/
-		initialize: function(subModel, id){
+		initializeSystem: function(subModel, id){
 			var initSolution = null;
 			initSolution = equation.initTimeStep(subModel);
 			initSolution.time = equation.initXAxis(subModel, id);

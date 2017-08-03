@@ -1,7 +1,29 @@
-define([], function(){
+define([
+	"dojo/_base/declare",
+	"dojo/_base/array",
+	"dijit/registry",
+	"dojox/charting/Chart",
+	"dojox/charting/axis2d/Default",
+	"dojox/charting/plot2d/Lines",
+    "dojox/charting/plot2d/Grid",
+    "dojox/charting/widget/Legend",
+	"dojo/dom",
+	"dojo/dom-style",
+    "./calculation"
+], function(declare, array, registry, Chart, Default, Lines, Grid, Legend, dom, domStyle, calculations){
 	return declare(calculations, {
-		constructor: function(){
-			
+		_colors: {
+			majorHLine: "#CACACA",
+			majorVLine: "#CACACA",
+			incorrectGraph: "red",
+			correctGraph: "#5cd65c",
+			authorGraph: "black"
+		},
+
+		constructor: function(model){
+			if(this.activeEquations){
+				this.initialize();
+			}
 		},
 
 		initialize: function(){
@@ -12,10 +34,6 @@ define([], function(){
 			this.tableTab = registry.byId("TableTab");
 
 			domStyle.set(this.tabContainer.domNode, "display", "none");
-			if(this.tab == "graph")
-				this.tabContainer.selectChild(this.graphTab);
-			if(this.tab == "table")
-				this.tabContainer.selectChild(this.tableTab);
 
 			this.activeSolution = this.findSolution(true);
 			if(this.isStudentMode){
@@ -40,7 +58,7 @@ define([], function(){
 			}
 		},
 
-		createChart: function(domNode, id, xAxis, yAxis, solution, index){
+		createChart: function(domNode, id, xAxis, yAxis, solution){
 			//Chart Node
 			var chart = new Chart(domNode);
 
@@ -50,8 +68,8 @@ define([], function(){
 				hMinorLines: false,
 				vMajorLines: true,
 				vMinorLines: false,
-				majorHLine: { color: "#CACACA", width: 1 },
-				majorVLine: { color: "#CACACA", width: 1 }
+				majorHLine: { color: this._color.majorHLine, width: 1 },
+				majorVLine: { color: this._color.majorVLine, width: 1 }
 				//markers: activeSolution.times.length < 25
 			});
 
@@ -61,13 +79,6 @@ define([], function(){
 			});
 
 			var obj = this.getMinMaxFromArray(solution.plotValues[index]);
-			/*if(obj.max - obj.min < Math.pow(10, -15)){
-				var len = solution.plotValues[index].length;
-				for(var i = 0; i < len; i++){
-					solution.plotValues[index][i] = obj.max;
-				}
-				obj.min = obj.max;
-			}*/
 
 			chart.addAxis("y", {
 				vertical: true, // min: obj.min, max: obj.max,
@@ -78,28 +89,27 @@ define([], function(){
 				labelFunc: this.formatAxes
 			});
 
-
-			if(this.isCorrect || this.mode == "AUTHOR" || this.mode == "ROAUTHOR") {
-				//plot chart for student node
+			if(this.isCorrect || !this.isStudentMode) {
+				//plot chart for correct student solution or author mode
 				chart.addSeries(
 					"Your solution",
-					this.formatSeriesForChart(solution, index),
-					{stroke: "#5cd65c"}
+					this.formatSeriesForChart(solution, id),
+					{stroke: this._color.correctGraph}
 				);
 			}
 			else {
 				chart.addSeries(
 					"Your solution",
-					this.formatSeriesForChart(solution, index),
-					{stroke: "red"}
+					this.formatSeriesForChart(solution, id),
+					{stroke: this.color.incorrectGraph}
 				);
 			}
 
-			if(this.mode != "AUTHOR" && this.mode != "ROAUTHOR" && this.mode != "EDITOR" && solution.plotValues[index]){
-
+			if(this.isStudentMode && this.authorSolution.plotValues[id]){
 				chart.addSeries(
 					"Author's solution",
-					this.formatSeriesForChart(this.givenSolution, index), {stroke: "black"}
+					this.formatSeriesForChart(this.authorSolution, index),
+					{stroke: this._color.authorGraph}
 				);
 			}
 
@@ -113,21 +123,23 @@ define([], function(){
 			return chart;
 		},
 
-		formatSeriesForChart: function(result, index){
+		formatSeriesForChart: function(result, id){
 			return array.map(result.times, function(time, k){
-				return {x: time, y: result.plotValues[index][k]};
+				return {x: time, y: result.plotValues[id][k]};
 			});
 		},
 
 		initializeGraphTab: function(){
 			//Graph Tab
 			var graphContent = "";
-			if(this.activeSolution.plotVariables.length > 0) {
-				array.forEach(this.activeSolution.plotVariables, function (id) {
+			var variables = this.activeSolution.plotVariables;
+			if(variables.length > 0) {
+				for(var index in variables){
+					var id = variables[index];
 					//Create graph divs along with their error message
-					var show = this.model.active.getVariableType(id) == "dynamic" || this.model.authored.getParent(this.model.active.getGivenID(id));
+					var show = this._model.active.getVariableType(id) == "dynamic";
 					var checked = show ? " checked='checked'" : "";
-					graphContent += "<div><input id='sel" + id + "' data-dojo-type='dijit/form/CheckBox' class='show_graphs' thisid='" + id + "'" + checked + "/>" + " Show " + this.model.active.getName(id) + "</div>";
+					graphContent += "<div><input id='sel" + id + "' data-dojo-type='dijit/form/CheckBox' class='show_graphs' thisid='" + id + "'" + checked + "/>" + " Show " + this._model.active.getName(id) + "</div>";
 					var style = show ? "" : " style='display: none;'";
 					//graph error message
 					graphContent += "<font color='red' id='graphMessage" + id + "'></font>";
@@ -136,28 +148,27 @@ define([], function(){
 					graphContent += "</div>";
 					// Since the legend div is replaced, we cannot hide the legend here.
 					graphContent += "<div class='legend' id='legend" + id + "'></div>";
-				}, this);
+				}
 
 				this.graphTab.set("content", graphContent);
 
-
-				array.forEach(this.active.plotVariables, function (id, index) {
+				array.forEach(this.activeSolution.plotVariables, function (id) {
 					var domNode = "chart" + id;
-					var val = this.checkEpsilon(this.activeSolution, index);
+					var val = this.checkEpsilon(this.activeSolution, id);
 					if(val){
-						var len = this.activeSolution.plotValues[index].length;
+						var len = this.activeSolution.plotValues[id].length;
 						for(var i = 0; i < len; i++)
-							this.activeSolution.plotValues[index][i] = val;
+							this.activeSolution.plotValues[id][i] = val;
 					}
 					var xAxis = this.labelString();
 					var yAxis = this.labelString(id);
-					this.charts[id] = this.createChart(domNode, id, xAxis, yAxis, this.activeSolution, index);
+					this.charts[id] = this.createChart(domNode, id, xAxis, yAxis, this.activeSolution);
 					this.legends[id] = new Legend({chart: this.charts[id]}, "legend" + id);
 				}, this);
 			} else{
-				var thisModel = this;
+				/*var thisModel = this;
 				var modStatus = true;
-				array.forEach(this.model.active.getNodes(), function (thisnode) {
+				array.forEach(this._model.active.getNodes(), function (thisnode) {
 					if(thisModel.model.active.getType(thisnode.ID)=="function" || thisModel.model.active.getType(thisnode.ID)=="accumulator"){
 						var errorMessage = this.generateMissingErrorMessage(thisModel.model.active.getName(thisnode.ID)); //We show the error message like "A Node is Missing"
 						var errMessageBox = new messageBox("graphErrorMessage", "error", errorMessage, false);
@@ -169,7 +180,7 @@ define([], function(){
 					var errorMessage = "<div>There isn't anything to plot. Try adding some accumulator or function nodes.</div>"; //We show the error message like "A Node is Missing"
 					var errMessageBox = new messageBox("graphErrorMessage", "error", errorMessage, false);
 					errMessageBox.show();
-				}
+				}*/
 			}
 		},
 
@@ -223,7 +234,7 @@ define([], function(){
 			var tableString="";
 			var errorMessage = null;
 			var solution = this.findSolution(true, this.plotVariables); // Return value from findSlution in calculation, returns an array and we check for status and any missing nodes
-			if(solution.status=="error" && solution.type=="missing"){
+			/*if(solution.status=="error" && solution.type=="missing"){
 				errorMessage = this.generateMissingErrorMessage(solution); //We show the error message like "A Node is Missing"
 				var errMessageBox = new messageBox("graphErrorMessage", "error", errorMessage, false);
 				errMessageBox.show();
@@ -236,7 +247,7 @@ define([], function(){
 			} else if(solution.status == "error" && solution.type == "unknwon"){
 				this.dialogWidget.set("content", this.generateUnknownErrorMessage(solution));
 				return "";
-			}
+			}*/
 			var j = 0;
 			for(var i=0; i<solution.times.length; i++){
 				tableString += "<tr style='overflow:visible'>";
@@ -316,6 +327,17 @@ define([], function(){
 			}
 		},
 
+		labelString: function(id){
+            // Summary:  Return a string containing the quantity name and any units.
+            // id:  Node id for active model; null returns time label
+            var label = id?this._model.active.getName(id):"time";
+            var units = id?this._model.active.getUnits(id):this._model.getUnits();
+            if(units){
+                label += " (" + units + ")";
+            }
+            return label;
+        },
+
 		resizeWindow: function(){
 			console.log("resizing window");
 			var dialogWindow = document.getElementById("solution");
@@ -328,6 +350,12 @@ define([], function(){
 			tabContainer.style.height = "700px";
 			//tabContainer.style.height = "";
 
+		},
+
+		render: function(_tab){
+			var selectedTab = _tab == "graph" ? this.graphTab : this.tableTab;
+			this.tabContainer.selectChild(selectTab);
+			this.dialogWindow.show();
 		}
 	});
 });
