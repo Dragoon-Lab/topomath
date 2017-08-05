@@ -108,8 +108,7 @@ define([
 					this.formatSeriesForChart(solution, id),
 					{stroke: this._colors.correctGraph}
 				);
-			}
-			else {
+			} else {
 				chart.addSeries(
 					"Your solution",
 					this.formatSeriesForChart(solution, id),
@@ -197,6 +196,44 @@ define([
 					errMessageBox.show();
 				}*/
 			}
+		},
+
+		initializeStaticTab: function(){
+			var staticContent = "";
+			this.staticVar = 0;
+			var staticNodes = this.activeSolution.params;
+
+			//TODO: Duplicate code in forEach
+			array.forEach(this.activeSolution.plotVariables, function(id){
+				var show = this._model.active.getType(id) == "dynamic";
+				var checked = show ? " checked='checked'" : "";
+				staticContent += "<div><input id='selStatic" + id + "' data-dojo-type='dijit/form/CheckBox' class='show_graphs' thisid='" + id + "'" + checked + "/>" + " Show " + this.model.active.getName(id) + "</div>";
+				var style = show ? "" : " style='display: none;'";
+				staticContent += "<div	 id='chartStatic" + id + "'" + style + "></div>";
+
+				//graph error message
+				staticContent += "<font color='red' id='staticGraphMessage" + id + "'></font>";
+				// Since the legend div is replaced, we cannot hide the legend here.
+				staticContent += "<div class='legend' id='legendStatic" + id + "'></div>";
+			}, this);
+
+			this.staticTab = registry.byId("StaticTab");
+
+			this.staticTab.set("content", "<div id='staticSelectContainer'></div>" + staticContent);
+
+			this.createComboBox(staticNodes);
+			var staticVar = this.checkStaticVar(true);
+			this.activeStaticSolution = this.findSolution(true, staticVar);
+			if(this.isStudentMode)
+				this.authorStaticSolution = this.authorSolution.plotVariables ? this.findSolutions(false, staticNodes[this.staticVar]) : "";
+
+			array.forEach(this.activeSolution.plotVariables, function(id, index){
+				var domNode = "chartStatic" + id ;
+				var xAxis = dom.byId("staticSelect").value;
+				var yAxis = this.labelString(id);
+				this.chartsStatic[id] = this.createChart(domNode, id, xAxis, yAxis, this.activeStaticSolution, index);
+				this.legendStatic[id] = new Legend({chart: this.chartsStatic[id]}, "legendStatic" + id);
+			}, this);
 		},
 
 		createTable: function(plotVariables){
@@ -396,6 +433,94 @@ define([
 			}, this);
 		},
 
+		//creates the dropdown menu for the static window
+		createComboBox: function(staticNodes){
+			var stateStore = new Memory();
+			var combo = registry.byId("staticSelect");
+			if(combo){
+				combo.destroyRecursive();
+			}
+			array.forEach(staticNodes, function(node)
+			{
+				stateStore.put({id:node.name, name:node.name});
+			});
+			var comboBox = new ComboBox({
+				id: "staticSelect",
+				name: "state",
+				value: staticNodes[0].name,
+				store: stateStore,
+				searchAttr: "name"
+			}, "staticSelectContainer");
+			//console.log(comboBox);
+			this.disableStaticSlider();
+			on(comboBox, "change", lang.hitch(this, function(){
+				this.renderStaticDialog(true);// Call the function for updating both the author graph and the student graph
+				this.disableStaticSlider();
+			}));
+		},
+
+				//changes the static graph when sliders or dropdown change
+		renderStaticDialog: function(updateAuthorGraph){
+			console.log("rendering static");
+			if(this.isStatic) {
+				var staticVar = this.checkStaticVar(true);
+				var activeSolution = this.findStaticSolution(true, staticVar, this.active.plotVariables);
+				this.givenSolution = this.findStaticSolution(false, staticVar, this.given.plotVariables);
+				//update and render the charts
+				array.forEach(this.active.plotVariables, function(id, k){
+					var inf = this.checkForInfinity(activeSolution.plotValues[k]);
+					if(inf) {
+						dom.byId("staticGraphMessage" + id).innerHTML = "The values you have chosen caused the graph to go infinite.";
+						domStyle.set("chartStatic"+id, "display", "none");
+						domStyle.set("legendStatic" + id, "display", "none");
+						domAttr.remove("staticGraphMessage"+id, "style");
+					}
+					else {
+						dom.byId("staticGraphMessage" + id).innerHTML = "";
+						this.updateChart(id, activeSolution, k, true, updateAuthorGraph);
+					}
+
+				}, this);
+			}
+		},
+
+		//checks for which variables are static
+		checkStaticVar: function(choice){	//true is active, false is given
+			var parameters = this.checkForParameters(choice);
+			var result = parameters[0];
+			var staticSelect = dom.byId("staticSelect");
+
+			if(typeof parameters[0].description != 'undefined')
+			{
+				array.forEach(parameters, function(parameter){
+
+					if(parameter.name == staticSelect.value)
+					{
+						result = parameter;
+					}
+				}, this);
+			}
+			else
+			{
+				var givenParameters = this.checkForParameters(false);
+				var tempResult = givenParameters[0];
+				array.forEach(givenParameters, function(parameter){
+					if(parameter.name == staticSelect.value)
+					{
+						tempResult = parameter;
+					}
+				}, this);
+
+				array.forEach(parameters, function(parameter){
+					if(parameter.descriptionID == tempResult.ID)
+					{
+						result = parameter;
+					}
+				}, this);
+			}
+			return result;
+		},
+
 		labelString: function(id){
 			// Summary:  Return a string containing the quantity name and any units.
 			// id:  Node id for active model; null returns time label
@@ -425,7 +550,12 @@ define([
 		},
 
 		render: function(_tab){
-			var selectedTab = _tab == "graph" ? this.graphTab : this.tableTab;
+			var selectedTab = this.tableTab;
+			if(_tab == "graph")
+				if(this.isStatic)
+					selectedTab = this.staticTab
+				else
+					selectedTab = this.graphTab;
 			this.tabContainer.selectChild(selectedTab);
 			this.dialogWindow.show();
 		}
