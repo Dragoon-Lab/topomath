@@ -18,7 +18,7 @@ define([
 			this.activeEquations = this.initializeSystem(this._model.active);
 			this.isStudentMode = this._model.active === this._model.student;
 			if(this.isStudentMode)
-				this.authorEquations = this.initialize(this._model.authored);
+				this.authorEquations = this.initializeSystem(this._model.authored);
 		},
 		/**
 		* function which finds the solution for the system of equations.
@@ -26,6 +26,13 @@ define([
 		findSolution: function(isActive, id){
 			var system = isActive ? this.activeEquations : this.authorEquations;
 			var subModel = isActive ? this._model.active : this._model.authored;
+			// this will make sure than when id is given then new static models are created
+			if(id){
+				if(isActive)
+					system = this.initializeSystem(this._model.active, id);
+				else
+					system = this.initializeSystem(this._model.authored, id);
+			}
 			var solution;
 			try{
 				system.plotValues = equation.graph(subModel, system, id);
@@ -63,13 +70,113 @@ define([
 				var value = values[id];
 				var temp = value[0];
 				array.forEach(value, function(v){
-					if(v !== temp){
+					if(Math.abs(v - temp) > 10e-10){
 						isStatic = false;
 					}
 					temp = v;
 				});
 			});
 			return isStatic;
+		},
+
+		//checks for which variables are static
+		checkStaticVar: function(choice){	//true is active, false is given
+			var parameters = this.checkForParameters(choice);
+			var result = parameters[0];
+			var staticSelect = dom.byId("staticSelect");
+
+			if(typeof parameters[0].description != 'undefined'){
+				array.forEach(parameters, function(parameter){
+					if(parameter.name == staticSelect.value){
+						result = parameter;
+					}
+				});
+			} else {
+				var givenParameters = this.checkForParameters(false);
+				var tempResult = givenParameters[0];
+				array.forEach(givenParameters, function(parameter){
+					if(parameter.name == staticSelect.value){
+						tempResult = parameter;
+					}
+				});
+
+				array.forEach(parameters, function(parameter){
+					if(parameter.descriptionID == tempResult.ID){
+						result = parameter;
+					}
+				});
+			}
+			return result;
+		},
+
+		getMinMaxFromArray: function(array){
+			var i;
+			var min = array[0];
+			var max = array[0];
+			for(i = 1; i < array.length; i++){
+				if(array[i] < min){
+					min = array[i];
+				}
+				if(array[i] > max){
+					max = array[i];
+				}
+			}
+			// Check if the maximum and minimum are same and change the min and max values
+			if(Math.abs(max - min) < 10e-10){
+				if (min < 0){
+					min = min * 2;
+					max = 0;
+				} else if (min > 0) {
+					min = 0;
+					max = max * 2;
+				} else {
+					min = -1;
+					max = +1;
+				}
+			}
+			return {min: min, max: max};
+		},
+
+		checkForNan: function(){
+			var solution = this.findSolution(true, this.plotVariables);
+			var nan = false;
+			for(var i = 0; i < solution.times.length; i++){
+				if(isNaN(solution.times[i].toPrecision(4)))
+					nan = true;
+				array.forEach(solution.plotValues, function(value){
+					if(isNaN(value[i]))
+						nan = true;
+				});
+			}
+			return nan;
+		},
+
+		checkForInfinity: function(values) {
+			var result = false;
+			array.forEach(values, function(value){
+				if(!isFinite(value))
+				{
+					result = true;
+				}
+			}, this);
+			return result;
+		},
+
+		//checks if the difference between min and max values for plot is not less than 10^-15
+		checkEpsilon: function(solution, id){
+			var obj = this.getMinMaxFromArray(solution.plotValues[id]);
+			return (obj.max - obj.min < Math.pow(10, -15)) && (obj.max != obj.min) && obj.max;
+		},
+
+		formatAxes: function(text, value, precision){
+			if(value > 10000){
+				return value.toPrecision(3);
+			}else if(value % 1 != 0){
+				return value.toPrecision(3);
+			}
+			else{
+				return text;
+			}
 		}
 	});
 });

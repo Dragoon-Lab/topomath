@@ -134,6 +134,67 @@ define([
 			return chart;
 		},
 
+		updateChart: function(id, solution, index, isStatic, updateAuthorGraph){
+
+			var charts = isStatic? this.chartsStatic : this.charts;
+
+			dom.byId("graphMessage" + id).innerHTML = "";
+			var obj = this.getMinMaxFromArray(solution.plotValues[index]);
+
+
+			if(this.mode !== "AUTHOR" && this.mode !== "ROAUTHOR") {
+				var givenObj = this.getMinMaxFromArray(this.givenSolution.plotValues[index]);
+
+				if (givenObj.min < obj.min) {
+					obj.min = givenObj.min;
+				}
+				if (givenObj.max > obj.max) {
+					obj.max = givenObj.max;
+				}
+			}
+
+			//Redraw y axis based on new min and max values
+			charts[id].addAxis("y", {
+				vertical: true,
+				fixed: false,
+				min: obj.min,
+				max: obj.max,
+				labelFunc: this.formatAxes,
+				title: this.labelString(id)
+			});
+
+			if(isStatic){
+				charts[id].addAxis("x", {
+					title: dom.byId("staticSelect").value,
+					titleOrientation: "away", titleGap: 5
+				});
+
+				if (updateAuthorGraph) {
+					charts[id].updateSeries(
+						"Author's solution",
+						this.formatSeriesForChart(this.givenSolution, index),
+						{stroke: "black"}
+					);
+				}
+			}
+
+			if(this.isCorrect || this.mode === "AUTHOR" || this.mode === "ROAUTHOR"){
+				charts[id].updateSeries(
+					"Your solution",
+					this.formatSeriesForChart(solution, index),
+					{stroke: "green"}
+				);
+			}
+			else{
+				charts[id].updateSeries(
+					"Your solution",
+					this.formatSeriesForChart(solution, index),
+					{stroke: "red"}
+				);
+			}
+			charts[id].render();
+		},
+
 		formatSeriesForChart: function(result, id){
 			console.log("sachin ", result);
 			var series = array.map(result.time, function(time, k){
@@ -223,9 +284,9 @@ define([
 
 			this.createComboBox(staticNodes);
 			var staticVar = this.checkStaticVar(true);
-			this.activeStaticSolution = this.findSolution(true, staticVar);
+			this.activeSolution = this.findSolution(true, staticVar);
 			if(this.isStudentMode)
-				this.authorStaticSolution = this.authorSolution.plotVariables ? this.findSolutions(false, staticNodes[this.staticVar]) : "";
+				this.authorSolution = this.authorSolution.plotVariables ? this.findSolution(false, staticNodes[this.staticVar]) : "";
 
 			array.forEach(this.activeSolution.plotVariables, function(id, index){
 				var domNode = "chartStatic" + id ;
@@ -316,76 +377,6 @@ define([
 			return tableString;
 		},
 
-		getMinMaxFromArray: function(array){
-			var i;
-			var min = array[0];
-			var max = array[0];
-			for(i = 1; i < array.length; i++){
-				if(array[i] < min){
-					min = array[i];
-				}
-				if(array[i] > max){
-					max = array[i];
-				}
-			}
-			// Check if the maximum and minimum are same and change the min and max values
-			if(min == max){
-				if (min < 0){
-					min = min * 2;
-					max = 0;
-				} else if (min > 0) {
-					min = 0;
-					max = max * 2;
-				} else {
-					min = -1;
-					max = +1;
-				}
-			}
-			return {min: min, max: max};
-		},
-
-		checkForNan: function(){
-			var solution = this.findSolution(true, this.plotVariables);
-			var nan = false;
-			for(var i = 0; i < solution.times.length; i++){
-				if(isNaN(solution.times[i].toPrecision(4)))
-					nan = true;
-				array.forEach(solution.plotValues, function(value){
-					if(isNaN(value[i]))
-						nan = true;
-				});
-			}
-			return nan;
-		},
-
-		checkForInfinity: function(values) {
-			var result = false;
-			array.forEach(values, function(value){
-				if(!isFinite(value))
-				{
-					result = true;
-				}
-			}, this);
-			return result;
-		},
-
-		//checks if the difference between min and max values for plot is not less than 10^-15
-		checkEpsilon: function(solution, id){
-			var obj = this.getMinMaxFromArray(solution.plotValues[id]);
-			return (obj.max - obj.min < Math.pow(10, -15)) && (obj.max != obj.min) && obj.max;
-		},
-
-		formatAxes: function(text, value, precision){
-			if(value > 10000){
-				return value.toPrecision(3);
-			}else if(value % 1 != 0){
-				return value.toPrecision(3);
-			}
-			else{
-				return text;
-			}
-		},
-
 		showHideGraphsHandler: function(){
 			//// The following loop makes sure legends of function node graphs are not visible initially
 			//// until the user requests, we use the display : none property
@@ -460,7 +451,7 @@ define([
 		},
 
 				//changes the static graph when sliders or dropdown change
-		renderStaticDialog: function(updateAuthorGraph){
+		renderDialog: function(updateAuthorGraph){
 			console.log("rendering static");
 			if(this.isStatic) {
 				var staticVar = this.checkStaticVar(true);
@@ -484,41 +475,27 @@ define([
 			}
 		},
 
-		//checks for which variables are static
-		checkStaticVar: function(choice){	//true is active, false is given
-			var parameters = this.checkForParameters(choice);
-			var result = parameters[0];
-			var staticSelect = dom.byId("staticSelect");
+				/*
+		 * @brief: this function re-renders dialog  when slider event is fired and
+		 * new values for student nodes are calculated
+		 */
+		renderDialog: function(){
+			console.log("rendering graph and table");
+			var activeSolution = this.findSolution(true, this.active.plotVariables);
+			//update and render the charts
+			array.forEach(this.active.plotVariables, function(id, k){
 
-			if(typeof parameters[0].description != 'undefined')
-			{
-				array.forEach(parameters, function(parameter){
+				// Calculate Min and Max values to plot on y axis based on given solution and your solution
+				var inf = this.checkForInfinity(activeSolution.plotValues[k]);
+				if(inf) {
+					dom.byId("graphMessage" + id).innerHTML = "The values you have chosen caused the graph to go infinite. (See table.)";
+				}
+				else {
+					this.updateChart(id, activeSolution, k, false);
+				}
+			}, this);
 
-					if(parameter.name == staticSelect.value)
-					{
-						result = parameter;
-					}
-				}, this);
-			}
-			else
-			{
-				var givenParameters = this.checkForParameters(false);
-				var tempResult = givenParameters[0];
-				array.forEach(givenParameters, function(parameter){
-					if(parameter.name == staticSelect.value)
-					{
-						tempResult = parameter;
-					}
-				}, this);
-
-				array.forEach(parameters, function(parameter){
-					if(parameter.descriptionID == tempResult.ID)
-					{
-						result = parameter;
-					}
-				}, this);
-			}
-			return result;
+			this.createTable(this.active.plotVariables);
 		},
 
 		labelString: function(id){
@@ -546,7 +523,6 @@ define([
 			var graphTableTab = document.getElementById("GraphTab");
 			graphTableTab.style.height = "695px";
 			//tabContainer.style.height = "";
-
 		},
 
 		render: function(_tab){
