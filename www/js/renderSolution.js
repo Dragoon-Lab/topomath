@@ -1,6 +1,7 @@
 define([
 	"dojo/_base/declare",
 	"dojo/_base/array",
+	"dojo/_base/lang",
 	"dijit/registry",
 	"dojox/charting/Chart",
 	"dojox/charting/axis2d/Default",
@@ -11,8 +12,10 @@ define([
 	"dojo/dom",
 	"dojo/dom-style",
 	"dojo/dom-attr",
+	"dijit/form/ComboBox",
+	"dojo/store/Memory",
 	"./calculation"
-], function(declare, array, registry, Chart, Default, Lines, Grid, Legend, on, dom, domStyle, domAttr, calculations){
+], function(declare, array, lang, registry, Chart, Default, Lines, Grid, Legend, on, dom, domStyle, domAttr, ComboBox, Memory, calculations){
 	return declare(calculations, {
 		_colors: {
 			majorHLine: "#CACACA",
@@ -24,6 +27,8 @@ define([
 		charts: {},
 		legends: {},
 		chart: {},
+		chartsStatic: {},
+		legendStatic: {},
 
 		constructor: function(model){
 			if(this.activeEquations){
@@ -49,7 +54,6 @@ define([
 
 			this.createTable(this.activeSolution.plotVariables);
 
-			this.showHideGraphsHandler();
 			//checks if the given solution is a static solution
 			this.isStatic = !this.isStudentMode ? this.checkForStatic(this._model.active, this.activeSolution) :
 				this.checkForStatic(this._model.authored, this.authorSolution);
@@ -66,6 +70,7 @@ define([
 				}
 			}
 
+			this.showHideGraphsHandler();
 			domStyle.set(this.tabContainer.domNode, "display", "block");
 			this.resizeWindow();
 		},
@@ -101,29 +106,12 @@ define([
 				labelFunc: this.formatAxes
 			});
 
-			if(this.isCorrect || !this.isStudentMode) {
-				//plot chart for correct student solution or author mode
+			var series = this.formatChartSeries(solution, id);
+			array.forEach(series, function(s){
 				chart.addSeries(
-					"Your solution",
-					this.formatSeriesForChart(solution, id),
-					{stroke: this._colors.correctGraph}
+					s.title, s.data, s.stroke
 				);
-			} else {
-				chart.addSeries(
-					"Your solution",
-					this.formatSeriesForChart(solution, id),
-					{stroke: this.colors.incorrectGraph}
-				);
-			}
-
-			if(this.isStudentMode && this.authorSolution.plotValues[id]){
-				chart.addSeries(
-					"Author's solution",
-					this.formatSeriesForChart(this.authorSolution, id),
-					{stroke: this._colors.authorGraph}
-				);
-			}
-
+			});
 			//this check is handled in initializeGraphTab function.
 			//if(obj.max - obj.min > (Math.pow(10,-15)) || (obj.max - obj.min === 0)) {
 			chart.render();
@@ -134,22 +122,22 @@ define([
 			return chart;
 		},
 
-		updateChart: function(id, solution, index, isStatic, updateAuthorGraph){
+		updateChart: function(id, solution, index, isStatic){
 
 			var charts = isStatic? this.chartsStatic : this.charts;
 
 			dom.byId("graphMessage" + id).innerHTML = "";
-			var obj = this.getMinMaxFromArray(solution.plotValues[index]);
+			var obj = this.getMinMaxFromArray(solution.plotValues[id]);
 
 
-			if(this.mode !== "AUTHOR" && this.mode !== "ROAUTHOR") {
-				var givenObj = this.getMinMaxFromArray(this.givenSolution.plotValues[index]);
+			if(this.isStudentMode) {
+				var authorObj = this.getMinMaxFromArray(this.authorSolution.plotValues[id]);
 
-				if (givenObj.min < obj.min) {
-					obj.min = givenObj.min;
+				if (authorObj.min < obj.min) {
+					obj.min = authorObj.min;
 				}
-				if (givenObj.max > obj.max) {
-					obj.max = givenObj.max;
+				if (authorObj.max > obj.max) {
+					obj.max = authorObj.max;
 				}
 			}
 
@@ -168,31 +156,40 @@ define([
 					title: dom.byId("staticSelect").value,
 					titleOrientation: "away", titleGap: 5
 				});
-
-				if (updateAuthorGraph) {
-					charts[id].updateSeries(
-						"Author's solution",
-						this.formatSeriesForChart(this.givenSolution, index),
-						{stroke: "black"}
-					);
-				}
 			}
 
-			if(this.isCorrect || this.mode === "AUTHOR" || this.mode === "ROAUTHOR"){
+			var series = this.formatChartSeries(solution, id);
+
+			array.forEach(series, function(s){
 				charts[id].updateSeries(
-					"Your solution",
-					this.formatSeriesForChart(solution, index),
-					{stroke: "green"}
+					s.title, s.data, s.stroke
 				);
-			}
-			else{
-				charts[id].updateSeries(
-					"Your solution",
-					this.formatSeriesForChart(solution, index),
-					{stroke: "red"}
-				);
-			}
+			});
+
 			charts[id].render();
+		},
+
+		formatChartSeries: function(solution, id){
+			var series = [];
+			var temp = {};
+			temp.title = "Your Solution";
+			temp.data = this.formatSeriesForChart(solution, id);
+			if(this.isCorrect || !this.isStudentMode){
+				temp.stroke = {stroke: this._colors.correctGraph};
+			} else {
+				temp.stroke = {stroke: this._colors.incorrectGraph};
+			}
+
+			series.push(temp);
+			if(this.isStudentMode){
+				series.push({
+					title: "Author's solution",
+					data: this.formatSeriesForChart(this.authorSolution, id),
+					stroke: {stroke: this._colors.authorGraph}
+				});
+			}
+
+			return series;
 		},
 
 		formatSeriesForChart: function(result, id){
@@ -268,7 +265,8 @@ define([
 			array.forEach(this.activeSolution.plotVariables, function(id){
 				var show = this._model.active.getType(id) == "dynamic";
 				var checked = show ? " checked='checked'" : "";
-				staticContent += "<div><input id='selStatic" + id + "' data-dojo-type='dijit/form/CheckBox' class='show_graphs' thisid='" + id + "'" + checked + "/>" + " Show " + this.model.active.getName(id) + "</div>";
+				staticContent += "<div><input id='selStatic" + id + "' data-dojo-type='dijit/form/CheckBox' class='show_graphs' thisid='" +
+									id + "'" + checked + "/>" + " Show " + this._model.active.getName(id) + "</div>";
 				var style = show ? "" : " style='display: none;'";
 				staticContent += "<div	 id='chartStatic" + id + "'" + style + "></div>";
 
@@ -286,13 +284,13 @@ define([
 			var staticVar = this.checkStaticVar(true);
 			this.activeSolution = this.findSolution(true, staticVar);
 			if(this.isStudentMode)
-				this.authorSolution = this.authorSolution.plotVariables ? this.findSolution(false, staticNodes[this.staticVar]) : "";
+				this.authorSolution = this.authorSolution.plotVariables ? this.findSolution(false, statisVar) : "";
 
 			array.forEach(this.activeSolution.plotVariables, function(id, index){
 				var domNode = "chartStatic" + id ;
 				var xAxis = dom.byId("staticSelect").value;
 				var yAxis = this.labelString(id);
-				this.chartsStatic[id] = this.createChart(domNode, id, xAxis, yAxis, this.activeStaticSolution, index);
+				this.chartsStatic[id] = this.createChart(domNode, id, xAxis, yAxis, this.activeSolution, index);
 				this.legendStatic[id] = new Legend({chart: this.chartsStatic[id]}, "legendStatic" + id);
 			}, this);
 		},
@@ -425,41 +423,61 @@ define([
 		},
 
 		//creates the dropdown menu for the static window
-		createComboBox: function(staticNodes){
+		createComboBox: function(staticIDs){
 			var stateStore = new Memory();
 			var combo = registry.byId("staticSelect");
 			if(combo){
 				combo.destroyRecursive();
 			}
-			array.forEach(staticNodes, function(node)
-			{
-				stateStore.put({id:node.name, name:node.name});
-			});
+			var names = [];
+			array.forEach(staticIDs, function(id, counter){
+				names[counter] = this._model.active.getVariable(id);
+				stateStore.put({id: names[counter], name: names[counter]});
+			}, this);
 			var comboBox = new ComboBox({
 				id: "staticSelect",
 				name: "state",
-				value: staticNodes[0].name,
+				value: names[0],
 				store: stateStore,
 				searchAttr: "name"
 			}, "staticSelectContainer");
 			//console.log(comboBox);
-			this.disableStaticSlider();
+			//this.disableStaticSlider();
 			on(comboBox, "change", lang.hitch(this, function(){
 				this.renderStaticDialog(true);// Call the function for updating both the author graph and the student graph
-				this.disableStaticSlider();
+				//this.disableStaticSlider();
 			}));
 		},
 
-				//changes the static graph when sliders or dropdown change
-		renderDialog: function(updateAuthorGraph){
+		//checks for which variables are static
+		checkStaticVar: function(choice){	//true is active, false is given
+			var parameters = choice ? this.activeSolution.params : this.authorSolution.params;
+			var result = parameters[0];
+			var staticSelect = dom.byId("staticSelect");
+
+			for(var index in parameters){
+				var parameter = parameters[index];
+				var variable = choice ? this._model.active.getVariable(parameter)
+										: this._model.authored.getVariable(parameter);
+				if(variable == staticSelect.value){
+					result = parameter;
+					break;
+				}
+			}
+
+			return result;
+		},
+
+		//changes the static graph when sliders or dropdown change
+		renderStaticDialog: function(updateAuthorGraph){
 			console.log("rendering static");
 			if(this.isStatic) {
 				var staticVar = this.checkStaticVar(true);
-				var activeSolution = this.findStaticSolution(true, staticVar, this.active.plotVariables);
-				this.givenSolution = this.findStaticSolution(false, staticVar, this.given.plotVariables);
+				var activeSolution = this.findSolution(true, staticVar);
+				this.authorSolution = this.findSolution(false, staticVar);
 				//update and render the charts
-				array.forEach(this.active.plotVariables, function(id, k){
-					var inf = this.checkForInfinity(activeSolution.plotValues[k]);
+				array.forEach(this.activeSolution.plotVariables, function(id, k){
+					var inf = this.checkForInfinity(activeSolution.plotValues[id]);
 					if(inf) {
 						dom.byId("staticGraphMessage" + id).innerHTML = "The values you have chosen caused the graph to go infinite.";
 						domStyle.set("chartStatic"+id, "display", "none");
@@ -470,7 +488,6 @@ define([
 						dom.byId("staticGraphMessage" + id).innerHTML = "";
 						this.updateChart(id, activeSolution, k, true, updateAuthorGraph);
 					}
-
 				}, this);
 			}
 		},
@@ -481,9 +498,9 @@ define([
 		 */
 		renderDialog: function(){
 			console.log("rendering graph and table");
-			var activeSolution = this.findSolution(true, this.active.plotVariables);
+			var activeSolution = this.findSolution(true);
 			//update and render the charts
-			array.forEach(this.active.plotVariables, function(id, k){
+			array.forEach(this.activeSolution.plotVariables, function(id, k){
 
 				// Calculate Min and Max values to plot on y axis based on given solution and your solution
 				var inf = this.checkForInfinity(activeSolution.plotValues[k]);
@@ -507,6 +524,27 @@ define([
 				label += " (" + units + ")";
 			}
 			return label;
+		},
+
+		//hides the slider for the variable that is selected
+		disableStaticSlider: function() {
+			var staticVar = this.checkStaticVar(true);
+			var id = staticVar.ID;
+			var parameters = this.checkForParameters(true);
+			array.forEach(parameters, function(parameter){
+				dom.byId("labelGraph_" + parameter.ID).style.display = "initial";
+				dom.byId("textGraph_" + parameter.ID).style.display = "initial";
+				dom.byId("sliderGraph_" + parameter.ID).style.display = "initial";
+				if(dom.byId("sliderUnits_" + parameter.ID)){ // Some nodes have no units.
+					dom.byId("sliderUnits_" + parameter.ID).style.display = "initial";
+				}
+			});
+			dom.byId("labelGraph_" +id).style.display = "none";
+			dom.byId("textGraph_" + id).style.display = "none";
+			dom.byId("sliderGraph_" + id).style.display = "none";
+			if(dom.byId("sliderUnits_" + id)){  // Some nodes have no units
+				dom.byId("sliderUnits_" + id).style.display = "none";
+			}
 		},
 
 		resizeWindow: function(){

@@ -69,44 +69,16 @@ define([
 			array.forEach(solution.plotVariables, function(id){
 				var value = values[id];
 				var temp = value[0];
-				array.forEach(value, function(v){
+				for(var index in value){
+					var v = value[index];
 					if(Math.abs(v - temp) > 10e-10){
 						isStatic = false;
+						break;
 					}
 					temp = v;
-				});
+				}
 			});
 			return isStatic;
-		},
-
-		//checks for which variables are static
-		checkStaticVar: function(choice){	//true is active, false is given
-			var parameters = this.checkForParameters(choice);
-			var result = parameters[0];
-			var staticSelect = dom.byId("staticSelect");
-
-			if(typeof parameters[0].description != 'undefined'){
-				array.forEach(parameters, function(parameter){
-					if(parameter.name == staticSelect.value){
-						result = parameter;
-					}
-				});
-			} else {
-				var givenParameters = this.checkForParameters(false);
-				var tempResult = givenParameters[0];
-				array.forEach(givenParameters, function(parameter){
-					if(parameter.name == staticSelect.value){
-						tempResult = parameter;
-					}
-				});
-
-				array.forEach(parameters, function(parameter){
-					if(parameter.descriptionID == tempResult.ID){
-						result = parameter;
-					}
-				});
-			}
-			return result;
 		},
 
 		getMinMaxFromArray: function(array){
@@ -154,11 +126,10 @@ define([
 		checkForInfinity: function(values) {
 			var result = false;
 			array.forEach(values, function(value){
-				if(!isFinite(value))
-				{
+				if(!isFinite(value)){
 					result = true;
 				}
-			}, this);
+			});
 			return result;
 		},
 

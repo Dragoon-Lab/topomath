@@ -386,22 +386,20 @@ define([
 		initXAxis: function(subModel, id){
 			var time = subModel.getTime();
 			var axis = [];
-			var start; var end; var step;
+			var start = time.start;
+			var end = time.end;
+			var step = time.step;
 			var points = 20;
-			if(!id){
-				start = time.start;
-				end = time.end;
-				step = time.step;
-			} else {
+			if(id){
 				var value = subModel.getValue(id);
 				var flag = value > 0;
 				start = flag ? value / 10 : value * 10;
 				end = flag ? value * 10 : value / 10;
-				step = flag ? (start - end) : (end - start);
+				step = flag ? (end - start) : (start - end);
 				step = step/points;
 			}
 			var counter = 0;
-			for(var i = time.start; i < time.end; i += time.step){
+			for(var i = start; i < end; i += step){
 				axis[counter++] = i;
 			}
 
