@@ -338,3 +338,17 @@ input[type=radio]{
   box-shadow: 2px 2px 2px orange;
   border-color: orange;
 }
+
+table.solution, table.solution th, table.solution td {
+	border: 1px solid black;
+	border-spacing: 0px;
+}
+
+table.solution th{
+	padding: 0 10px;
+	text-align: center;
+}
+
+div.legend{
+	margin: 0 auto;
+}

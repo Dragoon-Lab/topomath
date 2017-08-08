@@ -1,4 +1,10 @@
 {
+	"time": {
+		"start": 0,
+		"end": 10,
+		"step": 1.0,
+		"units": "years"
+	},
 	"authorModelNodes": [
 		{
 			"ID": "id1",
