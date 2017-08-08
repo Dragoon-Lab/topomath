@@ -10,8 +10,11 @@ var gulp = require('gulp'),
 	shell = require('gulp-shell'),
 	replace = require('gulp-replace'),
 	zip = require('gulp-zip'),
+	mocha = require('gulp-mocha'),
 	version = require('./version.js'),
-	fs = require('fs');
+	webdriver = require('gulp-webdriver'),
+	fs = require('fs'),
+	testPaths = require('../tests/scripts/test-paths.js');
 
 //Set Configuration parameters
 var config = {
@@ -28,6 +31,10 @@ gulp.task('default', ['watch']);
 gulp.task('watch', ['lint'], function (){
 	gulp.watch('js/*.js', ['lint']);
 	gulp.watch('index.html', ['lint']);
+});
+
+gulp.task('test', function() {
+    return gulp.src('wdio.conf.js').pipe(webdriver({specs:['../tests/scripts/coreTests/*.js'], baseUrl: testPaths.getLocalPath() }));
 });
 
 gulp.task('build', ['dojoBuild'], function (done){

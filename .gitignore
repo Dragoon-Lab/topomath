@@ -10,6 +10,7 @@ www/jsPlumb
 www/util
 www/math-parser
 www/node_modules
+www/errorShots
 www/math-solver
 
 #OS specific files
@@ -17,3 +18,6 @@ www/math-solver
 *.swp
 *.jar
 Thumbs.db
+
+tests/scripts/test-paths.js
+
