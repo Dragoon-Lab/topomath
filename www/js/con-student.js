@@ -158,6 +158,7 @@ define([
 		handleVariableName: function(name){
 			console.log("Handle variable Name ", name);
 			this._model.active.setVariable(this.currentID, name);
+			this._model.student.setAuthoredID(this.currentID);
 			if (name == 'defaultSelect') {
 				return; // don't do anything if they choose default
 			}
@@ -230,6 +231,7 @@ define([
 			var parse = this.equationAnalysis(directives, false);
 			console.log("************",parse);
 			if (parse) {
+				this._model.student.setEquation(this.currentID, parse.equation);
 				var dd = this._PM.processAnswer(
 				this.currentID, 'equation', parse, registry.byId(this.controlMap.equation).get("value"));
 				directives = directives.concat(dd);

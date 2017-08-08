@@ -268,7 +268,8 @@ define([
 		**/
 		evaluate: function(model, id){
 			var sEquation = model.student.getEquation(id);
-			var aEquation = model.author.getEquation(model.student.getAuthoredID(id));
+			var aEquation = model.authored.getEquation(model.student.getAuthoredID(id));
+			var str = model.active.getInitialNodeIDString();
 
 			if(!aEquation || !sEquation)
 				return false;
@@ -285,15 +286,23 @@ define([
 			// create evaluation point
 			var variables = {};
 			var createEvaluationPoint = function(){
-				var addVariableValue = function(variable){
-					if(!(variable in variables))
-						variables[variable] = Math.random;
+				variables = {};
+				var addVariableValue = function(variable, value){
+					if(!(variable in variables)){
+						value = value || Math.random();
+						variables[variable] = value;
+						return value;
+					}
 				};
 				for(var i = 0; i < 2; i++){
-					array.forEach(aParse[i].variables(), function(v){
-						addVariableValue(v)
-					});
 					array.forEach(sParse[i].variables(), function(v)  {
+						var val = addVariableValue(v);
+						var authorID = model.student.getAuthoredID(v);
+						if(v.indexOf(str) > 0)
+							authorID += str;
+						variables[authorID] = val;
+					}, this);
+					array.forEach(aParse[i].variables(), function(v){
 						addVariableValue(v);
 					});
 				}
@@ -301,15 +310,17 @@ define([
 
 			var authorValue = [];
 			var studentValue = [];
-			for(var i = 0; i < this.numberOfEvaluations; i++){
+			for(var i = 0; i < this._numberOfEvaluations; i++){
 				createEvaluationPoint();
 				for(var j = 0; j < 2; j++){
-					authorValue[i] = aParse[i].evaluate(variables);
-					studentValue[i] = sParse[i].evaluate(variables);
+					authorValue[j] = aParse[j].evaluate(variables);
+					studentValue[j] = sParse[j].evaluate(variables);
 				}
+				if((authorValue[0] - authorValue[1]) !== (studentValue[0] - studentValue[1]))
+					return false;
 			}
 
-			return (authorValue[0] - authorValue[1]) === (studentValue[0] - studentValue[1]);
+			return true;
 		},
 
 		replace: function(expression, values){

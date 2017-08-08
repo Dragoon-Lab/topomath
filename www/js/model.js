@@ -710,10 +710,12 @@ define([
 			},
 			getAuthoredID: function(id){
 				// Summary: Return any matched given model id for student node.
+				id = this.getID(id);
 				var node = this.getNode(id);
+				if(!(node && node.authoredID))
+					this.setAuthoredID(id);
 				return node && node.authoredID;
 			},
-			
 			getInputs: function(/*string*/ id){
 				// Summary: return an array containing the input ids for a node.
 				var ret = this.getNode(id);
@@ -743,6 +745,21 @@ define([
 				nodes.splice(index, 1);
 			},
 			setAuthoredID: function(/*string*/ id, /*string*/ authoredID){
+				id = this.getID(id);
+				if(!authoredID){
+					var node = this.getNode(id);
+					var aNodes = obj.authored.getNodes();
+					var l = aNodes.length;
+					for(var i = 0; i < l; i++){
+						var aNode = aNodes[i];
+						if((aNode.variable && aNode.variable === node.variable) ||
+							(aNode.description && aNode.description === node.description) ||
+							(aNode.explanation && aNode.explanation === node.explanation)){
+							authoredID = aNode.ID;
+							break;
+						}
+					}
+				}
 				this.getNode(id).authoredID = authoredID;
 			},
 			setUnits: function(/*string*/ id, /*string*/ units){
