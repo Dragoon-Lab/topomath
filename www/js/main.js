@@ -21,10 +21,11 @@ define([
 	'./con-student',
 	'./logging',
 	'./popup-dialog',
-	'./event-logs'
+	'./event-logs',
+	'./renderSolution'
 ], function(array, geometry, dom, style, aspect, ready, registry, event, ioQuery, on, Button, domConstruct, lang,
-			menu, session, model, equation, drawModel, controlAuthor, controlStudent, logging, popupDialog, eventLogs){
-	
+			menu, session, model, equation, drawModel, controlAuthor, controlStudent, logging, popupDialog, eventLogs, Solution){
+
 	console.log("load main.js");
 	// Get session parameters
 	var query = {};
@@ -203,6 +204,8 @@ define([
 			var menuButtons=[];
 			menuButtons.push("createQuantityNodeButton");
 			menuButtons.push("createEquationNodeButton");
+			menuButtons.push("graphButton");
+			menuButtons.push("tableButton");
 			menuButtons.push("DoneButton");
 
 			array.forEach(menuButtons, function(button){
@@ -226,6 +229,12 @@ define([
 
 			var createEqNodeButton = registry.byId("createEquationNodeButton");
 			createEqNodeButton.setDisabled(false);
+
+			var graphButton = registry.byId("graphButton");
+			graphButton.setDisabled(false);
+
+			var tableButton = registry.byId("tableButton");
+			tableButton.setDisabled(false);
 
 			var DoneButton = registry.byId("DoneButton");
 			DoneButton.setDisabled(false);
@@ -275,6 +284,18 @@ define([
 				console.log("New equation node created id - ", id);
 				controllerObject.showNodeEditor(id);
 				controllerObject.addNode(_model.active.getNode(id));
+			});
+
+			menu.add("graphButton", function(e){
+				event.stop(e);
+				console.log("Graph button clicked");
+				initSolution("graph");
+			});
+
+			menu.add("tableButton", function(e){
+				event.stop(e);
+				console.log("Table button clicked");
+				initSolution("table");
 			});
 
 			aspect.after(controllerObject, "addNode",
@@ -352,6 +373,12 @@ define([
 			else
 				window.history.back();
 		}
+	};
+
+	var initSolution = function(_type){
+		var sol = new Solution(_model);
+		// TODO: add proble completeness and logging
+		sol.render(_type);
 	};
 	
 });

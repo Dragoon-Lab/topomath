@@ -208,7 +208,7 @@ define([
 					break;
 				case "equation":
 					// Solver
-					interpretation = "correct";
+					interpret(check.evaluate(this._model, studentID));
 					break;
 			}
 			return interpretation;
