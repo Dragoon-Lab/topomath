@@ -927,8 +927,9 @@ define([
 						// Auto-populate node description only in Student mode
 						if(this._model.mode != "AUTHOR"){
 							this.setNodeDescription(newNode.id,newNode.variable);
-							this.updateNodeView(this._model.active.getNode(newNode.id));	
-						}					
+							this.updateInputNode(newNode.id, newNode.variable);
+							this.updateNodeView(this._model.active.getNode(newNode.id));
+						}
 					}, this);
 					//dynamicList contains those nodes for which prior node UI changes have to be made
 					//Accordingly, make the node dynamic by changing the variable type and setting the accumulator
@@ -968,11 +969,11 @@ define([
 				this._model.active.setLinks(inputs, this.currentID);
 				this.setConnections(this._model.active.getLinks(this.currentID), this.currentID);
 				// console.log("************** equationAnalysis directives ", directives);
-
+/*
 				array.forEach(newNodesList, lang.hitch(this, function(node){
 					this.updateInputNode(node.id, node.variable);
 				}));
-
+*/
 				array.forEach(variableList, lang.hitch(this, function(n){
 					this.nodeConnections.push(n);
 				}));

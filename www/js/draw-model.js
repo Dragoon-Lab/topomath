@@ -557,7 +557,8 @@ define([
 				"demo" : "fa-minus",
 				"incorrect" : "fa-times",
 				"correct" : "fa-check",
-				"perfect" : "fa-star"
+				"perfect" : "fa-star",
+				"" : ""
 			}
 			nodeStatus = this._model.getCorrectness?this._model.getCorrectness(nodeID):"";
            	//Check for perfect node
