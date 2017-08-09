@@ -47,12 +47,19 @@ define([
 						}
 					break;
 			}
+			var feedbackHTML = "";
+			if(model.isStudentMode()){
+				feedbackHTML = '<i class="topomath-feedback fa" id="feedback'+ nodeID ;
+				if(createInitial){
+					feedbackHTML = feedbackHTML + "LabelInitial";
+				}
+				feedbackHTML = feedbackHTML+'"></i>';
+			}
 			
-			var feedbackHTML = '<i class="topomath-feedback fa" id="feedback';
-			html[0] = feedbackHTML + nodeID + '" fa"></i>' + '<div id="'+nodeID+'Label" class = "bubble"><div class="'+ type +'Wrapper"><strong id = "'+nodeID+'Content" class = "nodeContent">' + nodeString.value + '</strong></div></div>';
+			html[0] = feedbackHTML + '<div id="'+nodeID+'Label" class = "bubble"><div class="'+ type +'Wrapper"><strong id = "'+nodeID+'Content" class = "nodeContent">' + nodeString.value + '</strong></div></div>';
 
 			if(createInitial){
-				html[1] = feedbackHTML + nodeID + "LabelInitial" +'" fa"></i>' + '<div id="'+nodeID+'LabelInitial" class = "bubble"><div class="'+ type +'Wrapper"><strong id = "'+ nodeID +'ContentInitial" class = "nodeContent">' + nodeString.initial + '</strong></div></div>';
+				html[1] = feedbackHTML + '<div id="'+nodeID+'LabelInitial" class = "bubble"><div class="'+ type +'Wrapper"><strong id = "'+ nodeID +'ContentInitial" class = "nodeContent">' + nodeString.initial + '</strong></div></div>';
 			}
 
 			return html;
