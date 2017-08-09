@@ -44,7 +44,8 @@ define([
 			"demo" : " fa-minus",
 			"incorrect" : " fa-times",
 			"correct" : " fa-check",
-			"perfect" : " fa-star"
+			"perfect" : " fa-star",
+			"": ""
 		},
 
 		constructor: function(model, dragNodes){
@@ -295,8 +296,7 @@ define([
 
 			if(this._model.isStudentMode()){
 				var nodeStatusClass = this._model.getNodeStatus(node.ID);
-				if(nodeStatusClass)
-					nodeDOM.querySelector(".topomath-feedback").className += this._statusClassMap[nodeStatusClass];
+				nodeDOM.querySelector(".topomath-feedback").className += this._statusClassMap[nodeStatusClass];
 			}
 			if(this._dragNodes){
 				this.makeDraggable(nodeDOM);

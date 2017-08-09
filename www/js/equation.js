@@ -215,7 +215,6 @@ define([
 				// Error handling has to be done for each error in Solver
 				console.log(e);
 			}
-			console.log(solution);
 
 			return solution;
 		},
@@ -236,7 +235,6 @@ define([
 				array.forEach(equations.xvars, function(id){
 					values[id+subModel.getInitialNodeIDString()] = solution[id][i-1];
 				});
-				console.log(" ---------- values ", values);
 				equations.values = values;
 				equations.expressions = equationCopy;
 				var timeStepSolution = this.solveTimeStep(equations);

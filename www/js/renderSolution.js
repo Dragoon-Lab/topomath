@@ -198,7 +198,6 @@ define([
 		},
 
 		formatSeriesForChart: function(result, id){
-			console.log("sachin ", result);
 			var series = array.map(result.time, function(time, k){
 				return {x: time, y: result.plotValues[id][k]};
 			});
@@ -289,7 +288,7 @@ define([
 			var staticVar = this.checkStaticVar(true);
 			this.activeSolution = this.findSolution(true, staticVar);
 			if(this.isStudentMode)
-				this.authorSolution = this.authorSolution.plotVariables ? this.findSolution(false, statisVar) : "";
+				this.authorSolution = this.authorSolution.plotVariables ? this.findSolution(false, staticVar) : "";
 
 			array.forEach(this.activeSolution.plotVariables, function(id, index){
 				var domNode = "chartStatic" + id ;
