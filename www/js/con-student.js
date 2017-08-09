@@ -383,22 +383,16 @@ define([
 			*/
 			var returnObj = {};
 			returnObj.errorNotes = "";
-			var isComplete = true;
+			var isComplete = this._model.matchesGivenSolution();
 			var _errorNotes = [];
-			
-			if( this._model ){
-				array.forEach(this._model.active.getNodes(), lang.hitch(this,function (node) {
-					if(!this._model.active.isComplete(node.ID)){
-						isComplete = false;
-					}
-				}));
-			}
+			var nodes = this._model.active.getNodes();
+			var l = nodes.length;
 
 			if(!isComplete){
 				_errorNotes.push("Nodes in the model are not complete");
 			}
-			if(this._model.model.authorModelNodes.length !== this._model.model.studentModelNodes.length){
-				_errorNotes.push("Complete all nodes in the model");
+			if((this._model.authored.getRequiredNodeCount() - this._model.active.getRequiredNodeCount()) > 0){
+				_errorNotes.push("Some nodes are missing compared to authored model");
 				isComplete = false;
 			}
 

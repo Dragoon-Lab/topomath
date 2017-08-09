@@ -361,8 +361,10 @@ define([
 				values: {}
 			};
 
+			// calling isNodeRequired because in student mode node does not have the genus property
+			// it has to be retrieved from the corresponding authored node.
 			array.forEach(nodes, function(node){
-				if(node.genus === "required" || node.genus === "allowed"){
+				if(subModel.isNodeRequired(node.ID) || subModel.isNodeAllowed(node.ID)){
 					switch(node.type){
 						case "quantity":
 							switch(node.variableType){

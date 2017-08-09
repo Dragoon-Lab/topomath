@@ -39,10 +39,11 @@ define([
 			this.params.id = FNV1aHash(params.u+"_"+params.s) +
 				'_' + new Date().getTime();
 			this.path = path || "";
-			this.doLogging = params.l=="false" ? false : true;
+			this.doLogging = !params.l || params.l != "false";
 			this.counter = 0;
 
 			this.log("start-session", params);
+			this.isStudentMode = params.m != "AUTHOR";
 		},
 
 		getModel: function(params){

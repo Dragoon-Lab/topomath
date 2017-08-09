@@ -211,7 +211,7 @@ define([
 								myThis.hideCloseNodeEditor(doHide);
 							}
 						} // if the mode is author and user has selected to enter student values (" given ")
-						else if(myThis._model.mode == "AUTHOR" && registry.byId("modelSelector").value == "given"){
+						else if(myThis._model.active.isStudentMode() && registry.byId("modelSelector").value == "given"){
 							equation = registry.byId("equationInputboxStudent");
 							
 							//equation value in this case if from equationInputboxStudent and check if the value is entered/checked
@@ -515,9 +515,9 @@ define([
 
 		closeEditor: function(){ 
 			console.log("++++++++++ entering closeEditor");
-			if(this._model.mode == "AUTHOR"){
+			if(!this._model.isStudentMode()){
 				//Reset to given on close of node editor
-				this._model.active = this._model.authored;
+				//this._model.active = this._model.authored;
 				registry.byId("modelSelector").set('value',"correct");
 				
 				if(this.nodeType == "equation"){
@@ -925,7 +925,7 @@ define([
 						//these nodes were added to model, substituted into equation but should be added here
 						this.addNode(this._model.active.getNode(newNode.id));
 						// Auto-populate node description only in Student mode
-						if(this._model.mode != "AUTHOR"){
+						if(this._model.active.isStudentMode()){
 							this.setNodeDescription(newNode.id,newNode.variable);
 							this.updateInputNode(newNode.id, newNode.variable);
 							this.updateNodeView(this._model.active.getNode(newNode.id));

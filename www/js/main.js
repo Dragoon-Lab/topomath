@@ -65,7 +65,7 @@ define([
 	// TODO : Activity Parameters 
 	// TODO : UI Parameters
 	var _session = session(query);
-	var _model = new model(query.m, query.p);
+	var _model = new model(_session, query.m, query.p);
 	console.log(_model);
 
 
@@ -74,7 +74,7 @@ define([
 			try{
 				_model.loadModel(solutionGraph);
 			} catch(err){
-				if (_model.model.mode == "AUTHOR") {
+				if (!_model.isStudentMode()) {
 					//var errorMessage = new messageBox("errorMessageBox", "error", error.message);
 					//errorMessage.show();
 					throw Error(err);
@@ -85,7 +85,7 @@ define([
 				}
 			}
 			// This version of code addresses loading errors in cases where problem is empty, incomplete or has no root node in coached mode
-			if (_model.model.mode == "AUTHOR") {
+			if (!_model.isStudentMode()) {
 				//check if the problem is empty
 				try {
 					console.log("checking for emptiness");
@@ -244,11 +244,11 @@ define([
 			var ui_config = "";
 
 			//For now using empty  ui_config 
-			var controllerObject = (_model.model.mode == 'AUTHOR') ?
-				new controlAuthor(_model.model.mode, _model, ui_config) :
-				new controlStudent(_model.model.mode, _model, ui_config);
+			var controllerObject = (!_model.isStudentMode()) ?
+				new controlAuthor(query.m, _model, ui_config) :
+				new controlStudent(query.m, _model, ui_config);
 
-			if(_model.model.mode != 'AUTHOR'){
+			if(_model.isStudentMode()){
 				//controllerObject.setAssessment(session); //set up assessment for student.
 			}
 			//next step is to add action to add quantity
@@ -341,7 +341,6 @@ define([
 					errDialog.showDialog(title, problemComplete.errorNotes, buttons, /*optional argument*/"Don't Exit");
 				}
 			});
-			//TODO: uncomment this after node_editor2 is merged
 			//all the things we need to do once node is closed
 			aspect.after(registry.byId('nodeEditor'), "hide", function(){
 				_session.saveModel(_model.model);

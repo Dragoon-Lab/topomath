@@ -50,6 +50,11 @@ define([
 				this.authorSolution = this.findSolution(false);
 			}
 
+			if(this.isStudentMode && this._model.matchesGivenSolutionAndCorrect()){
+				this.isCorrect = true;
+				// TODO: show correctness message
+			}
+
 			this.initializeGraphTab();
 
 			this.createTable(this.activeSolution.plotVariables);
@@ -184,7 +189,7 @@ define([
 			if(this.isStudentMode){
 				series.push({
 					title: "Author's solution",
-					data: this.formatSeriesForChart(this.authorSolution, id),
+					data: this.formatSeriesForChart(this.authorSolution, this._model.student.getAuthoredID(id)),
 					stroke: {stroke: this._colors.authorGraph}
 				});
 			}

@@ -3,7 +3,7 @@ define([
 ], function(array, lang){
 	return function(){
 		var obj = {
-			constructor: function(/* string */ mode, /* string */ name){
+			constructor: function(/* object */ session, /* string */ mode, /* string */ name){
 				this.x = this.beginX;
 				this.y = this.beginY;
 				this.model = {
@@ -11,9 +11,9 @@ define([
 					time: {start: 0, end: 10, step: 1.0, units: "seconds"},
 					authorModelNodes: [],
 					studentModelNodes: [],
-					mode : (mode == "AUTHOR") ? "AUTHOR" : "STUDENT"
 				};
-				obj.active = (this.model.mode == "AUTHOR") ? obj.authored : obj.student;
+				obj.active = mode === "AUTHOR" ? obj.authored : obj.student;
+				obj._session = session;
 			},
 			_ID: 1,
 			beginX: 450,
@@ -193,6 +193,45 @@ define([
 			},
 			getTimeUnits: function(){
 				return obj.model.time.units || "seconds";
+			},
+			isStudentMode: function(){
+				return obj._session.isStudentMode;
+			},
+			matchesGivenSolution: function(){
+				var flag = this.areRequiredNodesVisible() &&
+						array.every(this.student.getNodes(), function(sNode){
+							return this.student.isComplete(sNode.ID);
+						}, this);
+				return flag ? true : false;
+			},
+			areRequiredNodesVisible: function(){
+				var solutionNodes = this.authored.getRequiredNodes();
+				var studentNodes = this.student.getNodes();
+				var l = solutionNodes.length;
+				var flag = array.every(solutionNodes, function(solutionNode){
+					return this.doesStudentNodeExist(solutionNode.ID);
+				}, this);
+
+				return flag ? true : false;
+			},
+			doesStudentNodeExist: function(authorID){
+				var studentNodes = this.student.getNodes();
+				var flag = array.some(studentNodes, function(node){
+					return authorID === node.authoredID;
+				});
+
+				return flag ? true : false;
+			},
+			matchesGivenSolutionAndCorrect: function(){
+				return this.matchesGivenSolution() && 
+						this.checkStudentNodeCorrectness();
+			},
+			checkStudentNodeCorrectness: function(){
+				var studentRequiredNodes = this.student.getRequiredNodes();
+				return array.every(studentRequiredNodes, function(node){
+					var correctness = this.student.getCorrectness(node.ID);
+					return correctness != "incorrect";
+				}, this);
 			}
 		};
 
@@ -463,6 +502,9 @@ define([
 				}
 
 				return false;
+			},
+			isStudentMode: function(){
+				return obj.isStudentMode();
 			}
 		};
 
@@ -525,6 +567,15 @@ define([
 					return node.explanation === explanation;
 				});
 				return gotIt ? id : null;
+			},
+			/**
+			* stub for the status function in student mode
+			* check for null in the calling code as this is being called in author mode where
+			* node status is just completeness and that is shown from border and icons are
+			* to be show ~ Sachin Grover
+			**/
+			getNodeStatus: function(){
+				return null;
 			},
 			getDescriptions: function(){
 				// Summary: returns an array of all descriptions with
@@ -604,7 +655,6 @@ define([
 				// 1. variableType Unknown and no value 
 				// 2. variableType dynamic and value is valid 
 				// 3. variableType parameter and value is valid
-				
 				var valueEntered = node.type && node.type == "equation" || (node.variableType == "dynamic" && node.value) 
 				|| (node.value && node.variableType == "unknown") ||
 				(node.value && node.variableType == "parameter") ;
@@ -664,11 +714,29 @@ define([
 			},
 			getAttemptCount: function(/*string*/ id, /*string*/ part, /*boolean*/ ignoreExecution){
 					var node = this.getNode(id);
-					return node.attemptCount[part]? node.attemptCount[part]:0;
+					return node && node.attemptCount[part]? node.attemptCount[part]:0;
 			},
 			setAttemptCount: function(/*string*/ id, /*string*/ part, /*string*/ count){
 				this.getNode(id).attemptCount[part] = count;
-			}
+			},
+			getRequiredNodeCount: function(){
+				var nodes = this.getNodes();
+				var count = 0;
+				array.forEach(nodes, function(node){
+					if(node.genus == "required")
+						count++;
+				});
+				return count;
+			},
+			getRequiredNodes: function(){
+				var nodes = this.getNodes();
+				var arr = [];
+				array.forEach(nodes, function(node){
+					if(node.genus == "required" || node.genus == "allowed")
+						arr.push(node);
+				});
+				return arr;
+			},
 		}, both);
 
 		obj.student = lang.mixin({
@@ -699,6 +767,25 @@ define([
 					return node.authoredID == givenID;
 				});
 				return gotIt ? id : null;
+			},
+			/**
+			* this gives the status to be used for showing icons feedback in student mode.
+			* @param -	id - node id for which status is to be checked
+			* @result -	nodeStatus - status of the node
+			*			possible values - perfect - completed correctly in first attempt
+			*			                  correct - completed correctly but not perfect
+			*			                  incorrect - complete or incomplete node with atleast one incorrect answer
+			*			                  demo - complete or incomplete node with atleast one demo answer
+			*			                  null - node status value in the author mode
+			**/
+			getNodeStatus: function(id){
+				var nodeStatus = this.getCorrectness(id);
+				var score = this.getAssistanceScore(id);
+				var completeness = this.isComplete(id);
+				console.log("score complete status ", score, completeness, nodeStatus)
+				if(nodeStatus === "correct" && score === 0 && completeness)
+					nodeStatus = "perfect";
+				return nodeStatus;
 			},
 			setStatus: function(/*string*/ id, /*string*/ control, /*object*/ options){
 				//Summary: Update status for a particular control.
@@ -806,6 +893,7 @@ define([
 				return attributes;
 			},
 			isComplete: function(/*String*/ id){
+				if(!id) return false;
 				var node = this.getNode(id);
 				var returnFlag = '';
 				var unitsOptional = true;
@@ -837,11 +925,11 @@ define([
 			},
 			isNodeRequired: function(id){
 				var authoredID = this.getAuthoredID(id);
-				return authoredID || obj.authored.isNodeRequired(authoredID);
+				return !authoredID || obj.authored.isNodeRequired(authoredID);
 			},
 			isNodeAllowed: function(id){
 				var authoredID = this.getAuthoredID(id);
-				return authoredID || obj.authored.isNodeAllowed(authoredID);
+				return !authoredID || obj.authored.isNodeAllowed(authoredID);
 			},
 			getCorrectAnswer : function(/*string*/ studentID, /*string*/ part){
 				var id = this.getAuthoredID(studentID);
@@ -862,7 +950,7 @@ define([
 				//		a student receives, based on suggestions by Robert Hausmann;
 				//		a score of 0 means that a student did not have any errors;
 				var authoredID = this.getAuthoredID(id);
-				return obj.authored.getAttemptCount(authoredID, "assistanceScore");
+				return !authoredID || obj.authored.getAttemptCount(authoredID, "assistanceScore");
 			},
 			getCorrectness: function(/*string*/ studentID){
 				var node = this.getNode(studentID);
@@ -882,17 +970,34 @@ define([
 					}
 				};
 				var type = this.getType(studentID);
+				update("description", "authoredID");
 				if(type === "quantity"){
-					update("description", "authoredID");
 					update("variable");
 					update("variableType");
 					update("value");
 					update("units");
 				}else if(type === "equation"){
-					update("description", "authoredID");
 					update("equation");
 				}
+
 				return bestStatus;
+			},
+			getRequiredNodeCount: function(){
+				var nodes = this.getNodes();
+				var count = 0;
+				array.forEach(nodes, function(node){
+					if(obj.authored.getGenus(node.authoredID) == "required")
+						count++;
+				});
+			},
+			getRequiredNodes: function(){
+				var nodes = this.getNodes();
+				var arr = [];
+				array.forEach(nodes, function(node){
+					var genus = obj.authored.getGenus(node.authoredID);
+					if(genus == "requred" || genus == "allowed")
+						arr.push(node);
+				});
 			}
 		}, both);
 

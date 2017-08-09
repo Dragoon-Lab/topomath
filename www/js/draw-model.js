@@ -1,4 +1,4 @@
-define([	
+define([
 	"dojo/_base/declare",
 	"dojo/_base/array",
 	"dojo/_base/lang",
@@ -40,6 +40,12 @@ define([
 				'topomathFeedbackInitial' : 'feedback'+nodeID+'LabelInitial'
 			};
 		},
+		_statusClassMap: {
+			"demo" : " fa-minus",
+			"incorrect" : " fa-times",
+			"correct" : " fa-check",
+			"perfect" : " fa-star"
+		},
 
 		constructor: function(model, dragNodes){
 			this._model = model;
@@ -61,7 +67,6 @@ define([
 			var vertices = [];
 			var temp = [];
 			vertices = array.map(model.getNodes(), function(node){
-				
 				temp = temp.concat(this.addNode(node));
 				return temp;
 			}, this);
@@ -137,14 +142,7 @@ define([
 
 			var cachedNode = this._cache[node.ID];
 			var initialNode = dom.byId(domIDTags['parentInitial']);
-			if(initialNode){
-				dojo.byId(domIDTags['parentInitial']).style.top = node.position[1].y+'px';
-				dojo.byId(domIDTags['parentInitial']).style.left = node.position[1].x+'px';
-			}else{
-				dojo.byId(domIDTags['parentDOM']).style.top = node.position[0].y+'px';
-				dojo.byId(domIDTags['parentDOM']).style.left = node.position[0].x+'px';
-			}
-			
+
 			// update variable name
 			if(cachedNode.variable != node.variable){
 				if(node.type && node.type == "quantity"){
@@ -181,6 +179,7 @@ define([
 					this.addNodeDescription(node.ID);
 				}
 			}
+
 			//update value or update dynamic
 			if(node.type && node.type == "quantity" && (cachedNode.value != node.value ||
 				(cachedNode.variableType != node.variableType ))){
@@ -215,12 +214,13 @@ define([
 			} else if(node.type && node.type == "equation" && cachedNode.equation != node.equation){
 				dom.byId(domIDTags['nodeDOM']).innerHTML = graphObjects.getDomUIStrings(this._model, "equation", node.ID);
 			}
-			
+
 			//update border
 			var isComplete = this._model.isComplete(node.ID);
 			var hasClass = domClass.contains(domIDTags['parentDOM'], "incomplete");
-			if(this._model.mode !== "AUTHOR"){
-				var nodeStatusClass = this.getStatusClass(node.ID);
+			var nodeStatus = this._model.getNodeStatus(node.ID);
+			var nodeStatusClass = nodeStatus ? this._statusClassMap[nodeStatus] : "";
+			if(this._model.isStudentMode()){
 				var _feedbackTags = ['fa-check','fa-star','fa-times','fa-minus'];
 				/*Updating tags each time model gets updated*/
 				array.forEach(_feedbackTags, function(t){
@@ -241,6 +241,14 @@ define([
 			} else if (!hasClass && !isComplete){
 				domClass.add(domIDTags['parentDOM'], "incomplete");
 				if(initialNode) domClass.add(domIDTags['parentInitial'], "incomplete");
+			}
+
+			if(initialNode & node.position.length == 2){
+				dojo.byId(domIDTags['parentInitial']).style.top = node.position[1].y+'px';
+				dojo.byId(domIDTags['parentInitial']).style.left = node.position[1].x+'px';
+			}else{
+				dojo.byId(domIDTags['parentDOM']).style.top = node.position[0].y+'px';
+				dojo.byId(domIDTags['parentDOM']).style.left = node.position[0].x+'px';
 			}
 
 			//add to cache for next time
@@ -285,9 +293,10 @@ define([
 				innerHTML: innerHTML
 			}, "statemachine-demo");
 
-			if(this._model.mode !== "AUTHOR"){
-				var nodeStatusClass = this.getStatusClass(node.ID);
-				nodeDOM.querySelector(".topomath-feedback").className += nodeStatusClass;
+			if(this._model.isStudentMode()){
+				var nodeStatusClass = this._model.getNodeStatus(node.ID);
+				if(nodeStatusClass)
+					nodeDOM.querySelector(".topomath-feedback").className += this._statusClassMap[nodeStatusClass];
 			}
 			if(this._dragNodes){
 				this.makeDraggable(nodeDOM);
@@ -548,24 +557,6 @@ define([
 		updateNodeConnections: function(from, to){
 			this.detachConnections(to);
 			this.setConnections(from, to);
-		},
-		getStatusClass: function(studentID){
-			var node = this._model.getNode(studentID);
-			var nodeStatus = node.status;
-			var nodeID = node.ID;
-			var statusClassMap = {
-				"demo" : "fa-minus",
-				"incorrect" : "fa-times",
-				"correct" : "fa-check",
-				"perfect" : "fa-star",
-				"" : ""
-			}
-			nodeStatus = this._model.getCorrectness?this._model.getCorrectness(nodeID):"";
-           	//Check for perfect node
-			if(this._model.isComplete(nodeID) && this._model.getAssistanceScore(nodeID) === 0 && this._model.getCorrectness(nodeID)=== "correct"){
-                nodeStatus = "perfect";
-            }
-			return " "+statusClassMap[nodeStatus];
 		}
 	});
 });

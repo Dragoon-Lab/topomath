@@ -39,7 +39,7 @@ define([
 				case "quantity":
 					nodeString.value = this.getDomUIStrings(model, "variable", nodeID);
 					//if(model.getVariable(nodeID))
-						if(model.isAccumulator(nodeID)){
+						if(model.getVariableType(nodeID) == "dynamic"){
 							nodeString.initial = this.getDomUIStrings(model, "value", nodeID);
 							createInitial = true;
 						} else {
@@ -101,7 +101,7 @@ define([
 					initial = typeof(initial) === "number" ? initial : "";
 					var variable = model.getVariable(nodeID);
 					value = variable ? variable : this.defaultString;
-					if(model.isAccumulator(nodeID)){
+					if(model.getVariableType(nodeID) == "dynamic"){
 						if(!initial) initial = "??";
 						if(value != this.defaultString)
 							value = "initial" + "(" + value + ") = " + initial;
