@@ -480,6 +480,7 @@ define([
 				var staticVar = this.checkStaticVar(true);
 				var activeSolution = this.findSolution(true, staticVar);
 				this.authorSolution = this.findSolution(false, this._model.student.getAuthoredID(staticVar));
+
 				//update and render the charts
 				array.forEach(this.activeSolution.plotVariables, function(id, k){
 					var inf = this.checkForInfinity(activeSolution.plotValues[id]);

@@ -232,6 +232,8 @@ define([
 					var correctness = this.student.getCorrectness(node.ID);
 					return correctness != "incorrect";
 				}, this);
+			getTimeUnits: function(){
+				return obj.model.time.units || "seconds";
 			}
 		};
 
