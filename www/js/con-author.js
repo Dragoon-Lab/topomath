@@ -149,6 +149,7 @@ define([
 		},
 		authorControls: function(){
 			console.log("++++++++ Setting AUTHOR format in Node Editor.");
+			style.set('givenToStudentToggleContainer', 'display', 'block');
 			style.set('variableOptionalityContainer', 'display', 'block');
 			style.set('descriptionInputboxContainer', 'display', 'inline-block');
 			style.set('variableInputboxContainer', 'display', 'inline-block');
@@ -158,15 +159,10 @@ define([
 			style.set('rootNodeToggleContainer', 'display', 'block');
 			style.set('expressionDiv', 'display', 'block');
 			style.set('inputSelectorContainer', 'display', 'block');
+			style.set('equationInputbox', 'display', 'block');
 
 		},
 		initAuthorHandles: function(){
-
-			var variable_name = registry.byId(this.controlMap.variable);
-			variable_name.on('Change', lang.hitch(this, function(){
-				console.log("handling variable name");
-				return this.disableHandlers || this.handleVariableName.apply(this, arguments);
-			}));
 
 			var kind = registry.byId(this.controlMap.kind);
 			kind.on('Change', lang.hitch(this, function(){
@@ -177,13 +173,6 @@ define([
 			root_check.on('Change', lang.hitch(this, function(checked){
 				return this.disableHandlers || this.handleRoot(checked);
 			}));
-
-			var variableTypeToggle = dojo.query(".handleVariable");
-			variableTypeToggle.forEach(function(toggleNode){
-				registry.byNode(toggleNode).on('click', lang.hitch(this, function(event){
-					return this.disableHandlers || this.handleVariableType(event);
-				}));
-			}, this);
 
 			var setStudentNode = registry.byId(this.controlMap.setStudent);
 			setStudentNode.on('Change', lang.hitch(this, function(checked){
@@ -327,18 +316,6 @@ define([
 			});
 		},
 
-		handleVariableType: function(event){
-			// Summary : Sets variableType to Unknown/Parameter/Dynamic
-			// Value is not allowed when variableType is Unknown
-			// Value is handled when variableType is parameter or dynamic.
-			console.log("********************* in handleVariableType");
-			var _variableType = event.target.value;
-			if(_variableType === this._model.authored.getVariableType(this.currentID)){
-				return;
-			}
-			this.variableTypeControls(this.currentID, _variableType);
-		},
-
 		handleSetStudentNode: function(checked){
 			console.log("********************* in handle set student quantity node", checked);
 			if(checked){
@@ -361,7 +338,7 @@ define([
 			if(modelType === "authored"){
 				this.controlMap.equation = "equationInputbox";
 				style.set('equationInputbox', 'display', 'block');		//show EquationBox
-				style.set('givenEquationInputbox', 'display', 'none');	//hide GivenEquationBox
+				style.set('equationInputboxStudent', 'display', 'none');	//hide GivenEquationBox
 				
 				this._model.active = this._model.authored;
 				this.enableDisableFields(modelType);
@@ -370,9 +347,9 @@ define([
 			}
 			else if(modelType === "student"){
 				var equation = registry.byId("equationInputbox");
-				style.set('givenEquationInputbox', 'display', 'block'); //show GivenEquationBox
+				style.set('equationInputboxStudent', 'display', 'block'); //show GivenEquationBox
 				style.set('equationInputbox', 'display', 'none');	   //hide EquationBox
-				this.controlMap.equation = "givenEquationInputbox";
+				this.controlMap.equation = "equationInputboxStudent";
 				if(equation.value && !this.equationEntered){
 					//Crisis alert popup if equation not checked
 					this.applyDirectives([{
@@ -485,6 +462,18 @@ define([
 			}, logObj);
 
 			this.logSolutionStep(logObj);
+		},
+
+		handleVariableType: function(e){
+			// Summary : Sets variableType to Unknown/Parameter/Dynamic
+			// Value is not allowed when variableType is Unknown
+			// Value is handled when variableType is parameter or dynamic.
+			console.log("********************* in handleVariableType");
+			var _variableType = e.target.value;
+			if(_variableType === this._model.active.getVariableType(this.currentID)){
+				return;
+			}
+			this.variableTypeControls(this.currentID, _variableType);
 		},
 
 		handleInputs: function(name){
@@ -657,7 +646,8 @@ define([
 				if(desc.label){
 					var name = this._model.authored.getName(desc.value);
 					var obj = {name:name, id: desc.id};
-					inputs.push(obj);
+					
+					if(obj.name ) inputs.push(obj);
 					descriptions.push({name: this._model.authored.getDescription(desc.value), id: desc.id});
 				}
 			}, this);
@@ -825,7 +815,7 @@ define([
 
 			//copy correct values into student node
 			this._model.student.setAuthoredID(newNodeID, currentNode.ID);
-			this._model.student.setInitial(newNodeID, currentNode.initial);
+			this._model.student.setValue(newNodeID, currentNode.initial);
 			this._model.student.setUnits(newNodeID, currentNode.units);
 			
 			if(currentNode.equation){
@@ -898,7 +888,7 @@ define([
 				var type = this._model.student.getType(studentNodeID);
 				//registry.byId(this.controlMap.type).set('value', type || "defaultSelect");
 				registry.byId(this.controlMap.equation).set("disabled", false);
-				var initial = this._model.student.getInitial(studentNodeID);
+				var initial = this._model.student.getValue(studentNodeID);
 				if(typeof initial !== "undefined" && initial != null){
 					registry.byId(this.controlMap.initial).set('value', initial);
 				}
@@ -992,6 +982,83 @@ define([
 				default:
 						throw new Error("Unknown control: "+ control );
 			}				
+		},
+		checkDone: function(){
+			/*
+				When the author clicks on the main menu "Done" button,
+				the system checks that one variable is Root, 
+				and make sure every variable is part of at least one equation.
+			*/
+			console.log("Done Action called");
+			var returnObj = {};
+			returnObj.errorNotes = "";
+			var hasRootNode = false;
+			var _variables = [];
+			var _equations = [];
+			var _errorNotes = [];
+			
+			if( this._model ){
+				array.forEach(this._model.active.getNodes(), function (node) {
+					if(node.root){
+						hasRootNode = true;
+					}
+					console.log(node);
+
+					// get variables and equations
+					if(node.variable !== "" && node.genus && node.genus === "required" && node.type === "quantity"){
+						_variables.push(node.ID);
+					}else if(node.type === "equation"){
+						_equations.push(node.equation);
+					}
+
+				});
+				console.log("Equations : ", _equations);
+				// check if each variable is present in atleast one equation
+				var _usedVariables = _variables.map(function(_variable){
+					var tmp = array.some(_equations, function(_equation) {
+						
+						if( _equation && _equation.search(_variable) > -1){
+							return true;
+						}
+					});
+					var obj = {};
+					obj[_variable] = tmp;
+					return obj;
+				});
+
+				// for each variable if it is not present in any equation, add it to array 
+				var _requiredVariables = [];
+				array.forEach(_usedVariables, function(item){
+					
+					if(!Object.values(item)[0]){	
+						_requiredVariables.push(Object.keys(item)[0]);
+					}
+				});
+
+				// Add errorNote adding all unused variables
+				if( _requiredVariables && _requiredVariables.length > 0 ){
+					var errorNote = "Following variables are required, but unused by equations - ";
+					array.forEach(_requiredVariables,lang.hitch(this, function(id){
+						errorNote += this._model.active.getName(id) + ", ";
+					}));
+					errorNote = errorNote.slice(0, -2); // removing trailing comma and space
+					_errorNotes.push(errorNote);
+				}	
+			}
+
+			console.log("required" + _requiredVariables);
+
+			if(!hasRootNode){
+				_errorNotes.push("No variable is marked as Root");
+			}
+			if(_errorNotes && _errorNotes.length > 0){
+				array.forEach(_errorNotes, function(_error){
+					returnObj.errorNotes += "<li>" + _error + "</li>";
+				});
+			}
+			
+			console.log("returning ", returnObj);
+			return returnObj;
 		}
 	});
 });

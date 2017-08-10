@@ -167,8 +167,21 @@
 			<div id="errorMessageBox"></div>
 			<!--<div id="tableGrid" data-dojo-type="dijit/layout/ContentPane" region="center"></div>-->
 			<!-- div for descriptions for each type -->
-			<div class = "quantity-description-wrapper" id="quantity-description"></div>
-			<div class = "equation-description-wrapper" id="equation-description"></div>
+			<div class = "quantity-description-wrapper" id="quantity-description">
+				
+				<div class="quantity-count">
+					<div>Quantities : 
+						<span id="quantity-node-count"></span>
+					</div>
+				</div>
+			</div>
+			<div class = "equation-description-wrapper" id="equation-description">
+				<div class="equation-count">
+					<div>Equations : 
+						<span id="equation-node-count">
+					</div>
+				</div>
+			</div>
 			<!-- Putting jsPlumb-stuff for demo -->
 			<div class="demo statemachine-demo" id="statemachine-demo">
 			</div>
@@ -180,7 +193,7 @@
 		<!-- Putting Node-Editor -Dialog stuff for demo -->
 		<div class="claro sameedit" data-dojo-type="dijit/Dialog" id="nodeEditor">
 			
-			<div id="givenToStudentToggleContainer" class="fieldgroup">
+			<div id="givenToStudentToggleContainer" class="fieldgroup" style="display: none;">
 				<label style="" for="givenToStudentCheckbox">Given to student</label>
 				<input id="givenToStudentCheckbox" name="markStudentNode" data-dojo-type="dijit/form/CheckBox" checked="false"/>
 			</div>
@@ -201,6 +214,15 @@
 					</span>
 					<input id="descriptionInputbox" data-dojo-type="dijit/form/ComboBox">
 				</div>
+				<div id="descriptionInputboxContainerStudent" class="fieldgroup" style="display: none;">
+				<span class="fixedwidth">
+					<div id="descriptionQuestionMark" class="questionMark"></div>
+					<label for="selectDescription">Description</label>
+				</span>
+				<select id="selectDescription" data-dojo-type="dijit/form/Select">
+					<option value='defaultSelect'>--Select--</option>
+				</select>
+			</div>
 			</div>
 
 			<div id="variableOptionalityContainer" class="fieldgroup" style="display: none;">
@@ -218,6 +240,13 @@
 				<input id="variableInputbox" data-dojo-type="dijit/form/TextBox">
 			</div> 
 
+			<div id="variableInputboxContainerStudent" class="fieldgroup" style="display: none;">
+				<label for="variableInputboxStudent">Variable</label>
+				<select id="variableInputboxStudent" data-dojo-type="dijit/form/Select">
+					<option value='defaultSelect'>--Select--</option>
+				</select>
+			</div>
+
 			<div id="variableTypeContainer" class="fieldgroup" style="display: none;">
 				<label> Variable Type</label>
 				<input data-dojo-type="dijit/form/RadioButton" name="variableType" class="handleVariable" id="unknownType" value="unknown"/>
@@ -230,28 +259,24 @@
 
 			<div class="fieldgroup" id="valueUnitsContainer" style="display: none;">
 				<!-- adding a div for value field to control its display in UI -->
-				<div id="valueInputboxContainer" class="fieldgroup">
+				<div id="valueInputboxContainer" class="fieldgroup" style="display: none;">
 					<span class="fixedwidth">
 						<div id="valueQuestionMark" class="questionMark"></div>
 						<label for="valueInputbox"><p id="initLabel" style="display:inline"></p>Value</label>
 					</span>
 					<input id="valueInputbox" type="text" style="width:5em" data-dojo-type="dijit/form/TextBox">
 				</div>
-				<!--
-				<div id = "unitDiv" style="display: none">
-					<div id="unitsQuestionMark" class="questionMark"></div>
-					<label id="selectUnitsControl">Units
-						<select id="selectUnits" data-dojo-type="dijit/form/Select">
-							<option value='defaultSelect'>No Units</option>
-						</select>
-					</label>
+				
+				<div id = "unitsSelectorContainerStudent" class="fieldgroup" style="display: none">
+					<label for="unitsSelectorStudent">Units</label>
+					<select id="unitsSelectorStudent" data-dojo-type="dijit/form/Select" style="width: 6em;">
+						<option value='defaultSelect'>No Units</option>
+					</select>
 				</div>
-				-->
-				<div id="unitsSelectorContainer" class="fieldgroup">
-					<!-- Setting display:none in the widget itself doesn't work.
-					 setting display:none in the label doesn't work in FireFox. -->
+				
+				<div id="unitsSelectorContainer" class="fieldgroup" style="display: none;">
 					<label for="unitsSelector">Units</label>
-						<input id="unitsSelector" data-dojo-type="dijit/form/ComboBox" style="width:6em">
+					<input id="unitsSelector" data-dojo-type="dijit/form/ComboBox" style="width:6em">
 				</div>
 			</div>
 			
@@ -269,8 +294,8 @@
 						<label for="equationInputbox">Equation</label>
 					</div>
 					<div id="equationInputboxContainer" class="fieldgroup">
-						<textarea id="equationInputbox" rows=4 cols=50 data-dojo-type="dijit/form/SimpleTextarea" style="min-height:60px;"></textarea>
-						<textarea id="givenEquationInputbox" rows=4 cols=50 data-dojo-type="dijit/form/SimpleTextarea" style="min-height:60px; display: none;"></textarea>
+						<textarea id="equationInputbox" rows=4 cols=50 data-dojo-type="dijit/form/SimpleTextarea" style="min-height:60px;display: none;"></textarea>
+						<textarea id="equationInputboxStudent" rows=4 cols=50 data-dojo-type="dijit/form/SimpleTextarea" style="min-height:60px; display: none;"></textarea>
 					</div>
 				</div>
 
@@ -280,8 +305,13 @@
 						<label>Insert above </label>
 					</span>
 					<div class="vertical">
-						<div id="inputSelectorContainer" style="background-color:#fff;">
+						<div id="inputSelectorContainer" style="background-color:#fff; display: none;">
 							<select id="inputSelector" data-dojo-type="dijit/form/ComboBox">
+							</select>
+						</div>
+						<div id="inputSelectorContainerStudent" style="background-color:#fff; display: none;">
+							<select id="inputSelectorStudent" data-dojo-type="dijit/form/Select">
+								<option value='defaultSelect'>--Select--</option>
 							</select>
 						</div>
 					</div>
@@ -302,10 +332,9 @@
 				</div>
 			</div>
 
-
 			<div class="fieldgroup" id="messageOutputboxContainer" style="">
 				<label for="messageOutputbox">Messages</label>
-				<div id="messageOutputbox" class="textscroll" data-dojo-type="dijit/layout/ContentPane"></div>
+				<div id="messageOutputbox" class="textscroll" data-dojo-type="dijit/layout/ContentPane" ></div>
 
 				<div style="margin-bottom:10px; display:block">
 					<span>&nbsp;</span>

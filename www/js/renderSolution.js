@@ -50,6 +50,11 @@ define([
 				this.authorSolution = this.findSolution(false);
 			}
 
+			if(this.isStudentMode && this._model.matchesGivenSolutionAndCorrect()){
+				this.isCorrect = true;
+				// TODO: show correctness message
+			}
+
 			this.initializeGraphTab();
 
 			this.createTable(this.activeSolution.plotVariables);
@@ -131,7 +136,8 @@ define([
 
 
 			if(this.isStudentMode) {
-				var authorObj = this.getMinMaxFromArray(this.authorSolution.plotValues[id]);
+				var authorID = this._model.active.getAuthoredID(id);
+				var authorObj = this.getMinMaxFromArray(this.authorSolution.plotValues[authorID]);
 
 				if (authorObj.min < obj.min) {
 					obj.min = authorObj.min;
@@ -184,7 +190,7 @@ define([
 			if(this.isStudentMode){
 				series.push({
 					title: "Author's solution",
-					data: this.formatSeriesForChart(this.authorSolution, id),
+					data: this.formatSeriesForChart(this.authorSolution, this._model.student.getAuthoredID(id)),
 					stroke: {stroke: this._colors.authorGraph}
 				});
 			}
@@ -193,7 +199,6 @@ define([
 		},
 
 		formatSeriesForChart: function(result, id){
-			console.log("sachin ", result);
 			var series = array.map(result.time, function(time, k){
 				return {x: time, y: result.plotValues[id][k]};
 			});
@@ -284,7 +289,7 @@ define([
 			var staticVar = this.checkStaticVar(true);
 			this.activeSolution = this.findSolution(true, staticVar);
 			if(this.isStudentMode)
-				this.authorSolution = this.authorSolution.plotVariables ? this.findSolution(false, statisVar) : "";
+				this.authorSolution = this.authorSolution.plotVariables ? this.findSolution(false, this._model.student.getAuthoredID(staticVar)) : "";
 
 			array.forEach(this.activeSolution.plotVariables, function(id, index){
 				var domNode = "chartStatic" + id ;
@@ -474,7 +479,8 @@ define([
 			if(this.isStatic) {
 				var staticVar = this.checkStaticVar(true);
 				var activeSolution = this.findSolution(true, staticVar);
-				this.authorSolution = this.findSolution(false, staticVar);
+				this.authorSolution = this.findSolution(false, this._model.student.getAuthoredID(staticVar));
+
 				//update and render the charts
 				array.forEach(this.activeSolution.plotVariables, function(id, k){
 					var inf = this.checkForInfinity(activeSolution.plotValues[id]);

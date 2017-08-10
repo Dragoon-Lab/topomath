@@ -39,7 +39,7 @@ define([
 				case "quantity":
 					nodeString.value = this.getDomUIStrings(model, "variable", nodeID);
 					//if(model.getVariable(nodeID))
-						if(model.isAccumulator(nodeID)){
+						if(model.getVariableType(nodeID) == "dynamic"){
 							nodeString.initial = this.getDomUIStrings(model, "value", nodeID);
 							createInitial = true;
 						} else {
@@ -47,10 +47,19 @@ define([
 						}
 					break;
 			}
-			html[0] = '<div id="'+nodeID+'Label" class = "bubble"><div class="'+ type +'Wrapper"><strong id = "'+nodeID+'Content" class = "nodeContent">' + nodeString.value + '</strong></div></div>';
+			var feedbackHTML = "";
+			if(model.isStudentMode()){
+				feedbackHTML = '<i class="topomath-feedback fa" id="feedback'+ nodeID ;
+				if(createInitial){
+					feedbackHTML = feedbackHTML + "LabelInitial";
+				}
+				feedbackHTML = feedbackHTML+'"></i>';
+			}
+			
+			html[0] = feedbackHTML + '<div id="'+nodeID+'Label" class = "bubble"><div class="'+ type +'Wrapper"><strong id = "'+nodeID+'Content" class = "nodeContent">' + nodeString.value + '</strong></div></div>';
 
 			if(createInitial){
-				html[1] = '<div id="'+nodeID+'LabelInitial" class = "bubble"><div class="'+ type +'Wrapper"><strong id = "'+ nodeID +'ContentInitial" class = "nodeContent">' + nodeString.initial + '</strong></div></div>';
+				html[1] = feedbackHTML + '<div id="'+nodeID+'LabelInitial" class = "bubble"><div class="'+ type +'Wrapper"><strong id = "'+ nodeID +'ContentInitial" class = "nodeContent">' + nodeString.initial + '</strong></div></div>';
 			}
 
 			return html;
@@ -63,7 +72,6 @@ define([
 			if(type && description){
 				html = '<div id = "'+nodeID+'_description" class="'+type+'Description"><div class="descriptionText">'+description+'</div></div>';
 			}
-
 			return html;
 		},
 
@@ -100,10 +108,10 @@ define([
 					initial = typeof(initial) === "number" ? initial : "";
 					var variable = model.getVariable(nodeID);
 					value = variable ? variable : this.defaultString;
-					if(model.isAccumulator(nodeID)){
+					if(model.getVariableType(nodeID) == "dynamic"){
 						if(!initial) initial = "??";
 						if(value != this.defaultString)
-							value = model.getInitialNodeDisplayString() + " " + value + " : " + initial;
+							value = "initial" + "(" + value + ") = " + initial;
 					} else if(initial && value != this.defaultString) {
 						value += " = " + initial;
 					}

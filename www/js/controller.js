@@ -36,9 +36,10 @@ define([
 	"dojo/aspect",
 	"dojo/dom-class",
 	"dijit/Tooltip",
+	"dojo/_base/event",
 	"./equation",
 	"./logging"
-], function(array, declare, lang, dom, keys, on, ready, registry, domStyle, domConstruct, aspect, domClass, toolTip,
+], function(array, declare, lang, dom, keys, on, ready, registry, domStyle, domConstruct, aspect, domClass, toolTip, event,
 	expression, clientLogging){
 
 	/* Summary:
@@ -88,7 +89,8 @@ define([
 					"inputsQuestionMark": "Select a quantity to enter into the expression above.  Much faster than typing.",
 					"valueQuestionMark": "This is a number, typically given to you in the system description.",
 					"operationsQuestionMark": "Click one of these to enter it in the expression above. <br> See the Help menu at the top of the screen for a list of other mathematical operators and functions that you can type in.",
-					"questionMarkRoot": "TODO"
+					"questionMarkRoot": "TODO",
+					"descriptionQuestionMark": "Select a description for node"
 		},
 		constructor: function(mode, model, ui_config){
 			console.log("+++++++++ In generic controller constructor");
@@ -110,18 +112,22 @@ define([
 		},
 
 		// A stub for connecting routine to draw new node.
-		
 		addNode: function(node, autoflag){
 			console.log("Node Editor calling addNode() for ", node.id);
 		},
+
 		// Stub to setting description for auto craeted nodes.
 		setNodeDescription: function(id, variable){
+			var authoredID = this._model.authored.getNodeIDByName(variable);
+			this._model.active.setAuthoredID(id, authoredID);
+			this._model.active.setDescription(id, this._model.authored.getDescription(authoredID));
+			this._model.active.setPosition(id, 0, this._model.authored.getPosition(authoredID,0));
 		},
+
 		// Stub to set connections in the graph
 		setConnections: function(from, to){
 			// console.log("======== setConnections fired for node" + to);
 		},
-
 
 		_initCrisisAlert: function(){
 			//Crisis Alert widget
@@ -205,10 +211,10 @@ define([
 								myThis.hideCloseNodeEditor(doHide);
 							}
 						} // if the mode is author and user has selected to enter student values (" given ")
-						else if(myThis._mode == "AUTHOR" && registry.byId("modelSelector").value == "given"){
-							equation = registry.byId("givenEquationInputbox");
+						else if(myThis._model.active.isStudentMode() && registry.byId("modelSelector").value == "given"){
+							equation = registry.byId("equationInputboxStudent");
 							
-							//equation value in this case if from givenEquationInputbox and check if the value is entered/checked
+							//equation value in this case if from equationInputboxStudent and check if the value is entered/checked
 							//if not throw a crisis alert message
 							if(equation.value && !myThis.givenEquationEntered){
 								
@@ -269,6 +275,7 @@ define([
 			}
 
 			var setEnableOption = function(value){
+				
 				console.log("++++ in setEnableOption, scope=", this);
 				array.forEach(this.options, function(option){
 					if((!value || option.value == value ) && option.value !== "defaultSelect")
@@ -277,6 +284,7 @@ define([
 				this.startup();
 			};
 			var setDisableOption = function(value){
+				
 				console.log("++++ in setDisableOption, scope=", this);
 				array.forEach(this.options, function(option){
 					if(!value || option.value == value)
@@ -372,6 +380,12 @@ define([
 			 We could write a function to attach the handlers?
 			 */
 
+			var variable_name = registry.byId(this.controlMap.variable);
+			variable_name.on('Change', lang.hitch(this, function(){
+				console.log("handling variable name");
+				return this.disableHandlers || this.handleVariableName.apply(this, arguments);
+			}));
+
 			 //event handler for quantity node description field
 			var desc_qty = registry.byId(this.controlMap.description);
 			desc_qty.on('Change', lang.hitch(this, function(){
@@ -382,6 +396,12 @@ define([
 			 *	 event handler for 'value' field
 			 *	 'handleValue' will be called in either Student or Author mode
 			 * */
+				var variableTypeToggle = dojo.query(".handleVariable");
+				variableTypeToggle.forEach(function(toggleNode){
+				registry.byNode(toggleNode).on('click', lang.hitch(this, function(event){
+					return this.disableHandlers || this.handleVariableType(event);
+				}));
+			}, this);
 
 			var valueWidget = registry.byId(this.controlMap.value);
 			// This event gets fired if student hits TAB or input box
@@ -424,7 +444,7 @@ define([
 
 			// When the equation box is enabled/disabled, do the same for
 			// the inputs widgets.
-			array.forEach(["nodeInputs"], function(input){
+			array.forEach(["inputSelectorStudent"], function(input){
 				var widget = registry.byId(input);
 				equationWidget.watch("disabled", function(attr, oldValue, newValue){
 					// console.log("************* " + (newValue?"dis":"en") + "able inputs");
@@ -464,7 +484,6 @@ define([
 			}, this);
 
 		},
-
 		//show node editor
 		showNodeEditor: function(/*string*/ id){
 			console.log("showNodeEditor called for node ", id);
@@ -496,15 +515,15 @@ define([
 
 		closeEditor: function(){ 
 			console.log("++++++++++ entering closeEditor");
-			if(this._mode == "AUTHOR"){
+			if(!this._model.isStudentMode()){
 				//Reset to given on close of node editor
-				this._model.active = this._model.authored;
+				//this._model.active = this._model.authored;
 				registry.byId("modelSelector").set('value',"correct");
 				
 				if(this.nodeType == "equation"){
 					this.controlMap.equation = "equationInputbox";
 					domStyle.set('equationInputbox', 'display', 'block');
-					domStyle.set('givenEquationInputbox', 'display', 'none');
+					domStyle.set('equationInputboxStudent', 'display', 'none');
 				}
 				/* check the usage of this code
 				var kind = registry.byId(this.controlMap.kind).value;
@@ -515,12 +534,12 @@ define([
 			}
 			// Erase modifications to the control settings.
 			// Enable all options in select controls.
-			/* TODO: this enable/disable options looks like for student mode
+			//TODO: this enable/disable options looks like for student mode
 			array.forEach(this.selects, function(control){
 				var w = registry.byId(this.controlMap[control]);
 				w.set("enableOption", null);  // enable all options
 			}, this);
-			*/
+			
 			//for all controls corresponding to a node type , enable and remove colors
 			var allControls = (this.nodeType == "equation" ? this.equationNodeControls : this.variableNodeControls).concat(this.commonNodeControls);
 			console.log("all controls", allControls);
@@ -535,87 +554,11 @@ define([
 			//TODO: check logging
 		},
 
-
-
+		// Stub to be overwritten by student or author mode-specific method.
 		checkDone: function () {
-			/*
-				When the author clicks on the main menu "Done" button,
-				the system checks that one variable is Root, 
-				and make sure every variable is part of at least one equation.
-			*/
-			console.log("Done Action called");
-			var returnObj = {};
-			returnObj.errorNotes = "";
-			var hasRootNode = false;
-			var _variables = [];
-			var _equations = [];
-			var _errorNotes = [];
-			
-			if( this._model ){
-				array.forEach(this._model.active.getNodes(), function (node) {
-					if(node.root){
-						hasRootNode = true;
-					}
-					console.log(node);
-
-					// get variables and equations
-					if(node.variable !== "" && node.genus && node.genus === "required" && node.type === "quantity"){
-						_variables.push(node.ID);
-					}else if(node.type === "equation"){
-						_equations.push(node.equation);
-					}
-
-				});
-				console.log("Equations : ", _equations);
-				// check if each variable is present in atleast one equation
-				var _usedVariables = _variables.map(function(_variable){
-					var tmp = array.some(_equations, function(_equation) {
-						
-						if( _equation && _equation.search(_variable) > -1){
-							return true;
-						}
-					});
-					var obj = {};
-					obj[_variable] = tmp;
-					return obj;
-				});
-
-				// for each variable if it is not present in any equation, add it to array 
-				var _requiredVariables = [];
-				array.forEach(_usedVariables, function(item){
-					
-					if(!Object.values(item)[0]){	
-						_requiredVariables.push(Object.keys(item)[0]);
-					}
-				});
-
-				// Add errorNote adding all unused variables
-				if( _requiredVariables && _requiredVariables.length > 0 ){
-					var errorNote = "Following variables are required, but unused by equations - ";
-					array.forEach(_requiredVariables,lang.hitch(this, function(id){
-						errorNote += this._model.active.getName(id) + ", ";
-					}));
-					errorNote = errorNote.slice(0, -2); // removing trailing comma and space
-					_errorNotes.push(errorNote);
-				}	
-			}
-
-			console.log("required" + _requiredVariables);
-
-			if(!hasRootNode){
-				_errorNotes.push("No variable is marked as Root");
-			}
-			if(_errorNotes && _errorNotes.length > 0){
-				array.forEach(_errorNotes, function(_error){
-					returnObj.errorNotes += "<li>" + _error + "</li>";
-				});
-			}
-			
-			console.log("returning ", returnObj);
-			return returnObj;
+			console.log("checkDone should be overwritten.");
 		},
-
-
+		
 		// Stub to be overwritten by student or author mode-specific method.
 		initialControlSettings: function(id){
 			console.error("initialControlSettings should be overwritten.");
@@ -640,15 +583,18 @@ define([
 			 Set value for  value, equation (input),
 			 */
 
-
 			if(model.getNodeIDFor){
 				var d = registry.byId(this.controlMap.description);
 				array.forEach(this._model.authored.getDescriptions(), function(desc){
 					var exists =  model.getNodeIDFor(desc.value);
-					d.getOptions(desc).disabled=exists;
-					if(desc.value == nodeName){
-						d.getOptions(desc).disabled=false;
-					}});
+					
+					if(d.getOptions(desc)) {
+						d.getOptions(desc).disabled=exists;
+						if(desc.value == nodeName){
+							d.getOptions(desc).disabled=false;
+						}
+					}
+				});
 			}
 
 			if(this.nodeType == "quantity"){
@@ -698,10 +644,12 @@ define([
 			// Apply directives, either from PM or the controller itself.
 			var tempDirective = null;
 			array.forEach(directives, function(directive) {
-				/*TODO : for now not using authorModelStatus, so updateModelStatus function has no significance
+
+				//TODO : for now not using authorModelStatus, so updateModelStatus function has no significance
+				
 				if(!noModelUpdate)
-					this.updateModelStatus(directive); */
-				if (directive.attribute != "display" && this.widgetMap[directive.id]) {
+					this.updateModelStatus(directive); 
+				if (directive.attribute != "display" && this.widgetMap[directive.id] && directive.id !== "variableType") {
 					var w = registry.byId(this.widgetMap[directive.id]);
 					if (directive.attribute == 'value') {
 						w.set("value", directive.value, false);
@@ -714,10 +662,14 @@ define([
 							this.updateDescription(directive.value);
 						}else if(w.id == 'equationBox'){
 							this.equationSet(directive.value);
+						}else if(w.id == 'variableInputboxStudent'){
+							this._model.active.setVariable(this.currentID, directive.value);
+						}else if(w.id == 'unitsSelectorStudent'){
+							this._model.active.setUnits(this.currentID, directive.value);
 						}
 						//TODO : update explanation function but right now no directives with att value for explanations not being processed 
 
-					}else{
+					} else{
 						console.log("w is",w);
 						w.set(directive.attribute, directive.value);
 						if(directive.attribute === "status"){
@@ -732,6 +684,29 @@ define([
 					if(this.genericDivMap[directive.id]){
 						domStyle.set(this.genericDivMap[directive.id], directive.attribute, directive.value);
 					}
+				}else if(directive.id == "variableType"){
+					if(directive.value == "dynamic" || directive.value == "parameter"){
+						domStyle.set('valueInputboxContainer','display','block');
+					}else if(directive.value == "unknown"){
+						domStyle.set('valueInputboxContainer','display','none');
+					}
+					if(directive.attribute === 'value'){
+						registry.byId(directive.value+'Type').set('checked','checked');
+						this._model.active.setVariableType(this.currentID, directive.value);
+					}
+					else if(directive.attribute === "disabled" && directive.value === true ){
+						var _variableTypes = ["unknown","parameter","dynamic"];
+						var _selectedVariableType = dojo.query("input[name='variableType']:checked")[0].value;
+						array.forEach(_variableTypes, function(_type){
+							if(_type !== _selectedVariableType){
+								registry.byId(_type+"Type").set('disabled',true);
+							}
+						});
+					}else if(directive.attribute === "status" && directive.value === "correct"){
+						var _selectedVariableType = dojo.query("input[name='variableType']:checked")[0].value;
+						registry.byId(_selectedVariableType	+'Type').set('checked','checked');
+					}
+
 				}else{
 					//this code needs to be uncommented when logging module is included
 					/*
@@ -804,23 +779,25 @@ define([
 			// add hook so we can do this in draw-model...
 			this.addQuantity(this.currentID, this._model.active.getLinks(this.currentID));
 		},
+		
 		/* Stub to update connections in graph */
 		addQuantity: function(source, destinations){
 		},
 
 		variableTypeControls: function(id, _variableType){
 			registry.byId(this.controlMap.value).set('status','');
-			this._model.authored.setVariableType(id, _variableType);
+			this._model.active.setVariableType(id, _variableType);
 			if( _variableType == "parameter" || _variableType == "dynamic"){
 				domStyle.set('valueInputboxContainer','display','block');
 				if(_variableType == "dynamic"){
+					var givenID = this._model.active.getAuthoredID(id);
+					this._model.active.setPosition(id, 1, this._model.authored.getPosition(givenID, 1));
 					// Update position to avoid overlap of node
-					if(this._model.authored.getPosition(id).length === 1)
-						this._model.authored.updatePositionXY(id);
+					if(this._model.active.getPosition(id).length === 1)
+						this._model.active.updatePositionXY(id);
 				}
 			}else{
 				// Find all nodes that have reference to the initial node of this node and delete links to them
-				this._model.authored.updateLinks(id);
 				registry.byId(this.controlMap.value).set('value','');
 				this._model.active.setValue(id, '');
 				domStyle.set('valueInputboxContainer','display','none');
@@ -835,6 +812,7 @@ define([
 
 		handleEquation: function(equation){
 			console.log("inside equation handler");
+			
 			var w = registry.byId(this.widgetMap.equation);
 			this.equationEntered = false;
 			w.set('status','');
@@ -869,7 +847,7 @@ define([
 			var widget = registry.byId(this.controlMap.equation);
 			var inputEquation = widget.get("value");
 
-			//var parse = {};
+			//var parse = null;
 			var returnObj = {};
 			if (inputEquation == "") {
 				directives.push({id: 'message', attribute: 'append', value: 'There is no equation to check.'});
@@ -913,137 +891,8 @@ define([
 				return null;
 			}
 			//rest of the analysis is only needed for the student mode. So returning in case the active model is not student.
-			if(this._model.active != this._model.student){
 				return returnObj;
-			}
-			//TODO : as suggested in above comment if the mode is student we enable the below code
-			//For now, commenting
-			/*
-			var cancelUpdate = false;
-			var resetEquation = false;
-			var authoredID = this._model.student.getAuthoredID(this.currentID);
-
-			var mapID = this._model.active.getAuthoredID || function(x){ return x; };
-			var unMapID = this._model.active.getNodeIDFor || function(x){ return x; };
-			//there is no error in parse. We check equation for validity
-			//Check 1 - accumulator equation is not set to 0, basically the type of a node should be parameter.
-			if(this._model.active.getType(this.currentID) === "accumulator" &&
-				!parse.variables().length && parse.tokens.length == 1 && parse.tokens[0].number_ == 0){
-				cancelUpdate = true;
-				directives.push({id: 'equation', attribute: 'status', value: 'incorrect'});
-				directives.push({
-					id: 'crisisAlert',
-					attribute: 'open',
-					value: "Equation of accumulator can not be set to 0. If this is the case then please change the type of the node to parameter."
-				});
-				this.logging.log("solution-step", {
-					type: "zero-equation-accumulator",
-					node: this._model.active.getName(this.currentID),
-					nodeID: this.currentID,
-					property: "equation",
-					value: inputEquation,
-					correctResult: this._model.given.getEquation(this.currentID),
-					checkResult: "INCORRECT"
-				});
-			}
-			array.forEach(parse.variables(), function(variable){
-				var givenID = this._model.given.getNodeIDByName(variable);
-				var badVarCount = "";
-				// Check 2 - Checks for nodes referencing themselves; this causes problems because
-				//		functions will always evaluate to true if they reference themselves
-				if(!givenID){
-					if(!ignoreUnknownTest){
-						// Check for number of unknown var, only in student mode.
-						badVarCount = this._model.given.getAttemptCount(authoredID, "unknownVar");
-					}
-					cancelUpdate = true;  // Don't update model or send ot PM.
-
-					// The following if statement prevents a user from being endlessly stuck if he/she is using an incorrect variable.
-					//		To organize this better in the future we may want to move this check into another file with the code from
-					//		pedagogical_module.js that is responsible for deciding the correctness of a student's response.
-					if(badVarCount){
-						this._model.given.setAttemptCount(authoredID, "unknownVar", badVarCount+1);
-						if(badVarCount > 2){
-							//resetEquation = true;
-						//} else {
-							this._model.given.setAttemptCount(authoredID, "equation", badVarCount+1);
-							cancelUpdate = false;
-						}
-					}else{
-						this._model.given.setAttemptCount(authoredID, "unknownVar", 1);
-						//resetEquation = true;
-					}
-					directives.push({id: 'equation', attribute: 'status', value: 'incorrect'});
-					directives.push({id: 'message', attribute: 'append', value: "Unknown variable '" + variable + "'."});
-					directives.push({
-						id: 'crisisAlert',
-						attribute: 'open',
-						value: "Unknown variable '" + variable + "' entered in equation."
-					});
-					this.logging.log("solution-step", {
-						type: "unknown-variable",
-						node: this._model.active.getName(this.currentID),
-						nodeID: this.currentID,
-						property: "equation",
-						value: inputEquation,
-						correctResult: this._model.given.getEquation(this.currentID),
-						checkResult: "INCORRECT"
-					});
-				}
-
-				if(givenID && this._model.active.getType(this.currentID) === "function" &&
-					givenID === mapID.call(this._model.active, this.currentID)){
-					cancelUpdate = true;
-					directives.push({id: 'equation', attribute: 'status', value: 'incorrect'});
-					directives.push({id: 'message', attribute: 'append', value: "You cannot use '" + variable + "' in the equation. Function nodes cannot reference themselves."});
-					this.logging.log("solution-step", {
-						type: "self-referencing-function",
-						node: this._model.active.getName(this.currentID),
-						nodeID: this.currentID,
-						property: "equation",
-						value: inputEquation,
-						correctResult: this._model.given.getEquation(this.currentID),
-						checkResult: "INCORRECT"
-					});
-				}
-				//Check 3 - check if accumulator has a reference to itself as per the Trello card https://trello.com/c/0aqmwqqG
-				if(givenID && this._model.active.getType(this.currentID) === "accumulator" &&
-					givenID === mapID.call(this._model.active, this.currentID)){
-					cancelUpdate = true;
-					directives.push({id: 'equation', attribute: 'status', value: 'incorrect'});
-					directives.push({
-						id: 'crisisAlert',
-						attribute: 'open',
-						value: "The old value of the accumulator is already included in the expression, so you don't have to mention it in the expression.  Only put an expression for the change in the accumulators value."
-					});
-					this.logging.log("solution-step", {
-						type: "self-referencing-accumulator",
-						node: this._model.active.getName(this.currentID),
-						nodeID: this.currentID,
-						property: "equation",
-						value: inputEquation,
-						correctResult: this._model.given.getEquation(this.currentID),
-						checkResult: "INCORRECT"
-					});
-				}
-			}, this);
-
-			if(resetEquation){
-				this._model.active.setEquation(this.currentID, "");
-				directives.push({id: 'equation', attribute: 'value', value: ""});
-			}
-			// changing this as it is essential to update the equation using createExpressionNodes.
-			// otherwise equation with correct nodes not converted to their corresponding id stays in the equation of the model
-			// fix for bug : https://trello.com/c/bVYAQBKT ~ Sachin Grover
-			/*else if(cancelUpdate){
-				//in case we are not calling the pm then we need to save the equation to the model.
-				//this._model.active.setEquation(this.currentID, inputEquation);
-			}*/
-			//if(true || !cancelUpdate){
-			//return parse;
-			//}
-			//return null; */
-
+			
 		},
 		createExpressionNodes: function(parseObject, ignoreUnknownTest){
 			/*
@@ -1060,7 +909,6 @@ define([
 
 			 */
 			if(parseObject){
-
 				var newNodesList = parseObject.newNodeList;
 				var variableList = parseObject.variableList;
 				var autoCreationFlag = true; //can be read from the source
@@ -1075,7 +923,12 @@ define([
 						//newNodeList containts those nodes which were not present when equation has been parsed
 						//these nodes were added to model, substituted into equation but should be added here
 						this.addNode(this._model.active.getNode(newNode.id));
-						this.setNodeDescription(newNode.id,newNode.variable);
+						// Auto-populate node description only in Student mode
+						if(this._model.active.isStudentMode()){
+							this.setNodeDescription(newNode.id,newNode.variable);
+							this.updateInputNode(newNode.id, newNode.variable);
+							this.updateNodeView(this._model.active.getNode(newNode.id));
+						}
 					}, this);
 					//dynamicList contains those nodes for which prior node UI changes have to be made
 					//Accordingly, make the node dynamic by changing the variable type and setting the accumulator
@@ -1115,11 +968,11 @@ define([
 				this._model.active.setLinks(inputs, this.currentID);
 				this.setConnections(this._model.active.getLinks(this.currentID), this.currentID);
 				// console.log("************** equationAnalysis directives ", directives);
-
+/*
 				array.forEach(newNodesList, lang.hitch(this, function(node){
 					this.updateInputNode(node.id, node.variable);
 				}));
-
+*/
 				array.forEach(variableList, lang.hitch(this, function(n){
 					this.nodeConnections.push(n);
 				}));

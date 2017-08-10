@@ -316,7 +316,7 @@ input[type=radio]{
   font-size: 14px;
   background: white;
   border-radius: 32%;
-  border: 2px solid black;
+  border: 2px solid transparent;
 }
 .topomath-feedback.fa-star{
   color: rgb(153, 134, 9);

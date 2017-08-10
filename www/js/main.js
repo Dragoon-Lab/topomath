@@ -18,13 +18,14 @@ define([
 	'./equation',
 	'./draw-model',
 	'./con-author',
+	'./con-student',
 	'./logging',
 	'./popup-dialog',
 	'./event-logs',
 	'./renderSolution'
 ], function(array, geometry, dom, style, aspect, ready, registry, event, ioQuery, on, Button, domConstruct, lang,
-			menu, session, model, equation, drawModel, controlAuthor, logging, popupDialog, eventLogs, Solution){
-	
+			menu, session, model, equation, drawModel, controlAuthor, controlStudent, logging, popupDialog, eventLogs, Solution){
+
 	console.log("load main.js");
 	// Get session parameters
 	var query = {};
@@ -54,14 +55,17 @@ define([
 			console.warn("Dragoon log files won't work since we can't set up a session.");
 			console.error("Function called without arguments");
 			// show error message and exit
-			var errorMessage = new messageBox("errorMessageBox", "error", "Missing information, please recheck the query");
+			/*var errorMessage = new messageBox("errorMessageBox", "error", "Missing information, please recheck the query");
 			errorMessage.show();
 			throw Error("please retry, insufficient information");
+			*/
 		}
 	}
 
+	// TODO : Activity Parameters 
+	// TODO : UI Parameters
 	var _session = session(query);
-	var _model = new model(query.m, query.p);
+	var _model = new model(_session, query.m, query.p);
 	console.log(_model);
 
 
@@ -70,19 +74,63 @@ define([
 			try{
 				_model.loadModel(solutionGraph);
 			} catch(err){
-				throw Error(err);
+				if (!_model.isStudentMode()) {
+					//var errorMessage = new messageBox("errorMessageBox", "error", error.message);
+					//errorMessage.show();
+					throw Error(err);
+				} else {
+					//var errorMessage = new messageBox("errorMessageBox", "error", "This problem could not be loaded. Please contact the problem's author.");
+					//errorMessage.show();
+					throw Error("Model could not be loaded.");
+				}
 			}
+			// This version of code addresses loading errors in cases where problem is empty, incomplete or has no root node in coached mode
+			if (!_model.isStudentMode()) {
+				//check if the problem is empty
+				try {
+					console.log("checking for emptiness");
+					var count = 0;
+					array.forEach(_model.authored.getNodes(), function (node) {
+						//for each node increment the counter
+						count++;
+					});
+					console.log("count of nodes is", count);
+					if (count == 0) {
+						//if count is zero we throw a error
+						throw new Error("Problem is Empty");
+					}
+					//check for completeness of all nodes
+					console.log("inside completeness verifying function");
+					array.forEach(_model.authored.getNodes(), function (node) {
+						console.log("node is", node, _model.authored.isComplete(node.ID));
+						if (!_model.authored.isComplete(node.ID)) {
+							throw new Error("Problem is Incomplete");
+						}
+					});
+					
+				}catch (error) {
+					console.log("Incomplete!");
+					//var errorMessage = new messageBox("errorMessageBox", "error", error.message);
+					//errorMessage.show();
+				}
+			}
+
 		} else {
 			console.log("Its a new problem");
 			// TODO: show the message box at the top to say that its a new problem.
+			// Add message box in student mode
 		}
-	
+		
+
+
 		//The following code follows sachin code after the model has been rendered according to query parameters
 		ready(function(){
 			/**
 			* this has to be the first to be instantiated
 			* so that session object is not to be passed again and again. ~ Sachin
 			*/
+			var _dragNodes = query.fp == "on"? false : true;
+			console.log("Fixing position of nodes ", _dragNodes);
 			var _logger = logging.getInstance(_session);
 			/**
 			* equation does not have a constructor because
@@ -95,7 +143,7 @@ define([
 			var loading = document.getElementById('loadingOverlay');
 			loading.style.display = "none";
 
-			var dm = new drawModel(_model.active);
+			var dm = new drawModel(_model.active, _dragNodes);
 			var errDialog = new popupDialog();
 
 			/*********  below this part are the event handling *********/
@@ -108,6 +156,10 @@ define([
 				} else {
 					console.log("menu open action for ", mover.node.id);
 				}
+			}, true);
+
+			aspect.after(dm, "checkNodeClick", function(node){
+				controllerObject.showNodeEditor(node.ID);
 			}, true);
 
 			aspect.after(dm, "onClickMoved", function(mover){
@@ -192,8 +244,13 @@ define([
 			var ui_config = "";
 
 			//For now using empty  ui_config 
+			var controllerObject = (!_model.isStudentMode()) ?
+				new controlAuthor(query.m, _model, ui_config) :
+				new controlStudent(query.m, _model, ui_config);
 
-			var controllerObject = new controlAuthor(query.m, _model, ui_config);
+			if(_model.isStudentMode()){
+				//controllerObject.setAssessment(session); //set up assessment for student.
+			}
 			//next step is to add action to add quantity
 			menu.add("createQuantityNodeButton", function(e){
 				event.stop(e);
@@ -284,7 +341,6 @@ define([
 					errDialog.showDialog(title, problemComplete.errorNotes, buttons, /*optional argument*/"Don't Exit");
 				}
 			});
-			//TODO: uncomment this after node_editor2 is merged
 			//all the things we need to do once node is closed
 			aspect.after(registry.byId('nodeEditor'), "hide", function(){
 				_session.saveModel(_model.model);

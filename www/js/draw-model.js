@@ -9,9 +9,10 @@ define([
 	"dojo/dom-style",
 	"dijit/Menu",
 	"dijit/MenuItem",
+	"dojo/on",
 	"./graph-objects",
-	"jsPlumb/jsPlumb"
-], function(declare, array, lang, attr, domConstruct, domClass, dom, domStyle, Menu, MenuItem, graphObjects){
+	"jsPlumb/jsPlumb",
+], function(declare, array, lang, attr, domConstruct, domClass, dom, domStyle, Menu, MenuItem, on, graphObjects){
 	return declare(null, {
 		_instance: null,
 		_model: null,
@@ -27,18 +28,31 @@ define([
 		_backgroundColor: 0,
 		_counter: 0,
 		_cache: {},
+		_dragNodes: true,
 		domIDs: function(nodeID){
 			return {
 				'nodeDOM': nodeID+'Content',
 				'initialNode': nodeID+'ContentInitial',
 				'description': nodeID+'_description',
 				'parentDOM': nodeID,
-				'parentInitial': nodeID + this.initialNodeIDTag
+				'parentInitial': nodeID + this.initialNodeIDTag,
+				'topomathFeedback' : 'feedback'+nodeID,
+				'topomathFeedbackInitial' : 'feedback'+nodeID+'LabelInitial'
 			};
 		},
+		_statusClassMap: {
+			"demo" : " fa-minus",
+			"incorrect" : " fa-times",
+			"correct" : " fa-check",
+			"perfect" : " fa-star",
+			"": ""
+		},
 
-		constructor: function(model){
+		constructor: function(model, dragNodes){
 			this._model = model;
+			this._dragNodes = dragNodes;
+			this._quantityNodeCount = 0;
+			this._equationNodeCount = 0;
 			this.initialNodeIDTag = this._model.getInitialNodeIDString();
 			this._borderColor = this._colors.length - 1;
 			this.connectorUI = {
@@ -50,7 +64,6 @@ define([
 				HoverPaintStyle : {strokeStyle:"#1e8151", lineWidth:2 },
 				Container:"statemachine-demo"
 			});
-
 			this._instance = instance;
 			var vertices = [];
 			var temp = [];
@@ -58,6 +71,7 @@ define([
 				temp = temp.concat(this.addNode(node));
 				return temp;
 			}, this);
+
 			vertices = vertices[vertices.length - 1]; //hack for keeping it one dimension
 			console.log(vertices);
 			
@@ -76,8 +90,14 @@ define([
 				if(links)
 					this.setConnections(links, vertex);
 			}, this);
+			this.addNodeCount();
 
 			return instance;
+		},
+
+		addNodeCount: function(){
+			dojo.byId('quantity-node-count').innerHTML = this._quantityNodeCount;
+			dojo.byId('equation-node-count').innerHTML = this._equationNodeCount;
 		},
 
 		addNode: function(/* object */ node){
@@ -87,7 +107,6 @@ define([
 				conole.error("addNode called with a node without ID");
 				return;
 			}
-
 			console.log("Adding vertex to the canvas id = ", node.ID, " type = ", type);
 			console.log("Position for the vertex : ",node.ID, " position: x ", node.position[0].x, " y: " + node.position[0].y);
 			var properties = this.getNodeUIProperties(node);
@@ -124,6 +143,7 @@ define([
 
 			var cachedNode = this._cache[node.ID];
 			var initialNode = dom.byId(domIDTags['parentInitial']);
+
 			// update variable name
 			if(cachedNode.variable != node.variable){
 				if(node.type && node.type == "quantity"){
@@ -160,6 +180,7 @@ define([
 					this.addNodeDescription(node.ID);
 				}
 			}
+
 			//update value or update dynamic
 			if(node.type && node.type == "quantity" && (cachedNode.value != node.value ||
 				(cachedNode.variableType != node.variableType ))){
@@ -194,9 +215,26 @@ define([
 			} else if(node.type && node.type == "equation" && cachedNode.equation != node.equation){
 				dom.byId(domIDTags['nodeDOM']).innerHTML = graphObjects.getDomUIStrings(this._model, "equation", node.ID);
 			}
+
 			//update border
 			var isComplete = this._model.isComplete(node.ID);
 			var hasClass = domClass.contains(domIDTags['parentDOM'], "incomplete");
+			var nodeStatus = this._model.getNodeStatus(node.ID);
+			var nodeStatusClass = nodeStatus ? this._statusClassMap[nodeStatus] : "";
+			if(this._model.isStudentMode()){
+				var _feedbackTags = ['fa-check','fa-star','fa-times','fa-minus'];
+				/*Updating tags each time model gets updated*/
+				array.forEach(_feedbackTags, function(t){
+					domClass.remove(domIDTags['topomathFeedback'], t);
+					if(initialNode){
+						domClass.remove(domIDTags['topomathFeedbackInitial'], t);
+					}
+				})
+				domClass.add(domIDTags['topomathFeedback'], nodeStatusClass);
+				if(initialNode){
+					domClass.add(domIDTags['topomathFeedbackInitial'], nodeStatusClass);
+				}
+			}
 			var initialHasClass = initialNode && domClass.contains(domIDTags['parentInitial'], "incomplete");
 			if(hasClass && isComplete){
 				domClass.remove(domIDTags['parentDOM'], "incomplete");
@@ -204,6 +242,14 @@ define([
 			} else if (!hasClass && !isComplete){
 				domClass.add(domIDTags['parentDOM'], "incomplete");
 				if(initialNode) domClass.add(domIDTags['parentInitial'], "incomplete");
+			}
+
+			if(initialNode & node.position.length == 2){
+				dojo.byId(domIDTags['parentInitial']).style.top = node.position[1].y+'px';
+				dojo.byId(domIDTags['parentInitial']).style.left = node.position[1].x+'px';
+			}else{
+				dojo.byId(domIDTags['parentDOM']).style.top = node.position[0].y+'px';
+				dojo.byId(domIDTags['parentDOM']).style.left = node.position[0].x+'px';
 			}
 
 			//add to cache for next time
@@ -224,7 +270,7 @@ define([
 			var classTag = node.type;
 			if(isInitial){
 				idTag += this._model.getInitialNodeIDString();
-				if(node.position.length > 1){
+				if(node.position.length > 1 && node.position[1] !== null && node.position[1] !== undefined){
 					x = node.position[1].x;
 					y = node.position[1].y;
 				} else {
@@ -232,8 +278,10 @@ define([
 					y += 100;
 				}
 			}
-			if(!this._model.isComplete(node.ID))
+
+			if(!this._model.isComplete(node.ID)){
 				classTag += " incomplete";
+			}
 			var nodeDOM = domConstruct.create("div", {
 				id: idTag,
 				"class": classTag,
@@ -246,8 +294,22 @@ define([
 				innerHTML: innerHTML
 			}, "statemachine-demo");
 
-			this.makeDraggable(nodeDOM);
-
+			if(this._model.isStudentMode()){
+				var nodeStatusClass = this._model.getNodeStatus(node.ID);
+				nodeDOM.querySelector(".topomath-feedback").className += this._statusClassMap[nodeStatusClass];
+			}
+			if(this._dragNodes){
+				this.makeDraggable(nodeDOM);
+			}else{
+				var thisNodeID = dom.byId(node.ID);
+                console.log(thisNodeID + "created");
+                on(thisNodeID, "click", lang.hitch(this, function () {
+                    console.log(thisNodeID + "clicked");
+                    this.checkNodeClick(node);
+                }));
+                this.makeVertexSource(nodeDOM);
+			}
+			
 			// creating menu for each DOM element
 			pMenu = new Menu({
 				targetNodeIds: [idTag]
@@ -258,8 +320,11 @@ define([
 					this.deleteNode(node.ID);
 				})
 			}));
-
 			return nodeDOM;
+		},
+
+		checkNodeClick: function(node){
+			console.log("Stub for opening editor");
 		},
 
 		getNodeUIProperties: function(node){
@@ -347,8 +412,7 @@ define([
 				onMoveStart: lang.hitch(this, this.onMoveStart),
 				onMove: lang.hitch(this, this.onMove),
 				onMoveStop: lang.hitch(this, this.onMoveStop)
-			});
-
+			});	
 			this.makeVertexSource(vertex);
 		},
 
@@ -423,6 +487,12 @@ define([
 				/*else
 					domStyle.set(domID, "border-color", this._model.getColor(ID));
 				*/
+				if(type === 'quantity'){
+					this._quantityNodeCount++;
+				}else if(type === 'equation'){
+					this._equationNodeCount++;
+				}
+				this.addNodeCount();
 			}
 		},
 
@@ -451,6 +521,14 @@ define([
 				domConstruct.destroy(ID);
 			}
 			domConstruct.destroy(nodeID);
+			if(this._model.getColor(ID) !== undefined){
+				if(type === 'quantity'){
+					this._quantityNodeCount--;
+				}else if( type === 'equation'){
+					this._equationNodeCount--;
+				}
+				this.addNodeCount();
+			}
 			// delete node from the model
 			var updateNodes = this._model.deleteNode(nodeID);
 			// updateNodes are the nodes for which the equations and links were updated.
