@@ -8,6 +8,7 @@ define([
 				this.y = this.beginY;
 				this.model = {
 					taskName: name,
+					time: {start: 0, end: 10, step: 1.0, units: "seconds"},
 					authorModelNodes: [],
 					studentModelNodes: []
 				};
@@ -119,6 +120,22 @@ define([
 						});
 					}
 				}, this);
+
+				// Initially the time module was never added to the models, whereas it
+				// it should have. I have written the code to fix this issue, where time
+				// object has been added to the model. So new models after the merging of
+				// fix will have it. But to keep the things working and also backward
+				// compatible as there are a lot of models that have been created without
+				// time object, I am explicitly adding a check for it to ensure the graphs
+				// can work without any issue. ~ Sachin Grover
+				if(!this.model.time){
+					this.model.time = {
+						start: 0,
+						end: 10,
+						step: 1.0,
+						units: "seconds"
+					}
+				}
 			},
 			getModelAsString: function(){
 				// Summary: Returns a JSON object in string format
@@ -148,8 +165,10 @@ define([
 					}
 				}, this);
 				return unitList;
+			},
+			getTimeUnits: function(){
+				return obj.model.time.units || "seconds";
 			}
-
 		};
 
 		var both = {
@@ -350,6 +369,19 @@ define([
 			},
 			getInitialNodeDisplayString: function(){
 				return obj.initialNodeDisplayString;
+			},
+			getTime: function(){
+				return obj.model.time;
+			},
+			isVariableTypePresent: function(type){
+				var nodes = this.getNodes();
+				var length = nodes.length;
+				for(var node in nodes){
+					if(node.variableType && node.variableType == type)
+						return true;
+				}
+
+				return false;
 			}
 		};
 
@@ -450,7 +482,7 @@ define([
 				var node = this.getNode(id);
 				return node.explanation || node.description;
 			},
-			getAuthorID: function(/*string*/ id){
+			getAuthoredID: function(/*string*/ id){
 				return id;
 			},
 			getParent: function(/*string*/ id){

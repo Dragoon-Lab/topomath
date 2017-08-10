@@ -31,6 +31,7 @@
 				{name: "jsPlumb", location: "jsPlumb/src"},
 				{name: "topomath", location: "js"},
 				{name: "parser", location: "math-parser"},
+				{name: "solver", location: "math-solver"},
 				// AMD doesn't handle file names with dots,
 				// need to specify explicitly
 				{name: "jsBezier", location: "jsPlumb/lib", main: "jsBezier-0.6"},
@@ -157,6 +158,8 @@
 		<div data-dojo-type="dijit/MenuBar" id="menuBar" region="top" splitter="false">
 			<button type="button" data-dojo-type="dijit/form/Button" id="createQuantityNodeButton" disabled="true" style="visibility:hidden">Add Quantity</button>
 			<button type="button" data-dojo-type="dijit/form/Button" id="createEquationNodeButton" disabled="true" style="visibility: hidden">Add Equation</button>
+			<button type="button" data-dojo-type="dijit/form/Button" id="graphButton" disabled="true" style="visibility: hidden">Graph</button>
+			<button type="button" data-dojo-type="dijit/form/Button" id="tableButton" disabled="true" style="visibility: hidden">Table</button>
 			<button type="button" data-dojo-type="dijit/form/Button" id="DoneButton" disabled="true" style="visibility: hidden">Done</button>
 		</div>
 
@@ -318,7 +321,20 @@
 			<div id = "crisisMessage"> </div>
 			<button id="OkButton" type="button" data-dojo-type="dijit/form/Button">OK</button>
 		</div> 
-
+		<!-- Dialog showing plot or table of solution  -->
+		<div class="claro dijitLayoutContainer dijitDialog" id="solution" data-dojo-type="dijit.Dialog" style="width: 50%; min-height: 80%; background-color: #FFFFFF">
+			<div id= 'graphErrorMessage'></div>
+			<div data-dojo-type= 'dijit/layout/ContentPane' style='overflow:visible; width:95%; height:95%; float:left; background-color: #FFFFFF;'>
+				<div id="GraphTabContainer" data-dojo-type='dijit/layout/TabContainer' style='overflow:visible; display:none;'>
+					<div id='GraphTab' data-dojo-type='dijit/layout/ContentPane' style='overflow:auto;' title="Graph"></div>
+					<div id='TableTab' data-dojo-type='dijit/layout/ContentPane' style='overflow:auto' title="Table"></div>
+					<div id='StaticTab' data-dojo-type='dijit/layout/ContentPane' style='overflow:auto' title="Static"></div>
+				</div>
+			</div>
+			<!--div id="SliderPane" data-dojo-type='dijit/layout/ContentPane' style='overflow:visible; min-height: 95%; width:40%; float:right; background-color: #FFFFFF'>
+				<div id= 'solutionMessage'></div>
+			</div-->
+		</div>
 		<!-- popup Dialog to show unfinished tasks before closing -->
 		<div data-dojo-type="dijit/Dialog" data-dojo-id="popupDialog" id ="popupDialog" title="Message" data-dojo-props="closable:false">
 
