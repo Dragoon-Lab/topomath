@@ -84,7 +84,7 @@ define([
 
 			array.forEach(vertices, function(vertex){
 				var id = attr.get(vertex, "id");
-				var links = model.getLinks(id);
+				var links = id.indexOf(this.initialNodeIDTag) < 0 ? model.getLinks(id) : null;
 				//unlike Dragoon everyone does not have links.
 				//only equation nodes have the links.
 				if(links)
