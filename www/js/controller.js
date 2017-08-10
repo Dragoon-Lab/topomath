@@ -798,7 +798,6 @@ define([
 				}
 			}else{
 				// Find all nodes that have reference to the initial node of this node and delete links to them
-				this._model.active.updateLinks(id);
 				registry.byId(this.controlMap.value).set('value','');
 				this._model.active.setValue(id, '');
 				domStyle.set('valueInputboxContainer','display','none');

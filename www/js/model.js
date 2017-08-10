@@ -396,23 +396,6 @@ define([
 					}, this);
 				}
 			},
-			updateLinks: function(/*string*/ id){
-				// Summary : Update links when variableType is set to some other value
-				// 			 after initially assigning to dynamic.
-				var nodes = this.getNodes();
-				var removeId = id + this.getInitialNodeIDString();
-				array.forEach(nodes, function(node){
-					var links = node.links;	
-					if(links && links.length > 0){
-						var index = links.findIndex(function(link){
-							console.log(link.ID);
-							return link.ID === removeId;
-						}, this);
-						links.splice(index,1);
-					}
-				}, this);
-				
-			},
 			setType: function(/*string*/ id, /*string*/ type){
 				var ret = this.getNode(id);
 				if(ret)

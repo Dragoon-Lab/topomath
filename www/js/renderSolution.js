@@ -136,7 +136,8 @@ define([
 
 
 			if(this.isStudentMode) {
-				var authorObj = this.getMinMaxFromArray(this.authorSolution.plotValues[id]);
+				var authorID = this._model.active.getAuthoredID(id);
+				var authorObj = this.getMinMaxFromArray(this.authorSolution.plotValues[authorID]);
 
 				if (authorObj.min < obj.min) {
 					obj.min = authorObj.min;
@@ -288,7 +289,7 @@ define([
 			var staticVar = this.checkStaticVar(true);
 			this.activeSolution = this.findSolution(true, staticVar);
 			if(this.isStudentMode)
-				this.authorSolution = this.authorSolution.plotVariables ? this.findSolution(false, staticVar) : "";
+				this.authorSolution = this.authorSolution.plotVariables ? this.findSolution(false, this._model.student.getAuthoredID(staticVar)) : "";
 
 			array.forEach(this.activeSolution.plotVariables, function(id, index){
 				var domNode = "chartStatic" + id ;
@@ -478,7 +479,7 @@ define([
 			if(this.isStatic) {
 				var staticVar = this.checkStaticVar(true);
 				var activeSolution = this.findSolution(true, staticVar);
-				this.authorSolution = this.findSolution(false, staticVar);
+				this.authorSolution = this.findSolution(false, this._model.student.getAuthoredID(staticVar));
 				//update and render the charts
 				array.forEach(this.activeSolution.plotVariables, function(id, k){
 					var inf = this.checkForInfinity(activeSolution.plotValues[id]);
