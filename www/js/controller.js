@@ -704,9 +704,6 @@ define([
 								registry.byId(_type+"Type").set('disabled',true);
 							}
 						});
-					}else if(directive.attribute === "status" && directive.value === "correct"){
-						var _selectedVariableType = dojo.query("input[name='variableType']:checked")[0].value;
-						registry.byId(_selectedVariableType	+'Type').set('checked','checked');
 					}
 
 				}else{
