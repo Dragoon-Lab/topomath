@@ -119,9 +119,12 @@ define([
 		// Stub to setting description for auto craeted nodes.
 		setNodeDescription: function(id, variable){
 			var authoredID = this._model.authored.getNodeIDByName(variable);
-			this._model.active.setAuthoredID(id, authoredID);
-			this._model.active.setDescription(id, this._model.authored.getDescription(authoredID));
-			this._model.active.setPosition(id, 0, this._model.authored.getPosition(authoredID,0));
+			if(authoredID){
+				this._model.active.setAuthoredID(id, authoredID);
+				this._model.active.setDescription(id, this._model.authored.getDescription(authoredID));
+				this._model.active.setPosition(id, 0, this._model.authored.getPosition(authoredID,0));
+			}
+			return authoredID;
 		},
 
 		// Stub to set connections in the graph
@@ -660,7 +663,7 @@ define([
 							this._model.active.setValue(this.currentID, directive.value);
 						}else if(w.id == 'selectDescription'){
 							this.updateDescription(directive.value);
-						}else if(w.id == 'equationBox'){
+						}else if(w.id == 'equationInputboxStudent'){
 							this.equationSet(directive.value);
 						}else if(w.id == 'variableInputboxStudent'){
 							this._model.active.setVariable(this.currentID, directive.value);
@@ -670,7 +673,6 @@ define([
 						//TODO : update explanation function but right now no directives with att value for explanations not being processed 
 
 					} else{
-						console.log("w is",w);
 						w.set(directive.attribute, directive.value);
 						if(directive.attribute === "status"){
 							//tempDirective variable further input to editor tour
@@ -702,9 +704,6 @@ define([
 								registry.byId(_type+"Type").set('disabled',true);
 							}
 						});
-					}else if(directive.attribute === "status" && directive.value === "correct"){
-						var _selectedVariableType = dojo.query("input[name='variableType']:checked")[0].value;
-						registry.byId(_selectedVariableType	+'Type').set('checked','checked');
 					}
 
 				}else{
@@ -765,6 +764,18 @@ define([
 			widget.set("value", oldEqn.substr(0, p1) + text + oldEqn.substr(p2));
 			// Set cursor to end of current paste
 			widget.domNode.selectionStart = widget.domNode.selectionEnd = p1 + text.length;
+		},
+
+		enableEquation: function(nodeIDs){
+			var directives = [
+				{attribute: 'status', id: 'equation', value: ''},
+				{attribute: 'disabled', id: 'equation', value: false}
+			]
+			array.forEach(nodeIDs, function(id){
+				array.forEach(directives, function(directive){
+					this.updateModelStatus(directive, id);
+				}, this);
+			}, this);
 		},
 
 		updateNodes: function(){
@@ -924,10 +935,13 @@ define([
 						//these nodes were added to model, substituted into equation but should be added here
 						this.addNode(this._model.active.getNode(newNode.id));
 						// Auto-populate node description only in Student mode
-						if(this._model.active.isStudentMode()){
-							this.setNodeDescription(newNode.id,newNode.variable);
-							this.updateInputNode(newNode.id, newNode.variable);
-							this.updateNodeView(this._model.active.getNode(newNode.id));
+						// check added to make sure that the node is not an unknown node
+						if(this._model.active.isStudentMode() && newNode.variable){
+							var authoredID = this.setNodeDescription(newNode.id,newNode.variable);
+							if(authoredID){
+								this.updateInputNode(newNode.id, newNode.variable);
+								this.updateNodeView(this._model.active.getNode(newNode.id));
+							}
 						}
 					}, this);
 					//dynamicList contains those nodes for which prior node UI changes have to be made
@@ -942,6 +956,8 @@ define([
 				if(parseObject.priorError){ //priorError specifically indicates if there is an error where in a non dynamic node/variable is used inside prior function
 					directives.push({id: 'message', attribute: 'append', value: 'Please make a node dynamic before using it in prior function'});
 					directives.push({id: 'equation', attribute: 'status', value: 'incorrect'});
+					if(widget.disabled)
+						widget.set('disabled', false);
 					this.changeControlState("equation","authorStatus","incorrect");
 				}
 				else{
@@ -966,7 +982,7 @@ define([
 				var inputs = parseObject.connections;
 				// Update inputs and connections
 				this._model.active.setLinks(inputs, this.currentID);
-				this.setConnections(this._model.active.getLinks(this.currentID), this.currentID);
+				this.setConnections(inputs, this.currentID);
 				// console.log("************** equationAnalysis directives ", directives);
 /*
 				array.forEach(newNodesList, lang.hitch(this, function(node){

@@ -77,6 +77,7 @@
 				"dijit/layout/ContentPane",
 				"topomath", // Load up TopoMath itself
 				"topomath/menu", // Wire up menus
+				"topomath/customRadioButton"
 			]);
 		});
 	</script>

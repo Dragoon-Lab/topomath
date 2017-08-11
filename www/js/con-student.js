@@ -158,7 +158,8 @@ define([
 		handleVariableName: function(name){
 			console.log("Handle variable Name ", name);
 			this._model.active.setVariable(this.currentID, name);
-			this._model.student.setAuthoredID(this.currentID);
+			if(!this._model.student.getAuthoredID(this.currentID))
+				this._model.student.setAuthoredID(this.currentID);
 			if (name == 'defaultSelect') {
 				return; // don't do anything if they choose default
 			}
@@ -232,6 +233,7 @@ define([
 			console.log("************",parse);
 			if (parse) {
 				this._model.student.setEquation(this.currentID, parse.equation);
+				this.createExpressionNodes(parse, false);
 				var dd = this._PM.processAnswer(
 				this.currentID, 'equation', parse, registry.byId(this.controlMap.equation).get("value"));
 				directives = directives.concat(dd);
@@ -240,11 +242,29 @@ define([
 			console.log(directives);
 			this.applyDirectives(directives);
 
-			this.createExpressionNodes(parse, false);
-
 			return directives;
 		},
+		equationSet: function (value) {
+			// applyDirectives updates equationBox, but not equationText:
+			// dom.byId("equationText").innerHTML = value;
 
+			if(value != ""){
+				var directives = [];
+				// Parse and update model, connections, etc.
+				var parse = this.equationAnalysis(directives);
+				// Generally, since this is the correct solution, there should be no directives
+				this.applyDirectives(directives);
+
+				//Set equation and process answer
+				//var parsedEquation = parse.toString(true);
+				this._model.active.setEquation(this.currentID, parse.equation);
+				var dd = this._PM.processAnswer(this.currentID, 'equation', parse, registry.byId(this.controlMap.equation).get("value"));
+				this.applyDirectives(dd);
+
+				//Create expression nodes for parsed equation
+				this.createExpressionNodes(parse);
+			}
+		},
 		/*
 		 Settings for a new node, as supplied by the PM.
 		 These don't need to be recorded in the model, since they

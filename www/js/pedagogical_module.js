@@ -250,6 +250,13 @@ define([
 			if(interpretation === "lastFailure" || interpretation === "secondFailure"){
 				answer = this.model.student.getCorrectAnswer(id, nodePart);
 				/*TO DO : Add Equation*/
+				if(nodePart === "equation"){
+					var params = {
+						subModel: this.model.authored,
+						equation: answer
+					};
+					answer = check.convert(params).equation;
+				}
 				if(answer == null){
 					if(nodePart === "description"){
 						returnObj.push({id: "message", attribute: "append", value: "You have already created all the necessary nodes."});
@@ -330,6 +337,8 @@ define([
 					updateStatus(returnObj, this.model);
 				}
 			}
+
+			console.log("directives from process answer ", returnObj)
 			return returnObj;
 		}
 	});

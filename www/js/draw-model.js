@@ -24,7 +24,7 @@ define([
 			"#e9967a", "#556b2f", "#ff00ff"
 		],
 		_incompleteColor: "#d3d3d3",
-		_borderColor: 39,
+		_borderColor: 27,
 		_backgroundColor: 0,
 		_counter: 0,
 		_cache: {},
@@ -84,7 +84,7 @@ define([
 
 			array.forEach(vertices, function(vertex){
 				var id = attr.get(vertex, "id");
-				var links = model.getLinks(id);
+				var links = id.indexOf(this.initialNodeIDTag) < 0 ? model.getLinks(id) : null;
 				//unlike Dragoon everyone does not have links.
 				//only equation nodes have the links.
 				if(links)
@@ -120,6 +120,10 @@ define([
 			var color = this._model.getColor(node.ID);
 			if(color){
 				this.addNodeDescription(node.ID);
+				if(node.type == "equation")
+					this._backgroundColor = this._colors.indexOf(color) + 1;
+				else
+					this._borderColor = this._colors.indexOf(color) - 1;
 			}
 
 			//add to cache
@@ -534,7 +538,11 @@ define([
 			// updateNodes are the nodes for which the equations and links were updated.
 			console.log(updateNodes);
 			this.removeDescription(nodeID);
-			array.forEach(updateNodes, function(x){
+			this.deleteEquationLinks(updateNodes);
+		},
+
+		deleteEquationLinks: function(nodes){
+			array.forEach(nodes, function(x){
 				console.log(x);
 				this.updateNode(this._model.getNode(x));
 				this.detachConnections(x);
