@@ -273,7 +273,6 @@ define([
 			},
 			getType: function(/*string*/ id){
 				var node = this.getNode(id);
-				console.log("node with id",node);
 				return node && node.type;
 			},
 			getEquation: function(/*string*/ id){
@@ -785,8 +784,6 @@ define([
 				// Summary: Return any matched given model id for student node.
 				id = this.getID(id);
 				var node = this.getNode(id);
-				if(!(node && node.authoredID))
-					this.setAuthoredID(id);
 				return node && node.authoredID;
 			},
 			getInputs: function(/*string*/ id){
