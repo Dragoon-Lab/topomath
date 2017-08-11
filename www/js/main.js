@@ -311,6 +311,13 @@ define([
 				_session.saveModel(_model.model);
 			});
 
+			aspect.after(dm, "deleteEquationLinks", function(nodeIDs){
+				console.log(nodeIDs);
+				if(_model.isStudentMode()){
+					controllerObject.enableEquation(nodeIDs);
+				}
+			}, true);
+
 			on(registry.byId("closeButton"), "click", function(){
 				registry.byId("nodeEditor").hide();
 				console.log("uncomment code to close");

@@ -673,7 +673,6 @@ define([
 						//TODO : update explanation function but right now no directives with att value for explanations not being processed 
 
 					} else{
-						console.log("w is",w);
 						w.set(directive.attribute, directive.value);
 						if(directive.attribute === "status"){
 							//tempDirective variable further input to editor tour
@@ -768,6 +767,18 @@ define([
 			widget.set("value", oldEqn.substr(0, p1) + text + oldEqn.substr(p2));
 			// Set cursor to end of current paste
 			widget.domNode.selectionStart = widget.domNode.selectionEnd = p1 + text.length;
+		},
+
+		enableEquation: function(nodeIDs){
+			var directives = [
+				{attribute: 'status', id: 'equation', value: ''},
+				{attribute: 'disabled', id: 'equation', value: false}
+			]
+			array.forEach(nodeIDs, function(id){
+				array.forEach(directives, function(directive){
+					this.updateModelStatus(directive, id);
+				}, this);
+			}, this);
 		},
 
 		updateNodes: function(){

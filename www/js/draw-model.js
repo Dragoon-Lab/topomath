@@ -538,7 +538,11 @@ define([
 			// updateNodes are the nodes for which the equations and links were updated.
 			console.log(updateNodes);
 			this.removeDescription(nodeID);
-			array.forEach(updateNodes, function(x){
+			this.deleteEquationLinks(updateNodes);
+		},
+
+		deleteEquationLinks: function(nodes){
+			array.forEach(nodes, function(x){
 				console.log(x);
 				this.updateNode(this._model.getNode(x));
 				this.detachConnections(x);
