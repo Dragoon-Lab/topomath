@@ -238,13 +238,32 @@ define([
 				var context = this;
 			}
 			console.log(directives);
-			this.applyDirectives(directives);
-
 			this.createExpressionNodes(parse, false);
+			this.applyDirectives(directives);
 
 			return directives;
 		},
+		equationSet: function (value) {
+			// applyDirectives updates equationBox, but not equationText:
+			// dom.byId("equationText").innerHTML = value;
 
+			if(value != ""){
+				var directives = [];
+				// Parse and update model, connections, etc.
+				var parse = this.equationAnalysis(directives);
+				// Generally, since this is the correct solution, there should be no directives
+				this.applyDirectives(directives);
+
+				//Set equation and process answer
+				//var parsedEquation = parse.toString(true);
+				this._model.active.setEquation(this.currentID, parse.equation);
+				var dd = this._PM.processAnswer(this.currentID, 'equation', parse, registry.byId(this.controlMap.equation).get("value"));
+				this.applyDirectives(dd);
+
+				//Create expression nodes for parsed equation
+				this.createExpressionNodes(parse);
+			}
+		},
 		/*
 		 Settings for a new node, as supplied by the PM.
 		 These don't need to be recorded in the model, since they

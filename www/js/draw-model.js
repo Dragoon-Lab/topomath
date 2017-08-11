@@ -24,7 +24,7 @@ define([
 			"#e9967a", "#556b2f", "#ff00ff"
 		],
 		_incompleteColor: "#d3d3d3",
-		_borderColor: 39,
+		_borderColor: 27,
 		_backgroundColor: 0,
 		_counter: 0,
 		_cache: {},
@@ -120,6 +120,10 @@ define([
 			var color = this._model.getColor(node.ID);
 			if(color){
 				this.addNodeDescription(node.ID);
+				if(node.type == "equation")
+					this._backgroundColor = this._colors.indexOf(color) + 1;
+				else
+					this._borderColor = this._colors.indexOf(color) - 1;
 			}
 
 			//add to cache
