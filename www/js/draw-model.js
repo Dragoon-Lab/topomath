@@ -248,7 +248,7 @@ define([
 				if(initialNode) domClass.add(domIDTags['parentInitial'], "incomplete");
 			}
 
-			if(initialNode & node.position.length == 2){
+			if(initialNode && node.position.length == 2){
 				dojo.byId(domIDTags['parentInitial']).style.top = node.position[1].y+'px';
 				dojo.byId(domIDTags['parentInitial']).style.left = node.position[1].x+'px';
 			}else{

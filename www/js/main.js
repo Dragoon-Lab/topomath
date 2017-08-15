@@ -165,6 +165,10 @@ define([
 			aspect.after(dm, "onClickMoved", function(mover){
 				console.log("aspect after called ", mover);
 				var g = geometry.position(mover.node, true);
+				// fix for node movement as the geometry y position never matched the actual vertical offset.
+				// setting it explicitly and marking it in case there are some repercussions in the future ~ Sachin
+				if(g.y != mover.node.offsetTop)
+					g.y = mover.node.offsetTop;
 				console.log("Update model coordinates for ", mover);
 				var scrollTop = document.getElementById("drawingPane").scrollTop;
 				var id = mover.node.id;

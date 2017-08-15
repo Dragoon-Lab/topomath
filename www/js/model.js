@@ -879,7 +879,7 @@ define([
 				if(!id) return false;
 				var node = this.getNode(id);
 				var returnFlag = '';
-				var unitsOptional = true;
+				var hasUnits = node.authoredID && obj.authored.getUnits(node.authoredID);
 				var nameEntered = node.type && node.type == "equation" || node.variable;
 				// as seen in Dragoon.
 				// variableType and value combined defines node completion
@@ -896,7 +896,7 @@ define([
 				if(this.isNodeRequired(id) || this.isNodeAllowed(id)){
 					returnFlag = nameEntered && (node.description || node.explanation) &&
 						node.type && ( node.variableType == "unknown" || valueEntered || typeof valueEntered === "number" ) &&
-						(unitsOptional || nodes.units) && equationEntered;
+						(!hasUnits || node.units) && equationEntered;
 				} else {
 					// if genus is irrelevant
 					returnFlag = nameEntered && (node.description || node.explanation);
