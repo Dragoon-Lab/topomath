@@ -321,20 +321,20 @@ define([
 					givenID = this.model.student.getAuthoredID(id);
 					console.assert(nodeEditorActionTable[interpretation], "processAnswer() interpretation '" + interpretation + "' not in table ", nodeEditorActionTable);
 					nodeEditorActionTable[interpretation][this.userType](returnObj, nodePart, answer);
+					updateStatus(returnObj, this.model);
 					currentStatus = this.model.authored.getStatus(givenID, nodePart); //get current status set in given model
-					if (currentStatus !== "correct") {
+					if (currentStatus === "correct" || currentStatus === "demo") {
+						if(nodePart === "variableType"){
+							this.model.active.setPosition(id, 1, this.model.authored.getPosition(givenID, 1));
+						}
+					}else{
 						this.model.authored.setAttemptCount(givenID, nodePart, this.model.authored.getAttemptCount(givenID, nodePart) + 1);
 						for (var i = 0; i < returnObj.length; i++){
 							if (returnObj[i].value === "incorrect") {
 								this.model.student.incrementAssistanceScore(id);
 							}
 						}
-					}else if(currentStatus == "correct"){
-						if(nodePart === "variableType"){
-							this.model.active.setPosition(id, 1, this.model.authored.getPosition(givenID, 1));
-						}
 					}
-					updateStatus(returnObj, this.model);
 				}
 			}
 
