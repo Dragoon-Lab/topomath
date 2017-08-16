@@ -54,7 +54,7 @@ if($mode == "AUTHOR"){
 	if($folder != "")
 		$query = sprintf(get_query('problem_fetch'), $user, $mode, $section, $problem, $folder);
 	else
-		$query = sprintf(get_query('problem_without_folder_fetch'), $user, $mode, $section, $problem);
+		$query = sprintf(get_query('problem_without_user_folder_fetch'), $user, $mode, $section, $problem);
 }
 get_model($mysqli, $query);
 
