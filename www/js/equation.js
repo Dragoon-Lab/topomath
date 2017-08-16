@@ -47,9 +47,9 @@ define([
 				var variableList = []; // this holds the variable list
 				var connections = []; // this holds the input list
 				var dynamicList = []; //this list holds the prior nodes which are to be created further in controller
-				var priorError = false; //this is a special variable which indicates to the controller whether there is an error
+				var isError = false; //this is a special variable which indicates to the controller whether there is an error
 										// with using prior function on a variable which is non dynamic
-				
+
 				array.forEach(expressions, function(expr){
 					variableList = variableList.concat(expr.variables());
 					var currentPriorList = expr.priors();
@@ -59,6 +59,7 @@ define([
 						//In such situation convert name to id
 						var nodeId = subModel.getNodeIDByName(variable);
 						if(nodeId){
+							nodeList.push({"id":nodeId, "variable": variable};
 							expr.substitute(variable,nodeId);
 							if(currentPriorList.length>0){
 								currentPriorList.some(function(eachPrior){
@@ -67,7 +68,7 @@ define([
 										// check if the corresponding node has accumulator set (is dynamic)
 										// If not, set priorError which will be handled later in controller without disturbing the flow
 										if(subModel.getVariableType(nodeId) !== "dynamic"){
-											priorError = true;
+											isError = true;
 										}
 										//if the current occurence of the node is part of prior function
 										//it has to be replaced with node_initial in the model
@@ -99,6 +100,9 @@ define([
 										}
 									});
 								}
+							} else {
+								// when auto created nodes were not allowed but equation had non-existent nodes.
+								isError = true;
 							}
 						}
 					}, this);
@@ -108,10 +112,10 @@ define([
 					variableList: variableList,
 					newNodeList: nodeList,
 					connections: connections,
-					parseSuccess: true,
 					dynamicList: dynamicList,
 					equation: expressions[0].toString() + " " + this.equalto + " " + expressions[1].toString(),
-					priorError: priorError
+					success: !isError,
+					priorError: isError
 				};
 			}
 			else{

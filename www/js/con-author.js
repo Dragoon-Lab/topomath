@@ -814,46 +814,46 @@ define([
 			var newNodeID = this._model.student.addNode();
 
 			//copy correct values into student node
+			this._model.student.setType(newNodeID, currentNode.type);
 			this._model.student.setAuthoredID(newNodeID, currentNode.ID);
-			this._model.student.setValue(newNodeID, currentNode.initial);
-			this._model.student.setUnits(newNodeID, currentNode.units);
-			
+			if(typeof currentNode.value !== 'undefined'){
+				this._model.student.setValue(newNodeID, currentNode.value);
+				this._model.student.setStatus(newNodeID, "value", {"disabled": true, "status": "correct"});
+			}
+			if(currentNode.units){
+				this._model.student.setUnits(newNodeID, currentNode.units);
+				this._model.student.setStatus(newNodeID, "units" , {"disabled":true,"status":"correct"});
+			}
+			if(currentNode.variableType){
+				this._model.student.setVariableType(newNodeID, currentNode.variableType);
+				this._model.student.setStatus(newNodeID, "variableType" , {"disabled":true,"status":"correct"});
+			}
+
 			if(currentNode.equation){
-				var inputs = [];
-				var isExpressionValid = true;
-				var equation = currentNode.equation;
-				array.forEach(currentNode.inputs, lang.hitch(this, function(input){
-					 var studentNodeID = this._model.student.getNodeIDFor(input.ID);
-					 if(studentNodeID){
-						inputs.push({ "ID": studentNodeID});
-						var regexp = "(" +input.ID +")([^0-9]?)";
-						var re = new RegExp(regexp);
-						equation = equation.replace(re, studentNodeID+"$2");
-					}
-					else{
-						isExpressionValid = false;
-					}
-				}));
-				if(isExpressionValid){
-					this._model.student.setInputs(inputs, newNodeID);
-					this._model.student.setEquation(newNodeID, equation);
-					this.givenEquationEntered = true;
+				var params = {
+					subModel: this._model.student,
+					equation: currentNode.equation
+				};
+				var convert = equation.convert(params);
+				if(convert.success){
+					var links = [];
+					array.forEach(conver.nodeList, function(node){
+						links.push({"ID": node.id});
+					});
+					this._model.student.setLinks(links, newNodeID);
+					this._model.student.setEquation(newNodeID, convert.equation);
 					this._model.student.setStatus(newNodeID, "equation" , {"disabled":true,"status":"correct"});
-				}
-				else{
+				}else{
 					this._model.student.setInputs([], newNodeID);
 					this._model.student.setEquation(newNodeID, "");
-					this.errorStatus.push({"id": nodeid, "isExpressionCleared":true});
-					this._model.student.setStatus(newNodeID, "equation" , {"disabled":false,"status":"incorrect"});
+					//this.errorStatus.push({"id": nodeid, "isExpressionCleared":true});
+					//this._model.student.setStatus(newNodeID, "equation" , {"disabled":false,"status":"incorrect"});
 				}
 			}
 			this._model.student.setPosition(newNodeID, currentNode.position);
 
 			//Set default status to correct for all the fields
 			this._model.student.setStatus(newNodeID, "description" , {"disabled":true,"status":"correct"});
-			if(typeof currentNode.units !== "undefined"){
-				this._model.student.setStatus(newNodeID, "units" , {"disabled":true,"status":"correct"});
-			}
 		},
 
 		removeStudentNode: function(nodeid){
