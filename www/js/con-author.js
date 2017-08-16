@@ -816,6 +816,8 @@ define([
 			//copy correct values into student node
 			this._model.student.setType(newNodeID, currentNode.type);
 			this._model.student.setAuthoredID(newNodeID, currentNode.ID);
+			var description = this._model.authored.getDescription(currentNode.ID);
+			this._model.student.setDescription(newNodeID, description);
 			if(typeof currentNode.value !== 'undefined'){
 				this._model.student.setValue(newNodeID, currentNode.value);
 				this._model.student.setStatus(newNodeID, "value", {"disabled": true, "status": "correct"});
@@ -827,6 +829,10 @@ define([
 			if(currentNode.variableType){
 				this._model.student.setVariableType(newNodeID, currentNode.variableType);
 				this._model.student.setStatus(newNodeID, "variableType" , {"disabled":true,"status":"correct"});
+			}
+			if(currentNode.variable){
+				this._model.student.setVariable(newNodeID, currentNode.variable);
+				this._model.student.setStatus(newNodeID, "variable" , {"disabled":true,"status":"correct"});
 			}
 
 			if(currentNode.equation){
@@ -850,10 +856,17 @@ define([
 					//this._model.student.setStatus(newNodeID, "equation" , {"disabled":false,"status":"incorrect"});
 				}
 			}
-			this._model.student.setPosition(newNodeID, currentNode.position);
+			array.forEach(currentNode.position, function(p, counter){
+				this._model.student.setPosition(newNodeID, counter, p);
+			}, this);
 
 			//Set default status to correct for all the fields
 			this._model.student.setStatus(newNodeID, "description" , {"disabled":true,"status":"correct"});
+			if(this._model.student.isComplete(newNodeID) && !this._model.student.getAssistanceScore(newNodeID))
+				this._model.student.incrementAssistanceScore(newNodeID);
+			else if(!this._model.student.isComplete(newNodeID) && this._model.authored.getAssistanceScore(newNodeID))
+				this._model.authored.setAttemptCount(currentNode.ID, "assistanceScore", 0);
+
 		},
 
 		removeStudentNode: function(nodeid){
