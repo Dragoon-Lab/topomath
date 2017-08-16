@@ -338,6 +338,51 @@ define([
 				}
 			}
 
+			var logObj = {};
+			var l = returnObj.length;
+			var checkStatus;
+			var logSolution = "INCORRECT";
+			var logAsnwer = answerString || givenAnswer.toString();
+			for(var i=0; i < l; i++)
+				if(returnObj[i].attributre == "status"){
+					checkStatus = returnObj[i].value;
+					break;
+				}
+
+			if(checkStatus == "correct"){
+				logObj = {
+					checkResult: 'CORRECT'
+				};
+			} else if(!checkStatus || checkStatus == "demo" || checkStatus == "incorrect"){
+				var logCorrectAnswer = this.model.student.getCorrectAnswer(id, nodePart);
+
+				if(nodePart === "equation")
+					if(interpretation == "FirstFailure"){
+						var params = {
+						subModel: this.model.authored,
+							equation: logCorrectAnswer
+						};
+						logCorrectAnswer = check.convert(params).equation;
+					} else {
+						logCorrectAnswer = answer;
+					}
+
+				logObj = {
+					checkResult: 'INCORRECT',
+					correctValue: logCorrectAnswer,
+					pmInterpretation: interpretation
+				};
+			}
+
+			var logObj = lang.mixin({
+				type: "solution-check",
+				nodeID: id,
+				node: this.model.student.getDescription(id),
+				property: nodePart,
+				value: logAnswer,
+				solutionProvided: solutionGiven
+			}, logObj);
+
 			console.log("directives from process answer ", returnObj)
 			return returnObj;
 		}
