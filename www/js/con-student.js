@@ -198,6 +198,7 @@ define([
 			// Value is handled when variableType is parameter or dynamic.
 			console.log("********************* in handleVariableType");
 			var _variableType = e.target.value;
+			this._model.student.setVariableType(this.currentID, _variableType);
 			this.variableTypeControls(this.currentID, _variableType);
 			this.applyDirectives(this._PM.processAnswer(this.currentID, 'variableType', _variableType));
 		},
@@ -312,7 +313,8 @@ define([
 			
 			registry.byId(this.controlMap.variable).set('value', variableName || 'defaultSelect', false);
 
-			var _variableTypes = ["unknown","parameter","dynamic"];
+			//var _variableTypes = ["unknown","parameter","dynamic"];
+			var _variableTypes = ["unknown","parameter"];
 			array.forEach(_variableTypes, function(_type){
 				registry.byId(_type+"Type").set('checked',false);
 				registry.byId(_type+"Type").set('disabled',false);
