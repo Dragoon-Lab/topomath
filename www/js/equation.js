@@ -314,7 +314,9 @@ define([
 					authorValue[j] = aParse[j].evaluate(variables);
 					studentValue[j] = sParse[j].evaluate(variables);
 				}
-				if((authorValue[0] - authorValue[1]) !== (studentValue[0] - studentValue[1]))
+				var aValue = authorValue[0] - authorValue[1];
+				var sValue = studentValue[0] - studentValue[1];
+				if(aValue !== sValue && aValue !== -sValue)
 					return false;
 			}
 

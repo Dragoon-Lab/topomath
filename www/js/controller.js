@@ -691,13 +691,15 @@ define([
 						domStyle.set('valueInputboxContainer','display','block');
 					}else if(directive.value == "unknown"){
 						domStyle.set('valueInputboxContainer','display','none');
+						this._model.active.setValue(this.currentID, "");
 					}
 					if(directive.attribute === 'value'){
 						registry.byId(directive.value+'Type').set('checked','checked');
 						this._model.active.setVariableType(this.currentID, directive.value);
 					}
 					else if(directive.attribute === "disabled" && directive.value === true ){
-						var _variableTypes = ["unknown","parameter","dynamic"];
+						//var _variableTypes = ["unknown","parameter","dynamic"];
+						var _variableTypes = ["unknown","parameter"];
 						var _selectedVariableType = dojo.query("input[name='variableType']:checked")[0].value;
 						array.forEach(_variableTypes, function(_type){
 							if(_type !== _selectedVariableType){
