@@ -258,11 +258,10 @@ define([
 				//Set equation and process answer
 				//var parsedEquation = parse.toString(true);
 				this._model.active.setEquation(this.currentID, parse.equation);
-				var dd = this._PM.processAnswer(this.currentID, 'equation', parse, registry.byId(this.controlMap.equation).get("value"));
-				this.applyDirectives(dd);
-
 				//Create expression nodes for parsed equation
 				this.createExpressionNodes(parse);
+				var dd = this._PM.processAnswer(this.currentID, 'equation', parse, registry.byId(this.controlMap.equation).get("value"));
+				this.applyDirectives(dd);
 			}
 		},
 		/*
