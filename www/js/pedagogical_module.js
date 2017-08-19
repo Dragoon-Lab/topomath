@@ -341,10 +341,9 @@ define([
 			var logObj = {};
 			var l = returnObj.length;
 			var checkStatus;
-			var logSolution = "INCORRECT";
-			var logAsnwer = answerString || givenAnswer.toString();
+			var logAnswer = answerString || givenAnswer.toString();
 			for(var i=0; i < l; i++)
-				if(returnObj[i].attributre == "status"){
+				if(returnObj[i].attribute == "status"){
 					checkStatus = returnObj[i].value;
 					break;
 				}
@@ -382,9 +381,14 @@ define([
 				value: logAnswer,
 				solutionProvided: solutionGiven
 			}, logObj);
+			this.logSolutionStep(logObj);
 
 			console.log("directives from process answer ", returnObj)
 			return returnObj;
+		},
+
+		logSolutionStep: function(obj){
+			//stub for logging user solution step
 		}
 	});
 });

@@ -578,6 +578,10 @@ define([
 					selectedTab = this.graphTab;
 			this.tabContainer.selectChild(selectedTab);
 			this.dialogWindow.show();
+		},
+
+		hide: function(){
+			//stub for logging graph closing event
 		}
 	});
 });

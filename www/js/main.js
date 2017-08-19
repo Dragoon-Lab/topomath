@@ -132,6 +132,7 @@ define([
 			var _dragNodes = query.fp == "on"? false : true;
 			console.log("Fixing position of nodes ", _dragNodes);
 			var _logger = logging.getInstance(_session);
+			_logger.log('open-problem', {problem: _logger._session.params.p});
 			/**
 			* equation does not have a constructor because
 			* we dont want to run it on it's own. So there is an explicit call
@@ -357,6 +358,10 @@ define([
 				_session.saveModel(_model.model);
 				dm.updateNode(_model.active.getNode(controllerObject.currentID));
 			});
+
+			aspect.after(registry.byId('solution'), "hide", function(){
+				sol.hide();
+			});
 		});
 	});
 	
@@ -384,9 +389,9 @@ define([
 				window.history.back();
 		}
 	};
-
+	var sol;
 	var initSolution = function(_type){
-		var sol = new Solution(_model);
+		sol = new Solution(_model);
 		// TODO: add proble completeness and logging
 		sol.render(_type);
 	};
