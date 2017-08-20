@@ -814,12 +814,8 @@ define([
 				registry.byId(this.controlMap.value).set('value','');
 				this._model.active.setValue(id, '');
 				domStyle.set('valueInputboxContainer','display','none');
-				this.handleValue(null);
+				//this.handleValue(null);
 			}
-			this.logSolutionStep({
-				property: "variableType",
-				value: _variableType
-			});
 			this.updateNodeView(this._model.active.getNode(id));
 		},
 
