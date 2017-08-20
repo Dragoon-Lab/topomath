@@ -474,6 +474,10 @@ define([
 				return;
 			}
 			this.variableTypeControls(this.currentID, _variableType);
+			this.logSolutionStep({
+                property: "variableType",
+                value: _variableType
+            });
 		},
 
 		handleInputs: function(name){
@@ -837,16 +841,20 @@ define([
 
 			if(currentNode.equation){
 				var params = {
-					subModel: this._model.student,
+					subModel: this._model.authored,
 					equation: currentNode.equation
 				};
 				var convert = equation.convert(params);
+				params = {
+					subModel: this._model.student,
+					equation: convert.equation,
+					nameToId: true,
+					autoCreateNodes: false
+				};
+				convert = equation.convert(params);
 				if(convert.success){
 					var links = [];
-					array.forEach(convert.variableList, function(variable){
-						links.push({"ID": variable.ID});
-					});
-					this._model.student.setLinks(links, newNodeID);
+					this._model.student.setLinks(convert.connections, newNodeID);
 					this._model.student.setEquation(newNodeID, convert.equation);
 					this._model.student.setStatus(newNodeID, "equation" , {"disabled":true,"status":"correct"});
 				}else{
@@ -864,7 +872,7 @@ define([
 			this._model.student.setStatus(newNodeID, "description" , {"disabled":true,"status":"correct"});
 			if(this._model.student.isComplete(newNodeID) && !this._model.student.getAssistanceScore(newNodeID))
 				this._model.student.incrementAssistanceScore(newNodeID);
-			else if(!this._model.student.isComplete(newNodeID) && this._model.authored.getAssistanceScore(newNodeID))
+			else if(!this._model.student.isComplete(newNodeID) && this._model.student.getAssistanceScore(newNodeID))
 				this._model.authored.setAttemptCount(currentNode.ID, "assistanceScore", 0);
 
 		},
