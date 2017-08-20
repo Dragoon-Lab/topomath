@@ -1,9 +1,12 @@
 define([
 	'dojo/_base/unload', 
 	'dojo/aspect',
+	'dojo/ready',
 	'./controller',
+	'./pedagogical_module',
+	'./renderSolution',
 	'./logging'
-], function(baseUnload, aspect, controller, logging){
+], function(baseUnload, aspect, ready, controller, pm, solution, logging){
 	var _logger = null;
 	/**
 	* non intrusive way for logging use aspect.after and log the events.
@@ -25,6 +28,24 @@ define([
 	aspect.after(controller.prototype, "logSolutionStep", function(obj){
 		_logger.log("solution-step", obj);
 	}, true);
+
+	aspect.after(pm.prototype, "logSolutionStep", function(obj){
+		_logger.log("solution-step", obj);
+	}, true);
+
+	aspect.after(solution.prototype, "render", function(tab){
+		_logger.logUserEvent({
+			name: tab,
+			type: "solution-manipulation"
+		});
+	});
+
+	aspect.after(solution.prototype, "hide", function(){
+		_logger.logUserEvent({
+			type: "menu-choice",
+			name: "graph-closed"
+		});
+	});
 
 	//send runtime errors to log
 	window.onerror = function(msg, url, lineNumber){

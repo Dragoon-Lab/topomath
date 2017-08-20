@@ -474,6 +474,10 @@ define([
 				return;
 			}
 			this.variableTypeControls(this.currentID, _variableType);
+			this.logSolutionStep({
+                property: "variableType",
+                value: _variableType
+            });
 		},
 
 		handleInputs: function(name){
@@ -814,46 +818,63 @@ define([
 			var newNodeID = this._model.student.addNode();
 
 			//copy correct values into student node
+			this._model.student.setType(newNodeID, currentNode.type);
 			this._model.student.setAuthoredID(newNodeID, currentNode.ID);
-			this._model.student.setValue(newNodeID, currentNode.initial);
-			this._model.student.setUnits(newNodeID, currentNode.units);
-			
+			var description = this._model.authored.getDescription(currentNode.ID);
+			this._model.student.setDescription(newNodeID, description);
+			if(typeof currentNode.value !== 'undefined'){
+				this._model.student.setValue(newNodeID, currentNode.value);
+				this._model.student.setStatus(newNodeID, "value", {"disabled": true, "status": "correct"});
+			}
+			if(currentNode.units){
+				this._model.student.setUnits(newNodeID, currentNode.units);
+				this._model.student.setStatus(newNodeID, "units" , {"disabled":true,"status":"correct"});
+			}
+			if(currentNode.variableType){
+				this._model.student.setVariableType(newNodeID, currentNode.variableType);
+				this._model.student.setStatus(newNodeID, "variableType" , {"disabled":true,"status":"correct"});
+			}
+			if(currentNode.variable){
+				this._model.student.setVariable(newNodeID, currentNode.variable);
+				this._model.student.setStatus(newNodeID, "variable" , {"disabled":true,"status":"correct"});
+			}
+
 			if(currentNode.equation){
-				var inputs = [];
-				var isExpressionValid = true;
-				var equation = currentNode.equation;
-				array.forEach(currentNode.inputs, lang.hitch(this, function(input){
-					 var studentNodeID = this._model.student.getNodeIDFor(input.ID);
-					 if(studentNodeID){
-						inputs.push({ "ID": studentNodeID});
-						var regexp = "(" +input.ID +")([^0-9]?)";
-						var re = new RegExp(regexp);
-						equation = equation.replace(re, studentNodeID+"$2");
-					}
-					else{
-						isExpressionValid = false;
-					}
-				}));
-				if(isExpressionValid){
-					this._model.student.setInputs(inputs, newNodeID);
-					this._model.student.setEquation(newNodeID, equation);
-					this.givenEquationEntered = true;
+				var params = {
+					subModel: this._model.authored,
+					equation: currentNode.equation
+				};
+				var convert = equation.convert(params);
+				params = {
+					subModel: this._model.student,
+					equation: convert.equation,
+					nameToId: true,
+					autoCreateNodes: false
+				};
+				convert = equation.convert(params);
+				if(convert.success){
+					var links = [];
+					this._model.student.setLinks(convert.connections, newNodeID);
+					this._model.student.setEquation(newNodeID, convert.equation);
 					this._model.student.setStatus(newNodeID, "equation" , {"disabled":true,"status":"correct"});
-				}
-				else{
+				}else{
 					this._model.student.setInputs([], newNodeID);
 					this._model.student.setEquation(newNodeID, "");
-					this.errorStatus.push({"id": nodeid, "isExpressionCleared":true});
-					this._model.student.setStatus(newNodeID, "equation" , {"disabled":false,"status":"incorrect"});
+					//this.errorStatus.push({"id": nodeid, "isExpressionCleared":true});
+					//this._model.student.setStatus(newNodeID, "equation" , {"disabled":false,"status":"incorrect"});
 				}
 			}
-			this._model.student.setPosition(newNodeID, currentNode.position);
+			array.forEach(currentNode.position, function(p, counter){
+				this._model.student.setPosition(newNodeID, counter, p);
+			}, this);
 
 			//Set default status to correct for all the fields
 			this._model.student.setStatus(newNodeID, "description" , {"disabled":true,"status":"correct"});
-			if(typeof currentNode.units !== "undefined"){
-				this._model.student.setStatus(newNodeID, "units" , {"disabled":true,"status":"correct"});
-			}
+			if(this._model.student.isComplete(newNodeID) && !this._model.student.getAssistanceScore(newNodeID))
+				this._model.student.incrementAssistanceScore(newNodeID);
+			else if(!this._model.student.isComplete(newNodeID) && this._model.student.getAssistanceScore(newNodeID))
+				this._model.authored.setAttemptCount(currentNode.ID, "assistanceScore", 0);
+
 		},
 
 		removeStudentNode: function(nodeid){
