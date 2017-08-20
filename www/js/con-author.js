@@ -843,8 +843,8 @@ define([
 				var convert = equation.convert(params);
 				if(convert.success){
 					var links = [];
-					array.forEach(conver.nodeList, function(node){
-						links.push({"ID": node.id});
+					array.forEach(convert.variableList, function(variable){
+						links.push({"ID": variable.ID});
 					});
 					this._model.student.setLinks(links, newNodeID);
 					this._model.student.setEquation(newNodeID, convert.equation);

@@ -59,7 +59,6 @@ define([
 						//In such situation convert name to id
 						var nodeId = subModel.getNodeIDByName(variable);
 						if(nodeId){
-							nodeList.push({"id":nodeId, "variable": variable});
 							expr.substitute(variable,nodeId);
 							if(currentPriorList.length>0){
 								currentPriorList.some(function(eachPrior){

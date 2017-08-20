@@ -107,6 +107,10 @@ define([
 				conole.error("addNode called with a node without ID");
 				return;
 			}
+			if(dom.byId(this.domIDs(node.ID).parentDOM)){
+				console.error("addNode called for already existing node DOM");
+				return;
+			}
 			console.log("Adding vertex to the canvas id = ", node.ID, " type = ", type);
 			console.log("Position for the vertex : ",node.ID, " position: x ", node.position[0].x, " y: " + node.position[0].y);
 			var properties = this.getNodeUIProperties(node);
