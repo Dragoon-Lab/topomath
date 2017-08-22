@@ -746,7 +746,7 @@ define([
 			this.equationInsert('/');
 		},
 		undoHandler: function(){
-			var equationWidget = registry.byId("equationInputbox");
+			var equationWidget = registry.byId(this.controlMap.equation);
 			equationWidget.set("value", "");
 			//TODO : based on how we handle select model, for now commenting it out
 			/*
