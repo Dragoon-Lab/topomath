@@ -140,7 +140,7 @@
 				*/
 
 				//step 1: retrieve the most recent session for the specific problem and group which has a corresponding solutions entry
-				$get_sol_q = "select session_id,solution_graph from solutions where session_id IN (select session_id from session where folder = '$src' AND problem='$model' AND mode='AUTHOR' ORDER BY time DESC) ORDER BY time desc limit 1";
+				$get_sol_q = "select solutions.session_id,solutions.solution_graph from solutions INNER JOIN session ON solutions.session_id = session.session_id AND session.folder = '$src' AND session.problem = '$model' AND session.mode = 'AUTHOR' ORDER BY session.time DESC limit 1";
 				$sol_res = $this->getDBResults($get_sol_q);
 				$sol_data = mysqli_fetch_array($sol_res);
 				$solution_graph = $sol_data['solution_graph'];
