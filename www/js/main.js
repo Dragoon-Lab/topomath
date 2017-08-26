@@ -230,19 +230,19 @@ define([
 			//for now since we are not into UI parameters like in dragoon yet
 			//I enable the button without any check
 			var createQNodeButton = registry.byId("createQuantityNodeButton");
-			createQNodeButton.setDisabled(false);
+			createQNodeButton.set('disabled', false);
 
 			var createEqNodeButton = registry.byId("createEquationNodeButton");
-			createEqNodeButton.setDisabled(false);
+			createEqNodeButton.set('disabled', false);
 
 			var graphButton = registry.byId("graphButton");
-			graphButton.setDisabled(false);
+			graphButton.set('disabled', false);
 
 			var tableButton = registry.byId("tableButton");
-			tableButton.setDisabled(false);
+			tableButton.set('disabled', false);
 
 			var DoneButton = registry.byId("DoneButton");
-			DoneButton.setDisabled(false);
+			DoneButton.set('disabled', false);
 			//create a controller object
 	
 			//create new ui configuration object based on current mode ( and activity)

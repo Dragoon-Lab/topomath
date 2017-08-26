@@ -71,7 +71,7 @@
 				"dijit/form/Button", "dijit/form/CheckBox", "dijit/form/TextBox",
 				"dijit/form/ComboBox", "dijit/form/Textarea", "dijit/form/RadioButton",
 				"dijit/form/SimpleTextarea", "dijit/Menu",
-				"dijit/layout/ContentPane", "dijit/registry",
+				"dijit/layout/ContentPane", "dijit/registry", "dijit/layout/TabContainer",
 				"dijit/TooltipDialog",
 				"dijit/layout/BorderContainer",
 				"dijit/layout/ContentPane",

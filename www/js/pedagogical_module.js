@@ -33,21 +33,34 @@ define([
 		correct: {
 			feedback: function(obj, part){
 				followUpTasks(obj, part, /*state*/ "correct", /*message*/ "correct", /*disable*/ true);
+			},
+			nofeedback: function(obj, part){
+				followUpTasks(obj, part, /*state*/ "", /*message*/ "", /*disable*/ "");
 			}
+
 		},
 		incorrect:{
 			feedback: function(obj, part){
 				followUpTasks(obj, part, /*state*/ "incorrect", /*message*/ "incorrect", /*disable*/ false);
+			},
+			nofeedback: function(obj, part){
+				followUpTasks(obj, part, /*state*/ "", /*message*/ "", /*disable*/ "");
 			}
 		},
 		firstFailure: {
 			feedback: function(obj, part){
 				followUpTasks(obj, part, /*state*/ "incorrect", /*message*/ "incorrect", /*disable*/ false);
+			},
+			nofeedback: function(obj, part){
+				followUpTasks(obj, part, /*state*/ "", /*message*/ "", /*disable*/ "");
 			}
 		},
 		secondFailure:{
 			feedback: function(obj, part){
 				followUpTasks(obj, part, /*state*/ "demo", /*message*/ "secondFailure", /*disable*/ true);
+			},
+			nofeedback: function(obj, part){
+				followUpTasks(obj, part, /*state*/ "", /*message*/ "", /*disable*/ "");
 			}
 		}
 	};
@@ -61,21 +74,33 @@ define([
 		correct: {
 			feedback: function(obj, part){
 				followUpTasks(obj, part, /*state*/ "correct", /*message*/ "correct", /*disable*/ true);
+			},
+			nofeedback: function(obj, part){
+				followUpTasks(obj, part, /*state*/ "", /*message*/ "", /*disable*/ "");
 			}
 		},
 		incorrect:{
 			feedback: function(obj, part){
 				followUpTasks(obj, part, /*state*/ "incorrect", /*message*/ "incorrect", /*disable*/ false);
+			},
+			nofeedback: function(obj, part){
+				followUpTasks(obj, part, /*state*/ "", /*message*/ "", /*disable*/ "");
 			}
 		},
 		firstFailure: {
 			feedback: function(obj, part){
 				followUpTasks(obj, part, /*state*/ "incorrect", /*message*/ "incorrect", /*disable*/ false);
+			},
+			nofeedback: function(obj, part){
+				followUpTasks(obj, part, /*state*/ "", /*message*/ "", /*disable*/ "");
 			}
 		},
 		secondFailure:{
 			feedback: function(obj, part){
 				followUpTasks(obj, part, /*state*/ "demo", /*message*/ "secondFailure", /*disable*/ true);
+			},
+			nofeedback: function(obj, part){
+				followUpTasks(obj, part, /*state*/ "", /*message*/ "", /*disable*/ "");
 			}
 		}
 	};
@@ -138,7 +163,7 @@ define([
 			this.mode = mode;
 			this.showCorrectAnswer = true;
 			this.enableNextFromAuthor = true;
-			this.userType = "feedback";
+			this.userType = "nofeedback";
 		},
 		matchingID: null,
 		logging: null,
