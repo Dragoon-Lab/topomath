@@ -1,4 +1,4 @@
-var currentVersion = '4.0.1';
+var currentVersion = '4.0.2';
 
 this.getVersion = function(){
 	/*
