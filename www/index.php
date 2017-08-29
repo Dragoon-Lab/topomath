@@ -71,7 +71,7 @@
 				"dijit/form/Button", "dijit/form/CheckBox", "dijit/form/TextBox",
 				"dijit/form/ComboBox", "dijit/form/Textarea", "dijit/form/RadioButton",
 				"dijit/form/SimpleTextarea", "dijit/Menu",
-				"dijit/layout/ContentPane", "dijit/registry",
+				"dijit/layout/ContentPane", "dijit/registry", "dijit/layout/TabContainer",
 				"dijit/TooltipDialog",
 				"dijit/layout/BorderContainer",
 				"dijit/layout/ContentPane",
@@ -161,7 +161,7 @@
 			<button type="button" data-dojo-type="dijit/form/Button" id="createEquationNodeButton" disabled="true" style="visibility: hidden">Add Equation</button>
 			<button type="button" data-dojo-type="dijit/form/Button" id="graphButton" disabled="true" style="visibility: hidden">Graph</button>
 			<button type="button" data-dojo-type="dijit/form/Button" id="tableButton" disabled="true" style="visibility: hidden">Table</button>
-			<button type="button" data-dojo-type="dijit/form/Button" id="DoneButton" disabled="true" style="visibility: hidden">Done</button>
+			<button type="button" data-dojo-type="dijit/form/Button" id="doneButton" disabled="true" style="visibility: hidden">Done</button>
 		</div>
 
 		<div id="drawingPane" class="restrict-vscroll" data-dojo-type="dijit/layout/ContentPane" region="center">
