@@ -43,7 +43,7 @@ define([
 		constructor: function (mode, model) {
 			console.log("++++++++ In student constructor");
 			lang.mixin(this.widgetMap, this.controlMap);
-			this._PM = new PM(mode, model);
+			this._PM = new PM(model, this._config.get("feedbackMode"));
 			ready(this, "populateSelections");
 			this.init();
 		},

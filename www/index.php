@@ -161,7 +161,7 @@
 			<button type="button" data-dojo-type="dijit/form/Button" id="createEquationNodeButton" disabled="true" style="visibility: hidden">Add Equation</button>
 			<button type="button" data-dojo-type="dijit/form/Button" id="graphButton" disabled="true" style="visibility: hidden">Graph</button>
 			<button type="button" data-dojo-type="dijit/form/Button" id="tableButton" disabled="true" style="visibility: hidden">Table</button>
-			<button type="button" data-dojo-type="dijit/form/Button" id="DoneButton" disabled="true" style="visibility: hidden">Done</button>
+			<button type="button" data-dojo-type="dijit/form/Button" id="doneButton" disabled="true" style="visibility: hidden">Done</button>
 		</div>
 
 		<div id="drawingPane" class="restrict-vscroll" data-dojo-type="dijit/layout/ContentPane" region="center">
