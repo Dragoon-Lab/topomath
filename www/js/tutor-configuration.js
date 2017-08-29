@@ -10,7 +10,7 @@ define(["dojo/_base/lang"], function(lang){
 			]
 		},
 
-		TEST: {
+		NOFEEDBACK: {
 			feedbacMode: "nofeedback",
 			userType: "student"
 		},
