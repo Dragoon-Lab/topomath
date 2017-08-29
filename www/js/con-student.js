@@ -328,22 +328,22 @@ define([
 				var _returnObj = this._PM.getActionForType(nodeid, _variableType);
 				
 				array.forEach(_returnObj, function(directive) {
+					registry.byId(_variableType+"Type").set('checked','checked');
 					if(directive.attribute == "status" && directive.value == "correct"){
-						registry.byId(_variableType+"Type").set('checked','checked');
 						array.forEach(_variableTypes, function(_type){
-							if(_type !== _variableType){
+							if(_type !== _variableType && this._config.get("feedbackMode") != "nofeedback"){
 								registry.byId(_type+"Type").set('disabled',true);
 							}
-						})
-						if(_variableType =="parameter" || _variableType == "dynamic"){
-							style.set('valueInputboxContainer','display','block');
-						}else{
-							style.set('valueInputboxContainer','display','none');
-							style.set('valueInputboxContainer','disabled',false);
-						}
+						}, this);
 					}
-				});
-			}			
+					if(_variableType =="parameter" || _variableType == "dynamic"){
+						style.set('valueInputboxContainer','display','block');
+					}else{
+						style.set('valueInputboxContainer','display','none');
+						style.set('valueInputboxContainer','disabled',false);
+					}
+				}, this);
+			}
 			/*
 			 Set color and enable/disable
 			 */
