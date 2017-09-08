@@ -88,25 +88,17 @@ define([
 			 node editor is opened.
 			 */
 			// Add fields to Description box and inputs box
-			// In author mode, the description control must be a text box
-			var d = registry.byId(this.controlMap.description);
 			// populate input field
 			var t = registry.byId(this.controlMap.inputs);
 			var u = registry.byId(this.controlMap.units);
+			
 			var variableName = registry.byId(this.controlMap.variable);
-			if (!t) {
-				///Log if no widget found
-			}
-
-			console.log("description widget = ", d, this.controlMap.description);
-			//  d.removeOption(d.getOptions()); // Delete all options
 
 			//get descriptions to sort as alphabetic order
 
 			var descriptions = this._model.authored.getDescriptions();
 			//create map of names for sorting
 			var descNameMap = {};
-			
 			array.forEach(descriptions, function (desc) {
 				var _name = this._model.authored.getName(desc.value);
 				descNameMap[desc.value] = _name;
@@ -119,7 +111,6 @@ define([
 			
 			array.forEach(descriptions, function (desc) {
 				if(desc.label !== undefined){
-					d.addOption(desc);
 					console.log("Description is : ", desc);
 					var name = this._model.authored.getName(desc.value);
 					var option = {label: name + " (" + desc.label + ")", value: desc.value};
@@ -130,9 +121,8 @@ define([
 						t.addOption(option);
 					}
 				}
-
 			}, this);
-
+			
 			var units = this._model.getAllUnits();
 			units.sort();
 
@@ -304,12 +294,48 @@ define([
 			// Apply settings from PM
 			console.log("Initial Control Settings for Student");
 			
+			var d = registry.byId(this.controlMap.description);
+			
+			console.log("description widget = ", d, this.controlMap.description);
+			// Add options each time node editor is opened.
+			// By this, we can have quantity and equation options for those nodes
+			d.removeOption(d.getOptions()); // Delete all options
+
+			//get descriptions to sort as alphabetic order
+			var descriptions = this._model.authored.getDescriptions();
+			//create map of names for sorting
+			var descNameMap = {};
+			array.forEach(descriptions, function (desc) {
+				var _name = this._model.authored.getName(desc.value);
+				descNameMap[desc.value] = _name;
+			}, this);
+			descriptions.sort(function (obj1, obj2) {
+				//return obj1.label > obj2.label;
+				if(descNameMap[obj1.value] && descNameMap[obj2.value])
+					return descNameMap[obj1.value].toLowerCase().localeCompare(descNameMap[obj2.value].toLowerCase());
+			}, this);
+			
+			d.addOption({label: "--Select--", value: "defaultSelect"});
+			array.forEach(descriptions, function (desc) {
+				if(desc.label !== undefined){
+					d.addOption(desc);
+					console.log("Description is : ", desc);
+					var name = this._model.authored.getName(desc.value);
+					var option = {label: name + " (" + desc.label + ")", value: desc.value};
+					console.log("option is",option);
+				}
+			}, this);
+			var options = d.options;
+			d.options = d.options.filter(lang.hitch(this,function(item){
+				return ((this._model.authored.getType(item.value) === this.nodeType) || item.value === "defaultSelect" ) ;
+			}));
+			
+
 			// Set the selected value in the description.
 			var desc = this._model.student.getAuthoredID(nodeid);
 			var variableName = this._model.student.getVariable(nodeid);
 			console.log('description is', desc || "not set");
-			
-			registry.byId(this.controlMap.description).set('value', desc || 'defaultSelect', false);
+			d.set('value', desc || 'defaultSelect', false);
 			
 			registry.byId(this.controlMap.variable).set('value', variableName || 'defaultSelect', false);
 

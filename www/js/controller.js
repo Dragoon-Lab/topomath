@@ -89,7 +89,7 @@ define([
 					"inputsQuestionMark": "Select a quantity to enter into the expression above.  Much faster than typing.",
 					"valueQuestionMark": "This is a number, typically given to you in the system description.",
 					"operationsQuestionMark": "Click one of these to enter it in the expression above. <br> See the Help menu at the top of the screen for a list of other mathematical operators and functions that you can type in.",
-					"questionMarkRoot": "TODO",
+					"questionMarkRoot": "Mark this node as Sought node",
 					"descriptionQuestionMark": "Select a description for node"
 		},
 		constructor: function(mode, model, ui_config){
@@ -501,7 +501,6 @@ define([
 			this.initialViewSettings(this.nodeType);
 			this.initialControlSettings(id);
 			this.populateNodeEditorFields(id);
-
 			// Hide the value and expression controls in the node editor, depending on the type of node		
 			//var type=this._model.active.getType(this.currentID);
 			//this.adjustNodeEditor(type);

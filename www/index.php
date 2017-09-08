@@ -171,8 +171,8 @@
 			<div class = "quantity-description-wrapper" id="quantity-description">
 				
 				<div class="quantity-count">
-					<div>Quantities : 
-						<span id="quantity-node-count"></span>
+					<div>Unknowns : 
+						<span id="unknown-quantity-node-count"></span>
 					</div>
 				</div>
 			</div>
@@ -221,7 +221,6 @@
 					<label for="selectDescription">Description</label>
 				</span>
 				<select id="selectDescription" data-dojo-type="dijit/form/Select">
-					<option value='defaultSelect'>--Select--</option>
 				</select>
 			</div>
 			</div>
@@ -284,7 +283,7 @@
 			<div id="rootNodeToggleContainer" class="fieldgroup" style="display: none;">
 				<span class="fixedwidth">
 					<div id="questionMarkRoot" class="questionMark"></div>
-					<label for ="rootNodeToggleCheckbox" title ="Mark this node as a root node.">Root</label>
+					<label for ="rootNodeToggleCheckbox" title ="Mark this node as Sought node.">Sought</label>
 				</span>
 				<input id ="rootNodeToggleCheckbox" name ="markRootNode" data-dojo-type="dijit/form/CheckBox" value="agreed" checked="false"/>
 			</div>

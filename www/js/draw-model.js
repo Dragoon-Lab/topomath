@@ -29,6 +29,7 @@ define([
 		_counter: 0,
 		_cache: {},
 		_dragNodes: true,
+		_isNewNode : false,
 		domIDs: function(nodeID){
 			return {
 				'nodeDOM': nodeID+'Content',
@@ -51,7 +52,7 @@ define([
 		constructor: function(model, dragNodes){
 			this._model = model;
 			this._dragNodes = dragNodes;
-			this._quantityNodeCount = 0;
+			this._unknownQuantityNodeCount = 0;
 			this._equationNodeCount = 0;
 			this.initialNodeIDTag = this._model.getInitialNodeIDString();
 			this._borderColor = this._colors.length - 1;
@@ -71,7 +72,8 @@ define([
 				temp = temp.concat(this.addNode(node));
 				return temp;
 			}, this);
-
+			this._isNewNode = false;
+			this.updateNodeCount();
 			vertices = vertices[vertices.length - 1]; //hack for keeping it one dimension
 			console.log(vertices);
 			
@@ -90,19 +92,19 @@ define([
 				if(links)
 					this.setConnections(links, vertex);
 			}, this);
-			this.addNodeCount();
+			this.updateNodeCount();
 
 			return instance;
 		},
 
-		addNodeCount: function(){
-			dojo.byId('quantity-node-count').innerHTML = this._quantityNodeCount;
+		updateNodeCount: function(){
+			dojo.byId('unknown-quantity-node-count').innerHTML = this._unknownQuantityNodeCount;
 			dojo.byId('equation-node-count').innerHTML = this._equationNodeCount;
 		},
 
 		addNode: function(/* object */ node){
+			this._isNewNode = true;
 			type = node.type || "circle";
-
 			if(!node.ID){
 				conole.error("addNode called with a node without ID");
 				return;
@@ -129,7 +131,12 @@ define([
 				else
 					this._borderColor = this._colors.indexOf(color) - 1;
 			}
-
+			if(node.type === 'quantity'){
+				if(this._model.getVariableType(node.ID) === "unknown")
+					this._unknownQuantityNodeCount++;
+			}else if(node.type === 'equation'){
+				this._equationNodeCount++;
+			}
 			//add to cache
 			this._cache[node.ID] = lang.clone(node);
 
@@ -188,6 +195,12 @@ define([
 					this.addNodeDescription(node.ID);
 				}
 			}
+			if(node.variableType === "unknown" && cachedNode.variableType !== "unknown"){
+				this._unknownQuantityNodeCount++;
+			}else if(node.variableType !== "unknown" && cachedNode.variableType === "unknown" && (cachedDescription !== undefined || !this._isNewNode)){
+				this._unknownQuantityNodeCount--;
+			}
+			this.updateNodeCount();
 
 			//update value or update dynamic
 			if(node.type && node.type == "quantity" && (cachedNode.value != node.value ||
@@ -220,7 +233,7 @@ define([
 						initialNode = null;
 					}
 				}
-			} else if(node.type && node.type == "equation" && cachedNode.equation != node.equation){
+			}else if(node.type && node.type == "equation" && cachedNode.equation != node.equation){
 				dom.byId(domIDTags['nodeDOM']).innerHTML = graphObjects.getDomUIStrings(this._model, "equation", node.ID);
 			}
 
@@ -262,6 +275,7 @@ define([
 
 			//add to cache for next time
 			this._cache[node.ID] = lang.clone(node);
+			this._isNewNode = false;
 		},
 		/**
 		* creates the dom structure for the node
@@ -495,12 +509,6 @@ define([
 				/*else
 					domStyle.set(domID, "border-color", this._model.getColor(ID));
 				*/
-				if(type === 'quantity'){
-					this._quantityNodeCount++;
-				}else if(type === 'equation'){
-					this._equationNodeCount++;
-				}
-				this.addNodeCount();
 			}
 		},
 
@@ -529,14 +537,12 @@ define([
 				domConstruct.destroy(ID);
 			}
 			domConstruct.destroy(nodeID);
-			if(this._model.getColor(ID) !== undefined){
-				if(type === 'quantity'){
-					this._quantityNodeCount--;
-				}else if( type === 'equation'){
-					this._equationNodeCount--;
-				}
-				this.addNodeCount();
+			if(type === 'quantity' && this._model.getVariableType(ID) === "unknown"){
+				this._unknownQuantityNodeCount--;
+			}else if( type === 'equation'){
+				this._equationNodeCount--;
 			}
+			this.updateNodeCount();
 			// delete node from the model
 			var updateNodes = this._model.deleteNode(nodeID);
 			// updateNodes are the nodes for which the equations and links were updated.
