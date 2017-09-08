@@ -33,21 +33,34 @@ define([
 		correct: {
 			feedback: function(obj, part){
 				followUpTasks(obj, part, /*state*/ "correct", /*message*/ "correct", /*disable*/ true);
+			},
+			nofeedback: function(obj, part){
+				followUpTasks(obj, part, /*state*/ "correct", /*message*/ "", /*disable*/ "");
 			}
+
 		},
 		incorrect:{
 			feedback: function(obj, part){
 				followUpTasks(obj, part, /*state*/ "incorrect", /*message*/ "incorrect", /*disable*/ false);
+			},
+			nofeedback: function(obj, part){
+				followUpTasks(obj, part, /*state*/ "incorrect", /*message*/ "", /*disable*/ "");
 			}
 		},
 		firstFailure: {
 			feedback: function(obj, part){
 				followUpTasks(obj, part, /*state*/ "incorrect", /*message*/ "incorrect", /*disable*/ false);
+			},
+			nofeedback: function(obj, part){
+				followUpTasks(obj, part, /*state*/ "incorrect", /*message*/ "", /*disable*/ "");
 			}
 		},
 		secondFailure:{
 			feedback: function(obj, part){
 				followUpTasks(obj, part, /*state*/ "demo", /*message*/ "secondFailure", /*disable*/ true);
+			},
+			nofeedback: function(obj, part){
+				followUpTasks(obj, part, /*state*/ "incorrect", /*message*/ "", /*disable*/ "");
 			}
 		}
 	};
@@ -61,21 +74,33 @@ define([
 		correct: {
 			feedback: function(obj, part){
 				followUpTasks(obj, part, /*state*/ "correct", /*message*/ "correct", /*disable*/ true);
+			},
+			nofeedback: function(obj, part){
+				followUpTasks(obj, part, /*state*/ "correct", /*message*/ "", /*disable*/ "");
 			}
 		},
 		incorrect:{
 			feedback: function(obj, part){
 				followUpTasks(obj, part, /*state*/ "incorrect", /*message*/ "incorrect", /*disable*/ false);
+			},
+			nofeedback: function(obj, part){
+				followUpTasks(obj, part, /*state*/ "incorrect", /*message*/ "", /*disable*/ "");
 			}
 		},
 		firstFailure: {
 			feedback: function(obj, part){
 				followUpTasks(obj, part, /*state*/ "incorrect", /*message*/ "incorrect", /*disable*/ false);
+			},
+			nofeedback: function(obj, part){
+				followUpTasks(obj, part, /*state*/ "incorrect", /*message*/ "", /*disable*/ "");
 			}
 		},
 		secondFailure:{
 			feedback: function(obj, part){
 				followUpTasks(obj, part, /*state*/ "demo", /*message*/ "secondFailure", /*disable*/ true);
+			},
+			nofeedback: function(obj, part){
+				followUpTasks(obj, part, /*state*/ "incorrect", /*message*/ "", /*disable*/ "");
 			}
 		}
 	};
@@ -84,13 +109,13 @@ define([
 	 * Add additional tables for activities that does not use node editor.
 	 */
 	function followUpTasks(obj , part, /*state*/ stateVal, /*message*/ messageVal, /*disable*/ disabledVal){
-		if(stateVal !== undefined || stateVal !== ""){
+		if(stateVal !== undefined && stateVal !== ""){
 			state(obj, part, stateVal);
 		}
-		if(messageVal !== undefined || messageVal !== ""){
+		if(messageVal !== undefined && messageVal !== ""){
 			message(obj, part, messageVal);
 		}
-		if(disabledVal !== undefined || disabledVal !== ""){
+		if(disabledVal !== undefined && disabledVal !== ""){
 			disable(obj, part, disabledVal);
 		}
 	}
@@ -133,12 +158,11 @@ define([
 	 *
 	 *****/	
 	return declare(null, {
-		constructor: function(/*string*/ mode, /*model.js object*/ model){
+		constructor: function(/*string*/ model, /*model.js object*/ feedbackMode){
 			this.model = model;
-			this.mode = mode;
 			this.showCorrectAnswer = true;
 			this.enableNextFromAuthor = true;
-			this.userType = "feedback";
+			this.feedbackMode = feedbackMode;
 		},
 		matchingID: null,
 		logging: null,
@@ -228,7 +252,7 @@ define([
 			var interpretation = this._getInterpretation(id, nodePart, answer);
 			var obj = [];
 			var returnObj = [];
-			nodeEditorActionTable[interpretation][this.userType](returnObj, nodePart, answer);
+			nodeEditorActionTable[interpretation][this.feedbackMode](returnObj, nodePart, answer);
 			console.log("Return Obj" , returnObj);
 			return returnObj;
 		},
@@ -246,30 +270,8 @@ define([
 			var givenID ;  // ID of the correct node, if it exists
 			var solutionGiven = false;
 			var givenAnswer = answer; //keeping a copy of answer for logging purposes.
-			
-			if(interpretation === "lastFailure" || interpretation === "secondFailure"){
-				answer = this.model.student.getCorrectAnswer(id, nodePart);
-				/*TO DO : Add Equation*/
-				if(nodePart === "equation"){
-					var params = {
-						subModel: this.model.authored,
-						equation: answer
-					};
-					answer = check.convert(params).equation;
-				}
-				if(answer == null){
-					if(nodePart === "description"){
-						returnObj.push({id: "message", attribute: "append", value: "You have already created all the necessary nodes."});
-					}else
-						console.error("Unexpected null from model.getCorrectAnswer().");
-				}else{
-					returnObj.push({id: nodePart, attribute: "value", value: answer});
-					solutionGiven = true;
-				}
-			}
 
 			var updateStatus = function(returnObj, model){
-				
 				returnObj.forEach(function(i){
 					if(i.attribute === "status"){
 						if(i.value === "correct"){
@@ -301,10 +303,11 @@ define([
 					}
 				});
 			};
+
 			if(answer){
 				if(nodePart === "description"){
 					givenID = answer;
-					descriptionTable[interpretation][this.userType](returnObj, nodePart);
+					descriptionTable[interpretation][this.feedbackMode](returnObj, nodePart);
 					for(var i = 0; i < returnObj.length; i++){
 						if(returnObj[i].value === "correct"){
 							currentStatus = this.model.authored.getStatus(givenID, nodePart); //get current status set in given module
@@ -320,7 +323,7 @@ define([
 				}else{
 					givenID = this.model.student.getAuthoredID(id);
 					console.assert(nodeEditorActionTable[interpretation], "processAnswer() interpretation '" + interpretation + "' not in table ", nodeEditorActionTable);
-					nodeEditorActionTable[interpretation][this.userType](returnObj, nodePart, answer);
+					nodeEditorActionTable[interpretation][this.feedbackMode](returnObj, nodePart, answer);
 					updateStatus(returnObj, this.model);
 					currentStatus = this.model.authored.getStatus(givenID, nodePart); //get current status set in given model
 					if (currentStatus === "correct" || currentStatus === "demo") {
@@ -335,6 +338,27 @@ define([
 							}
 						}
 					}
+				}
+			}
+
+			if(currentStatus === "demo"){
+				answer = this.model.student.getCorrectAnswer(id, nodePart);
+				/*TO DO : Add Equation*/
+				if(nodePart === "equation"){
+					var params = {
+						subModel: this.model.authored,
+						equation: answer
+					};
+					answer = check.convert(params).equation;
+				}
+				if(answer == null){
+					if(nodePart === "description"){
+						returnObj.push({id: "message", attribute: "append", value: "You have already created all the necessary nodes."});
+					}else
+						console.error("Unexpected null from model.getCorrectAnswer().");
+				}else{
+					returnObj.push({id: nodePart, attribute: "value", value: answer});
+					solutionGiven = true;
 				}
 			}
 
@@ -382,6 +406,15 @@ define([
 				solutionProvided: solutionGiven
 			}, logObj);
 			this.logSolutionStep(logObj);
+
+			/**
+			* explicitly setting it to empty because there are no messages that are to be sent from pm in this case
+			* status was needed to ensure that the node status is saved in the model and it is logged correctly
+			* by explicitly setting it to empty will make sure we don't need to do any changes to applydirectives in controlled
+			* which I think should not be touched as what to tell the student should be a pedagogical module decision ~ Sachin
+			**/
+			if(this.feedbackMode === "nofeedback")
+				returnObj = [];
 
 			console.log("directives from process answer ", returnObj)
 			return returnObj;

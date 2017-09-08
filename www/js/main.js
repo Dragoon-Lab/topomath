@@ -13,6 +13,7 @@ define([
 	'dojo/dom-construct',
 	'dojo/_base/lang',
 	'./menu',
+	'./tutor-configuration',
 	'./session',
 	'./model',
 	'./equation',
@@ -24,7 +25,7 @@ define([
 	'./event-logs',
 	'./renderSolution'
 ], function(array, geometry, dom, style, aspect, ready, registry, event, ioQuery, on, Button, domConstruct, lang,
-			menu, session, model, equation, drawModel, controlAuthor, controlStudent, logging, popupDialog, eventLogs, Solution){
+			menu, tutorConfiguration, session, model, equation, drawModel, controlAuthor, controlStudent, logging, popupDialog, eventLogs, Solution){
 
 	console.log("load main.js");
 	// Get session parameters
@@ -62,12 +63,11 @@ define([
 		}
 	}
 
-	// TODO : Activity Parameters 
-	// TODO : UI Parameters
 	var _session = session(query);
 	var _model = new model(_session, query.m, query.p);
+	var _config = new tutorConfiguration(query.m);
+	var _feedback = _config.get("feedbackMode");
 	console.log(_model);
-
 
 	_session.getModel(query).then(function(solutionGraph){
 		if(solutionGraph){
@@ -86,7 +86,7 @@ define([
 			}
 			// This version of code addresses loading errors in cases where problem is empty, incomplete or has no root node in coached mode
 			if (!_model.isStudentMode()) {
-				//check if the problem is empty
+				//check if the probleis empty
 				try {
 					console.log("checking for emptiness");
 					var count = 0;
@@ -144,7 +144,7 @@ define([
 			var loading = document.getElementById('loadingOverlay');
 			loading.style.display = "none";
 
-			var dm = new drawModel(_model.active, _dragNodes);
+			var dm = new drawModel(_model.active, _dragNodes, _feedback);
 			var errDialog = new popupDialog();
 
 			/*********  below this part are the event handling *********/
@@ -204,18 +204,14 @@ define([
 				_session.saveModel(_model.model);
 			}, true);
 	
-
 			//create a menuButtons array and push the list of button Ids which go to the main menu bar
-			var menuButtons=[];
-			menuButtons.push("createQuantityNodeButton");
-			menuButtons.push("createEquationNodeButton");
-			menuButtons.push("graphButton");
-			menuButtons.push("tableButton");
-			menuButtons.push("DoneButton");
+			var menuButtons= _config.get("buttons");
 
 			array.forEach(menuButtons, function(button){
 				//setting display for each menu button
-				style.set(registry.byId(button).domNode, "visibility", "visible");
+				var button = registry.byId(button);
+				style.set(button.domNode, "visibility", "visible");
+				button.set('disabled', false);
 
 				/*
 				* This is a work-around for getting a button to work inside a MenuBar.
@@ -226,32 +222,11 @@ define([
 				};
 			}, this);
 
-			//check if the current UI situation permits loading of the createNodeButton
-			//for now since we are not into UI parameters like in dragoon yet
-			//I enable the button without any check
-			var createQNodeButton = registry.byId("createQuantityNodeButton");
-			createQNodeButton.setDisabled(false);
-
-			var createEqNodeButton = registry.byId("createEquationNodeButton");
-			createEqNodeButton.setDisabled(false);
-
-			var graphButton = registry.byId("graphButton");
-			graphButton.setDisabled(false);
-
-			var tableButton = registry.byId("tableButton");
-			tableButton.setDisabled(false);
-
-			var DoneButton = registry.byId("DoneButton");
-			DoneButton.setDisabled(false);
 			//create a controller object
-	
-			//create new ui configuration object based on current mode ( and activity)
-			var ui_config = "";
-
 			//For now using empty  ui_config 
 			var controllerObject = (!_model.isStudentMode()) ?
-				new controlAuthor(query.m, _model, ui_config) :
-				new controlStudent(query.m, _model, ui_config);
+				new controlAuthor(query.m, _model, _config) :
+				new controlStudent(query.m, _model, _config);
 
 			if(_model.isStudentMode()){
 				//controllerObject.setAssessment(session); //set up assessment for student.
@@ -333,7 +308,7 @@ define([
 				dm.deleteNode(controllerObject.currentID);
 			});
 
-			menu.add("DoneButton", function (e) {
+			menu.add("doneButton", function (e) {
 				event.stop(e);
 				// This should return an object kind of structure and
 				var problemComplete = controllerObject.checkDone();
@@ -395,5 +370,4 @@ define([
 		// TODO: add proble completeness and logging
 		sol.render(_type);
 	};
-	
 });

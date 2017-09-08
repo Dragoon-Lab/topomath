@@ -49,9 +49,11 @@ define([
 			"": ""
 		},
 
-		constructor: function(model, dragNodes){
+		constructor: function(model, dragNodes, feedback){
 			this._model = model;
 			this._dragNodes = dragNodes;
+
+			this._feedbackMode = feedback;
 			this._unknownQuantityNodeCount = 0;
 			this._equationNodeCount = 0;
 			this.initialNodeIDTag = this._model.getInitialNodeIDString();
@@ -242,7 +244,7 @@ define([
 			var hasClass = domClass.contains(domIDTags['parentDOM'], "incomplete");
 			var nodeStatus = this._model.getNodeStatus(node.ID);
 			var nodeStatusClass = nodeStatus ? this._statusClassMap[nodeStatus] : "";
-			if(this._model.isStudentMode()){
+			if(this._model.isStudentMode() && this._feedbackMode != "nofeedback"){
 				var _feedbackTags = ['fa-check','fa-star','fa-times','fa-minus'];
 				/*Updating tags each time model gets updated*/
 				array.forEach(_feedbackTags, function(t){
@@ -316,7 +318,7 @@ define([
 				innerHTML: innerHTML
 			}, "statemachine-demo");
 
-			if(this._model.isStudentMode()){
+			if(this._model.isStudentMode() && this._feedbackMode != "nofeedback"){
 				var nodeStatusClass = this._model.getNodeStatus(node.ID);
 				nodeDOM.querySelector(".topomath-feedback").className += this._statusClassMap[nodeStatusClass];
 			}
