@@ -292,8 +292,8 @@ define([
 					if(!(variable in variables)){
 						value = value || Math.random();
 						variables[variable] = value;
-						return value;
 					}
+					return value;
 				};
 				for(var i = 0; i < 2; i++){
 					array.forEach(sParse[i].variables(), function(v)  {
@@ -301,7 +301,7 @@ define([
 						var authorID = model.student.getAuthoredID(v);
 						if(v.indexOf(str) > 0)
 							authorID += str;
-						variables[authorID] = val;
+						addVariableValue(authorID, val);
 					}, this);
 					array.forEach(aParse[i].variables(), function(v){
 						addVariableValue(v);

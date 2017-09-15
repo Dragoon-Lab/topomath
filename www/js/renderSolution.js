@@ -181,9 +181,9 @@ define([
 			temp.title = "Your Solution";
 			temp.data = this.formatSeriesForChart(solution, id);
 			if(this.isCorrect || !this.isStudentMode){
-				temp.stroke = {stroke: this._colors.correctGraph};
+				temp.stroke = {stroke: this._colors.correctGraph, width: 2};
 			} else {
-				temp.stroke = {stroke: this._colors.incorrectGraph};
+				temp.stroke = {stroke: this._colors.incorrectGraph, width: 2};
 			}
 
 			series.push(temp);
@@ -191,7 +191,7 @@ define([
 				series.push({
 					title: "Author's solution",
 					data: this.formatSeriesForChart(this.authorSolution, this._model.student.getAuthoredID(id)),
-					stroke: {stroke: this._colors.authorGraph}
+					stroke: {stroke: this._colors.authorGraph, width: 2}
 				});
 			}
 
