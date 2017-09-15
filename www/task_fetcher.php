@@ -50,7 +50,7 @@ if($mode == "AUTHOR"){
 	} else {
 		$query = sprintf(get_query('problem_without_folder_fetch'), $user, $mode, $section, $problem);
 	}
-} elseif ($mode == "STUDENT") {
+} else {
 	if($folder != "")
 		$query = sprintf(get_query('problem_fetch'), $user, $mode, $section, $problem, $folder);
 	else

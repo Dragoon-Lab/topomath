@@ -66,8 +66,8 @@ define([
 	var _session = session(query);
 	var _model = new model(_session, query.m, query.p);
 	var _config = new tutorConfiguration(query.m);
+	var _feedback = _config.get("feedbackMode");
 	console.log(_model);
-
 
 	_session.getModel(query).then(function(solutionGraph){
 		if(solutionGraph){
@@ -86,7 +86,7 @@ define([
 			}
 			// This version of code addresses loading errors in cases where problem is empty, incomplete or has no root node in coached mode
 			if (!_model.isStudentMode()) {
-				//check if the problem is empty
+				//check if the probleis empty
 				try {
 					console.log("checking for emptiness");
 					var count = 0;
@@ -144,7 +144,7 @@ define([
 			var loading = document.getElementById('loadingOverlay');
 			loading.style.display = "none";
 
-			var dm = new drawModel(_model.active, _dragNodes);
+			var dm = new drawModel(_model.active, _dragNodes, _feedback);
 			var errDialog = new popupDialog();
 
 			/*********  below this part are the event handling *********/
