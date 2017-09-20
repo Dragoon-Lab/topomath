@@ -213,7 +213,7 @@ define([
 			//restore to default  - creating select input as stateless
 			registry.byId(this.controlMap.inputs).set('value', 'defaultSelect', false);
 			// Logging
-		},	
+		},
 		equationDoneHandler: function(){
 			// TODO : Add Handler and process answer
 			var directives = [];
