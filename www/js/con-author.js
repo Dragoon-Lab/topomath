@@ -505,7 +505,8 @@ define([
 				}
 				console.log("directives are", directives);
 				this.applyDirectives(directives);
-				this.createExpressionNodes(returnObj, true); 
+				this.createExpressionNodes(returnObj, true);
+				return directives; 
 			} /* TODO: when equation for student values
 			else if(model && model =="given"){
 				var studentNodeID = this._model.student.getNodeIDFor(this.currentID);
@@ -710,8 +711,6 @@ define([
 				// memory wrapper for data provides full read and write capabilities
 				// In future if necessary we can store them in variables and exploit the capabilities (var a = new memory({data: descriptions}))
 
-				descriptionWidget.set("store", new memory({data: descriptions}));
-
 				unitsWidget.set("store", new memory({data: units}));
 
 				//node is not created for the first time. apply colors to widgets
@@ -911,7 +910,7 @@ define([
 				registry.byId(this.controlMap.equation).set("disabled", false);
 				var initial = this._model.student.getValue(studentNodeID);
 				if(typeof initial !== "undefined" && initial != null){
-					registry.byId(this.controlMap.initial).set('value', initial);
+					registry.byId(this.controlMap.value).set('value', initial);
 				}
 				var units = this._model.student.getUnits(studentNodeID);
 				registry.byId(this.controlMap.units).set('value', units || "");
@@ -958,7 +957,6 @@ define([
 			if(nodeType == "quantity"){
 				var varName = registry.byId(this.controlMap.variable).value;
 				var desc = registry.byId(this.controlMap.description).value;
-
 				if(varName != '' && desc != ''){
 					registry.byId(this.controlMap.setStudent).set("disabled",false);
 				}
