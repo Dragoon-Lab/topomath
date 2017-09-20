@@ -6,4 +6,4 @@ install:
 	cd www; $(MAKE) install
 
 update:
-	cd www; $(MAKE) install
+	cd www; $(MAKE) update
