@@ -57,26 +57,29 @@ define([
 
 			this.initializeGraphTab();
 
-			this.createTable(this.activeSolution.plotVariables);
+			if(!this.activeSolution.error){
 
-			//checks if the given solution is a static solution
-			this.isStatic = !this.isStudentMode ? this.checkForStatic(this._model.active, this.activeSolution) :
-				this.checkForStatic(this._model.authored, this.authorSolution);
+				this.createTable(this.activeSolution.plotVariables);
 
-			if(this.isStatic) {
-				//add static tab if solution is static
-				this.initializeStaticTab();
-			}else{
-				//Hide static Tab
-				this.staticTab = registry.byId("StaticTab");
-				if(this.staticTab) {
-					this.tabContainer.removeChild(this.staticTab);
-					registry.byId("StaticTab").destroyRecursive();
+				//checks if the given solution is a static solution
+				this.isStatic = !this.isStudentMode ? this.checkForStatic(this._model.active, this.activeSolution) :
+					this.checkForStatic(this._model.authored, this.authorSolution);
+
+				if(this.isStatic) {
+					//add static tab if solution is static
+					this.initializeStaticTab();
+				}else{
+					//Hide static Tab
+					this.staticTab = registry.byId("StaticTab");
+					if(this.staticTab) {
+						this.tabContainer.removeChild(this.staticTab);
+						registry.byId("StaticTab").destroyRecursive();
+					}
 				}
-			}
 
-			this.showHideGraphsHandler();
-			domStyle.set(this.tabContainer.domNode, "display", "block");
+				this.showHideGraphsHandler();
+				domStyle.set(this.tabContainer.domNode, "display", "block");
+			}
 			this.resizeWindow();
 		},
 
@@ -210,7 +213,7 @@ define([
 			//Graph Tab
 			var graphContent = "";
 			var variables = this.activeSolution.plotVariables;
-			if(variables.length > 0) {
+			if(variables.length > 0 || !this.activeSolution.error) {
 				for(var index in variables){
 					var id = variables[index];
 					//Create graph divs along with their error message
@@ -242,7 +245,7 @@ define([
 					this.charts[id] = this.createChart(domNode, id, xAxis, yAxis, this.activeSolution);
 					this.legends[id] = new Legend({chart: this.charts[id]}, "legend" + id);
 				}, this);
-			} else{
+			} else {
 				/*var thisModel = this;
 				var modStatus = true;
 				array.forEach(this._model.active.getNodes(), function (thisnode) {

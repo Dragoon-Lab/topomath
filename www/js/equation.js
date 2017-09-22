@@ -361,11 +361,15 @@ define([
 				xvars: [],
 				plotVariables: [],
 				expressions: [],
-				values: {}
+				values: {},
 			};
 
 			// calling isNodeRequired because in student mode node does not have the genus property
 			// it has to be retrieved from the corresponding authored node.
+			var incompleteModel = "false";
+			var status = {
+				error: false
+			};
 			array.forEach(nodes, function(node){
 				if(subModel.isNodeRequired(node.ID) || subModel.isNodeAllowed(node.ID)){
 					switch(node.type){
@@ -383,18 +387,32 @@ define([
 									equations.func.push(node.ID);
 									break;
 								default:
-									console.error("Quantity node type not defined");
+									status.error = true;
+									status.node = subModel.getVariable(node.ID);
+									status.field = "variable type";
+									status.message = "incorrect.04";
 							}
 							break;
 						case "equation":
 							equations.expressions.push(node.equation);
 							break;
 						default:
-							console.error("Node type not defined");
+							status.error = true;
+							status.node = subModel.getVariable(node.ID);
+							status.field = "node type";
+							status.message = "incorrect.04";
 					}
 				}
 			}, this);
+			if(!equations.plotVariables){
+				status.error = true;
+				if(nodes.length == 0)
+					status.message = "incorrect.01";
+				else
+					status.message = "incorrect.02";
+			}
 			equations.plotVariables = equations.xvars.concat(equations.func);
+			equation.status = status;
 
 			return equations;
 		},

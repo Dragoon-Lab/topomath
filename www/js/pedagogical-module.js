@@ -5,8 +5,8 @@
 /* global define */
 
 define([
-	"dojo/_base/array", "dojo/_base/declare", "dojo/_base/lang", "./equation", "dojo/dom"
-], function(array, declare, lang, check, dom){
+	"dojo/_base/array", "dojo/_base/declare", "dojo/_base/lang", "./equation", "dojo/dom", "./user-messages"
+], function(array, declare, lang, check, dom, userMessages){
 	// Summary: 
 	//			Processes student selections and returns instructions to the 
 	//			program
@@ -17,15 +17,9 @@ define([
 	//			demo, or premature).
 	// Tags:
 	//			pedagogical module (PM), student mode, coached mode
-
-	var hints = {
-		erasedCorrect: [
-			"Your choice did not match the author's answer so it is being given to you. However, your previous work matched the author's answer. It will continue to be marked this way."
-		],
-		erasedDemo: [
-			"Your choice matched the author's answer, however this part was previously completed by the model. It will continue to be marked this way."
-		]
-	};
+	var messages = userMessages.get("pm");
+	var hints = messages.hints;
+	var fm = messages.feedback;
 
 	var descriptionTable = {
 		// Summary: This table is used for determining the proper response to a student's 'description' answer (see 
@@ -138,10 +132,7 @@ define([
 
 	function message(/*object*/ obj, /*string*/ nodePart, /*string*/ status){
 		// TO DO : Add Hint messages
-		if(status === "lastFailure" || status === "secondFailure"){
-			status = "incorrect. The correct answer has been given";
-		}
-		obj.push({id: "message", attribute: "append", value: "The value entered for the " + nodePart + " is " + status + "."});
+		obj.push({id: "message", attribute: "append", value: fm.start + nodePart + fm.connector + fm[status]});
 	}
 
 	function disable(/*object*/ obj, /*string*/ nodePart, /*boolean*/ disable){
