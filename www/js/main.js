@@ -23,7 +23,7 @@ define([
 	'./logging',
 	'./popup-dialog',
 	'./event-logs',
-	'./renderSolution'
+	'./render-solution'
 ], function(array, geometry, dom, style, aspect, ready, registry, event, ioQuery, on, Button, domConstruct, lang,
 			menu, tutorConfiguration, session, model, equation, drawModel, controlAuthor, controlStudent, logging, popupDialog, eventLogs, Solution){
 
