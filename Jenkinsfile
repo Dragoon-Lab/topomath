@@ -10,6 +10,7 @@ pipeline {
         }
         stage('Build'){
             steps {
+                sh 'cd www'
                 sh 'npm run build'
             }
         }
