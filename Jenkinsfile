@@ -1,6 +1,7 @@
 pipeline {
     agent any 
-
+    cleanWs notFailBuild: true
+    
     stages {
         stage('Install') { 
             steps {
