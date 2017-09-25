@@ -2,17 +2,22 @@ pipeline {
     agent any     
 
     stages {
+        stage('Checkout'){
+            steps {
+                cleanWS()
+                checkout scm
+            }
+        }
         stage('Install') { 
             steps {
-                cleanWs()
-                checkout scm
                 sh 'make install'
             }
         }
         stage('Build'){
             steps {
-                sh 'cd www'
-                sh 'npm run build'
+                dir("www"){
+                    sh 'npm run build'
+                }
             }
         }
     }
