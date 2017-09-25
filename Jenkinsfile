@@ -1,10 +1,10 @@
 pipeline {
-    agent any 
-    cleanWs()
+    agent any     
 
     stages {
         stage('Install') { 
             steps {
+                cleanWs()
                 checkout scm
                 sh 'make install'
             }
