@@ -3,13 +3,15 @@ pipeline {
 
     stages {
         stage('Checkout'){
-            steps {
+            steps {                
                 cleanWs()
+                echo env.BRANCH_NAME
                 checkout scm
             }
         }
         stage('Install') { 
             steps {
+                sh 'cp tests/scripts/example-test-paths.js tests/scripts/test-paths.js'
                 sh 'make install'
             }
         }
