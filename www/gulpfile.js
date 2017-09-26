@@ -34,16 +34,14 @@ gulp.task('watch', ['lint'], function (){
 });
 
 gulp.task('test', function() {
-    return gulp.src('wdio.conf.js').pipe(webdriver({specs:['../tests/scripts/coreTests/*.js'], baseUrl: testPaths.getLocalPath() }));
+	return gulp.src('wdio.conf.js').pipe(webdriver({specs:['../tests/scripts/coreTests/*.js'], baseUrl: testPaths.getLocalPath() }));
 });
 
 gulp.task('build', ['dojoBuild'], function (done){
 	console.log("Copying files ...");
 	var filesToCopy = [
 		'./css/**/*.*',
-		'./ET/**/*.*',
 		'./Liviz/**/*.*',
-		'./tincan/**/*.*',
 		'./cryptoJS/**/*.*',
 		'./publicLogin/*/*.*',
 		'./jsPlumb/lib/**/*.*',

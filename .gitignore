@@ -19,5 +19,6 @@ www/math-solver
 *.jar
 Thumbs.db
 
+# Build and test stuff
+release
 tests/scripts/test-paths.js
-
