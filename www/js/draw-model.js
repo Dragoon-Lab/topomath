@@ -503,9 +503,8 @@ define([
 					this._equationNodeCount++;
 				}
 				this.addNodeCount();
-				if(type==="quantity") this.sortQuantityDescriptions();	
-			}
-			
+				if(type==="quantity") this.sortQuantityDescriptions();
+			}			
 		},
 		sortQuantityDescriptions: function(){
 			var quantityParent = dom.byId("quantity-description");
