@@ -98,7 +98,6 @@ define([
 				///Log if no widget found
 			}
 
-			console.log("description widget = ", d, this.controlMap.description);
 			//  d.removeOption(d.getOptions()); // Delete all options
 
 			//get descriptions to sort as alphabetic order
@@ -120,10 +119,8 @@ define([
 			array.forEach(descriptions, function (desc) {
 				if(desc.label !== undefined){
 					d.addOption(desc);
-					console.log("Description is : ", desc);
 					var name = this._model.authored.getName(desc.value);
 					var option = {label: name + " (" + desc.label + ")", value: desc.value};
-					console.log("option is",option);
 					
 					if(name !== undefined && name !== ""){
 						variableName.addOption({label: name , value: name});
@@ -186,7 +183,6 @@ define([
 				var newValue = valueFlag.value;
 				this._model.active.setValue(this.currentID, newValue);
 				//console.log("ini value action");
-				console.log("current ID", this.currentID, newValue);
 				this.applyDirectives(this._PM.processAnswer(this.currentID, 'value', newValue));
 			} else if (valueFlag.errorType) {
 				// Log Error
@@ -226,7 +222,7 @@ define([
 			//restore to default  - creating select input as stateless
 			registry.byId(this.controlMap.inputs).set('value', 'defaultSelect', false);
 			// Logging
-		},
+		},	
 		equationDoneHandler: function(){
 			// TODO : Add Handler and process answer
 			var directives = [];
@@ -240,7 +236,6 @@ define([
 				directives = directives.concat(dd);
 				var context = this;
 			}
-			console.log(directives);
 			this.applyDirectives(directives);
 
 			return directives;
@@ -423,7 +418,6 @@ define([
 				});
 			}
 			
-			console.log("returning ", returnObj);
 			return returnObj;
 		}
 	});
