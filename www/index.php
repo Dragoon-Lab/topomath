@@ -330,6 +330,7 @@
 						<button id="minusButton" title="Minus" type="button" data-dojo-type="dijit/form/Button" iconClass="dijitNoIcon"><span class="fa fa-minus"></span></button>
 						<button id="timesButton"  title="Times" type="button" data-dojo-type="dijit/form/Button" iconClass="dijitNoIcon"><span class="fa fa-asterisk"></span></button>
 						<button id="divideButton"  title="Divide" type="button" data-dojo-type="dijit/form/Button" iconClass="dijitNoIcon"><strong class="fa fa-minus fa-division"></strong></button>
+						<button id="equalsButton"  title="Equals" type="button" data-dojo-type="dijit/form/Button" iconClass="dijitNoIcon"><strong >=</strong></button>
 						<div id="operationsQuestionMark" class="questionMark" style="margin: 0 0 -8px 0"></div>
 					</div>
 				</div>

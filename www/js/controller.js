@@ -460,7 +460,7 @@ define([
 
 			// For each button 'name', assume there is an associated widget in the HTML
 			// with id 'nameButton' and associated handler 'nameHandler' below.
-			var buttons = ["plus", "minus", "times", "divide", "undo", "equationDone"];
+			var buttons = ["plus", "minus", "times", "divide", "equals", "undo", "equationDone"];
 			array.forEach(buttons, function(button){
 				var w = registry.byId(button + 'Button');
 				if(!w){
@@ -747,6 +747,10 @@ define([
 		divideHandler: function(){
 			console.log("****** divide button");
 			this.equationInsert('/');
+		},
+		equalsHandler: function(){
+			console.log("****** equals button");
+			this.equationInsert('=');
 		},
 		undoHandler: function(){
 			var equationWidget = registry.byId(this.controlMap.equation);
