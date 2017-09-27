@@ -176,9 +176,10 @@ define([
 			if(cachedDescription != description || (cachedNode.variable != node.variable && description != "")){
 				description = graphObjects.getDomUIStrings(this._model, "description", node.ID);
 				var descriptionDOM = dom.byId(domIDTags['description']);
-				if(descriptionDOM)
-					descriptionDOM.innerHTML = description;
-				else if(!node.color){
+				if(descriptionDOM){
+					descriptionDOM.querySelector(".descriptionText").innerHTML = description;
+					this.sortQuantityDescriptions();
+				}else if(!node.color){
 					var ui = this.getNodeUIProperties(node);
 					domStyle.set(domIDTags['parentDOM'], "backgroundColor", ui.backgroundColor);
 					domStyle.set(domIDTags['parentDOM'], "borderColor", ui.borderColor);
@@ -502,9 +503,21 @@ define([
 					this._equationNodeCount++;
 				}
 				this.addNodeCount();
+				if(type==="quantity") this.sortQuantityDescriptions();	
 			}
+			
 		},
-
+		sortQuantityDescriptions: function(){
+			var quantityParent = dom.byId("quantity-description");
+			var quantityDivs = quantityParent.querySelectorAll(".quantityDescription");
+			var sortedArr = Array.prototype.slice.apply(quantityDivs);
+			sortedArr.sort(function(a,b){
+				return dom.byId(a).querySelector(".descriptionText b").innerHTML.toLowerCase() >  dom.byId(b).querySelector(".descriptionText b").innerHTML.toLowerCase();
+			});
+			array.forEach(sortedArr, function(descriptionElement){
+				quantityParent.append(descriptionElement);
+			})
+		},
 		/**
 		* deletes the dom of a node
 		* @params - nodeID - ID to be deleted
