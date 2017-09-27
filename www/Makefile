@@ -12,6 +12,7 @@ install:
 	git clone https://github.com/bhosaledipak/JsPlumb_Dojo_Integreate.git jsPlumb
 	git clone https://github.com/bvds/js-expression-eval.git math-parser
 	git clone https://github.com/Dragoon-Lab/topomath-solver.git math-solver
+	npm install
 	echo "${dojo-version}" > dojo-install-version
 	@echo "Installed Dojo $(dojo-version)."
 
@@ -24,7 +25,7 @@ ifeq ($(shell test -f dojo-install-version && cat dojo-install-version),${dojo-v
 	cd jsPlumb; git pull
 	cd math-parser; git pull
 	cd math-solver; git pull
-	cd ..
+	npm update
 else
 	$(MAKE) install
 endif

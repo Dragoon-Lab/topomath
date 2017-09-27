@@ -10,7 +10,7 @@ define([
 					taskName: name,
 					time: {start: 0, end: 10, step: 1.0, units: "seconds"},
 					authorModelNodes: [],
-					studentModelNodes: [],
+					studentModelNodes: []
 				};
 				obj.active = mode === "AUTHOR" ? obj.authored : obj.student;
 				obj._session = session;
@@ -721,7 +721,7 @@ define([
 						arr.push(node);
 				});
 				return arr;
-			},
+			}
 		}, both);
 
 		obj.student = lang.mixin({

@@ -28,7 +28,7 @@ define(["dojo/_base/lang"], function(lang){
 			feedbacks: [
 				"correct",
 				"incorrect"
-			],
+			]
 		}
 	};
 
@@ -43,7 +43,7 @@ define(["dojo/_base/lang"], function(lang){
 		return {
 			get: function(key){
 				return parameters.hasOwnProperty(key) ? parameters[key] : undefined;
-			},
+			}
 		};
 	};
 
