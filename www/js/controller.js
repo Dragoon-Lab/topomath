@@ -151,6 +151,7 @@ define([
 			});
 		},
 		_setStatus : function(value){
+
 			var colorMap = {
 				correct: "lightGreen",
 				incorrect: "#FF8080",
@@ -197,13 +198,14 @@ define([
 					if(myThis.nodeType == "equation"){
 						var equation = registry.byId("equationInputbox");
 						
-						//if the equation is in the box but has not been checked(or entered)
-						if(equation.value && !myThis.equationEntered){
+						//if the equation is in the box but has not been checked(or entered) or if equation is changed after validating in author mode
+						if((equation.value && !myThis.equationEntered )|| (equation.displayedValue !== equation.value)){
 							
 							//call equation done handler(equation done handlers in one of the modes will be called based on current mode)
 							var directives = myThis.equationDoneHandler();
 							var isAlertShown = array.some(directives, function(directive){
-								if(directive.id === 'crisisAlert'){
+								// If Done is clicked and equation is incorrect, donot hide editor
+								if(directive.id === 'crisisAlert' || directive.value === "incorrect"){
 									return true;
 								}
 							});
@@ -215,12 +217,12 @@ define([
 								myThis.hideCloseNodeEditor(doHide);
 							}
 						} // if the mode is author and user has selected to enter student values (" given ")
-						else if(myThis._model.active.isStudentMode() && registry.byId("modelSelector").value == "given"){
+						else if(myThis._model.active.isStudentMode() && registry.byId("modelSelector").value == "authored"){
 							equation = registry.byId("equationInputboxStudent");
 							
 							//equation value in this case if from equationInputboxStudent and check if the value is entered/checked
 							//if not throw a crisis alert message
-							if(equation.value && !myThis.givenEquationEntered){
+							if(equation.value && !myThis.equationEntered){
 								
 								//Crisis alert popup if equation not checked
 								myThis.applyDirectives([{
@@ -458,7 +460,7 @@ define([
 
 			// For each button 'name', assume there is an associated widget in the HTML
 			// with id 'nameButton' and associated handler 'nameHandler' below.
-			var buttons = ["plus", "minus", "times", "divide", "undo", "equationDone"];
+			var buttons = ["plus", "minus", "times", "divide", "equals", "undo", "equationDone"];
 			array.forEach(buttons, function(button){
 				var w = registry.byId(button + 'Button');
 				if(!w){
@@ -592,7 +594,7 @@ define([
 				array.forEach(this._model.authored.getDescriptions(), function(desc){
 					var exists =  model.getNodeIDFor(desc.value);
 					
-					if(d.getOptions(desc)) {
+					if( d.getOptions !== undefined && d.getOptions(desc)) {
 						d.getOptions(desc).disabled=exists;
 						if(desc.value == nodeName){
 							d.getOptions(desc).disabled=false;
@@ -745,6 +747,10 @@ define([
 		divideHandler: function(){
 			console.log("****** divide button");
 			this.equationInsert('/');
+		},
+		equalsHandler: function(){
+			console.log("****** equals button");
+			this.equationInsert('=');
 		},
 		undoHandler: function(){
 			var equationWidget = registry.byId(this.controlMap.equation);
