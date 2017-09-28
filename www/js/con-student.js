@@ -22,7 +22,7 @@ define([
 	'./controller',
 	"./pedagogical-module",
 	"./typechecker",
-	"./equation",
+	"./equation"
 ], function(aspect, array, declare, lang, dom, domClass, style, ready,on,
  domConstruct, focusUtil, registry, tooltipDialog, popup, controller, PM, typechecker, expression) {
 	/* Summary:	// Summary:

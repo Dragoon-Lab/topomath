@@ -11,7 +11,7 @@ define([
 	"dijit/MenuItem",
 	"dojo/on",
 	"./graph-objects",
-	"jsPlumb/jsPlumb",
+	"jsPlumb/jsPlumb"
 ], function(declare, array, lang, attr, domConstruct, domClass, dom, domStyle, Menu, MenuItem, on, graphObjects){
 	return declare(null, {
 		_instance: null,
