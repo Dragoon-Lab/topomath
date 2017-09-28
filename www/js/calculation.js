@@ -15,29 +15,29 @@ define([
 		_model: null,
 		constructor: function(model){
 			this._model = model;
-			this.activeEquations = this.initializeSystem(this._model.active);
+			this.activeSolution = this.initializeSystem(this._model.active);
 			this.isStudentMode = this._model.active === this._model.student;
 			if(this.isStudentMode)
-				this.authorEquations = this.initializeSystem(this._model.authored);
+				this.authorSolution = this.initializeSystem(this._model.authored);
 		},
 		/**
 		* function which finds the solution for the system of equations.
 		**/
 		findSolution: function(isActive, id){
-			var system = isActive ? this.activeEquations : this.authorEquations;
+			var system = isActive ? this.activeSolution : this.authorSolution;
 			var subModel = isActive ? this._model.active : this._model.authored;
-			// this will make sure than when id is given then new static models are created
-			if(id){
-				if(isActive)
-					system = this.initializeSystem(this._model.active, id);
-				else
-					system = this.initializeSystem(this._model.authored, id);
-			}
-			var solution;
-			try{
-				system.plotValues = equation.graph(subModel, system, id);
-			} catch(e) {
-				console.error(e);
+
+			if(!system.status.error){
+				// this will make sure than when id is given then new static models are created
+				if(id){
+					if(isActive)
+						system = this.initializeSystem(this._model.active, id);
+					else
+						system = this.initializeSystem(this._model.authored, id);
+				}
+				var solution = equation.graph(subModel, system, id);
+				system.plotValues = solution.plotValues;
+				system.status = solution.status;
 			}
 
 			return system

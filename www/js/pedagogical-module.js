@@ -332,7 +332,7 @@ define([
 				}
 			}
 
-			if(currentStatus === "demo"){
+			if(interpretation === "lastFailure" || interpretation === "secondFailure"){
 				answer = this.model.student.getCorrectAnswer(id, nodePart);
 				/*TO DO : Add Equation*/
 				if(nodePart === "equation"){
@@ -348,6 +348,7 @@ define([
 					}else
 						console.error("Unexpected null from model.getCorrectAnswer().");
 				}else{
+
 					returnObj.push({id: nodePart, attribute: "value", value: answer});
 					solutionGiven = true;
 				}

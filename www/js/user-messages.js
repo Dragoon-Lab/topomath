@@ -1,13 +1,16 @@
 define([], function(){
 	var graphError = {
-		"incorrect.01": ["There are no equation nodes in the model. Please create some equation nodes and then check the graph."],
-		"incorrect.02": ["There are no nodes in the model. Please create some nodes and then check the graph."],
-		"incorrect.03": ["There is an unknown node <b>", "</b> used in the <b>", " field</b> of the <b>", "</b> node. Please check the spelling of all the nodes you have entered in the expression"], 
-		"incorrect.04": ["Unfortunately, your model's behavior does not match the author's"],
-		"incorrect.05": ["Not all the nodes  have been completed. For example, <b>", "</b> has an empty <b>", "</b> field"],
-		"correct.01": ["Congratulations, Your model's behavior matches the author's!"],
+		"empty.model": ["There is nothing to plot. Please create some nodes and then check the graph."],
+		"no.equations": ["There are no equations in the model. Please create some equations and then check the graph."],
+		"unknown.node": ["There is an unknown node <b>", "</b> used in the <b>", " field</b> of the <b>", "</b> node. Please check the spelling of all the nodes you have entered in the expression"], 
+		"incorrect": ["Unfortunately, your model's behavior does not match the author's"],
+		"model.incomplete": ["Not all the nodes have been completed. For example, <b>", "</b> has an empty <b>", "</b> field"],
+		"correct": ["Congratulations, Your model's behavior matches the author's!"],
+		"decomposition": ["There is something wrong with the equations. Solver says that the system of equation is not solvable. Kindly, try rearranging the variables, like if you are dividing some variables, then try to multiply them on the other side of the equation, and try again."],
+		"variable.mismatch": ["Number of equations do not match the number of unknown quantities. Please check the system that you have created."],
+		"default": ["Something went wrong. Please ask your instructor to help you. Thanks!"]
 	};
-debugger;
+
 	var pedagogical = {
 		hints: {
 			erasedCorrect: [
@@ -28,7 +31,11 @@ debugger;
 	};
 
 	var global = {
-		"doesntExist": "The problem that you are trying to reach does not exist. Please check the problem, section and folder names and try again."
+		"doesnt.exist": "This problem could not be loaded. Please contact the problem's author.",
+		"missing.info": "The problem could not be loaded as there is some wrong with the information provided.",
+		"new.problem": "A new problem has been created. If you were trying to load a pre-existing problem, please check the name of the problem you have entered.",
+		"duplicate.nodes": "Nodes in the problem have duplicate node ID. ",
+		"duplicate.nodes.student": "This problem could not be loaded. Please contact the problem's author."
 	};
 
 	return {

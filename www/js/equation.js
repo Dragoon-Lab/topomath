@@ -216,14 +216,17 @@ define([
 				solution.vars = solver.xvars;
 			} catch(e) {
 				// Error handling has to be done for each error in Solver
-				console.log(e);
+				throw e;
 			}
 
 			return solution;
 		},
 
 		graph: function(subModel, equations, staticID){
-			var solution = this.initSolution(subModel, equations);
+			var solution = {};
+			solution.plotValues = this.initSolution(subModel, equations);
+			solution.status = {};
+			solution.status.error = false;
 			var values = {};
 			var equationCopy = equations.expressions.slice(0);
 
@@ -232,6 +235,7 @@ define([
 				values[id] = subModel.getValue(id);
 			});*/
 			values = equations.values;
+			var timeStepSolution;
 			for(var i = 1; i <= timeSteps; i++){
 				if(staticID)
 					values[staticID] = equations.time[i-1];
@@ -240,9 +244,15 @@ define([
 				});
 				equations.values = values;
 				equations.expressions = equationCopy;
-				var timeStepSolution = this.solveTimeStep(equations);
+				try{
+					timeStepSolution = this.solveTimeStep(equations);
+				} catch(e){
+					solution.status.error = true;
+					solution.status.message = e.type;
+					break;
+				}
 				array.forEach(timeStepSolution.vars, function(id, counter){
-					solution[id].push(timeStepSolution.point.get(counter, 0));
+					solution.plotValues[id].push(timeStepSolution.point.get(counter, 0));
 				});
 			}
 			console.log("solution for the system of equations ", solution);
@@ -281,15 +291,15 @@ define([
 				sParse = this.parseEquation(sEquation);
 			} catch(e){
 				console.log(e);
-				throw Error(e);
 			}
 
 			// create evaluation point
 			var variables = {};
 			var createEvaluationPoint = function(){
 				variables = {};
-				var addVariableValue = function(variable, value){
-					if(!(variable in variables)){
+				var addVariableValue = function(variable, value, doAddValue){
+					doAddValue = doAddValue || false;
+					if(!(variable in variables) || doAddValue){
 						value = value || Math.random();
 						variables[variable] = value;
 					}
@@ -301,7 +311,7 @@ define([
 						var authorID = model.student.getAuthoredID(v);
 						if(v.indexOf(str) > 0)
 							authorID += str;
-						addVariableValue(authorID, val);
+						addVariableValue(authorID, val, true);
 					}, this);
 					array.forEach(aParse[i].variables(), function(v){
 						addVariableValue(v);
@@ -390,7 +400,7 @@ define([
 									status.error = true;
 									status.node = subModel.getVariable(node.ID);
 									status.field = "variable type";
-									status.message = "incorrect.04";
+									status.message = "model.incomplete";
 							}
 							break;
 						case "equation":
@@ -400,19 +410,26 @@ define([
 							status.error = true;
 							status.node = subModel.getVariable(node.ID);
 							status.field = "node type";
-							status.message = "incorrect.04";
+							status.message = "model.incomplete";
 					}
 				}
+				if(!subModel.isComplete(node.ID)){
+					status.error = true;
+					status.node = subModel.getVariable(node.ID);
+					status.field = "";
+					status.message = "model.incomplete";
+				}
 			}, this);
-			if(!equations.plotVariables){
+			equations.plotVariables = equations.xvars.concat(equations.func);
+
+			if(equations.plotVariables.length == 0){
 				status.error = true;
 				if(nodes.length == 0)
-					status.message = "incorrect.01";
-				else
-					status.message = "incorrect.02";
+					status.message = "empty.model";
+				else if(equations.expressions.length == 0)
+					status.message = "no.equations";
 			}
-			equations.plotVariables = equations.xvars.concat(equations.func);
-			equation.status = status;
+			equations.status = status;
 
 			return equations;
 		},

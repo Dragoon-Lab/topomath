@@ -11,7 +11,7 @@
  *
  *Dragoon is distributed in the hope that it will be useful,
  *but WITHOUT ANY WARRANTY; without even the implied warranty of
- *MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	See the
+ *MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *GNU Lesser General Public License for more details.
  *
  *You should have received a copy of the GNU Lesser General Public License
@@ -31,12 +31,12 @@ define([
 "dojo/query"
 ], function(declare, lang, dom, style, domConstruct, on, query){
 	// Summary: 
-	//			Common message box widget
+	//          Common message box widget
 	// Description:
-	//			Displays messages in a messagbox at the top of page
-	//			on dragoon problems.
+	//          Displays messages in a messagbox at the top of page
+	//          on dragoon problems.
 	// Tags:
-	//			Messagebox, Error, Info, Warn, Success
+	//          Messagebox, Error, Info, Warn, Success
 
 	return declare(null, {
 		_container: "errorMessageBox",
@@ -47,14 +47,12 @@ define([
 		_close : true,
 		
 		constructor: function(/* String */ container, /* String */ type, /* String */ message, /*Boolean*/ closable){
-		//	container: Id of the container 
-		//	type can have following values : error, success, info, warn
+		//  container: Id of the container
+		//  type can have following values : error, success, info, warn
 			_container = container || "errorMessageBox";
 			_type = type;
 			_message = message;
-			if(closable !== undefined){
-				this._close = closable;
-			}
+			this._close = closable || true;
 			this._initMessageBox();
 		},
 
@@ -83,17 +81,17 @@ define([
 				});
 				domConstruct.place(errorMessageCloseDiv, messageOuterDiv);
 				var handler = on(errorMessageCloseDiv, "click", function(){
-						//Fade Out
-					    var fadeArgs = {
-					        node: messageOuterDiv,
-					        onEnd: function(){
-					        	style.set(messageOuterDiv, "display", "none");
-              				}
-					    };
-					    dojo.fadeOut(fadeArgs).play();
-						if(typeof _callback == "function") _callback();
-					    handler.remove();
-			    	});
+					//Fade Out
+					var fadeArgs = {
+						node: messageOuterDiv,
+						onEnd: function(){
+							style.set(messageOuterDiv, "display", "none");
+						}
+					};
+					dojo.fadeOut(fadeArgs).play();
+					if(typeof _callback == "function") _callback();
+					handler.remove();
+				});
 			}
 			
 			//add message box to container.
@@ -111,7 +109,7 @@ define([
 			style.set(_messageBox, "display", "none");
 		},
 		addCallback : function(fn){
-			_callback = fn;	
+			_callback = fn;
 		}
 	});
 });
