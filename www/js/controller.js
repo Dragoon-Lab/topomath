@@ -114,7 +114,31 @@ define([
 
 		// A stub for connecting routine to draw new node.
 		addNode: function(node, autoflag){
-			console.log("Node Editor calling addNode() for ", node.id);
+			console.log("Node Editor calling addNode() for ", node.ID);
+		},
+
+		// Stub to update node count for unknown quantities and equations
+		computeNodeCount: function(id, update, isNew, isCloseAction){
+			if(!isCloseAction || isCloseAction === undefined){
+				var variableType = this._model.active.getVariableType(id);
+				var type = this._model.active.getType(id);
+				if(type === "quantity" ){
+					var count = this._model.active.getUnknownQuantityCount();
+					if(variableType === "unknown" ){
+						if(update === "addition" && isNew) count++;
+						else if(update === "deletion") count--;
+						else if(update === "update") count++;
+					}else if(variableType !== undefined && !this._model.active.isStudentMode()){
+						if(update === "update") count--;
+					}
+					this._model.active.setUnknownQuantityCount(count);
+				}else if(type === "equation"){
+					var count = this._model.active.getEquationCount();
+					if(update === "addition" && isNew) count++;
+					else if(update === "deletion") count--;
+					this._model.active.setEquationCount(count);
+				}
+			}
 		},
 
 		// Stub to setting description for auto craeted nodes.

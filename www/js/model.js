@@ -22,6 +22,8 @@ define([
 			nodeHeight: 100,
 			initialNodeIDString: "_initial",
 			initialNodeDisplayString: "prior",
+			 _unknownQuantityNodeCount : 0,
+			 _equationNodeCount: 0,
 			_updateNextXYPosition: function(){
 				var pos = {
 					x: this.x,
@@ -244,6 +246,18 @@ define([
 			* @params - id - node ID may or may not have initial in its ID string
 			*			id - returns the id with removed string
 			*/
+			getEquationCount: function(){
+				return obj._equationNodeCount;
+			},
+			setEquationCount: function(/*integer*/ count){
+				obj._equationNodeCount = count;
+			},
+			setUnknownQuantityCount: function(/*integer*/ count){
+				obj._unknownQuantityNodeCount = count;
+			},
+			getUnknownQuantityCount: function(){
+				return obj._unknownQuantityNodeCount;
+			},
 			getID: function(/* string */ id){
 				var initialNodeString = this.getInitialNodeIDString();
 				return id.indexOf(initialNodeString) > 0 ?
