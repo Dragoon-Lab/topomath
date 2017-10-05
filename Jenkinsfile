@@ -30,5 +30,6 @@ pipeline {
 	        sh 'cat build-output.txt'
 		sh 'cat live/www/build-report.txt'
 	    }
+	}
     }
 }
