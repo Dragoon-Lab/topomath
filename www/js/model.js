@@ -14,6 +14,8 @@ define([
 				};
 				obj.active = mode === "AUTHOR" ? obj.authored : obj.student;
 				obj._session = session;
+				this._unknownQuantityNodeCount = 0;
+				this._equationNodeCount = 0;
 			},
 			_ID: 1,
 			beginX: 450,
@@ -247,15 +249,22 @@ define([
 			*			id - returns the id with removed string
 			*/
 			getEquationCount: function(){
+				obj._equationNodeCount = 0;
+				array.forEach(this.getNodes(), function(node){
+					if(node && node.type === "equation"){
+						obj._equationNodeCount++;
+					}
+				}, this);
 				return obj._equationNodeCount;
 			},
-			setEquationCount: function(/*integer*/ count){
-				obj._equationNodeCount = count;
-			},
-			setUnknownQuantityCount: function(/*integer*/ count){
-				obj._unknownQuantityNodeCount = count;
-			},
+			
 			getUnknownQuantityCount: function(){
+				obj._unknownQuantityNodeCount = 0;
+				array.forEach(this.getNodes(), function(node){
+					if(node && node.type === "quantity" && node.variableType && node.variableType === "unknown"){
+						obj._unknownQuantityNodeCount++;
+					}
+				}, this);
 				return obj._unknownQuantityNodeCount;
 			},
 			getID: function(/* string */ id){

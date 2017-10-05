@@ -152,11 +152,11 @@ define([
 				new controlAuthor(query.m, _model, _config) :
 				new controlStudent(query.m, _model, _config);
 
-			aspect.after(dm, "addNode", function(arg){
-				controllerObject.computeNodeCount(arg.ID, "addition", true, false);
+			aspect.after(dm, "addNode", function(){
+				controllerObject.computeNodeCount();
 			}, true);
-			aspect.after(dm, "updateNode", function(method, arg){
-				controllerObject.computeNodeCount(controllerObject.currentID, "update", false, arg);
+			aspect.after(dm, "updateNode", function(){
+				controllerObject.computeNodeCount();
 			}, true);
 			dm.init();
 
@@ -293,13 +293,10 @@ define([
 
 			aspect.after(controllerObject, "updateNodeView",
 				lang.hitch(dm, dm.updateNode), true);
-
-			aspect.before(dm, "deleteNode", function(){
-				controllerObject.computeNodeCount(arguments[0], "deletion", false, false);
-			});
-
+			
 			aspect.after(dm, "deleteNode", function(){
 				_session.saveModel(_model.model);
+				controllerObject.computeNodeCount();
 			});
 
 			aspect.after(controllerObject, "computeNodeCount", function(id){
