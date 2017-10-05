@@ -1055,6 +1055,10 @@ define([
 		*/
 		changeControlState: function(control, data, value){
 			//this stub is defined individually mode specifically
+		},
+
+		sortDescriptions: function(){
+			return this._model.active.getDescriptionsSortedByName();
 		}
 	});
 });

@@ -178,7 +178,6 @@ define([
 				var descriptionDOM = dom.byId(domIDTags['description']);
 				if(descriptionDOM){
 					descriptionDOM.querySelector(".descriptionText").innerHTML = description;
-					this.sortQuantityDescriptions();
 				}else if(!node.color){
 					var ui = this.getNodeUIProperties(node);
 					domStyle.set(domIDTags['parentDOM'], "backgroundColor", ui.backgroundColor);
@@ -503,19 +502,7 @@ define([
 					this._equationNodeCount++;
 				}
 				this.addNodeCount();
-				if(type==="quantity") this.sortQuantityDescriptions();
 			}
-		},
-		sortQuantityDescriptions: function(){
-			var quantityParent = dom.byId("quantity-description");
-			var quantityDivs = quantityParent.querySelectorAll(".quantityDescription");
-			var sortedArr = Array.prototype.slice.apply(quantityDivs);
-			sortedArr.sort(function(a,b){
-				return dom.byId(a).querySelector(".descriptionText b").innerHTML.toLowerCase() >  dom.byId(b).querySelector(".descriptionText b").innerHTML.toLowerCase();
-			});
-			array.forEach(sortedArr, function(descriptionElement){
-				quantityParent.append(descriptionElement);
-			})
 		},
 		/**
 		* deletes the dom of a node
@@ -582,6 +569,15 @@ define([
 		updateNodeConnections: function(from, to){
 			this.detachConnections(to);
 			this.setConnections(from, to);
+		},
+
+		updateDescriptionView: function(){
+			dojo.query(".quantityDescription").forEach(dojo.destroy);
+			if(arguments.length >= 1 ){
+				array.forEach(arguments[1], lang.hitch(this, function(node){
+					if(node.name && node.description) this.addNodeDescription(node.id);
+				}));
+			}
 		}
 	});
 });

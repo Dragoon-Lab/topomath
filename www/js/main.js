@@ -231,6 +231,7 @@ define([
 			if(_model.isStudentMode()){
 				//controllerObject.setAssessment(session); //set up assessment for student.
 			}
+			
 			//next step is to add action to add quantity
 			menu.add("createQuantityNodeButton", function(e){
 				event.stop(e);
@@ -290,6 +291,17 @@ define([
 			aspect.after(dm, "deleteNode", function(){
 				_session.saveModel(_model.model);
 			});
+
+			aspect.after(dm, "updateNode", function(){
+				controllerObject.sortDescriptions();
+			});
+
+			aspect.after(dm, "addNode", function(){
+				controllerObject.sortDescriptions();
+			});
+
+			aspect.after(controllerObject, "sortDescriptions",
+				lang.hitch(dm, dm.updateDescriptionView, true));
 
 			aspect.after(dm, "deleteEquationLinks", function(nodeIDs){
 				console.log(nodeIDs);

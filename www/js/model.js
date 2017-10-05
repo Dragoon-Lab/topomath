@@ -490,6 +490,17 @@ define([
 			},
 			isStudentMode: function(){
 				return obj.isStudentMode();
+			},
+			getDescriptions: function(){
+				// Summary: returns an array of all descriptions with
+				// name (label) and any associated node id (value).
+				// Note that the description may be empty.
+				// TODO:  The list should be sorted.
+				return array.map(this.getNodes(), function(node){
+
+					var desc = node.description !== undefined ? node.description : node.explanation;
+					return {label: desc, value: node.ID} ;
+				});
 			}
 		};
 
@@ -561,17 +572,6 @@ define([
 			**/
 			getNodeStatus: function(){
 				return null;
-			},
-			getDescriptions: function(){
-				// Summary: returns an array of all descriptions with
-				// name (label) and any associated node id (value).
-				// Note that the description may be empty.
-				// TODO:  The list should be sorted.
-				return array.map(this.getNodes(), function(node){
-
-					var desc = node.description !== undefined ? node.description : node.explanation;
-					return {label: desc, value: node.ID} ;
-				});
 			},
 			/*
 			* incorporating the new change to description.
@@ -721,6 +721,18 @@ define([
 						arr.push(node);
 				});
 				return arr;
+			},
+			getDescriptionsSortedByName: function(){
+				var descriptions = obj.active.getDescriptions();
+				var descNameMap = array.map(descriptions, function (desc) {
+					var _name = obj.authored.getName(desc.value);
+					return {name: _name, description: desc.label, id: desc.value};
+				}, this);
+				descNameMap.sort(function (obj1, obj2) {
+					if(obj1.name && obj2.name)
+						return obj1.name.toLowerCase().localeCompare(obj2.name.toLowerCase());
+				}, this);
+				return descNameMap;
 			}
 		}, both);
 
@@ -981,6 +993,19 @@ define([
 					if(genus == "requred" || genus == "allowed")
 						arr.push(node);
 				});
+			},
+			getDescriptionsSortedByName: function(){
+				var descriptions = obj.active.getDescriptions();
+				var descNameMap = array.map(descriptions, function (desc) {
+					var authoredID = obj.student.getAuthoredID(desc.value);
+					var _name = obj.authored.getName(authoredID);
+					return {name: _name, description: desc.label, id: desc.value};
+				}, this);
+				descNameMap.sort(function (obj1, obj2) {
+					if(obj1.name && obj2.name)
+						return obj1.name.toLowerCase().localeCompare(obj2.name.toLowerCase());
+				}, this);
+				return descNameMap;
 			}
 		}, both);
 
