@@ -28,6 +28,7 @@ pipeline {
         always {
             dir("release") {
 	        sh 'cat build-output.txt'
+	        sh 'cat www/build-output.txt'
 		sh 'cat live/www/build-report.txt'
 	    }
 	}
