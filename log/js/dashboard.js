@@ -89,7 +89,7 @@ define([
 				}
 			}else
 				this.query = params;
-			this.separatingSymbol = " - ";
+			this.separatingSymbol = " ~~ ";
 			this.pSymbol = "||";
 		},
 
@@ -100,7 +100,7 @@ define([
 				this.users = this.getClosestUsers();
 			}
 			this.problems = this.getAllProblems();
-			this.problemNames = this.getProblemNames();
+			this.problemNames = this.problems; //this.getProblemNames();
 			
 			//initializing the arrays to be exact size as this will lead exact size of the table while rendering.
 			var totalUsers = this.users.length;
@@ -460,11 +460,13 @@ define([
 					if(this.modules['sessionLink']){
 						//for devel server
 						var temp = problem.split(this.separatingSymbol);
-						urlString = "<a href='../index.php?u=" + user + "&m=" + this.mode[row][col] + "&sm=feedback&is=algebraic&p=" + temp[0] + "&a=" + temp[1] + "&s=" + this.section;
+						urlString = "<a href='../index.php?u=" + user + "&m=" + this.mode[row][col] + "&p=" + temp[0] + "&s=" + this.section;
+						if(temp[1])
+							urlString += "&a=" + temp[1];
 						if(this.group[row][col] && this.group[row][col] != "-" && this.group[row][col] != "NULL"){
-							urlString += "&g=" + this.group[row][col];
+							urlString += "&f=" + this.group[row][col];
 						}
-						urlString += "&c=Continue&l=false' target='_blank' title='Click to check session'>";
+						urlString += /*"&c=Continue&l=false*/"' target='_blank' title='Click to check session'>";
 					}
 					var complete = this.problemComplete[row][col];
 					var runningStatus = this.sessionRunning[row][col];

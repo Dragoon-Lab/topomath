@@ -77,7 +77,7 @@
 			where". 
 				$sectionString.
 				(!empty($fromDate)?$fromTimeString:"").
-				" AND method != 'client-message' ".
+				" AND method != 'runtime-error' ".
 				(!empty($user)?$userString:"").
 				(!empty($problem) ?$problemString:"").
 				(!empty($fromDate)?$toTimeString:"").
@@ -85,7 +85,7 @@
 				(!empty($activity)?$activityString:"").
 			"ORDER BY user asc, problem asc, time asc, id asc;";
 		//	$queryString = "SELECT tid, mode, session.session_id, user, problem, time, method, message, `group` from session JOIN step ON session.session_id = step.session_id where method != 'client-message' AND mode != 'AUTHOR' AND user = 'cdluna' AND problem LIKE '%ps3-0%' ORDER BY user asc, problem asc, tid asc;";
-			echo $queryString;
+			//echo $queryString;
 
 			return $queryString;
 		}
@@ -119,6 +119,8 @@
 			$first = true;
 			$stop = false;
 			$oldUser = "";
+			$currentAction = null;
+			$graphActionStart = null;
 			while($row = $result->fetch_assoc()){
 				if($first){
 					$oldRow = $row;
@@ -146,9 +148,9 @@
 					$nodeUpdate = false;
 					$upObject->problem = $row['problem'];
 					$upObject->user = $row['user'];
-					$upObject->group = $row['group'];
+					$upObject->group = $row['folder'];
 					$upObject->mode = $row['mode'];
-					$upObject->activity = $row['activity'];
+					$upObject->activity = "";//$row['activity'];
 					$timeSkip = false;
 					$slideIndex = -1;
 					$slidesOpen = false;
@@ -165,7 +167,7 @@
 				$newSession = $row['session_id'];	
 				if($oldSession != $newSession){
 					//this means either the problem was opened again or their is a new user problem combination.
-					if(($oldRow['user'] == $row['user']) && ($oldRow['problem'] == $row['problem']) && ($oldRow['activity'] == $row['activity'])){
+					if(($oldRow['user'] == $row['user']) && ($oldRow['problem'] == $row['problem']) /*&& ($oldRow['activity'] == $row['activity'])*/){
 						//$stepTime = 0;
 						$upObject->sessionRunning = true;
 						$problemReOpen +=1;
@@ -184,7 +186,7 @@
 					$runningSessionTime = 0;
 					$runningOutOfFocusTime = 0;
 				}
-				
+
 				//echo json_encode($row)."<br/>";
 				$currentSession->lastLogTime = $newMessage['time'];
 				//echo "row -> ".json_encode($row)." <- ".$upObject->sessionRunning." <br/>";
