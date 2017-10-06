@@ -47,6 +47,6 @@ define([], function(){
 			}
 
 		 	return obj.hasOwnProperty(type) ? obj[type]: null;
-		},
+		}
 	};
 });
