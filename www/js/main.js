@@ -201,6 +201,9 @@ define([
 					}
 				}
 				_model.active.setPosition(id, index, {"x": g.x, "y": g.y+scrollTop});
+				if(!_model.isStudentMode()){				
+					controllerObject.updateAssignedNode(id, false);
+				}
 				_session.saveModel(_model.model);
 			}, true);
 	
@@ -287,6 +290,12 @@ define([
 			aspect.after(controllerObject, "updateNodeView",
 				lang.hitch(dm, dm.updateNode), true);
 
+			aspect.before(dm, "deleteNode", function(nodeID){
+				if(!_model.isStudentMode()){
+					controllerObject.updateAssignedNode(nodeID, true);
+				}
+			}, true);
+
 			aspect.after(dm, "deleteNode", function(){
 				_session.saveModel(_model.model);
 			});
@@ -330,6 +339,9 @@ define([
 			});
 			//all the things we need to do once node is closed
 			aspect.after(registry.byId('nodeEditor'), "hide", function(){
+				if(!_model.isStudentMode()){
+					controllerObject.updateAssignedNode(controllerObject.currentID, false);
+				}
 				_session.saveModel(_model.model);
 				dm.updateNode(_model.active.getNode(controllerObject.currentID));
 			});
@@ -337,6 +349,7 @@ define([
 			aspect.after(registry.byId('solution'), "hide", function(){
 				sol.hide();
 			});
+
 		});
 	});
 	
