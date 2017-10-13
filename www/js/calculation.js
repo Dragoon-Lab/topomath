@@ -37,6 +37,9 @@ define([
 				}
 				var solution = equation.graph(subModel, system, id);
 				system.plotValues = solution.plotValues;
+				//system equations might have different set of quantities than the ones defined by the user
+				//happens when user creates a quantity as unknown but does not use it in an equation
+				system.plotVariables = solution.xvars;
 				system.status = solution.status;
 			}
 
