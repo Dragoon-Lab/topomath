@@ -240,7 +240,7 @@ define([
 				if(staticID)
 					values[staticID] = equations.time[i-1];
 				array.forEach(equations.xvars, function(id){
-					values[id+subModel.getInitialNodeIDString()] = solution[id][i-1];
+					values[id+subModel.getInitialNodeIDString()] = solution.plotValues[id][i-1];
 				});
 				equations.values = values;
 				equations.expressions = equationCopy;
@@ -429,6 +429,10 @@ define([
 					status.message = "empty.model";
 				else if(equations.expressions.length == 0)
 					status.message = "no.equations";
+			}
+			if(equations.expressions.length == 0){
+				status.error = true;
+				status.message = "no.equations";
 			}
 			equations.status = status;
 
