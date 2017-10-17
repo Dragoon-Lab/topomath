@@ -978,9 +978,10 @@ define([
 				var arr = [];
 				array.forEach(nodes, function(node){
 					var genus = obj.authored.getGenus(node.authoredID);
-					if(genus == "requred" || genus == "allowed")
+					if(genus == "required" || genus == "allowed")
 						arr.push(node);
 				});
+				return arr;
 			}
 		}, both);
 
