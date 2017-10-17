@@ -306,7 +306,7 @@ define([
 				if(m == "model.incomplete"){
 					switch(counter){
 						case 0:
-							str += solution.status.node;
+							str += solution.status.node || "uninitialized";
 							break;
 						case 1:
 							str += solution.status.field || "";
