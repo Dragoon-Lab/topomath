@@ -63,14 +63,20 @@ gulp.task('build', ['dojoBuild'], function (done){
 			gulp.src(['index.php']).pipe(replace("document.write('<scr'+'ipt src=\"dojo/dojo.js\"></scr'+'ipt>');",
 				"document.write('<scr'+'ipt src=\"dojo/dojo.js?'+ version +'\"></scr'+'ipt>'); \n document.write('<scr'+'ipt src=\"topomath/index.js?'+ version +'\"></scr'+'ipt>');"))
 				.pipe(gulp.dest(config.wwwPath)).on("end", function(){
-					gulp.src(config.wwwPath+'/**', {base:'../release'}).pipe(gulp.dest(config.releasePath)).on("end", function(){
-						console.log('Copying other folders...');
-						gulp.src(externalFiles).pipe(gulp.dest(config.releasePath)).on("end", function(){
-							console.log("Build Complete");
-							generateZip();
-							done();
-						});
-					});
+				    gulp.src(config.wwwPath+'/**', {base:'../release'}).pipe(gulp.dest(config.releasePath)).on("end", function(){
+					    console.log('Copying other folders...');
+					    gulp.src(externalFiles).pipe(gulp.dest(config.releasePath)).on("end", shell.task(['rm -rf '+ config.wwwPath,
+															      'rm -rf '+ config.destinationDir,
+															      'mv '+ config.releasePath+' '+ config.destinationDir,
+															      'mkdir '+ config.destinationDir + '/www/problems',
+															      'mkdir '+ config.destinationDir + '/www/images',
+															      'cp -R ./problems/* '+ config.destinationDir + '/www/problems/',
+															      'cp -R ./images/* '+ config.destinationDir +'/www/images/',
+															      'cp ../db_user_password '+ config.destinationDir +'/db_user_password'])).on("end", function(){
+																  console.log("Build complete, copying files...");
+																  done();
+															      });
+				    });
 				});
 		});
 	});
