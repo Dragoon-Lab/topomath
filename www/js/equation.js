@@ -255,7 +255,8 @@ define([
 					solution.plotValues[id].push(timeStepSolution.point.get(counter, 0));
 				});
 			}
-			solution.xvars = timeStepSolution.vars;
+			if(timeStepSolution && timeStepSolution.hasOwnProperty('vars'))
+				solution.xvars = timeStepSolution.vars;
 			console.log("solution for the system of equations ", solution);
 
 			return solution;
