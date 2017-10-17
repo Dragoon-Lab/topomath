@@ -373,7 +373,7 @@ define([
 				xvars: [],
 				plotVariables: [],
 				expressions: [],
-				values: {},
+				values: {}
 			};
 
 			// calling isNodeRequired because in student mode node does not have the genus property
