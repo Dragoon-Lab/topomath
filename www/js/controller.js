@@ -589,16 +589,27 @@ define([
 
 			if(model.getNodeIDFor){
 				var d = registry.byId(this.controlMap.description);
-				array.forEach(this._model.authored.getDescriptions(), function(desc){
+				var v = registry.byId(this.controlMap.variable);
+				array.forEach(this._model.authored.getDescriptions(), lang.hitch(this, function(desc){
 					var exists =  model.getNodeIDFor(desc.value);
-					
+
 					if(d.getOptions(desc)) {
 						d.getOptions(desc).disabled=exists;
 						if(desc.value == nodeName){
 							d.getOptions(desc).disabled=false;
 						}
 					}
-				});
+					var variable_name = this._model.authored.getName(desc.value);
+					var option = {label:variable_name, value: variable_name};
+					if(v.getOptions(option)){
+						var disabled = false;
+						if(exists!== null && model.getName(exists)!== undefined)
+							disabled = true
+						v.getOptions(option).disabled=disabled;
+					}
+					// To reflect the changes to UI
+					v.startup();
+				}));
 			}
 
 			if(this.nodeType == "quantity"){
