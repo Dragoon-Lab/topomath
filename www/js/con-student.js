@@ -20,7 +20,7 @@ define([
 	"dijit/TooltipDialog",
 	"dijit/popup",
 	'./controller',
-	"./pedagogical_module",
+	"./pedagogical-module",
 	"./typechecker",
 	"./equation"
 ], function(aspect, array, declare, lang, dom, domClass, style, ready,on,

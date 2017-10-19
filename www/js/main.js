@@ -23,13 +23,16 @@ define([
 	'./logging',
 	'./popup-dialog',
 	'./event-logs',
-	'./renderSolution'
+	'./render-solution',
+	'./user-messages',
+	'./message-box'
 ], function(array, geometry, dom, style, aspect, ready, registry, event, ioQuery, on, Button, domConstruct, lang,
-			menu, tutorConfiguration, session, model, equation, drawModel, controlAuthor, controlStudent, logging, popupDialog, eventLogs, Solution){
+			menu, tutorConfiguration, session, model, equation, drawModel, controlAuthor, controlStudent, logging, popupDialog, eventLogs, Solution, messages, messageBox){
 
 	console.log("load main.js");
 	// Get session parameters
 	var query = {};
+	var _messages = messages.get("app");
 	//this change will keep it backward compatible
 	//as $_REQUEST is used at the place instead of $_POST.
 	if(dom.byId("query").value){
@@ -56,10 +59,9 @@ define([
 			console.warn("Dragoon log files won't work since we can't set up a session.");
 			console.error("Function called without arguments");
 			// show error message and exit
-			/*var errorMessage = new messageBox("errorMessageBox", "error", "Missing information, please recheck the query");
+			var errorMessage = new messageBox("errorMessageBox", "error", _messages["missing"]);
 			errorMessage.show();
 			throw Error("please retry, insufficient information");
-			*/
 		}
 	}
 
@@ -74,18 +76,18 @@ define([
 			try{
 				_model.loadModel(solutionGraph);
 			} catch(err){
-				if (!_model.isStudentMode()) {
-					//var errorMessage = new messageBox("errorMessageBox", "error", error.message);
-					//errorMessage.show();
+				if (!_session.isStudentMode) {
+					var errorMessage = new messageBox("errorMessageBox", "error", _messages["duplicate.nodes"] + error.message, true);
+					errorMessage.show();
 					throw Error(err);
 				} else {
-					//var errorMessage = new messageBox("errorMessageBox", "error", "This problem could not be loaded. Please contact the problem's author.");
-					//errorMessage.show();
-					throw Error("Model could not be loaded.");
+					var errorMessage = new messageBox("errorMessageBox", "error", _messages["duplicate.nodes.student"], true);
+					errorMessage.show();
+					throw Error("The model has duplicate nodes.");
 				}
 			}
 			// This version of code addresses loading errors in cases where problem is empty, incomplete or has no root node in coached mode
-			if (!_model.isStudentMode()) {
+			if (!_session.isStudentMode) {
 				//check if the probleis empty
 				try {
 					console.log("checking for emptiness");
@@ -117,7 +119,9 @@ define([
 
 		} else {
 			console.log("Its a new problem");
-			// TODO: show the message box at the top to say that its a new problem.
+			var m = _session.isStudentMode ? "doesnt.exist" : "new.problem";
+			var box = new messageBox("errorMessageBox", "warn", _messages[m], true);
+			box.show();
 			// Add message box in student mode
 		}
 		
