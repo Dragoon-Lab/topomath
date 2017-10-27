@@ -52,7 +52,7 @@ define([
 			_container = container || "errorMessageBox";
 			_type = type;
 			_message = message;
-			this._close = closable || true;
+			this._close = closable === undefined ? true : closable;
 			this._initMessageBox();
 		},
 
