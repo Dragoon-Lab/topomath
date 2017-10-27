@@ -7,6 +7,8 @@
 	<title>TopoMath</title>
 	<link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon"/>
 	<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+	<link rel="stylesheet" href="./dijit/themes/claro/claro.css">
+
 	<script type = "text/javascript" src = "version.js"></script>
 	<script type="text/javascript">
 		var version = "";
@@ -171,8 +173,8 @@
 			<div class = "quantity-description-wrapper" id="quantity-description">
 				
 				<div class="quantity-count">
-					<div>Quantities : 
-						<span id="quantity-node-count"></span>
+					<div>Unknowns : 
+						<span id="unknown-quantity-node-count"></span>
 					</div>
 				</div>
 			</div>
@@ -213,17 +215,17 @@
 						<div id="authorDescriptionQuestionMark" class="questionMark"></div>
 						<label for="descriptionInputbox">Description</label>
 					</span>
-					<input id="descriptionInputbox" data-dojo-type="dijit/form/ComboBox">
+					<textarea id="descriptionInputbox" rows=3 cols=37 data-dojo-type="dijit/form/SimpleTextarea" style="resize: vertical;"></textarea>						
 				</div>
 				<div id="descriptionInputboxContainerStudent" class="fieldgroup" style="display: none;">
-				<span class="fixedwidth">
-					<div id="descriptionQuestionMark" class="questionMark"></div>
-					<label for="selectDescription">Description</label>
-				</span>
-				<select id="selectDescription" data-dojo-type="dijit/form/Select">
-					<option value='defaultSelect'>--Select--</option>
-				</select>
-			</div>
+					<span class="fixedwidth">
+						<div id="descriptionQuestionMark" class="questionMark"></div>
+						<label for="selectDescription">Description</label>
+					</span>
+					<select id="selectDescription" data-dojo-type="dijit/form/Select">
+						<option value='defaultSelect'>--Select--</option>
+					</select>
+				</div>
 			</div>
 
 			<div id="variableOptionalityContainer" class="fieldgroup" style="display: none;">
@@ -284,7 +286,7 @@
 			<div id="rootNodeToggleContainer" class="fieldgroup" style="display: none;">
 				<span class="fixedwidth">
 					<div id="questionMarkRoot" class="questionMark"></div>
-					<label for ="rootNodeToggleCheckbox" title ="Mark this node as a root node.">Root</label>
+					<label for ="rootNodeToggleCheckbox" title ="Mark this node as Sought node.">Sought</label>
 				</span>
 				<input id ="rootNodeToggleCheckbox" name ="markRootNode" data-dojo-type="dijit/form/CheckBox" value="agreed" checked="false"/>
 			</div>
