@@ -105,7 +105,9 @@ define([
 							}
 						}
 					}, this);
-					connections = connections.concat(this.createConnections(expr, subModel));
+					var _c = this.createConnections(expr, subModel);
+					connections = connections.concat(_c);
+					connections = Array.from(new Set(connections.map(JSON.stringify))).map(JSON.parse);
 				}, this);
 				return {
 					variableList: variableList,

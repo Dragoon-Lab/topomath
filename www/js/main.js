@@ -150,6 +150,19 @@ define([
 
 			var dm = new drawModel(_model.active, _dragNodes, _feedback);
 			var errDialog = new popupDialog();
+			//create a controller object
+			//For now using empty  ui_config 
+			var controllerObject = (!_model.isStudentMode()) ?
+				new controlAuthor(query.m, _model, _config) :
+				new controlStudent(query.m, _model, _config);
+
+			aspect.after(dm, "addNode", function(){
+				controllerObject.computeNodeCount();
+			}, true);
+			aspect.after(dm, "updateNode", function(){
+				controllerObject.computeNodeCount();
+			}, true);
+			dm.init();
 
 			/*********  below this part are the event handling *********/
 			aspect.after(dm, "onClickNoMove", function(mover){
@@ -226,12 +239,6 @@ define([
 				};
 			}, this);
 
-			//create a controller object
-			//For now using empty  ui_config 
-			var controllerObject = (!_model.isStudentMode()) ?
-				new controlAuthor(query.m, _model, _config) :
-				new controlStudent(query.m, _model, _config);
-
 			if(_model.isStudentMode()){
 				//controllerObject.setAssessment(session); //set up assessment for student.
 			}
@@ -248,7 +255,7 @@ define([
 					name: "create-node",
 					nodeType: "quantity"
 				});
-				controllerObject.showNodeEditor(id);	
+				controllerObject.showNodeEditor(id);
 				dm.addNode(_model.active.getNode(id));
 			});
 
@@ -267,7 +274,7 @@ define([
 				});
 				console.log("New equation node created id - ", id);
 				controllerObject.showNodeEditor(id);
-				controllerObject.addNode(_model.active.getNode(id));
+				dm.addNode(_model.active.getNode(id));
 			});
 
 			menu.add("graphButton", function(e){
@@ -284,16 +291,21 @@ define([
 
 			aspect.after(controllerObject, "addNode",
 				lang.hitch(dm, dm.addNode), true);
-
+			
 			aspect.after(controllerObject, "setConnections",
 				lang.hitch(dm, dm.updateNodeConnections), true);
 
 			aspect.after(controllerObject, "updateNodeView",
 				lang.hitch(dm, dm.updateNode), true);
-
+			
 			aspect.after(dm, "deleteNode", function(){
 				_session.saveModel(_model.model);
+				controllerObject.computeNodeCount();
 			});
+
+			aspect.after(controllerObject, "computeNodeCount", function(id){
+                dm.updateNodeCount();
+            });
 
 			aspect.after(dm, "deleteEquationLinks", function(nodeIDs){
 				console.log(nodeIDs);
@@ -335,7 +347,7 @@ define([
 			//all the things we need to do once node is closed
 			aspect.after(registry.byId('nodeEditor'), "hide", function(){
 				_session.saveModel(_model.model);
-				dm.updateNode(_model.active.getNode(controllerObject.currentID));
+				dm.updateNode(_model.active.getNode(controllerObject.currentID), true);
 			});
 
 			aspect.after(registry.byId('solution'), "hide", function(){
