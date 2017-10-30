@@ -21,11 +21,16 @@ pipeline {
                 dir("www"){
                     sh 'npm run build'
                 }
-		dir("release"){
-		    sh 'cat build-output.txt'
-		    sh 'cat live/www/build-report.txt'
-		}
             }
         }
+    }
+    post{
+        always {
+            dir("release") {
+	        sh 'cat build-output.txt || true'
+	        sh 'cat www/build-report.txt || true'
+		sh 'cat live/www/build-report.txt || true'
+	    }
+	}
     }
 }

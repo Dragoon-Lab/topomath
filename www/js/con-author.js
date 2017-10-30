@@ -507,7 +507,8 @@ define([
 				}
 				console.log("directives are", directives);
 				this.applyDirectives(directives);
-				this.createExpressionNodes(returnObj, true); 
+				this.createExpressionNodes(returnObj, true);
+				return directives; 
 			} /* TODO: when equation for student values
 			else if(model && model =="given"){
 				var studentNodeID = this._model.student.getNodeIDFor(this.currentID);
@@ -621,8 +622,9 @@ define([
 			var descriptionWidget = registry.byId(this.controlMap.description);
 
 			var inputs = [];
-			var descriptions = [];
-			var units = [];
+			var quantityDescriptions = [];
+			var equationDescriptions = [];
+			var units = [];	
 
 			var desc = this._model.authored.getDescription(nodeid);
 			registry.byId(this.controlMap.description).set('value', desc || '', false);
@@ -651,10 +653,15 @@ define([
 			array.forEach(authorDesc, function(desc){
 				if(desc.label){
 					var name = this._model.authored.getName(desc.value);
-					var obj = {name:name, id: desc.id};
+					var obj = {name:name, id: desc.value};
 					
 					if(obj.name ) inputs.push(obj);
-					descriptions.push({name: this._model.authored.getDescription(desc.value), id: desc.id});
+					var objType = this._model.authored.getType(obj.id);
+					if( objType === "quantity"){
+						quantityDescriptions.push({name: this._model.authored.getDescription(desc.value), id: desc.id});
+					}else if( objType === "equation"){
+						equationDescriptions.push({name: this._model.authored.getDescription(desc.value), id: desc.id});
+					}
 				}
 			}, this);
 			// Sort inputs in AUTHOR mode as alphabetic order
@@ -711,8 +718,6 @@ define([
 
 				// memory wrapper for data provides full read and write capabilities
 				// In future if necessary we can store them in variables and exploit the capabilities (var a = new memory({data: descriptions}))
-
-				descriptionWidget.set("store", new memory({data: descriptions}));
 
 				unitsWidget.set("store", new memory({data: units}));
 
@@ -771,6 +776,8 @@ define([
 				m = new memory({data: inputs});
 				inputsWidget.set("store", m);
 				
+				descriptionWidget.set("store", new memory({data: equationDescriptions}));
+
 				//In case equation node is already present
 				//color Equation widget
 				
@@ -914,7 +921,7 @@ define([
 				registry.byId(this.controlMap.equation).set("disabled", false);
 				var initial = this._model.student.getValue(studentNodeID);
 				if(typeof initial !== "undefined" && initial != null){
-					registry.byId(this.controlMap.initial).set('value', initial);
+					registry.byId(this.controlMap.value).set('value', initial);
 				}
 				var units = this._model.student.getUnits(studentNodeID);
 				registry.byId(this.controlMap.units).set('value', units || "");
@@ -961,7 +968,6 @@ define([
 			if(nodeType == "quantity"){
 				var varName = registry.byId(this.controlMap.variable).value;
 				var desc = registry.byId(this.controlMap.description).value;
-
 				if(varName != '' && desc != ''){
 					registry.byId(this.controlMap.setStudent).set("disabled",false);
 				}
@@ -1073,7 +1079,7 @@ define([
 			console.log("required" + _requiredVariables);
 
 			if(!hasRootNode){
-				_errorNotes.push("No variable is marked as Root");
+				_errorNotes.push("No quantity is marked as Sought");
 			}
 			if(_errorNotes && _errorNotes.length > 0){
 				array.forEach(_errorNotes, function(_error){
