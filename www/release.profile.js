@@ -27,6 +27,9 @@ var profile = (function(){
 			name: "parser",
 			location: "math-parser"
 		},{
+			name: "solver",
+			location: "math-solver"
+		},{
 			name: "jsPlumb",
 			location: "jsPlumb/src"
 		}],

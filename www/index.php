@@ -7,6 +7,8 @@
 	<title>TopoMath</title>
 	<link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon"/>
 	<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+	<link rel="stylesheet" href="./dijit/themes/claro/claro.css">
+
 	<script type = "text/javascript" src = "version.js"></script>
 	<script type="text/javascript">
 		var version = "";
@@ -171,8 +173,8 @@
 			<div class = "quantity-description-wrapper" id="quantity-description">
 				
 				<div class="quantity-count">
-					<div>Quantities : 
-						<span id="quantity-node-count"></span>
+					<div>Unknowns : 
+						<span id="unknown-quantity-node-count"></span>
 					</div>
 				</div>
 			</div>
@@ -213,17 +215,17 @@
 						<div id="authorDescriptionQuestionMark" class="questionMark"></div>
 						<label for="descriptionInputbox">Description</label>
 					</span>
-					<input id="descriptionInputbox" data-dojo-type="dijit/form/ComboBox">
+					<textarea id="descriptionInputbox" rows=3 cols=37 data-dojo-type="dijit/form/SimpleTextarea" style="resize: vertical;"></textarea>						
 				</div>
 				<div id="descriptionInputboxContainerStudent" class="fieldgroup" style="display: none;">
-				<span class="fixedwidth">
-					<div id="descriptionQuestionMark" class="questionMark"></div>
-					<label for="selectDescription">Description</label>
-				</span>
-				<select id="selectDescription" data-dojo-type="dijit/form/Select">
-					<option value='defaultSelect'>--Select--</option>
-				</select>
-			</div>
+					<span class="fixedwidth">
+						<div id="descriptionQuestionMark" class="questionMark"></div>
+						<label for="selectDescription">Description</label>
+					</span>
+					<select id="selectDescription" data-dojo-type="dijit/form/Select">
+						<option value='defaultSelect'>--Select--</option>
+					</select>
+				</div>
 			</div>
 
 			<div id="variableOptionalityContainer" class="fieldgroup" style="display: none;">
@@ -284,7 +286,7 @@
 			<div id="rootNodeToggleContainer" class="fieldgroup" style="display: none;">
 				<span class="fixedwidth">
 					<div id="questionMarkRoot" class="questionMark"></div>
-					<label for ="rootNodeToggleCheckbox" title ="Mark this node as a root node.">Root</label>
+					<label for ="rootNodeToggleCheckbox" title ="Mark this node as Sought node.">Sought</label>
 				</span>
 				<input id ="rootNodeToggleCheckbox" name ="markRootNode" data-dojo-type="dijit/form/CheckBox" value="agreed" checked="false"/>
 			</div>
@@ -328,6 +330,7 @@
 						<button id="minusButton" title="Minus" type="button" data-dojo-type="dijit/form/Button" iconClass="dijitNoIcon"><span class="fa fa-minus"></span></button>
 						<button id="timesButton"  title="Times" type="button" data-dojo-type="dijit/form/Button" iconClass="dijitNoIcon"><span class="fa fa-asterisk"></span></button>
 						<button id="divideButton"  title="Divide" type="button" data-dojo-type="dijit/form/Button" iconClass="dijitNoIcon"><strong class="fa fa-minus fa-division"></strong></button>
+						<button id="equalsButton"  title="Equals" type="button" data-dojo-type="dijit/form/Button" iconClass="dijitNoIcon"><strong >=</strong></button>
 						<div id="operationsQuestionMark" class="questionMark" style="margin: 0 0 -8px 0"></div>
 					</div>
 				</div>
@@ -352,18 +355,18 @@
 			<button id="OkButton" type="button" data-dojo-type="dijit/form/Button">OK</button>
 		</div> 
 		<!-- Dialog showing plot or table of solution  -->
-		<div class="claro dijitLayoutContainer dijitDialog" id="solution" data-dojo-type="dijit.Dialog" style="width: 50%; min-height: 80%; background-color: #FFFFFF">
+		<div class="claro dijitLayoutContainer dijitDialog" id="solution" data-dojo-type="dijit.Dialog" style="min-width: 70%; min-height: 80%; background-color: #FFFFFF">
 			<div id= 'graphErrorMessage'></div>
-			<div data-dojo-type= 'dijit/layout/ContentPane' style='overflow:visible; width:95%; height:95%; float:left; background-color: #FFFFFF;'>
+			<div data-dojo-type= 'dijit/layout/ContentPane' style='overflow:visible; width:55%; height:95%; float:left; background-color: #FFFFFF;'>
 				<div id="GraphTabContainer" data-dojo-type='dijit/layout/TabContainer' style='overflow:visible; display:none;'>
-					<div id='GraphTab' data-dojo-type='dijit/layout/ContentPane' style='overflow:auto;' title="Graph"></div>
+					<div id='GraphTab' data-dojo-type='dijit/layout/ContentPane' style='overflow:auto;' title="Graph vs Time"></div>
 					<div id='TableTab' data-dojo-type='dijit/layout/ContentPane' style='overflow:auto' title="Table"></div>
-					<div id='StaticTab' data-dojo-type='dijit/layout/ContentPane' style='overflow:auto' title="Static"></div>
+					<div id='StaticTab' data-dojo-type='dijit/layout/ContentPane' style='overflow:auto' title="Graph vs Parameter"></div>
 				</div>
 			</div>
-			<!--div id="SliderPane" data-dojo-type='dijit/layout/ContentPane' style='overflow:visible; min-height: 95%; width:40%; float:right; background-color: #FFFFFF'>
+			<div id="SliderPane" data-dojo-type='dijit/layout/ContentPane' style='overflow:visible; min-height: 95%; width:40%; float:right; background-color: #FFFFFF'>
 				<div id= 'solutionMessage'></div>
-			</div-->
+			</div>
 		</div>
 		<!-- popup Dialog to show unfinished tasks before closing -->
 		<div data-dojo-type="dijit/Dialog" data-dojo-id="popupDialog" id ="popupDialog" title="Message" data-dojo-props="closable:false">

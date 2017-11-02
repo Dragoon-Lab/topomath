@@ -23,13 +23,16 @@ define([
 	'./logging',
 	'./popup-dialog',
 	'./event-logs',
-	'./renderSolution'
+	'./render-solution',
+	'./user-messages',
+	'./message-box'
 ], function(array, geometry, dom, style, aspect, ready, registry, event, ioQuery, on, Button, domConstruct, lang,
-			menu, tutorConfiguration, session, model, equation, drawModel, controlAuthor, controlStudent, logging, popupDialog, eventLogs, Solution){
+			menu, tutorConfiguration, session, model, equation, drawModel, controlAuthor, controlStudent, logging, popupDialog, eventLogs, Solution, messages, messageBox){
 
 	console.log("load main.js");
 	// Get session parameters
 	var query = {};
+	var _messages = messages.get("app");
 	//this change will keep it backward compatible
 	//as $_REQUEST is used at the place instead of $_POST.
 	if(dom.byId("query").value){
@@ -56,10 +59,9 @@ define([
 			console.warn("Dragoon log files won't work since we can't set up a session.");
 			console.error("Function called without arguments");
 			// show error message and exit
-			/*var errorMessage = new messageBox("errorMessageBox", "error", "Missing information, please recheck the query");
+			var errorMessage = new messageBox("errorMessageBox", "error", _messages["missing"]);
 			errorMessage.show();
 			throw Error("please retry, insufficient information");
-			*/
 		}
 	}
 
@@ -74,18 +76,18 @@ define([
 			try{
 				_model.loadModel(solutionGraph);
 			} catch(err){
-				if (!_model.isStudentMode()) {
-					//var errorMessage = new messageBox("errorMessageBox", "error", error.message);
-					//errorMessage.show();
+				if (!_session.isStudentMode) {
+					var errorMessage = new messageBox("errorMessageBox", "error", _messages["duplicate.nodes"] + error.message, true);
+					errorMessage.show();
 					throw Error(err);
 				} else {
-					//var errorMessage = new messageBox("errorMessageBox", "error", "This problem could not be loaded. Please contact the problem's author.");
-					//errorMessage.show();
-					throw Error("Model could not be loaded.");
+					var errorMessage = new messageBox("errorMessageBox", "error", _messages["duplicate.nodes.student"], true);
+					errorMessage.show();
+					throw Error("The model has duplicate nodes.");
 				}
 			}
 			// This version of code addresses loading errors in cases where problem is empty, incomplete or has no root node in coached mode
-			if (!_model.isStudentMode()) {
+			if (!_session.isStudentMode) {
 				//check if the probleis empty
 				try {
 					console.log("checking for emptiness");
@@ -117,7 +119,9 @@ define([
 
 		} else {
 			console.log("Its a new problem");
-			// TODO: show the message box at the top to say that its a new problem.
+			var m = _session.isStudentMode ? "doesnt.exist" : "new.problem";
+			var box = new messageBox("errorMessageBox", "warn", _messages[m], true);
+			box.show();
 			// Add message box in student mode
 		}
 		
@@ -146,6 +150,19 @@ define([
 
 			var dm = new drawModel(_model.active, _dragNodes, _feedback);
 			var errDialog = new popupDialog();
+			//create a controller object
+			//For now using empty  ui_config 
+			var controllerObject = (!_model.isStudentMode()) ?
+				new controlAuthor(query.m, _model, _config) :
+				new controlStudent(query.m, _model, _config);
+
+			aspect.after(dm, "addNode", function(){
+				controllerObject.computeNodeCount();
+			}, true);
+			aspect.after(dm, "updateNode", function(){
+				controllerObject.computeNodeCount();
+			}, true);
+			dm.init();
 
 			/*********  below this part are the event handling *********/
 			aspect.after(dm, "onClickNoMove", function(mover){
@@ -222,12 +239,6 @@ define([
 				};
 			}, this);
 
-			//create a controller object
-			//For now using empty  ui_config 
-			var controllerObject = (!_model.isStudentMode()) ?
-				new controlAuthor(query.m, _model, _config) :
-				new controlStudent(query.m, _model, _config);
-
 			if(_model.isStudentMode()){
 				//controllerObject.setAssessment(session); //set up assessment for student.
 			}
@@ -244,7 +255,7 @@ define([
 					name: "create-node",
 					nodeType: "quantity"
 				});
-				controllerObject.showNodeEditor(id);	
+				controllerObject.showNodeEditor(id);
 				dm.addNode(_model.active.getNode(id));
 			});
 
@@ -263,7 +274,7 @@ define([
 				});
 				console.log("New equation node created id - ", id);
 				controllerObject.showNodeEditor(id);
-				controllerObject.addNode(_model.active.getNode(id));
+				dm.addNode(_model.active.getNode(id));
 			});
 
 			menu.add("graphButton", function(e){
@@ -280,16 +291,21 @@ define([
 
 			aspect.after(controllerObject, "addNode",
 				lang.hitch(dm, dm.addNode), true);
-
+			
 			aspect.after(controllerObject, "setConnections",
 				lang.hitch(dm, dm.updateNodeConnections), true);
 
 			aspect.after(controllerObject, "updateNodeView",
 				lang.hitch(dm, dm.updateNode), true);
-
+			
 			aspect.after(dm, "deleteNode", function(){
 				_session.saveModel(_model.model);
+				controllerObject.computeNodeCount();
 			});
+
+			aspect.after(controllerObject, "computeNodeCount", function(id){
+                dm.updateNodeCount();
+            });
 
 			aspect.after(dm, "deleteEquationLinks", function(nodeIDs){
 				console.log(nodeIDs);
@@ -336,7 +352,7 @@ define([
 			//all the things we need to do once node is closed
 			aspect.after(registry.byId('nodeEditor'), "hide", function(){
 				_session.saveModel(_model.model);
-				dm.updateNode(_model.active.getNode(controllerObject.currentID));
+				dm.updateNode(_model.active.getNode(controllerObject.currentID), true);
 			});
 
 			aspect.after(registry.byId('solution'), "hide", function(){

@@ -167,6 +167,11 @@ html, body, #main{
 	margin-bottom: 5px;
 }
 
+#selectDescription_dropdown {
+    overflow-x: scroll;
+    max-width: 320px;
+}
+
 .error{
 	font:11pt Arial,Myriad,Tahoma,Verdana,sans-serif;
 //	font-weight: bold;
@@ -347,6 +352,9 @@ table.solution, table.solution th, table.solution td {
 table.solution th{
 	padding: 0 10px;
 	text-align: center;
+}
+.tabLabel:focus{
+  outline: none;
 }
 
 div.legend{

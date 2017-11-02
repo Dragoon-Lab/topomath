@@ -6,8 +6,7 @@ define([
 	'./pedagogical_module',
 	'./renderSolution',
 	'./logging',
-	'./main'
-], function(baseUnload, aspect, ready, controller, pm, solution, logging, main){
+], function(baseUnload, aspect, ready, controller, pm, solution, logging){
 	var _logger = null;
 	/**
 	* non intrusive way for logging use aspect.after and log the events.

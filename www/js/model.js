@@ -14,6 +14,8 @@ define([
 				};
 				obj.active = mode === "AUTHOR" ? obj.authored : obj.student;
 				obj._session = session;
+				this._unknownQuantityNodeCount = 0;
+				this._equationNodeCount = 0;
 			},
 			_ID: 1,
 			beginX: 450,
@@ -22,6 +24,8 @@ define([
 			nodeHeight: 100,
 			initialNodeIDString: "_initial",
 			initialNodeDisplayString: "prior",
+			 _unknownQuantityNodeCount : 0,
+			 _equationNodeCount: 0,
 			_updateNextXYPosition: function(){
 				var pos = {
 					x: this.x,
@@ -244,6 +248,25 @@ define([
 			* @params - id - node ID may or may not have initial in its ID string
 			*			id - returns the id with removed string
 			*/
+			getEquationCount: function(){
+				obj._equationNodeCount = 0;
+				array.forEach(this.getNodes(), function(node){
+					if(node && node.type === "equation"){
+						obj._equationNodeCount++;
+					}
+				}, this);
+				return obj._equationNodeCount;
+			},
+			
+			getUnknownQuantityCount: function(){
+				obj._unknownQuantityNodeCount = 0;
+				array.forEach(this.getNodes(), function(node){
+					if(node && node.type === "quantity" && node.variableType && node.variableType === "unknown"){
+						obj._unknownQuantityNodeCount++;
+					}
+				}, this);
+				return obj._unknownQuantityNodeCount;
+			},
 			getID: function(/* string */ id){
 				var initialNodeString = this.getInitialNodeIDString();
 				return id.indexOf(initialNodeString) > 0 ?
@@ -978,9 +1001,10 @@ define([
 				var arr = [];
 				array.forEach(nodes, function(node){
 					var genus = obj.authored.getGenus(node.authoredID);
-					if(genus == "requred" || genus == "allowed")
+					if(genus == "required" || genus == "allowed")
 						arr.push(node);
 				});
+				return arr;
 			}
 		}, both);
 

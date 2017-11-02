@@ -105,7 +105,9 @@ define([
 							}
 						}
 					}, this);
-					connections = connections.concat(this.createConnections(expr, subModel));
+					var _c = this.createConnections(expr, subModel);
+					connections = connections.concat(_c);
+					connections = Array.from(new Set(connections.map(JSON.stringify))).map(JSON.parse);
 				}, this);
 				return {
 					variableList: variableList,
@@ -216,14 +218,17 @@ define([
 				solution.vars = solver.xvars;
 			} catch(e) {
 				// Error handling has to be done for each error in Solver
-				console.log(e);
+				throw e;
 			}
 
 			return solution;
 		},
 
 		graph: function(subModel, equations, staticID){
-			var solution = this.initSolution(subModel, equations);
+			var solution = {};
+			solution.plotValues = this.initSolution(subModel, equations);
+			solution.status = {};
+			solution.status.error = false;
 			var values = {};
 			var equationCopy = equations.expressions.slice(0);
 
@@ -232,19 +237,28 @@ define([
 				values[id] = subModel.getValue(id);
 			});*/
 			values = equations.values;
+			var timeStepSolution;
 			for(var i = 1; i <= timeSteps; i++){
 				if(staticID)
 					values[staticID] = equations.time[i-1];
 				array.forEach(equations.xvars, function(id){
-					values[id+subModel.getInitialNodeIDString()] = solution[id][i-1];
+					values[id+subModel.getInitialNodeIDString()] = solution.plotValues[id][i-1];
 				});
 				equations.values = values;
 				equations.expressions = equationCopy;
-				var timeStepSolution = this.solveTimeStep(equations);
+				try{
+					timeStepSolution = this.solveTimeStep(equations);
+				} catch(e){
+					solution.status.error = true;
+					solution.status.message = e.type;
+					break;
+				}
 				array.forEach(timeStepSolution.vars, function(id, counter){
-					solution[id].push(timeStepSolution.point.get(counter, 0));
+					solution.plotValues[id].push(timeStepSolution.point.get(counter, 0));
 				});
 			}
+			if(timeStepSolution && timeStepSolution.hasOwnProperty('vars'))
+				solution.xvars = timeStepSolution.vars;
 			console.log("solution for the system of equations ", solution);
 
 			return solution;
@@ -281,19 +295,19 @@ define([
 				sParse = this.parseEquation(sEquation);
 			} catch(e){
 				console.log(e);
-				throw Error(e);
 			}
 
 			// create evaluation point
 			var variables = {};
 			var createEvaluationPoint = function(){
 				variables = {};
-				var addVariableValue = function(variable, value){
-					if(!(variable in variables)){
+				var addVariableValue = function(variable, value, doAddValue){
+					doAddValue = doAddValue || false;
+					if(!(variable in variables) || doAddValue){
 						value = value || Math.random();
 						variables[variable] = value;
-						return value;
 					}
+					return value;
 				};
 				for(var i = 0; i < 2; i++){
 					array.forEach(sParse[i].variables(), function(v)  {
@@ -301,7 +315,7 @@ define([
 						var authorID = model.student.getAuthoredID(v);
 						if(v.indexOf(str) > 0)
 							authorID += str;
-						variables[authorID] = val;
+						addVariableValue(authorID, val, true);
 					}, this);
 					array.forEach(aParse[i].variables(), function(v){
 						addVariableValue(v);
@@ -366,6 +380,10 @@ define([
 
 			// calling isNodeRequired because in student mode node does not have the genus property
 			// it has to be retrieved from the corresponding authored node.
+			var incompleteModel = "false";
+			var status = {
+				error: false
+			};
 			array.forEach(nodes, function(node){
 				if(subModel.isNodeRequired(node.ID) || subModel.isNodeAllowed(node.ID)){
 					switch(node.type){
@@ -383,18 +401,43 @@ define([
 									equations.func.push(node.ID);
 									break;
 								default:
-									console.error("Quantity node type not defined");
+									status.error = true;
+									status.node = subModel.getVariable(node.ID);
+									status.field = "variable type";
+									status.message = "model.incomplete";
 							}
 							break;
 						case "equation":
 							equations.expressions.push(node.equation);
 							break;
 						default:
-							console.error("Node type not defined");
+							status.error = true;
+							status.node = subModel.getVariable(node.ID);
+							status.field = "node type";
+							status.message = "model.incomplete";
 					}
+				}
+				if(!subModel.isComplete(node.ID)){
+					status.error = true;
+					status.node = subModel.getVariable(node.ID);
+					status.field = "";
+					status.message = "model.incomplete";
 				}
 			}, this);
 			equations.plotVariables = equations.xvars.concat(equations.func);
+
+			if(equations.plotVariables.length == 0){
+				status.error = true;
+				if(nodes.length == 0)
+					status.message = "empty.model";
+				else if(equations.expressions.length == 0)
+					status.message = "no.equations";
+			}
+			if(equations.expressions.length == 0){
+				status.error = true;
+				status.message = "no.equations";
+			}
+			equations.status = status;
 
 			return equations;
 		},
