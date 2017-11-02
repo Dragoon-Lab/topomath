@@ -314,7 +314,6 @@ define([
 				var problemComplete = controllerObject.checkDone();
 				if( problemComplete.errorNotes === "" ){
 					// if in preview mode , Logging is not required:
-					// TODO : Add Logging
 					if(window.history.length === 1)
 						window.close();
 					else
@@ -327,6 +326,12 @@ define([
 					buttons.push(exitButton);
 					errDialog.showDialog(title, problemComplete.errorNotes, buttons, /*optional argument*/"Don't Exit");
 				}
+				var solved = _model.matchesGivenSolution();
+				_logger.logUserEvent({
+					type: "menu-choice",
+					name: "done-node",
+					problemComplete: solved
+				});
 			});
 			//all the things we need to do once node is closed
 			aspect.after(registry.byId('nodeEditor'), "hide", function(){

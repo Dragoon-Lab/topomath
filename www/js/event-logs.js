@@ -5,8 +5,9 @@ define([
 	'./controller',
 	'./pedagogical_module',
 	'./renderSolution',
-	'./logging'
-], function(baseUnload, aspect, ready, controller, pm, solution, logging){
+	'./logging',
+	'./main'
+], function(baseUnload, aspect, ready, controller, pm, solution, logging, main){
 	var _logger = null;
 	/**
 	* non intrusive way for logging use aspect.after and log the events.
@@ -29,14 +30,24 @@ define([
 		_logger.log("solution-step", obj);
 	}, true);
 
+	aspect.after(controller.prototype, "closeEditor", function(id){
+		_logger.logUserEvent({
+			type: 'close-dialog-box',
+			nodeID: id,
+			node: this._model.active.getVariable(id) || this._model.active.getDescription(id),
+			nodeComplete: this._model.active.isComplete(id)
+		});
+	}, true);
+
 	aspect.after(pm.prototype, "logSolutionStep", function(obj){
 		_logger.log("solution-step", obj);
 	}, true);
 
 	aspect.after(solution.prototype, "render", function(tab){
 		_logger.logUserEvent({
-			name: tab,
-			type: "solution-manipulation"
+			name: tab+"-button",
+			type: "menu-choice",
+			problemComplete: this._model.matchesGivenSolution()
 		});
 	});
 
