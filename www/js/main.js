@@ -388,7 +388,6 @@ define([
 	var sol;
 	var initSolution = function(_type){
 		sol = new Solution(_model);
-		// TODO: add proble completeness and logging
 		sol.render(_type);
 	};
 });

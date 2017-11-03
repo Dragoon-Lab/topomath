@@ -3,8 +3,8 @@ define([
 	'dojo/aspect',
 	'dojo/ready',
 	'./controller',
-	'./pedagogical_module',
-	'./renderSolution',
+	'./pedagogical-module',
+	'./render-solution',
 	'./logging',
 ], function(baseUnload, aspect, ready, controller, pm, solution, logging){
 	var _logger = null;
@@ -48,7 +48,7 @@ define([
 			type: "menu-choice",
 			problemComplete: this._model.matchesGivenSolution()
 		});
-	});
+	}, true);
 
 	aspect.after(solution.prototype, "hide", function(){
 		_logger.logUserEvent({
