@@ -50,7 +50,7 @@ define([
 			domStyle.set(this.tabContainer.domNode, "display", "none");
 
 			this.activeSolution = this.findSolution(true);
-			if(this.isStudentMode){
+			if(this.isStudentMode && !this.activeSolution.status.error){
 				this.authorSolution = this.findSolution(false);
 			}
 
@@ -263,6 +263,7 @@ define([
 			this.staticVar = 0;
 			var staticNodes = this.activeSolution.params;
 			this.staticTab = registry.byId("StaticTab");
+			dom.byId("StaticTab").innerHTML = "";
 			/**
 			* this function is called only when this.isStatic is true. Updating the condition to include parameters
 			* as well because after this there is a lot of logic which is used for showing static tab things.
