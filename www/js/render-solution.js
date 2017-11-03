@@ -498,7 +498,8 @@ define([
 			if(this.isStatic) {
 				var staticVar = this.checkStaticVar(true);
 				var activeSolution = this.findSolution(true, staticVar);
-				this.authorSolution = this.findSolution(false, this._model.student.getAuthoredID(staticVar));
+				if(this.isStudentMode)
+					this.authorSolution = this.findSolution(false, this._model.student.getAuthoredID(staticVar));
 
 				//update and render the charts
 				array.forEach(this.activeSolution.plotVariables, function(id, k){
