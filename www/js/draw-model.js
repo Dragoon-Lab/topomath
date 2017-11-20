@@ -489,6 +489,9 @@ define([
 				var descHTML = dom.byId(domID);
 				var parentDIV = type+"-description";
 				var replaceTag = descHTML ? "replace" : "last";
+				if(replaceTag === "replace"){
+					parentDIV = dojo.byId(ID+"_description");
+				}
 				domConstruct.place(descriptionString, parentDIV, replaceTag);
 				//if(type == "equation")
 				domStyle.set(domID, "background-color", this._model.getColor(ID));

@@ -524,6 +524,31 @@ define([
 					var desc = node.description !== undefined ? node.description : node.explanation;
 					return {label: desc, value: node.ID} ;
 				});
+			},
+			getDescriptionsSortedByName: function(){
+				var descriptions = obj.active.getDescriptions();
+				var descNameMap = array.map(descriptions, function (desc) {
+					var _name;
+					if(this.isStudentMode()){
+						var authoredID = obj.student.getAuthoredID(desc.value);
+						_name = obj.authored.getName(authoredID);
+					}
+					else{
+						_name = obj.authored.getName(desc.value);
+					}
+					if(_name){
+						return {name: _name, description: desc.label, id: desc.value};
+					}
+				}, this);
+				// To remove undefined values
+				descNameMap= descNameMap.filter(function(e){
+					return e;
+				})
+				descNameMap.sort(function (obj1, obj2) {
+					if(obj1.name && obj2.name)
+						return obj1.name.toLowerCase().localeCompare(obj2.name.toLowerCase());
+				}, this);
+				return descNameMap;
 			}
 		};
 
@@ -744,18 +769,6 @@ define([
 						arr.push(node);
 				});
 				return arr;
-			},
-			getDescriptionsSortedByName: function(){
-				var descriptions = obj.active.getDescriptions();
-				var descNameMap = array.map(descriptions, function (desc) {
-					var _name = obj.authored.getName(desc.value);
-					return {name: _name, description: desc.label, id: desc.value};
-				}, this);
-				descNameMap.sort(function (obj1, obj2) {
-					if(obj1.name && obj2.name)
-						return obj1.name.toLowerCase().localeCompare(obj2.name.toLowerCase());
-				}, this);
-				return descNameMap;
 			}
 		}, both);
 
@@ -1017,19 +1030,6 @@ define([
 						arr.push(node);
 				});
 				return arr;
-			},
-			getDescriptionsSortedByName: function(){
-				var descriptions = obj.active.getDescriptions();
-				var descNameMap = array.map(descriptions, function (desc) {
-					var authoredID = obj.student.getAuthoredID(desc.value);
-					var _name = obj.authored.getName(authoredID);
-					return {name: _name, description: desc.label, id: desc.value};
-				}, this);
-				descNameMap.sort(function (obj1, obj2) {
-					if(obj1.name && obj2.name)
-						return obj1.name.toLowerCase().localeCompare(obj2.name.toLowerCase());
-				}, this);
-				return descNameMap;
 			}
 		}, both);
 

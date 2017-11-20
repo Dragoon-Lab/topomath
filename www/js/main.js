@@ -158,10 +158,17 @@ define([
 
 			aspect.after(dm, "addNode", function(){
 				controllerObject.computeNodeCount();
+				controllerObject.sortDescriptions();
 			}, true);
+
 			aspect.after(dm, "updateNode", function(){
 				controllerObject.computeNodeCount();
+				controllerObject.sortDescriptions();
 			}, true);
+
+			aspect.after(controllerObject, "sortDescriptions",
+				lang.hitch(dm, dm.updateDescriptionView, true));
+
 			dm.init();
 
 			/*********  below this part are the event handling *********/
@@ -303,17 +310,6 @@ define([
 				_session.saveModel(_model.model);
 				controllerObject.computeNodeCount();
 			});
-
-			aspect.after(dm, "updateNode", function(){
-				controllerObject.sortDescriptions();
-			});
-
-			aspect.after(dm, "addNode", function(){
-				controllerObject.sortDescriptions();
-			});
-
-			aspect.after(controllerObject, "sortDescriptions",
-				lang.hitch(dm, dm.updateDescriptionView, true));
 
 			aspect.after(controllerObject, "computeNodeCount", function(id){
                 dm.updateNodeCount();
