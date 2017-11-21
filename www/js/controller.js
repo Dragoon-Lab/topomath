@@ -596,24 +596,19 @@ define([
 				var d = registry.byId(this.controlMap.description);
 				var v = registry.byId(this.controlMap.variable);
 				array.forEach(this._model.authored.getDescriptions(), lang.hitch(this, function(desc){
-					var exists =  model.getNodeIDFor(desc.value);
-
-					if( d.getOptions !== undefined && d.getOptions(desc)) {
-						d.getOptions(desc).disabled=exists;
-						if(desc.value == nodeName){
-							d.getOptions(desc).disabled=false;
+					if(this._model.doesStudentNodeExist(desc.value)){
+						if( d.getOptions !== undefined && d.getOptions(desc)) {
+							d.getOptions(desc).disabled=true;
 						}
+						var variable_name = this._model.authored.getName(desc.value);
+						var option = {label:variable_name, value: variable_name};
+						if(v.getOptions(option)){
+							var disabled = false;
+							v.getOptions(option).disabled=true;
+						}
+						// To reflect the changes to UI
+						v.startup();
 					}
-					var variable_name = this._model.authored.getName(desc.value);
-					var option = {label:variable_name, value: variable_name};
-					if(v.getOptions(option)){
-						var disabled = false;
-						if(exists!== null && model.getName(exists)!== undefined)
-							disabled = true
-						v.getOptions(option).disabled=disabled;
-					}
-					// To reflect the changes to UI
-					v.startup();
 				}));
 			}
 
