@@ -822,10 +822,8 @@ define([
 		},
 
 		addStudentNode: function(nodeid){
-			this.removeStudentNode(nodeid);
 			var newNodeID = this._model.student.addNode();
 			this.updateStudentNode(nodeid, newNodeID);
-
 		},
 		updateStudentNode: function(nodeid, studentNodeID){
 			var currentNode = this._model.authored.getNode(nodeid);
