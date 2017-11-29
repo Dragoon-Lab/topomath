@@ -365,7 +365,8 @@
 				</div>
 			</div>
 			<div id="SliderPane" data-dojo-type='dijit/layout/ContentPane' style='overflow:visible; min-height: 95%; width:40%; float:right; background-color: #FFFFFF'>
-				<div id= 'solutionMessage'></div>
+				<div id= "graphHelpButton" data-dojo-type='dijit/form/Button' type='button' style="float: right;">Help</div>
+				<div id= 'solutionMessage' style="position: relative; top: 20px; clear: both;"></div>
 			</div>
 		</div>
 		<!-- popup Dialog to show unfinished tasks before closing -->

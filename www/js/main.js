@@ -20,6 +20,7 @@ define([
 	'./draw-model',
 	'./con-author',
 	'./con-student',
+	'./state',
 	'./logging',
 	'./popup-dialog',
 	'./event-logs',
@@ -27,7 +28,7 @@ define([
 	'./user-messages',
 	'./message-box'
 ], function(array, geometry, dom, style, aspect, ready, registry, event, ioQuery, on, Button, domConstruct, lang,
-			menu, tutorConfiguration, session, model, equation, drawModel, controlAuthor, controlStudent, logging, popupDialog, eventLogs, Solution, messages, messageBox){
+			menu, tutorConfiguration, session, model, equation, drawModel, controlAuthor, controlStudent, State, logging, popupDialog, eventLogs, Solution, messages, messageBox){
 
 	console.log("load main.js");
 	// Get session parameters
@@ -72,6 +73,28 @@ define([
 	console.log(_model);
 
 	_session.getModel(query).then(function(solutionGraph){
+		var checkBrowser = _session.browser.name;
+		var checkVersion = _session.browser.version;
+		//TODO :Check versions for topomath compatibility
+		if((checkBrowser ==="Chrome" && checkVersion<41) ||
+			(checkBrowser==="Safari" && checkVersion<8) ||
+			(checkBrowser==="msie" && checkVersion<11) ||
+			(checkBrowser==="Firefox") || (checkBrowser==="Opera")){
+
+			var errorMessage = new messageBox("errorMessageBox", "warn","You are using "+ _session.browser.name+
+				" version "+_session.browser.version +
+				". Topomath is known to work well in these (or higher) browser versions: Google Chrome v41 or later Safari v8 or later Internet Explorer v11 or later");
+			// adding close callback to update the state for browser message
+			var compatibiltyState = new State(query.u, query.s, "action");
+			errorMessage.addCallback(function(){
+				compatibiltyState.put("browserCompatibility", "ack_" + getVersion());
+			});
+			compatibiltyState.get("browserCompatibility").then(function(res) {
+				if(!(res && res == "ack_" + getVersion())){
+					errorMessage.show();
+				}
+			});
+		}
 		if(solutionGraph){
 			try{
 				_model.loadModel(solutionGraph);
@@ -137,6 +160,7 @@ define([
 			console.log("Fixing position of nodes ", _dragNodes);
 			var _logger = logging.getInstance(_session);
 			_logger.log('open-problem', {problem: _logger._session.params.p});
+			var state = new State(query.u, query.s, "action");
 			/**
 			* equation does not have a constructor because
 			* we dont want to run it on it's own. So there is an explicit call
@@ -149,6 +173,7 @@ define([
 			loading.style.display = "none";
 
 			var dm = new drawModel(_model.active, _dragNodes, _feedback);
+
 			var errDialog = new popupDialog();
 			//create a controller object
 			//For now using empty  ui_config 
@@ -156,6 +181,13 @@ define([
 				new controlAuthor(query.m, _model, _config) :
 				new controlStudent(query.m, _model, _config);
 
+			controllerObject.setState(state);
+
+			state.get("_isGraphHelpShown").then(function(reply){
+				console.log("reply for graph",reply);
+				if(reply === true || reply === false)
+					_model.setGraphHelpShown(reply);
+			});
 			aspect.after(dm, "addNode", function(){
 				controllerObject.computeNodeCount();
 			}, true);
@@ -280,13 +312,13 @@ define([
 			menu.add("graphButton", function(e){
 				event.stop(e);
 				console.log("Graph button clicked");
-				initSolution("graph");
+				initSolution("graph", state);
 			});
 
 			menu.add("tableButton", function(e){
 				event.stop(e);
 				console.log("Table button clicked");
-				initSolution("table");
+				initSolution("table", state);
 			});
 
 			aspect.after(controllerObject, "addNode",
@@ -381,8 +413,8 @@ define([
 		}
 	};
 	var sol;
-	var initSolution = function(_type){
-		sol = new Solution(_model);
+	var initSolution = function(_type, state){
+		sol = new Solution(_model, state);
 		// TODO: add proble completeness and logging
 		sol.render(_type);
 	};

@@ -9,7 +9,8 @@ define([], function(){
 		"decomposition": ["There is something wrong with the equations. Solver says that the system of equation is not solvable. Kindly, try rearranging the variables, like if you are dividing some variables, then try to multiply them on the other side of the equation, and try again."],
 		"variable.mismatch": ["Number of equations do not match the number of unknown quantities. Please check the system that you have created."],
 		"no.parameters.static": ["There are no parameters to graph the unknowns against."],
-		"default": ["Something went wrong. Please ask your instructor to help you. Thanks!"]
+		"default": ["Something went wrong. Please ask your instructor to help you. Thanks!"],
+		"problemComplete": ["Click 'Done' when you are ready to save and submit your work."]
 	};
 
 	var pedagogical = {
@@ -39,12 +40,19 @@ define([], function(){
 		"duplicate.nodes.student": "This problem could not be loaded. Please contact the problem's author."
 	};
 
+	var helpText = [
+		"Welcome to the graph window.  The results of the model’s computations are shown here as graphs and tables.  The model consists of inter-related numerical quantities.",
+		"The left side of the window displays the quantities in the model calculated by the equations in the accumulator and function nodes.",
+		"The “static” tab appears when all graphed quantities are constant with time.  In this tab, you can select a quantity from the list and Dragoon will use it as the horizontal axis for every graph."
+	];
+
 	return {
 		get: function(type){
 			var obj = {
 				"graph": graphError,
 				"pm": pedagogical,
-				"app": global
+				"app": global,
+				"help": helpText
 			}
 
 		 	return obj.hasOwnProperty(type) ? obj[type]: null;

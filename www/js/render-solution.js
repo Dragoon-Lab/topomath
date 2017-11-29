@@ -8,16 +8,21 @@ define([
 	"dojox/charting/plot2d/Lines",
 	"dojox/charting/plot2d/Grid",
 	"dojox/charting/widget/Legend",
+	"dijit/TooltipDialog",
+	"dijit/popup",
 	"dojo/on",
 	"dojo/dom",
 	"dojo/dom-style",
 	"dojo/dom-attr",
 	"dijit/form/ComboBox",
 	"dojo/store/Memory",
+	"dojo/dom-class",
+	"dijit/Dialog",
 	"./calculation",
 	"./user-messages",
-	"./message-box"
-], function(declare, array, lang, registry, Chart, Default, Lines, Grid, Legend, on, dom, domStyle, domAttr, ComboBox, Memory, calculations, errorMessages, messageBox){
+	"./message-box",
+	"./state",
+], function(declare, array, lang, registry, Chart, Default, Lines, Grid, Legend, tooltipDialog, popup, on, dom, domStyle, domAttr, ComboBox, Memory, domClass, Dialog, calculations, errorMessages, messageBox, state){
 	return declare(calculations, {
 		_colors: {
 			majorHLine: "#CACACA",
@@ -29,20 +34,24 @@ define([
 		charts: {},
 		legends: {},
 		chart: {},
+		state: null,
 		chartsStatic: {},
 		legendStatic: {},
 
-		constructor: function(model){
+		constructor: function(model, state){
 			this._messages = errorMessages.get("graph");
+			this._helpText = errorMessages.get("help");
 			this.isCorrect = false;
 			if(this.activeSolution){
-				this.initialize();
+				this.initialize(state);
 			}
 		},
 
-		initialize: function(){
+		initialize: function(state){
 			this.dialogWindow = registry.byId("solution");
-
+			if(!this.state) {
+				this.state = state;
+			}
 			this.tabContainer = registry.byId("GraphTabContainer");
 			this.graphTab = registry.byId("GraphTab");
 			this.tableTab = registry.byId("TableTab");
@@ -93,6 +102,24 @@ define([
 				this.showMessage(sol, "graphErrorMessage", "error", false);
 			}
 			this.resizeWindow();
+			var helpButton = registry.byId("graphHelpButton");
+
+			on(helpButton, "click", lang.hitch(this, function () {
+				if(!this.helpDialog) {
+					var content = "<ul>";
+					for(var msg in this._helpText){
+						content += "<li>" + this._helpText[msg] + "</li>";
+					}
+					content += "</ul>";
+					this.helpDialog = new Dialog({
+						"class": 'graphHintUnderLay',
+						"title": "Graph Help",
+						content: content
+					});
+				}
+				this.helpDialog.show();
+				domClass.remove("graphHelpButton", "glowNode");
+			}));
 		},
 
 		createChart: function(domNode, id, xAxis, yAxis, solution){
@@ -600,12 +627,45 @@ define([
 				(!this.authorSolution || !this.authorSolution.status.error))
 				this.tabContainer.selectChild(selectedTab);
 			this.dialogWindow.show();
+			var graphHelpButton = dom.byId('graphHelpButton');
+			console.log("graph help shown",this._model.getGraphHelpShown());
+			if(!this._model.getGraphHelpShown()&&graphHelpButton ) {
+				domClass.add(graphHelpButton, "glowNode");
+				this._model.setGraphHelpShown(true);
+				this.state.put("isGraphHelpShown",true);
+			}
 		},
 
 		hide: function(){
 			//stub for logging graph closing event
 			dom.byId("graphErrorMessage").innerHTML = "";
 			dom.byId("solutionMessage").innerHTML = "";
+			var problemComplete = this._model.matchesGivenSolutionAndCorrect();
+			var problemDoneHint;
+			if(problemComplete){
+				if(!this._model._isDoneMessageShown) {
+					problemDoneHint = new tooltipDialog({
+						style: "width: 300px;",
+						content: '<p>'+this._messages['problemComplete']+'</p>' +
+							' <button type="button" data-dojo-type="dijit/form/Button" id="closeHint">Ok</button>',
+						onShow: function () {
+							on(registry.byId('closeHint'), 'click', function () {
+								console.log("clicked prob done hint closed");
+								popup.close(problemDoneHint);
+							});
+						},
+						onBlur: function(){
+							popup.close(problemDoneHint);
+						}
+					});
+					popup.open({
+						popup: problemDoneHint,
+						around: dom.byId('doneButton')
+					});
+					this._model._isDoneMessageShown = true;
+					this.state.put("isDoneMessageShown",true);
+				}
+			}
 		}
 	});
 });

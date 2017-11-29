@@ -9,6 +9,7 @@ define([
 				this.model = {
 					taskName: name,
 					time: {start: 0, end: 10, step: 1.0, units: "seconds"},
+					properties: {},
 					authorModelNodes: [],
 					studentModelNodes: []
 				};
@@ -26,6 +27,9 @@ define([
 			initialNodeDisplayString: "prior",
 			 _unknownQuantityNodeCount : 0,
 			 _equationNodeCount: 0,
+			 isCompleteFlag: false,
+			_isGraphHelpShown: false,
+			_isDoneMessageShown: false,
 			_updateNextXYPosition: function(){
 				var pos = {
 					x: this.x,
@@ -45,6 +49,17 @@ define([
 					};
 				}
 			},
+			setGraphHelpShown: function(_isGraphHelpShown){
+                this.model.properties._isGraphHelpShown = _isGraphHelpShown;
+            },
+            getGraphHelpShown: function(){
+                console.log("model help",this.model.properties);
+                return (this.model.properties._isGraphHelpShown != undefined)?this.model.properties._isGraphHelpShown : false;
+            },
+            setDoneMessageShown : function(_isDoneMessageShown) {
+                this._isDoneMessageShown = _isDoneMessageShown;
+            },
+
 			updatePosition: function(){
 				if((this.x + this.nodeWidth) < (document.documentElement.clientWidth - this.nodeWidth))
 					this.x += this.nodeWidth;
@@ -143,6 +158,7 @@ define([
 						units: "seconds"
 					}
 				}
+				this.isCompleteFlag = this.matchesGivenSolution();
 			},
 			getModelAsString: function(){
 				// Summary: Returns a JSON object in string format

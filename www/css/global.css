@@ -364,3 +364,28 @@ table.solution th{
 div.legend{
 	margin: 0 auto;
 }
+
+@keyframes glowing {
+    0% { color:#CCCCCC; background-color: #004A7F; box-shadow: 0 0 3px #004A7F; }
+    50% { color:#ffffff; background-color: #0094FF; box-shadow: 0 0 10px #0094FF; }
+    100% { color:#CCCCCC; background-color: #004A7F; box-shadow: 0 0 3px #004A7F; }
+}
+
+.glowButton{
+    animation: glowing 1500ms infinite;
+}
+
+@keyframes glowingNode {
+    0% { box-shadow: 0 0 1em #00FF00; }
+    50% { box-shadow: 0 0 5em #39FF14; }
+    100% { box-shadow: 0 0 1em #00FF00; }
+}
+
+.glowNode{
+    animation: glowingNode 1500ms infinite;
+}
+
+.graphHintUnderLay{
+  width: 450px !important;
+  text-align: justify;
+}

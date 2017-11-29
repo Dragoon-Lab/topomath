@@ -111,7 +111,11 @@ define([
 			this._logger = clientLogging.getInstance();
 			ready(this, this._attachTooltips);			
 		},
-
+		setState: function(state){
+			if(this.setPMState){
+				this.setPMState(state);
+			}
+		},
 		// A stub for connecting routine to draw new node.
 		addNode: function(node, autoflag){
 			console.log("Node Editor calling addNode() for ", node.ID);

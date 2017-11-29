@@ -99,6 +99,7 @@ define([
 		}
 	};
 	
+	var record = null;
 	/*
 	 * Add additional tables for activities that does not use node editor.
 	 */
@@ -132,6 +133,12 @@ define([
 
 	function message(/*object*/ obj, /*string*/ nodePart, /*string*/ status){
 		// TO DO : Add Hint messages
+		record.increment(status, 1);
+		if(status === "extra" || status === "irrelevant"){
+			status = "incorrect";
+		}else if(status === "lastFailure" || status === "lastFailure2"){
+			status = "incorrect. The correct answer has been given";
+		}
 		obj.push({id: "message", attribute: "append", value: fm.start + nodePart + fm.connector + fm[status]});
 	}
 
@@ -232,6 +239,15 @@ define([
 		/*****
 		 * Public Functions
 		 *****/
+
+		setState: function(/*state.js object*/ State){
+			record = State;
+			allInterpretations = ['correct', 'firstFailure', 'secondFailure','incorrect'];
+			for(var i in allInterpretations){
+				record.init(allInterpretations[i], 0);
+			};
+			record.init("problemCompleted", 0);
+		},
 
 		getActionForType: function(id, answer){
 			/*
@@ -414,6 +430,24 @@ define([
 
 		logSolutionStep: function(obj){
 			//stub for logging user solution step
-		}
+		},
+
+		notifyCompleteness : function (model){
+			if(!model.isCompleteFlag && model.matchesGivenSolution()){
+				model.isCompleteFlag = true;
+				var logObj = lang.mixin({
+					type : "completeness-check",
+					problemComplete: model.isCompleteFlag
+				}, logObj);
+				this.logSolutionStep(logObj);
+				record.increment("problemCompleted", 1);
+				return	[{
+							id: "crisisAlert",
+							attribute: "open",
+							value: 'You have completed your model. Click on "Graph" or "Table" to see what the solution looks like'
+						}];
+			}
+
+		},
 	});
 });

@@ -27,7 +27,24 @@ define([
 		}
 		return Number(hash).toString(16);
 	};
-
+	var sayswho = (function(){
+	    var ua= navigator.userAgent, tem,
+	    M= ua.match(/(opera|chrome|safari|firefox|msie|trident(?=\/))\/?\s*(\d+)/i) || [];
+	    if(/trident/i.test(M[1])){
+	        tem=  /\brv[ :]+(\d+)/g.exec(ua) || [];
+	        return 'IE '+(tem[1] || '');
+	    }
+	    if(M[1]=== 'Chrome'){
+	        tem= ua.match(/\bOPR\/(\d+)/)
+	        if(tem!= null) return 'Opera '+tem[1];
+	    }
+	    M= M[2]? [M[1], M[2]]: [navigator.appName, navigator.appVersion, '-?'];
+	    if((tem= ua.match(/version\/(\d+)/i))!= null) M.splice(1, 1, tem[1]);
+	    return {
+			name: M[0],
+			version: M[1]
+		};
+	});
 	return declare(null, {
 		constructor: function(params, path){
 			this.sessionId = FNV1aHash(params.u+"_"+params.s) +
@@ -41,7 +58,8 @@ define([
 			this.path = path || "";
 			this.doLogging = !params.l || params.l != "false";
 			this.counter = 0;
-
+			this.browser = sayswho();
+			console.log("browser = ", this.browser.name, " version = ", this.browser.version);
 			this.log("start-session", params);
 			this.isStudentMode = params.m != "AUTHOR";
 		},

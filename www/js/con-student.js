@@ -54,7 +54,10 @@ define([
 		commonNodeControls: ["modelType","description"],
 
 		init: function () {
-			// TODO : Check Model Completeness
+			aspect.after(this, "closeEditor", function () {
+				var directives = this._PM.notifyCompleteness(this._model);
+				this.applyDirectives(directives);
+			}, true);
 			this.studentControls();
 		},
 		// A list of control map specific to students
@@ -68,6 +71,9 @@ define([
 			units: "unitsSelectorStudent",
 			modelType: "modelSelector",
 			value: "valueInputbox"
+		},
+		setPMState: function (state) {
+			this._PM.setState(state);
 		},
 		studentControls: function(){
 			console.log("++++++++ Setting AUTHOR format in Node Editor.");
