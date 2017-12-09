@@ -380,7 +380,7 @@ define([
 				var logCorrectAnswer = this.model.student.getCorrectAnswer(id, nodePart);
 
 				if(nodePart === "equation")
-					if(interpretation == "FirstFailure"){
+					if(interpretation == "firstFailure"){
 						var params = {
 						subModel: this.model.authored,
 							equation: logCorrectAnswer
