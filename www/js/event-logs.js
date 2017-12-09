@@ -3,9 +3,9 @@ define([
 	'dojo/aspect',
 	'dojo/ready',
 	'./controller',
-	'./pedagogical_module',
-	'./renderSolution',
-	'./logging'
+	'./pedagogical-module',
+	'./render-solution',
+	'./logging',
 ], function(baseUnload, aspect, ready, controller, pm, solution, logging){
 	var _logger = null;
 	/**
@@ -29,16 +29,26 @@ define([
 		_logger.log("solution-step", obj);
 	}, true);
 
+	aspect.after(controller.prototype, "closeEditor", function(id){
+		_logger.logUserEvent({
+			type: 'close-dialog-box',
+			nodeID: id,
+			node: this._model.active.getVariable(id) || this._model.active.getDescription(id),
+			nodeComplete: this._model.active.isComplete(id)
+		});
+	}, true);
+
 	aspect.after(pm.prototype, "logSolutionStep", function(obj){
 		_logger.log("solution-step", obj);
 	}, true);
 
 	aspect.after(solution.prototype, "render", function(tab){
 		_logger.logUserEvent({
-			name: tab,
-			type: "solution-manipulation"
+			name: tab+"-button",
+			type: "menu-choice",
+			problemComplete: this._model.matchesGivenSolution()
 		});
-	});
+	}, true);
 
 	aspect.after(solution.prototype, "hide", function(){
 		_logger.logUserEvent({
