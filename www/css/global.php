@@ -1,3 +1,8 @@
+<?php header("Content-type: text/css"); ?>
+<?php
+  function latest_version($file_name){
+    echo $file_name."?".filemtime($_SERVER['DOCUMENT_ROOT']."/topomath/css/".$file_name);
+}?>
 @import url("../dojo/resources/dojo.css");
 @import url("../dijit/themes/dijit.css");
 @import url("../dijit/themes/claro/layout/BorderContainer.css");
@@ -10,7 +15,7 @@
 @import url("../dijit/themes/claro/Menu.css");
 @import url("../dijit/themes/claro/Dialog.css");
 @import url("../dijit/themes/claro/document.css");
-@import url("state-machine.css");
+@import url(<?php latest_version('state-machine.css');?>);
 /*For styling the rich text editor*/
 @import url("../dijit/themes/claro/Toolbar.css");
 @import url("../dijit/themes/claro/Editor.css");

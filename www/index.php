@@ -13,6 +13,7 @@
 		echo $file_name."?".filemtime($_SERVER['DOCUMENT_ROOT']."/topomath/".$file_name);
 	}?>
 	<script type = "text/javascript" src = "<?php latest_version('version.js'); ?>"></script>
+
 	<script type="text/javascript">
 		var version = "";
 
@@ -45,10 +46,10 @@
 			]
 		};
 		if(dojoConfig.isDebug){
-			document.write('<link href="css/global.css?'+ version+'" rel="stylesheet" />');
+			document.write('<link href="css/global.php?'+ version+'" rel="stylesheet" />');
 			document.write('<scr'+'ipt src="dojo/dojo.js"></scr'+'ipt>');
 		} else {
-			document.write('<link href="release/css/global.css?'+ version+'"  rel="stylesheet" />');
+			document.write('<link href="release/css/global.php?'+ version+'" rel="stylesheet" />');
 		};
 	</script>
 
