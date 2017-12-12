@@ -10,7 +10,7 @@ define([
 		isVariable: Parser.isVariable,
 		equalto: "=",
 		_logger: null,
-		_numberOfEvaluations: 10,
+		cache: {},
 		/*
 		* Converts an equation with ids to corresponding variable names
 		* It splits the equation at = and then replaces the variables in
@@ -297,36 +297,12 @@ define([
 				console.log(e);
 			}
 
-			// create evaluation point
+			var numberOfEvaluations = model.student.isSolutionStatic() ? 1 : 10;
 			var variables = {};
-			var createEvaluationPoint = function(){
-				variables = {};
-				var addVariableValue = function(variable, value, doAddValue){
-					doAddValue = doAddValue || false;
-					if(!(variable in variables) || doAddValue){
-						value = value || Math.random();
-						variables[variable] = value;
-					}
-					return value;
-				};
-				for(var i = 0; i < 2; i++){
-					array.forEach(sParse[i].variables(), function(v)  {
-						var val = addVariableValue(v);
-						var authorID = model.student.getAuthoredID(v);
-						if(v.indexOf(str) > 0)
-							authorID += str;
-						addVariableValue(authorID, val, true);
-					}, this);
-					array.forEach(aParse[i].variables(), function(v){
-						addVariableValue(v);
-					});
-				}
-			};
-
 			var authorValue = [];
 			var studentValue = [];
-			for(var i = 0; i < this._numberOfEvaluations; i++){
-				createEvaluationPoint();
+			for(var i = 0; i < numberOfEvaluations; i++){
+				variables = this.createEvaluationPoint(model);
 				for(var j = 0; j < 2; j++){
 					authorValue[j] = aParse[j].evaluate(variables);
 					studentValue[j] = sParse[j].evaluate(variables);
@@ -348,8 +324,20 @@ define([
 					}
 				});
 			});
-
 			return expression;
+		},
+
+		createEvaluationPoint: function(model){
+			var isStatic = model.student.isSolutionStatic();
+			var point = {};
+			func = model.student.isSolutionAvailable() ? model.student.getSolutionPoint : model.student.getRandomPoint;
+			point = isStatic ? this.cache : {};
+			if(Object.keys(point) < 0 || !isStatic){
+				point = func.apply(model.student);
+			}
+			this.cache = point;
+
+			return point;
 		},
 
 		parseEquation: function(expression){

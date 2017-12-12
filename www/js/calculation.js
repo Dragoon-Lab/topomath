@@ -151,6 +151,21 @@ define([
 			else{
 				return text;
 			}
+		},
+		/**
+		* this function saves the active solution to the model. so that when the model is
+		* saved the solution is saved with it. Important point is this function is mapping
+		* of active solution variables to solution object saved with the model.
+		* It has no inputs and outputs, as I don't intend to use this function anywhere.
+		* whenever it is called it will save *active* solution to model object.
+		* Currently it is called from initSolution function during solution construction process.
+		**/
+		saveSolution: function(){
+			solution = {};
+			solution.isStatic = this.isStatic;
+			solution.variables = this.activeSolution.plotVariables;
+			solution.values = this.activeSolution.plotValues;
+			this._model.saveSolution(solution);
 		}
 	});
 });

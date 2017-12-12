@@ -85,8 +85,15 @@ define([
 						registry.byId("StaticTab").destroyRecursive();
 					}
 				}
-
+				if(!this.isSolutionMode()){
+					try {
+						this.saveSolution();
+					} catch (e){
+						console.error("solution was not saved, error message ", e);
+					}
+				}
 				this.showHideGraphsHandler();
+
 				domStyle.set(this.tabContainer.domNode, "display", "block");
 			} else {
 				var sol = this.activeSolution.status.error ? this.activeSolution : this.authorSolution;
