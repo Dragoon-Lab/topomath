@@ -1,7 +1,7 @@
 <?php header("Content-type: text/css"); ?>
 <?php
   function latest_version($file_name){
-    echo $file_name."?".filemtime($_SERVER['DOCUMENT_ROOT']."/topomath/css/".$file_name);
+    echo $file_name."?".filemtime($file_name);
 }?>
 @import url("../dojo/resources/dojo.css");
 @import url("../dijit/themes/dijit.css");

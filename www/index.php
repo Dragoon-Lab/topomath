@@ -10,7 +10,7 @@
 	<link rel="stylesheet" href="./dijit/themes/claro/claro.css">
 	<?php
 	function latest_version($file_name){
-		echo $file_name."?".filemtime($_SERVER['DOCUMENT_ROOT']."/topomath/".$file_name);
+		echo $file_name."?".filemtime("./".$file_name);
 	}?>
 	<script type = "text/javascript" src = "<?php latest_version('version.js'); ?>"></script>
 
