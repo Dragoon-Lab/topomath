@@ -175,9 +175,10 @@ define([
 				this._model.active.setValue(this.currentID, newValue);
 				//console.log("ini value action");
 				this.applyDirectives(this._PM.processAnswer(this.currentID, 'value', newValue));
-			} else if (valueFlag.errorType) {
-				// Log Error
 			}
+			//else if (valueFlag.errorType) {
+				// Log Error
+			//}
 		},
 		handleVariableType: function(e){
 			// Summary : Sets variableType to Unknown/Parameter/Dynamic
@@ -374,9 +375,9 @@ define([
 					var w = registry.byId(this.controlMap[directive.id]);
 					w.set(directive.attribute, directive.value);
 					// The actual values should be in the model itself, not in status directives.
-					if (directive.attribute == "value") {
+					//if (directive.attribute == "value") {
 					//Logging
-					}					
+					//}
 				}
 
 			}, this);

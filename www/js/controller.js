@@ -680,11 +680,11 @@ define([
 
 					} else{
 						w.set(directive.attribute, directive.value);
-						if(directive.attribute === "status"){
+						//if(directive.attribute === "status"){
 							//tempDirective variable further input to editor tour
 							//for now commenting the variable copy
 							//tempDirective = directive;
-						}
+						//}
 					}
 				}else if(directive.attribute == "display"){
 					//directives where display is updated/ given feedback from here
