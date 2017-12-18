@@ -9,16 +9,20 @@
 	<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
 	<link rel="stylesheet" href="./dijit/themes/claro/claro.css">
 
-	<script type = "text/javascript" src = "version.js"></script>
 	<script type="text/javascript">
+		// Appending timestamp to get the latest version of version.js for every request
+		var d = Date.now();
+		if(window.location.hostname == "topomath.asu.edu"){
+			document.write('<scr'+'ipt type = "text/javascript" src=version.js?'+ d +'></scr'+'ipt>');
+		}
+	</script>
+	<script type="text/javascript" >
 		var version = "";
-
 		if(window.location.hostname == "topomath.asu.edu"){
 			version = getVersion();  // Get version from version.js
 		}else{
-			version = new Date();
+			version = d;
 		}
-
 		dojoConfig = {
 			isDebug:true,
 			parseOnLoad:true,
@@ -42,10 +46,12 @@
 			]
 		};
 		if(dojoConfig.isDebug){
+			document.write('<link href="css/state-machine.css?'+version+'" rel="stylesheet" />');
 			document.write('<link href="css/global.css?'+ version+'" rel="stylesheet" />');
 			document.write('<scr'+'ipt src="dojo/dojo.js"></scr'+'ipt>');
 		} else {
-			document.write('<link href="release/css/global.css?'+ version+'"  rel="stylesheet" />');
+			document.write('<link href="release/css/state-machine.css?'+version+'" rel="stylesheet" />');
+			document.write('<link href="release/css/global.css?'+ version+'" rel="stylesheet" />');
 		};
 	</script>
 
@@ -359,9 +365,9 @@
 			<div id= 'graphErrorMessage'></div>
 			<div data-dojo-type= 'dijit/layout/ContentPane' style='overflow:visible; width:55%; height:95%; float:left; background-color: #FFFFFF;'>
 				<div id="GraphTabContainer" data-dojo-type='dijit/layout/TabContainer' style='overflow:visible; display:none;'>
-					<div id='GraphTab' data-dojo-type='dijit/layout/ContentPane' style='overflow:auto;' title="Graph"></div>
+					<div id='GraphTab' data-dojo-type='dijit/layout/ContentPane' style='overflow:auto;' title="Graph vs Time"></div>
 					<div id='TableTab' data-dojo-type='dijit/layout/ContentPane' style='overflow:auto' title="Table"></div>
-					<div id='StaticTab' data-dojo-type='dijit/layout/ContentPane' style='overflow:auto' title="Static"></div>
+					<div id='StaticTab' data-dojo-type='dijit/layout/ContentPane' style='overflow:auto' title="Graph vs Parameter"></div>
 				</div>
 			</div>
 			<div id="SliderPane" data-dojo-type='dijit/layout/ContentPane' style='overflow:visible; min-height: 95%; width:40%; float:right; background-color: #FFFFFF'>
