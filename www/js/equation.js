@@ -1,8 +1,9 @@
 define([
 	"dojo/_base/array",
+	"dojo/_base/lang",
 	"parser/parser",
 	"solver/newton-raphson"
-], function(array, Parser, Solver){
+], function(array, lang, Parser, Solver){
 	return {
 		parse: function(equation){
 			return Parser.parse(equation);
@@ -236,7 +237,7 @@ define([
 			/*array.forEach(equations.params, function(id){
 				values[id] = subModel.getValue(id);
 			});*/
-			values = equations.values;
+			values = lang.clone(equations.initValues);
 			var timeStepSolution;
 			for(var i = 1; i <= timeSteps; i++){
 				if(staticID)
@@ -259,6 +260,8 @@ define([
 			}
 			if(timeStepSolution && timeStepSolution.hasOwnProperty('vars'))
 				solution.xvars = timeStepSolution.vars;
+			else
+				solution.xvars = solution.xvars.concat(solution.func);
 			console.log("solution for the system of equations ", solution);
 
 			return solution;
@@ -269,7 +272,7 @@ define([
 			// initialize the solution object
 			array.forEach(equations.xvars, function(id){
 				solution[id] = [];
-				solution[id].push(subModel.getValue(id));
+				solution[id].push(equations.initValues[id + subModel.getInitialNodeString()]);
 			});
 			array.forEach(equations.func, function(id){
 				solution[id] = [];
@@ -425,6 +428,7 @@ define([
 				}
 			}, this);
 			equations.plotVariables = equations.xvars.concat(equations.func);
+			equations.initValues = lang.clone(equations.values);
 
 			if(equations.plotVariables.length == 0){
 				status.error = true;

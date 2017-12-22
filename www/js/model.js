@@ -154,6 +154,9 @@ define([
 				return this.model.task.time.units;
 			},
 			*/
+			getTaskName: function(){
+				return obj.model.taskName;
+			},
 			getAllUnits: function(){
 				// Summary:	 returns a list of all distinct units
 				// (string format) defined in a problem.
