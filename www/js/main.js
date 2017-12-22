@@ -158,10 +158,17 @@ define([
 
 			aspect.after(dm, "addNode", function(){
 				controllerObject.computeNodeCount();
+				controllerObject.sortDescriptions();
 			}, true);
+
 			aspect.after(dm, "updateNode", function(){
 				controllerObject.computeNodeCount();
+				controllerObject.sortDescriptions();
 			}, true);
+
+			aspect.after(controllerObject, "sortDescriptions",
+				lang.hitch(dm, dm.updateDescriptionView, true));
+
 			dm.init();
 
 			/*********  below this part are the event handling *********/
@@ -242,6 +249,7 @@ define([
 			if(_model.isStudentMode()){
 				//controllerObject.setAssessment(session); //set up assessment for student.
 			}
+			
 			//next step is to add action to add quantity
 			menu.add("createQuantityNodeButton", function(e){
 				event.stop(e);
@@ -297,7 +305,7 @@ define([
 
 			aspect.after(controllerObject, "updateNodeView",
 				lang.hitch(dm, dm.updateNode), true);
-			
+
 			aspect.after(dm, "deleteNode", function(){
 				_session.saveModel(_model.model);
 				controllerObject.computeNodeCount();

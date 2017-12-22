@@ -175,9 +175,9 @@ define([
 			if(cachedDescription != description || (cachedNode.variable != node.variable && description != "")){
 				description = graphObjects.getDomUIStrings(this._model, "description", node.ID);
 				var descriptionDOM = dom.byId(domIDTags['description']);
-				if(descriptionDOM)
-					descriptionDOM.innerHTML = description;
-				else if(!node.color){
+				if(descriptionDOM){
+					descriptionDOM.querySelector(".descriptionText").innerHTML = description;
+				}else if(!node.color){
 					var ui = this.getNodeUIProperties(node);
 					domStyle.set(domIDTags['parentDOM'], "backgroundColor", ui.backgroundColor);
 					domStyle.set(domIDTags['parentDOM'], "borderColor", ui.borderColor);
@@ -489,6 +489,9 @@ define([
 				var descHTML = dom.byId(domID);
 				var parentDIV = type+"-description";
 				var replaceTag = descHTML ? "replace" : "last";
+				if(replaceTag === "replace"){
+					parentDIV = dojo.byId(ID+"_description");
+				}
 				domConstruct.place(descriptionString, parentDIV, replaceTag);
 				//if(type == "equation")
 				domStyle.set(domID, "background-color", this._model.getColor(ID));
@@ -497,7 +500,6 @@ define([
 				*/
 			}
 		},
-
 		/**
 		* deletes the dom of a node
 		* @params - nodeID - ID to be deleted
@@ -555,6 +557,15 @@ define([
 		updateNodeConnections: function(from, to){
 			this.detachConnections(to);
 			this.setConnections(from, to);
+		},
+
+		updateDescriptionView: function(){
+			dojo.query(".quantityDescription").forEach(dojo.destroy);
+			if(arguments.length >= 1 ){
+				array.forEach(arguments[1], lang.hitch(this, function(node){
+					if(node.name && node.description) this.addNodeDescription(node.id);
+				}));
+			}
 		}
 	});
 });
