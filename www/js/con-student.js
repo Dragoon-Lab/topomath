@@ -222,8 +222,8 @@ define([
 			if (parse) {
 				this._model.student.setEquation(this.currentID, parse.equation);
 				this.createExpressionNodes(parse, false);
-				var dd = this._PM.processAnswer(
-				this.currentID, 'equation', parse, registry.byId(this.controlMap.equation).get("value"));
+				var dd = this._PM.processAnswer(this.currentID, 'equation', parse,
+						registry.byId(this.controlMap.equation).get("value"));
 				directives = directives.concat(dd);
 				var context = this;
 			}
@@ -335,9 +335,7 @@ define([
 			
 			registry.byId(this.controlMap.variable).set('value', variableName || 'defaultSelect', false);
 
-			//var _variableTypes = ["unknown","parameter","dynamic"];
-			var _variableTypes = ["unknown","parameter"];
-			array.forEach(_variableTypes, function(_type){
+			array.forEach(this._variableTypes, function(_type){
 				registry.byId(_type+"Type").set('checked',false);
 				registry.byId(_type+"Type").set('disabled',false);
 			})
@@ -352,7 +350,7 @@ define([
 				array.forEach(_returnObj, function(directive) {
 					registry.byId(_variableType+"Type").set('checked','checked');
 					if(directive.attribute == "status" && directive.value == "correct"){
-						array.forEach(_variableTypes, function(_type){
+						array.forEach(this._variableTypes, function(_type){
 							if(_type !== _variableType && this._config.get("feedbackMode") != "nofeedback"){
 								registry.byId(_type+"Type").set('disabled',true);
 							}
@@ -446,6 +444,24 @@ define([
 			}
 			
 			return returnObj;
+		},
+		setNodeDescription: function(id, variable){
+			var authoredID = this._model.authored.getNodeIDByName(variable);
+			if(authoredID){
+				this._model.active.setAuthoredID(id, authoredID);
+				this._model.active.setDescription(id, this._model.authored.getDescription(authoredID));
+				this._model.active.setPosition(id, 0, this._model.authored.getPosition(authoredID,0));
+			}
+			return authoredID;
+		},
+		createStudentNode: function(node){
+			var authoredID = this.setNodeDescription(node.id, node.variable);
+			if(authoredID){
+				this.updateInputNode(node.id, node.variable);
+				this.updateNodeView(this._model.active.getNode(node.id));
+			}
+
+			return authoredID;
 		}
 	});
 });

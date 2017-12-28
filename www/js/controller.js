@@ -83,6 +83,7 @@ define([
 
 		// attributes that should be saved in the status section
 		validStatus: {status: true, disabled: true},
+		_variableTypes: ["unknown","parameter","dynamic"],
 		
 		questionMarkButtons : {
 					"authorDescriptionQuestionMark": "The quantity computed by the node ",
@@ -123,13 +124,6 @@ define([
 
 		// Stub to setting description for auto craeted nodes.
 		setNodeDescription: function(id, variable){
-			var authoredID = this._model.authored.getNodeIDByName(variable);
-			if(authoredID){
-				this._model.active.setAuthoredID(id, authoredID);
-				this._model.active.setDescription(id, this._model.authored.getDescription(authoredID));
-				this._model.active.setPosition(id, 0, this._model.authored.getPosition(authoredID,0));
-			}
-			return authoredID;
 		},
 
 		// Stub to set connections in the graph
@@ -704,10 +698,8 @@ define([
 						this._model.active.setVariableType(this.currentID, directive.value);
 					}
 					else if(directive.attribute === "disabled" && directive.value === true ){
-						//var _variableTypes = ["unknown","parameter","dynamic"];
-						var _variableTypes = ["unknown","parameter"];
 						var _selectedVariableType = dojo.query("input[name='variableType']:checked")[0].value;
-						array.forEach(_variableTypes, function(_type){
+						array.forEach(this._variableTypes, function(_type){
 							if(_type !== _selectedVariableType){
 								registry.byId(_type+"Type").set('disabled',true);
 							}
@@ -944,12 +936,8 @@ define([
 						this.addNode(this._model.active.getNode(newNode.id));
 						// Auto-populate node description only in Student mode
 						// check added to make sure that the node is not an unknown node
-						if(this._model.active.isStudentMode() && newNode.variable){
-							var authoredID = this.setNodeDescription(newNode.id,newNode.variable);
-							if(authoredID){
-								this.updateInputNode(newNode.id, newNode.variable);
-								this.updateNodeView(this._model.active.getNode(newNode.id));
-							}
+						if(newNode.variable){
+							this.createStudentNode(newNode);
 						}
 					}, this);
 					//dynamicList contains those nodes for which prior node UI changes have to be made
@@ -1027,6 +1015,9 @@ define([
 		},
 		updateNodeView: function(node){
 			// stub for calling draw model update node
+		},
+		createStudentNode: function(node){
+			// stub for setting up student node for autocreated nodes
 		},
 		toggleTooltip: function(id){
 			//Hide Tooltip
