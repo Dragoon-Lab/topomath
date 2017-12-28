@@ -155,7 +155,7 @@ define([
 			});
 		},
 		_setStatus : function(value){
-
+			console.log("value ", value);
 			var colorMap = {
 				correct: "lightGreen",
 				incorrect: "#FF8080",
@@ -174,6 +174,16 @@ define([
 			 Previously, just set domNode.bgcolor but this approach didn't work
 			 for text boxes.   */
 			// console.log(">>>>>>>>>>>>> setting color ", this.domNode.id, " to ", value);
+			var classList = this.domNode.classList;
+			var possibleClasses = ['feedback-correct', 'feedback-incorrect', 'feedback-demo', 'feedback-premature', 'feedback-entered'];
+			array.forEach(possibleClasses, function(c){
+				if(classList.contains(c)){
+					classList.remove(c);
+				}
+			});
+			if(value !== "") {
+				classList.add("feedback-"+value);
+			}
 			domStyle.set(this.domNode, 'backgroundColor', value ? colorMap[value] : '');
 		},
 

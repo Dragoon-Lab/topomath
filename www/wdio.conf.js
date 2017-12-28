@@ -125,6 +125,7 @@ exports.config = {
     mochaOpts: {
         ui: 'bdd'
     },
+    deprecationWarnings: false,
     //
     // =====
     // Hooks

@@ -12,7 +12,8 @@ describe("Test author mode", function() {
     dtest.openProblem(browser,[
         ["mode","AUTHOR"],
         ["section","login.html"],
-        ["problem","distance"]]);
+        ["folder","regression-test"],
+        ["problem","distance2"]]);
 
     describe("Testing check on empty problem", function(){
         it("Should detect that the problem is empty", function(){
@@ -35,6 +36,7 @@ describe("Test author mode", function() {
             dtest.menuCreateNode(browser, 'quantity');
             dtest.setNodeDescription(browser, "Speed (rate) of Dan's drive");
             dtest.setQuantityNodeVariable(browser, "Rdan");
+            dtest.setQuantityNodeUnits(browser,"mph");
             dtest.setQuantityNodeVariableType(browser, "unknownType");
             dtest.nodeEditorDone(browser);
         })
@@ -42,7 +44,7 @@ describe("Test author mode", function() {
             dtest.menuCreateNode(browser, 'quantity');
             dtest.setNodeDescription(browser, "Distance Dan drove before");
             dtest.setQuantityNodeVariable(browser, "Ddan");
-            dtest.setQuantityNodeVariableType(browser, "dynamicType");
+            dtest.setQuantityNodeVariableType(browser, "parameterType");
             dtest.setQuantityNodeValue(browser,"500");
             dtest.setQuantityNodeUnits(browser,"m");
             dtest.setQuantityNodeRoot(browser);
@@ -51,9 +53,9 @@ describe("Test author mode", function() {
         it("Should create Equation Node", function(){
             dtest.menuCreateNode(browser, 'equation');
             dtest.setNodeDescription(browser, 'Distance-Rate-Time: [Dan] travels Ddan [miles] in Tdan [hours] at a rate of Rdan [mph].');
-            dtest.setNodeExpression(browser, "Ddan = Rdan * Tdan");
+            dtest.setNodeExpression(browser, "Ddan = Rdan + Tdan");
             dtest.undoExpression(browser);
-            dtest.setNodeExpression(browser, "Ddan + prior(Ddan) = Rdan * Tdan");
+            dtest.setNodeExpression(browser, "Ddan = Rdan * Tdan");
             dtest.checkExpression(browser);
             dtest.nodeEditorDone(browser);
             dtest.menuCreateNode(browser, 'equation');
@@ -124,7 +126,7 @@ describe("Test author mode", function() {
             var rootExists = dtest.isRoot(browser);
             assert(text === "Distance Dan drove before", "Text not matched");
             assert(variable === "Ddan", "Variable not matched");
-            assert(variableType === "dynamic", "VariableType not matched");
+            assert(variableType === "parameter", "VariableType not matched");
             assert(value === "500", "Value not matched");
             assert(units === "m", "Units not matched");
             assert(rootExists === true, "Root does not exist");
@@ -132,6 +134,7 @@ describe("Test author mode", function() {
             assert(nodeBorderColor === quantityDescriptionColor, "Node Color not matching");
             dtest.nodeEditorDone(browser);
         })
+        /*
         it("Should verify prior node", function(){
             nodeName = "id3_initial";
             dtest.openEditorforNode(browser,nodeName, true);
@@ -155,7 +158,7 @@ describe("Test author mode", function() {
             assert(quantityDescription === text, "Description left not matching node description");
             assert(nodeBorderColor === quantityDescriptionColor, "Node Color not matching");
             dtest.nodeEditorDone(browser);
-        })
+        })*/
         it("Should verify equation node and verify states", function(){
             var node = "id4";
             var nodeBorderColor = dtest.getNodeColor(browser, node, true);
@@ -165,13 +168,13 @@ describe("Test author mode", function() {
             var description = dtest.getNodeDescription(browser).trim();
             var equation = dtest.getNodeEquation(browser);
             assert(description === "Distance-Rate-Time: [Dan] travels Ddan [miles] in Tdan [hours] at a rate of Rdan [mph].", "Description not matched");
-            assert(equation === "Ddan + prior(Ddan) = Rdan * Tdan", "Equation not matched");
+            assert(equation === "Ddan = Rdan * Tdan", "Equation not matched");
             assert(equationDescriptionContent === description, "Description left not matching node description");
             assert(nodeBorderColor === equationDescriptionColor, "Node Color not matching");
             dtest.nodeEditorDone(browser);
         })
     })
-
+/*
     describe("Should delete nodes",function(){
         it("Should delete the quantity node by clicking Delete Button", function(){
             dtest.openEditorforNode(browser, "Rwin", false);
@@ -213,6 +216,7 @@ describe("Test author mode", function() {
             dtest.closeModel(browser);
             dtest.forceCloseModel(browser);
         })
-    })    
+    })
+    */
 })
 
