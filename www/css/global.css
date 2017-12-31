@@ -182,11 +182,6 @@ input[type=radio]{
 	opacity:1 !important;
 }
 
-#unitsSelectorStudent{
-  overflow-x: scroll;
-  width: 10em !important;
-}
-
 #buttons{
 	/*position: fixed;*/
 	float: right;

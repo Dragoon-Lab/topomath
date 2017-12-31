@@ -278,7 +278,7 @@
 				
 				<div id = "unitsSelectorContainerStudent" class="fieldgroup" style="display: none">
 					<label for="unitsSelectorStudent">Units</label>
-					<select id="unitsSelectorStudent" data-dojo-type="dijit/form/Select" style="width: 6em;">
+					<select id="unitsSelectorStudent" data-dojo-type="dijit/form/Select">
 						<option value='defaultSelect'>No Units</option>
 					</select>
 				</div>
