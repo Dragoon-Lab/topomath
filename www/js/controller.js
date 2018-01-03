@@ -652,6 +652,7 @@ define([
 		applyDirectives: function(directives, noModelUpdate){
 			// Apply directives, either from PM or the controller itself.
 			var tempDirective = null;
+			var variableTypeDirectives = {};
 			array.forEach(directives, function(directive) {
 
 				//TODO : for now not using authorModelStatus, so updateModelStatus function has no significance
@@ -702,18 +703,24 @@ define([
 					if(directive.attribute === 'value'){
 						registry.byId(directive.value+'Type').set('checked','checked');
 						this._model.active.setVariableType(this.currentID, directive.value);
+						variableTypeDirectives["value"] = directive.value;
 					}
-					else if(directive.attribute === "disabled" && directive.value === true ){
-						//var _variableTypes = ["unknown","parameter","dynamic"];
-						var _variableTypes = ["unknown","parameter"];
+					else if(directive.attribute === "disabled"){
 						var _selectedVariableType = dojo.query("input[name='variableType']:checked")[0].value;
-						array.forEach(_variableTypes, function(_type){
-							if(_type !== _selectedVariableType){
-								registry.byId(_type+"Type").set('disabled',true);
-							}
-						});
-					}
+						if(directive.value === true ){
+							//var _variableTypes = ["unknown","parameter","dynamic"];
+							var _variableTypes = ["unknown","parameter"];
+							array.forEach(_variableTypes, function(_type){
+								if(_type !== _selectedVariableType){
+									registry.byId(_type+"Type").set('disabled',true);
+								}
+							});
+						}
+						variableTypeDirectives["value"] = _selectedVariableType;
 
+					}else if (directive.attribute === "status"){
+						variableTypeDirectives["status"] = directive.value;
+					}
 				}else{
 					//this code needs to be uncommented when logging module is included
 					/*
@@ -729,6 +736,21 @@ define([
 				this.continueTour(tempDirective);
 			}
 			*/
+			if(variableTypeDirectives && variableTypeDirectives.status && variableTypeDirectives.value){
+				allVariableTypes = ["unknown", "parameter"];
+				array.forEach(allVariableTypes, function(type){
+					var w  = registry.byId(type+"Type").domNode.nextElementSibling;
+					var possibleClasses = ['feedback-correct', 'feedback-incorrect', 'feedback-demo', 'feedback-premature', 'feedback-entered'];
+					var classList = w.classList;
+					array.forEach(possibleClasses, function(c){
+						if(classList.contains(c)){
+							classList.remove(c);
+						}
+					});
+				});
+				var w  = registry.byId(variableTypeDirectives.value+"Type").domNode.nextElementSibling;
+				w.classList.add("feedback-"+variableTypeDirectives.status);
+			}
 		},
 
 		updateModelStatus: function(desc){

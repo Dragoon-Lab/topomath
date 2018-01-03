@@ -338,8 +338,16 @@ define([
 			//var _variableTypes = ["unknown","parameter","dynamic"];
 			var _variableTypes = ["unknown","parameter"];
 			array.forEach(_variableTypes, function(_type){
-				registry.byId(_type+"Type").set('checked',false);
-				registry.byId(_type+"Type").set('disabled',false);
+				var ele = registry.byId(_type+"Type");
+				var classList = ele.domNode.nextElementSibling.classList;
+				var possibleClasses = ['feedback-correct', 'feedback-incorrect', 'feedback-demo', 'feedback-premature', 'feedback-entered'];
+				array.forEach(possibleClasses, function(c){
+					if(classList.contains(c)){
+						classList.remove(c);
+					}
+				});
+				ele.set('checked',false);
+				ele.set('disabled',false);
 			})
 			
 			style.set('valueInputboxContainer','display','none');
@@ -370,15 +378,25 @@ define([
 			 Set color and enable/disable
 			 */
 			array.forEach(this._model.student.getStatusDirectives(nodeid), function (directive) {
-				if(directive.id != "variableType"){
+				if(directive.id == "variableType"){
+					var w = dojo.query("input[name=variableType]:checked").parent().next("label");
+					var possibleClasses = ['feedback-correct', 'feedback-incorrect', 'feedback-demo', 'feedback-premature', 'feedback-entered'];
+					array.forEach(possibleClasses, function(c){
+						if(w.includes(c)){
+							w.removeClass(c);
+						}
+					});
+					if(directive.value !== "") {
+						w.addClass("feedback-"+ directive.value);
+					}
+				}else{
 					var w = registry.byId(this.controlMap[directive.id]);
 					w.set(directive.attribute, directive.value);
 					// The actual values should be in the model itself, not in status directives.
 					if (directive.attribute == "value") {
 					//Logging
-					}					
+					}
 				}
-
 			}, this);
 
 		},
