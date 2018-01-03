@@ -316,6 +316,26 @@ input[type=radio]{
   background-size: cover;
 }
 
+.feedback-correct .dijitInputContainer .dijitInputInner, #variableTypeContainer .feedback-correct{
+    background-color: lightgreen !important;
+}
+
+.feedback-incorrect .dijitInputContainer .dijitInputInner, #variableTypeContainer .feedback-incorrect {
+    background-color: #FF8080 !important;
+}
+
+.feedback-demo .dijitInputContainer .dijitInputInner, #variableTypeContainer .feedback-demo {
+    background-color: yellow !important;
+}
+
+.feedback-premature .dijitInputContainer .dijitInputInner, #variableTypeContainer .feedback-premature {
+    background-color: lightBlue !important;
+}
+
+.feedback-entered .dijitInputContainer .dijitInputInner, #variableTypeContainer .feedback-entered {
+    background-color: #2EFEF7 !important;
+}
+
 /* Feedback Icons*/
 .topomath-feedback{
   position: absolute;
