@@ -27,7 +27,7 @@ define([
 			initialNodeDisplayString: "prior",
 			 _unknownQuantityNodeCount : 0,
 			 _equationNodeCount: 0,
-			 isCompleteFlag: false,
+			isCompleteFlag: false,
 			_isGraphHelpShown: false,
 			_isDoneMessageShown: false,
 			_updateNextXYPosition: function(){
@@ -50,15 +50,15 @@ define([
 				}
 			},
 			setGraphHelpShown: function(_isGraphHelpShown){
-                this.model.properties._isGraphHelpShown = _isGraphHelpShown;
-            },
-            getGraphHelpShown: function(){
-                console.log("model help",this.model.properties);
-                return (this.model.properties._isGraphHelpShown != undefined)?this.model.properties._isGraphHelpShown : false;
-            },
-            setDoneMessageShown : function(_isDoneMessageShown) {
-                this._isDoneMessageShown = _isDoneMessageShown;
-            },
+				this.model.properties._isGraphHelpShown = _isGraphHelpShown;
+			},
+			getGraphHelpShown: function(){
+				console.log("model help",this.model.properties);
+				return (this.model.properties._isGraphHelpShown != undefined)?this.model.properties._isGraphHelpShown : false;
+			},
+			setDoneMessageShown : function(_isDoneMessageShown) {
+				this._isDoneMessageShown = _isDoneMessageShown;
+			},
 
 			updatePosition: function(){
 				if((this.x + this.nodeWidth) < (document.documentElement.clientWidth - this.nodeWidth))

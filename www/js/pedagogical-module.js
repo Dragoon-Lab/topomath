@@ -134,11 +134,6 @@ define([
 	function message(/*object*/ obj, /*string*/ nodePart, /*string*/ status){
 		// TO DO : Add Hint messages
 		record.increment(status, 1);
-		if(status === "extra" || status === "irrelevant"){
-			status = "incorrect";
-		}else if(status === "lastFailure" || status === "lastFailure2"){
-			status = "incorrect. The correct answer has been given";
-		}
 		obj.push({id: "message", attribute: "append", value: fm.start + nodePart + fm.connector + fm[status]});
 	}
 
@@ -441,13 +436,7 @@ define([
 				}, logObj);
 				this.logSolutionStep(logObj);
 				record.increment("problemCompleted", 1);
-				return	[{
-							id: "crisisAlert",
-							attribute: "open",
-							value: 'You have completed your model. Click on "Graph" or "Table" to see what the solution looks like'
-						}];
 			}
-
 		},
 	});
 });

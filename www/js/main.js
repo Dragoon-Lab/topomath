@@ -73,25 +73,17 @@ define([
 	console.log(_model);
 
 	_session.getModel(query).then(function(solutionGraph){
-		var checkBrowser = _session.browser.name;
-		var checkVersion = _session.browser.version;
 		//TODO :Check versions for topomath compatibility
-		if((checkBrowser ==="Chrome" && checkVersion<41) ||
-			(checkBrowser==="Safari" && checkVersion<8) ||
-			(checkBrowser==="msie" && checkVersion<11) ||
-			(checkBrowser==="Firefox") || (checkBrowser==="Opera")){
-
+		if(!_session.isBrowserCompatible){
 			var errorMessage = new messageBox("errorMessageBox", "warn","You are using "+ _session.browser.name+
 				" version "+_session.browser.version +
-				". Topomath is known to work well in these (or higher) browser versions: Google Chrome v41 or later Safari v8 or later Internet Explorer v11 or later");
+				"." + _messages["incompatible"]);
 			// adding close callback to update the state for browser message
 			var compatibiltyState = new State(query.u, query.s, "action");
-			errorMessage.addCallback(function(){
-				compatibiltyState.put("browserCompatibility", "ack_" + getVersion());
-			});
 			compatibiltyState.get("browserCompatibility").then(function(res) {
 				if(!(res && res == "ack_" + getVersion())){
 					errorMessage.show();
+					compatibiltyState.put("browserCompatibility", "ack_" + getVersion());
 				}
 			});
 		}
@@ -182,12 +174,11 @@ define([
 				new controlStudent(query.m, _model, _config);
 
 			controllerObject.setState(state);
-
 			state.get("_isGraphHelpShown").then(function(reply){
 				console.log("reply for graph",reply);
-				if(reply === true || reply === false)
-					_model.setGraphHelpShown(reply);
+				_model.setGraphHelpShown(reply);
 			});
+
 			aspect.after(dm, "addNode", function(){
 				controllerObject.computeNodeCount();
 			}, true);
@@ -345,6 +336,14 @@ define([
 					controllerObject.enableEquation(nodeIDs);
 				}
 			}, true);
+			if(_model.isStudentMode()){
+				aspect.after(controllerObject._PM, "notifyCompleteness", function(){
+					if(this.model.isCompleteFlag && controllerObject.checkDone()){
+						var _dialog = new popupDialog();
+						_dialog.showDialog("Message", _messages["complete"],"", "");
+					}
+				},true);
+			}
 
 			on(registry.byId("closeButton"), "click", function(){
 				registry.byId("nodeEditor").hide();
@@ -385,6 +384,7 @@ define([
 			aspect.after(registry.byId('solution'), "hide", function(){
 				sol.hide();
 			});
+
 		});
 	});
 	

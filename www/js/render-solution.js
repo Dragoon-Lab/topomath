@@ -650,7 +650,6 @@ define([
 							' <button type="button" data-dojo-type="dijit/form/Button" id="closeHint">Ok</button>',
 						onShow: function () {
 							on(registry.byId('closeHint'), 'click', function () {
-								console.log("clicked prob done hint closed");
 								popup.close(problemDoneHint);
 							});
 						},

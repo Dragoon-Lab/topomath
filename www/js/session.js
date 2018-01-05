@@ -59,6 +59,15 @@ define([
 			this.doLogging = !params.l || params.l != "false";
 			this.counter = 0;
 			this.browser = sayswho();
+			this.isBrowserCompatible = true;
+			var checkBrowser = this.browser.name;
+			var checkVersion = this.browser.version;
+			if((checkBrowser ==="Chrome" && checkVersion<62	) ||
+				(checkBrowser==="Safari" && checkVersion<8) ||
+				(checkBrowser==="msie" && checkVersion<11) ||
+				(checkBrowser==="Firefox") || (checkBrowser==="Opera")){
+				this.isBrowserCompatible = false;
+			}
 			console.log("browser = ", this.browser.name, " version = ", this.browser.version);
 			this.log("start-session", params);
 			this.isStudentMode = params.m != "AUTHOR";

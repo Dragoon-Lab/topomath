@@ -23,7 +23,8 @@ define([
 
 		showDialog: function(title, popupContent, buttonsArray, cancelTitle){
 			popupDialog.set('title', title);
-			this._buttonsArray = buttonsArray;
+			if(buttonsArray && buttonsArray != "")
+				this._buttonsArray = buttonsArray;
 			d = dojo.byId('popupDialogButtons');
 			var cancelLabel = "Cancel";
 			if(cancelTitle && cancelTitle !== ""){
@@ -42,21 +43,22 @@ define([
 			
 			var popupDialogCancelButton = dojo.byId('popupDialogCancelButton');
 
-			array.forEach(this._buttonsArray.reverse(), lang.hitch(this, function(button){
-				var b = new Button({
-					label: Object.keys(button)
-				});
-				
-				aspect.after(button,b.label[0],lang.hitch(this, function(){
- 					this.destroyDialog();
- 				}));
+			if(this._buttonsArray){
+				array.forEach(this._buttonsArray.reverse(), lang.hitch(this, function(button){
+					var b = new Button({
+						label: Object.keys(button)
+					});
 
-				handler = on(b, "click", Object.values(button)[0]);
-				this._clickHandlers[button] = handler;
-				domConstruct.place(b.domNode, d, "first");
-				
-			}));
+					aspect.after(button,b.label[0],lang.hitch(this, function(){
+						this.destroyDialog();
+					}));
 
+					handler = on(b, "click", Object.values(button)[0]);
+					this._clickHandlers[button] = handler;
+					domConstruct.place(b.domNode, d, "first");
+
+				}));
+			}
 			html.set(dojo.query('#popupDialog .dijitDialogPaneContentArea #popupDialogContent')[0], popupContent);
 			popupDialog.show();
 		},

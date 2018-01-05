@@ -17,14 +17,12 @@ define([
 	"dojo/dom-construct",
 	"dijit/focus",
 	'dijit/registry',
-	"dijit/TooltipDialog",
-	"dijit/popup",
 	'./controller',
 	"./pedagogical-module",
 	"./typechecker",
 	"./equation"
 ], function(aspect, array, declare, lang, dom, domClass, style, ready,on,
- domConstruct, focusUtil, registry, tooltipDialog, popup, controller, PM, typechecker, expression) {
+ domConstruct, focusUtil, registry, controller, PM, typechecker, expression) {
 	/* Summary:	// Summary:
 	 //			MVC for the node editor, for students
 	 // Description:
