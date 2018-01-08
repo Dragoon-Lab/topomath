@@ -10,7 +10,13 @@ define([
 		isVariable: Parser.isVariable,
 		equalto: "=",
 		_logger: null,
+		epsilon: 10e-9,
 		cache: {},
+		_status: {
+			correct: "correct",
+			incorrect: "incorrect",
+			partial: "partial"
+		},
 		/*
 		* Converts an equation with ids to corresponding variable names
 		* It splits the equation at = and then replaces the variables in
@@ -280,6 +286,11 @@ define([
 		/**
 		* to evaluate one equation from the student model and compare it with
 		* equation from the author model.
+		* TODO:
+		* The actual algorithm is not supposed to have authorValue check at all.
+		* This has been kept for backward compatibility and once all the models
+		* have been updated to have the solution numbers then this code needs to
+		* be updated to remove the author equation handling completely. ~ Sachin
 		**/
 		evaluate: function(model, id){
 			var sEquation = model.student.getEquation(id);
@@ -309,11 +320,68 @@ define([
 				}
 				var aValue = authorValue[0] - authorValue[1];
 				var sValue = studentValue[0] - studentValue[1];
-				if(aValue !== sValue && aValue !== -sValue)
-					return false;
+				// this check will only have sValue check
+				if(Math.abs(sValue) > this.epsilon &&
+					Math.abs(Math.abs(aValue) - Math.abs(sValue)) > this.epsilon)
+					return this._status["incorrect"];
+			}
+			if(this.validateVariables(model, aParse, sParse)){
+				return this._status["correct"];
+			}
+
+			return this._status["partial"];
+		},
+
+		validateVariables: function(model, aParse, sParse){
+			var sVariables = [];
+			var aVariables = [];
+			var idString = model.authored.getInitialNodeIDString();
+			for(var i = 0; i < 2; i++){
+				aVariables = aVariables.concat(aParse[i].variables());
+				sVariables = sVariables.concat(sParse[i].variables());
+			}
+			if(aVariables.length != sVariables.length)
+				return false;
+
+			for(i = 0; i < 2; i++){
+				array.every(sParse[i].variables(), function(id){
+					var authoredID = model.student.getAuthoredID(id);
+					if(authoredID){
+						if(id.indexOf(idString) > -1){
+							authoredID += idString;
+						}
+						return (aVariables.indexOf(authoredID) > -1);
+					} else
+						return false;
+				});
 			}
 
 			return true;
+		},
+
+		check: function(evaluation){
+			return evaluation == this._status["correct"];
+		},
+
+		getEquationVariables: function(model, id){
+			var aEquation = model.authored.getEquation(model.student.getAuthoredID(id));
+			var aParse = this.parseEquation(aEquation);
+			var variables = [];
+			var flag; var variable;
+			array.forEach(aParse, function(p){
+				array.forEach(p.variables(), function(id){
+					flag = false;
+					if(id.indexOf(model.authored.getInitialNodeIDString()) > 0){
+						flag = true;
+						id = model.authored.getID(id);
+					}
+					variable = model.authored.getVariable(id);
+					variable = (flag ? "Prior value of " : "") + variable;
+					variables.push(variable);
+				});
+			});
+
+			return variables;
 		},
 
 		replace: function(expression, values){
@@ -331,11 +399,7 @@ define([
 			var isStatic = model.student.isSolutionStatic();
 			var point = {};
 			func = model.student.isSolutionAvailable() ? model.student.getSolutionPoint : model.student.getRandomPoint;
-			point = isStatic ? this.cache : {};
-			if(Object.keys(point) < 0 || !isStatic){
-				point = func.apply(model.student);
-			}
-			this.cache = point;
+			point = func.apply(model.student);
 
 			return point;
 		},

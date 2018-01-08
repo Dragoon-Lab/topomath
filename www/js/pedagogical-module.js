@@ -6,7 +6,7 @@
 
 define([
 	"dojo/_base/array", "dojo/_base/declare", "dojo/_base/lang", "./equation", "dojo/dom", "./user-messages"
-], function(array, declare, lang, check, dom, userMessages){
+], function(array, declare, lang, equation, dom, userMessages){
 	// Summary: 
 	//			Processes student selections and returns instructions to the 
 	//			program
@@ -56,6 +56,14 @@ define([
 			nofeedback: function(obj, part){
 				followUpTasks(obj, part, /*state*/ "incorrect", /*message*/ "", /*disable*/ "");
 			}
+		},
+		partial:{
+			feedback: function(obj, part){
+				followUpTasks(obj, part, /*state*/ "partial", /*message*/ "partial", /*disable*/"");
+			},
+			nofeedback: function(obj, part){
+				followUpTasks(obj, part, /*state*/ "partial", /*message*/ "", /*disable*/"");
+			}
 		}
 	};
 
@@ -95,6 +103,14 @@ define([
 			},
 			nofeedback: function(obj, part){
 				followUpTasks(obj, part, /*state*/ "incorrect", /*message*/ "", /*disable*/ "");
+			}
+		},
+		partial:{
+			feedback: function(obj, part){
+				followUpTasks(obj, part, /*state*/ "partial", /*message*/ "partial", /*disable*/ false);
+			},
+			nofeedback: function(obj, part){
+				followUpTasks(obj, part, /*state*/ "partial", /*message*/ "", /*disable*/"");
 			}
 		}
 	};
@@ -189,7 +205,7 @@ define([
 					interpretation = "correct";
 				}else{
 					if(model.authored.getAttemptCount(authoredID, nodePart) > 0 ){
-						interpretation = "secondFailure"
+						interpretation = "secondFailure";
 					}else{
 						interpretation = "firstFailure";
 					}
@@ -203,7 +219,7 @@ define([
 						interpretation = "correct";
 					}else{
 						if(model.authored.getAttemptCount(authoredID, nodePart) > 0 ){
-							interpretation = "secondFailure"
+							interpretation = "secondFailure";
 						}else{
 							interpretation = "firstFailure";
 						}
@@ -223,7 +239,7 @@ define([
 					break;
 				case "equation":
 					// Solver
-					interpret(check.evaluate(this.model, studentID));
+					interpret(equation.check(answer));
 					break;
 			}
 			return interpretation;
@@ -255,12 +271,22 @@ define([
 			//
 			// Tags: Private
 			var actual_id = this.model.student.getAuthoredID(id);
+			var equationEvaluation = ""; var interpretation = "";
 			console.log("actual id is",actual_id);
-			var interpretation = this._getInterpretation(id, nodePart, answer);
+			var givenAnswer = answer; //keeping a copy of answer for logging purposes.
+			// evaluation returns correct incorrect and partial, which is something that
+			// we want to use. in case it is partial we need to change the color
+			// and the message. Interpretation only returns correct incorrect first and
+			// second incorrect. Thats why equation validation process is changed.
+			if(nodePart === "equation"){
+				equationEvaluation = equation.evaluate(this.model, id);
+				interpretation = this._getInterpretation(id, nodePart, equationEvaluation);
+			} else {
+				interpretation = this._getInterpretation(id, nodePart, answer);
+			}
 			var returnObj = [], currentStatus;
 			var givenID ;  // ID of the correct node, if it exists
 			var solutionGiven = false;
-			var givenAnswer = answer; //keeping a copy of answer for logging purposes.
 
 			var updateStatus = function(returnObj, model){
 				returnObj.forEach(function(i){
@@ -327,6 +353,23 @@ define([
 							if (returnObj[i].value === "incorrect") {
 								this.model.student.incrementAssistanceScore(id);
 							}
+							if(returnObj[i].attribute === "status" &&
+								equationEvaluation === "partial") {
+								returnObj[i].value = "partial";
+							}
+						}
+					}
+
+					if(equationEvaluation === "partial"){
+						var partialObj = [];
+						nodeEditorActionTable[equationEvaluation][this.feedbackMode](partialObj, nodePart, answer);
+						var variables = equation.getEquationVariables(this.model, id);
+						for(i = 0; i < partialObj.length; i++){
+							if(partialObj[i].id == "message"){
+								partialObj[i].value += variables.join(", ");
+								returnObj.push(partialObj[i]);
+								break;
+							}
 						}
 					}
 				}
@@ -340,7 +383,7 @@ define([
 						subModel: this.model.authored,
 						equation: answer
 					};
-					answer = check.convert(params).equation;
+					answer = equation.convert(params).equation;
 				}
 				if(answer == null){
 					if(nodePart === "description"){
@@ -374,10 +417,10 @@ define([
 				if(nodePart === "equation")
 					if(interpretation == "FirstFailure"){
 						var params = {
-						subModel: this.model.authored,
+							subModel: this.model.authored,
 							equation: logCorrectAnswer
 						};
-						logCorrectAnswer = check.convert(params).equation;
+						logCorrectAnswer = equation.convert(params).equation;
 					} else {
 						logCorrectAnswer = answer;
 					}

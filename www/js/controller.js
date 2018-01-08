@@ -161,7 +161,8 @@ define([
 				incorrect: "#FF8080",
 				demo: "yellow",
 				premature: "lightBlue",
-				entered: "#2EFEF7"
+				entered: "#2EFEF7",
+				partial: "#FF0080"
 			};
 			if(value && !colorMap[value]){
 				this.logging.clientLog("assert", {

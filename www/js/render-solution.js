@@ -74,6 +74,15 @@ define([
 				this.isStatic = !this.isStudentMode ? this.checkForStatic(this._model.active, this.activeSolution) :
 					this.checkForStatic(this._model.authored, this.authorSolution);
 
+				// save author solution for color by numbers
+				if(!this.isStudentMode){
+					try {
+						this.saveSolution();
+					} catch (e){
+						console.error("solution was not saved, error message ", e);
+					}
+				}
+
 				if(this.isStatic) {
 					//add static tab if solution is static
 					this.initializeStaticTab();
@@ -85,13 +94,7 @@ define([
 						registry.byId("StaticTab").destroyRecursive();
 					}
 				}
-				if(!this.isSolutionMode()){
-					try {
-						this.saveSolution();
-					} catch (e){
-						console.error("solution was not saved, error message ", e);
-					}
-				}
+
 				this.showHideGraphsHandler();
 
 				domStyle.set(this.tabContainer.domNode, "display", "block");

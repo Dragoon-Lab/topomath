@@ -252,7 +252,7 @@ define([
 				return obj.model.time.units || "seconds";
 			},
 			saveSolution: function(solution){
-				obj.solution = solution;
+				obj.model.solution = solution;
 			}
 		};
 
@@ -971,12 +971,12 @@ define([
 			},
 			getSolutionPoint: function(){
 				point = {};
-				values = obj.solution.values;
-				variables = obj.solution.variables;
+				values = obj.model.solution.values;
+				variables = obj.model.solution.variables;
 				numberOfVariables = variables.length;
 				if(numberOfVariables > 0){
 					timeSteps = values[variables[0]];
-					var index = Math.floor(Math.random() * (timeSteps - 2)) + 1;
+					var index = Math.floor(Math.random() * (timeSteps.length - 2)) + 1;
 					array.forEach(variables, function(id){
 						if(obj.authored.getType(id) == "quantity"){
 							point[id] = values[id][index];
@@ -990,6 +990,15 @@ define([
 						}
 					}, this);
 				}
+
+				var nodes = obj.authored.getNodes();
+				array.forEach(nodes, function(node){
+					if(node.variableType == "parameter"){
+						point[node.ID] = node.value;
+						studentNodeID = this.getNodeIDFor(node.ID);
+						if(studentNodeID) point[studentNodeID] = node.value;
+					}
+				}, this);
 
 				return point;
 			},
