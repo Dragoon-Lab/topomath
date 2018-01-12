@@ -19,12 +19,13 @@ define([
 	'dijit/registry',
 	"dijit/TooltipDialog",
 	"dijit/popup",
+	"dojo/query",
 	'./controller',
 	"./pedagogical-module",
 	"./typechecker",
 	"./equation"
 ], function(aspect, array, declare, lang, dom, domClass, style, ready,on,
- domConstruct, focusUtil, registry, tooltipDialog, popup, controller, PM, typechecker, expression) {
+ domConstruct, focusUtil, registry, tooltipDialog, popup, query, controller, PM, typechecker, expression) {
 	/* Summary:	// Summary:
 	 //			MVC for the node editor, for students
 	 // Description:
@@ -44,6 +45,7 @@ define([
 			console.log("++++++++ In student constructor");
 			lang.mixin(this.widgetMap, this.controlMap);
 			this._PM = new PM(model, this._config.get("feedbackMode"));
+			debugger;
 			ready(this, "populateSelections");
 			this.init();
 		},
@@ -55,7 +57,7 @@ define([
 
 		init: function () {
 			// TODO : Check Model Completeness
-			this.studentControls();
+			// this.studentControls();
 		},
 		// A list of control map specific to students
 		resettableControls: ["variable","description","value","units","equation"],
@@ -63,21 +65,14 @@ define([
 		controlMap: {
 			inputs: "inputSelectorStudent",
 			variable: "variableInputboxStudent",
-			equation: "equationInputboxStudent",
+			equation: "equationInputbox",
 			description: "selectDescription",
 			units: "unitsSelectorStudent",
 			modelType: "modelSelector",
-			value: "valueInputbox"
-		},
-		studentControls: function(){
-			console.log("++++++++ Setting AUTHOR format in Node Editor.");
-			style.set('descriptionInputboxContainerStudent', 'display', 'inline-block');
-			style.set('variableInputboxContainerStudent', 'display', 'inline-block');
-			//style.set('valueInputboxContainer', 'display', 'block');
-			style.set('unitsSelectorContainerStudent', 'display', 'block');
-			style.set('expressionDiv', 'display', 'block');
-			style.set('inputSelectorContainerStudent', 'display', 'block');
-			style.set('equationInputboxStudent', 'display', 'block');
+			value: "valueInputbox",
+			unknown: "unknownType",
+			parameter: "parameterType",
+			dynamic: "dynamicType",
 		},
 		populateSelections: function () {
 			/*
@@ -91,7 +86,7 @@ define([
 			// populate input field
 			var t = registry.byId(this.controlMap.inputs);
 			var u = registry.byId(this.controlMap.units);
-			
+
 			var variableName = registry.byId(this.controlMap.variable);
 
 			//get descriptions to sort as alphabetic order
@@ -108,7 +103,7 @@ define([
 				if(descNameMap[obj1.value] && descNameMap[obj2.value])
 					return descNameMap[obj1.value].toLowerCase().localeCompare(descNameMap[obj2.value].toLowerCase());
 			}, this);
-			
+
 			array.forEach(descriptions, function (desc) {
 				if(desc.label !== undefined){
 					var name = this._model.authored.getName(desc.value);
@@ -120,7 +115,7 @@ define([
 					}
 				}
 			}, this);
-			
+
 			var units = this._model.getAllUnits();
 			units.sort();
 
@@ -256,7 +251,7 @@ define([
 		 These don't need to be recorded in the model, since they
 		 are applied each time the node editor is opened.
 		 */
-		initialViewSettings: function(type){
+		/*initialViewSettings: function(type){
 			//make display none for all fields initially
 			var qtyElements = ["descriptionInputboxContainerStudent","variableTypeContainer",
 			"variableInputboxContainerStudent","valueUnitsContainer"];
@@ -285,11 +280,18 @@ define([
 			//emptying message box when a node is open
 			console.log("emptying message");
 			dojo.empty("messageOutputbox");
-		},
+		},*/
 		initialControlSettings: function (nodeid) {
 			// Apply settings from PM
 			console.log("Initial Control Settings for Student");
-			
+			var directives = this._model.student.getStatusDirectives(nodeid);
+			var nodeDirectives = this._PM.getNodeDisplayStatus(nodeid);
+			array.forEach(directives, function(directive){
+				if(directive.attribute == "status"){
+					nodeDirectives = nodeDirectives.concat(this._PM.getNodeDisplayStatus(nodeid, directive.id,directive.value));
+				}
+			}, this);
+
 			var d = registry.byId(this.controlMap.description);
 			
 			console.log("description widget = ", d, this.controlMap.description);
@@ -325,59 +327,25 @@ define([
 			d.options = d.options.filter(lang.hitch(this,function(item){
 				return ((this._model.authored.getType(item.value) === this.nodeType) || item.value === "defaultSelect" ) ;
 			}));
-			
 
 			// Set the selected value in the description.
 			var desc = this._model.student.getAuthoredID(nodeid);
 			var variableName = this._model.student.getVariable(nodeid);
 			console.log('description is', desc || "not set");
 			d.set('value', desc || 'defaultSelect', false);
-			
+
 			registry.byId(this.controlMap.variable).set('value', variableName || 'defaultSelect', false);
 
 			array.forEach(this._variableTypes, function(_type){
 				registry.byId(_type+"Type").set('checked',false);
 				registry.byId(_type+"Type").set('disabled',false);
 			})
-			
-			style.set('valueInputboxContainer','display','none');
-			style.set('valueInputboxContainer','disabled',false);
-			
+
 			var _variableType = this._model.student.getVariableType(nodeid);
 			if(_variableType){
-				var _returnObj = this._PM.getActionForType(nodeid, _variableType);
-				
-				array.forEach(_returnObj, function(directive) {
-					registry.byId(_variableType+"Type").set('checked','checked');
-					if(directive.attribute == "status" && directive.value == "correct"){
-						array.forEach(this._variableTypes, function(_type){
-							if(_type !== _variableType && this._config.get("feedbackMode") != "nofeedback"){
-								registry.byId(_type+"Type").set('disabled',true);
-							}
-						}, this);
-					}
-					if(_variableType =="parameter" || _variableType == "dynamic"){
-						style.set('valueInputboxContainer','display','block');
-					}else{
-						style.set('valueInputboxContainer','display','none');
-						style.set('valueInputboxContainer','disabled',false);
-					}
-				}, this);
+				registry.byId(_variableType+"Type").set('checked', 'checked');
 			}
-			/*
-			 Set color and enable/disable
-			 */
-			array.forEach(this._model.student.getStatusDirectives(nodeid), function (directive) {
-				if(directive.id != "variableType"){
-					var w = registry.byId(this.controlMap[directive.id]);
-					w.set(directive.attribute, directive.value);
-					// The actual values should be in the model itself, not in status directives.
-					if (directive.attribute == "value") {
-					//Logging
-					}					
-				}
-
-			}, this);
+			this.applyDirectives(nodeDirectives);
 
 		},
 
@@ -462,6 +430,24 @@ define([
 			}
 
 			return authoredID;
+		},
+
+		updateVariableTypeValue: function(value){
+			if(value == "unknown")
+				this.model.student.setValue(this.currentID, "");
+			registry.byId(value+"Type").set("checked", "checked");
+			this.model.student.setVariableType(this.currentID, value);
+		},
+
+		updateVariableTypeStatus: function(attribute, value){
+			if(attribute === "disabled" && value === true){
+				array.forEach(this._variableTypes, function(type){
+					registry.byId(type+"Type").set("disabled", true);
+				});
+			} else if(attribute === "status"){
+				var selectedVariableType = query("input[name='variableType']:checked")[0].value;
+				registry.byId(selectedVariableType+"Type").set(attribute, value);
+			}
 		}
 	});
 });

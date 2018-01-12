@@ -266,7 +266,7 @@
 				<label for="dynamicType">Dynamic</label>
 			</div>
 
-			<div class="fieldgroup" id="valueUnitsContainer" style="display: none;">
+			<div class="fieldgroup" id="valueUnitsContainer" style="display: block;">
 				<!-- adding a div for value field to control its display in UI -->
 				<div id="valueInputboxContainer" class="fieldgroup" style="display: none;">
 					<span class="fixedwidth">
@@ -303,8 +303,7 @@
 						<label for="equationInputbox">Equation</label>
 					</div>
 					<div id="equationInputboxContainer" class="fieldgroup">
-						<textarea id="equationInputbox" rows=4 cols=50 data-dojo-type="dijit/form/SimpleTextarea" style="min-height:60px;display: none;"></textarea>
-						<textarea id="equationInputboxStudent" rows=4 cols=50 data-dojo-type="dijit/form/SimpleTextarea" style="min-height:60px; display: none;"></textarea>
+						<textarea id="equationInputbox" rows=4 cols=50 data-dojo-type="dijit/form/SimpleTextarea" style="min-height:60px;display: display: none;"></textarea>
 					</div>
 				</div>
 
@@ -314,7 +313,7 @@
 						<label>Insert above </label>
 					</span>
 					<div class="vertical">
-						<div id="inputSelectorContainer" style="background-color:#fff; display: none;">
+						<div id="inputSelectorContainer" style="background-color:#fff; display: block;">
 							<select id="inputSelector" data-dojo-type="dijit/form/ComboBox">
 							</select>
 						</div>
