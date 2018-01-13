@@ -312,9 +312,18 @@ define([
 			var variables = {};
 			var authorValue = [];
 			var studentValue = [];
+			var flag = false;
 			for(var i = 0; i < numberOfEvaluations; i++){
 				variables = this.createEvaluationPoint(model);
 				for(var j = 0; j < 2; j++){
+					flag = false;
+					// verify student has not written an unknown variable
+					array.forEach(sParse[i].variables(), function(id){
+						if(!(id in variables))
+							flag = true;
+					});
+					if(flag)
+						return this._status["incorrect"];
 					authorValue[j] = aParse[j].evaluate(variables);
 					studentValue[j] = sParse[j].evaluate(variables);
 				}
@@ -344,7 +353,7 @@ define([
 				return false;
 
 			for(i = 0; i < 2; i++){
-				array.every(sParse[i].variables(), function(id){
+				var flag = array.every(sParse[i].variables(), function(id){
 					var authoredID = model.student.getAuthoredID(id);
 					if(authoredID){
 						if(id.indexOf(idString) > -1){
@@ -354,6 +363,8 @@ define([
 					} else
 						return false;
 				});
+				if(!flag)
+					return false;
 			}
 
 			return true;
