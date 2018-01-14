@@ -45,7 +45,6 @@ define([
 			console.log("++++++++ In student constructor");
 			lang.mixin(this.widgetMap, this.controlMap);
 			this._PM = new PM(model, this._config.get("feedbackMode"));
-			debugger;
 			ready(this, "populateSelections");
 			this.init();
 		},
@@ -434,9 +433,9 @@ define([
 
 		updateVariableTypeValue: function(value){
 			if(value == "unknown")
-				this.model.student.setValue(this.currentID, "");
+				this._model.student.setValue(this.currentID, "");
 			registry.byId(value+"Type").set("checked", "checked");
-			this.model.student.setVariableType(this.currentID, value);
+			this._model.student.setVariableType(this.currentID, value);
 		},
 
 		updateVariableTypeStatus: function(attribute, value){

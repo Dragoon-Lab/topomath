@@ -236,6 +236,7 @@ define([
 					if(authoredID && this.model.authored.getUnits(authoredID)){
 						display(obj, "units", "block");
 					}
+					answer = answer ? answer : this.model.student.getVariableType(studentID);
 					if(answer != "unknown"){
 						display(obj, "value", "block");
 					}
@@ -415,15 +416,7 @@ define([
 					}
 				}
 			}
-			var l = returnObj.length;
-			for(var i = 0; i < l; i++)
-				if(returnObj[i].attribute === "displayNext"){
-					break;
-				}
-			if(returnObj[i].value){
-				this._displayNext(returnObj, id, nodePart);
-			}
-			returnObj.splice(i, 1);
+
 			if(interpretation === "lastFailure" || interpretation === "secondFailure"){
 				answer = this.model.student.getCorrectAnswer(id, nodePart);
 				/*TO DO : Add Equation*/
@@ -441,10 +434,19 @@ define([
 						console.error("Unexpected null from model.getCorrectAnswer().");
 				}else{
 
-					returnObj.push({id: nodePart, attribute: "value", value: answer});
+					returnObj.unshift({id: nodePart, attribute: "value", value: answer});
 					solutionGiven = true;
 				}
 			}
+			var l = returnObj.length;
+			for(var i = 0; i < l; i++)
+				if(returnObj[i].attribute === "displayNext"){
+					break;
+				}
+			if(returnObj[i].value){
+				this._displayNext(returnObj, id, nodePart, answer);
+			}
+			returnObj.splice(i, 1);
 
 			var logObj = {};
 			var l = returnObj.length;

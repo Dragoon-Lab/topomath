@@ -183,7 +183,8 @@ define([
 			 Previously, just set domNode.bgcolor but this approach didn't work
 			 for text boxes.   */
 			// console.log(">>>>>>>>>>>>> setting color ", this.domNode.id, " to ", value);
-			if(this.domNode.firstChild.name == "variableType"){
+			if(this.domNode && this.domNode.firstChild &&
+				this.domNode.firstChild.name == "variableType"){
 				// TODO remove the old color as well
 				array.forEach(_variableTypes, function(type){
 					updateColor(registry.byId(type+"Type").domNode.firstChild.labels[0], "");
@@ -235,7 +236,7 @@ define([
 							}
 						} // if the mode is author and user has selected to enter student values (" given ")
 						else if(myThis._model.active.isStudentMode() && registry.byId("modelSelector").value == "authored"){
-							equation = registry.byId();
+							equation = registry.byId(myThis.controlMap["equation"]);
 							//equation value in this case if from equationInputboxStudent and check if the value is entered/checked
 							//if not throw a crisis alert message
 							if(equation.value && !myThis.equationEntered){
@@ -565,6 +566,9 @@ define([
 				w.set("disabled", false);  // enable everything
 				w.set("status", '');  // remove colors
 			}));
+
+			for(control in this.genericDivMap)
+				domStyle.set(this.genericDivMap[control], "display", "none");
 			
 			this.disableHandlers = true;
 			//TODO: check logging
@@ -669,6 +673,7 @@ define([
 					&& directive.id !== "variableType") {
 					var w = registry.byId(this.widgetMap[directive.id]);
 					if (directive.attribute == 'value') {
+						this.disableHandlers = true;
 						w.set("value", directive.value, false);
 						// Each control has its own function to update the
 						// the model and the graph.
@@ -686,6 +691,7 @@ define([
 						}else if(w.id == this.controlMap["variableType"]){
 							this.updateVariableTypeValue(directive.value);
 						}
+						this.disableHandlers = false;
 						//TODO : update explanation function but right now no directives with att value for explanations not being processed 
 					} else{
 						w.set(directive.attribute, directive.value);
@@ -817,7 +823,9 @@ define([
 				//domStyle.set('valueInputboxContainer','display','block');
 				if(_variableType == "dynamic"){
 					var givenID = this._model.active.getAuthoredID(id);
-					this._model.active.setPosition(id, 1, this._model.authored.getPosition(givenID, 1));
+					var position = this._model.authored.getPosition(givenID, 1);
+					if(position)
+						this._model.active.setPosition(id, 1, position);
 					// Update position to avoid overlap of node
 					if(this._model.active.getPosition(id).length === 1)
 						this._model.active.updatePositionXY(id);
@@ -829,7 +837,7 @@ define([
 				//domStyle.set('valueInputboxContainer','display','none');
 				//this.handleValue(null);
 			}
-			this.updateNodeView(this._model.active.getNode(id));
+			//this.updateNodeView(this._model.active.getNode(id));
 		},
 
 		handleEquation: function(equation){
