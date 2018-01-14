@@ -245,41 +245,6 @@ define([
 				this.applyDirectives(dd);
 			}
 		},
-		/*
-		 Settings for a new node, as supplied by the PM.
-		 These don't need to be recorded in the model, since they
-		 are applied each time the node editor is opened.
-		 */
-		/*initialViewSettings: function(type){
-			//make display none for all fields initially
-			var qtyElements = ["descriptionInputboxContainerStudent","variableTypeContainer",
-			"variableInputboxContainerStudent","valueUnitsContainer"];
-			var eqElements = ["descriptionInputboxContainerStudent","expressionDiv"];
-		
-			if(type == "quantity"){
-				eqElements.forEach(function(elem){
-					console.log("element",elem);
-					style.set(elem,"display","none");
-				});
-				qtyElements.forEach(function(elem){
-					console.log("element",elem);
-					style.set(elem,"display","block");
-				});
-			}else if(type == "equation"){
-				qtyElements.forEach(function(elem){	
-					console.log("element",elem);
-					style.set(elem,"display","none");
-				});
-				eqElements.forEach(function(elem){
-					console.log("element",elem);
-					style.set(elem,"display","block");
-				});
-
-			}
-			//emptying message box when a node is open
-			console.log("emptying message");
-			dojo.empty("messageOutputbox");
-		},*/
 		initialControlSettings: function (nodeid) {
 			// Apply settings from PM
 			console.log("Initial Control Settings for Student");

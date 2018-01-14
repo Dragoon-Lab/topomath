@@ -514,7 +514,7 @@ define([
 			//for now commenting it and randomly giving nodetype value
 			this.nodeType = this._model.active.getType(this.currentID);
 			console.log("nodeType",this.nodeType);
-			//this.initialViewSettings(this.nodeType);
+			this.initialViewSettings(this.nodeType);
 			this.initialControlSettings(id);
 			this.populateNodeEditorFields(id);
 			// Hide the value and expression controls in the node editor, depending on the type of node		
