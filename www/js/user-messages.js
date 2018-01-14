@@ -27,7 +27,8 @@ define([], function(){
 			lastFailure: "incorrect. The correct answer has been given.",
 			secondFailure: "incorrect. The correct answer has been given.",
 			incorrect: "incorrect.",
-			correct: "correct."
+			correct: "correct.",
+			partial: "true. But the author would like you to use the following variables in it: "
 		}
 	};
 

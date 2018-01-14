@@ -166,9 +166,9 @@ define([
 				demo: "yellow",
 				premature: "lightBlue",
 				entered: "#2EFEF7",
+				partial: "#FF0080",
 				"": ""
 			};
-
 			var updateColor = function(domNode, color){
 				domStyle.set(domNode, 'backgroundColor', color);
 			};
