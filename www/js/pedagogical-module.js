@@ -23,7 +23,7 @@ define([
 	var directiveObject = {
 		state: "",
 		message: "",
-		disable: "",
+		disable: false,
 		displayNext: true
 	};
 
@@ -44,7 +44,7 @@ define([
 		incorrect:{
 			feedback: function(obj, part){
 				directiveObject.state = directiveObject.message = "incorrect";
-				directiveObject.disable = directiveObject.displayNext = "";
+				directiveObject.displayNext = "";
 				followUpTasks(obj, part, directiveObject);
 			},
 			nofeedback: function(obj, part){
@@ -54,7 +54,7 @@ define([
 		firstFailure: {
 			feedback: function(obj, part){
 				directiveObject.state = directiveObject.message = "incorrect";
-				directiveObject.disable = directiveObject.displayNext = "";
+				directiveObject.displayNext = "";
 				followUpTasks(obj, part, directiveObject);
 			},
 			nofeedback: function(obj, part){
@@ -72,23 +72,23 @@ define([
 				followUpTasks(obj, part, directiveObject);
 			}
 		},
+		partial:{
+			feedback: function(obj, part){
+				directiveObject.state = directiveObject.message = "partial";
+				directiveObject.displayNext = "";
+				followUpTasks(obj, part, directiveObject);
+			},
+			nofeedback: function(obj, part){
+				directiveObject.state = "partial";
+				directiveObject.message =  directiveObject.displayNext = "";
+				followUpTasks(obj, part, directiveObject);
+			}
+		},
 		defaultAction: {
 			feedback: function(obj, part){
 				followUpTasks(obj, part, directiveObject);
 			},
 			nofeedback: function(obj, part){
-				followUpTasks(obj, part, directiveObject);
-			}
-		},
-		partial:{
-			feedback: function(obj, part){
-				directiveObject.state = directiveObject.message = "partial";
-				directiveObject.disable = directiveObject.displayNext = "";
-				followUpTasks(obj, part, directiveObject);
-			},
-			nofeedback: function(obj, part){
-				directiveObject.state = "partial";
-				directiveObject.message = directiveObject.disable = directiveObject.displayNext = "";
 				followUpTasks(obj, part, directiveObject);
 			}
 		}
@@ -114,7 +114,6 @@ define([
 		incorrect:{
 			feedback: function(obj, part){
 				directiveObject.state = directiveObject.message = "incorrect";
-				directiveObject.disable = directiveObject.displayNext = false;
 				followUpTasks(obj, part, directiveObject);
 			},
 			nofeedback: function(obj, part){
@@ -124,7 +123,7 @@ define([
 		firstFailure: {
 			feedback: function(obj, part){
 				directiveObject.state = directiveObject.message = "incorrect";
-				directiveObject.disable = directiveObject.displayNext = false;
+				directiveObject.disable = false;
 				followUpTasks(obj, part, directiveObject);
 			},
 			nofeedback: function(obj, part){
@@ -142,23 +141,22 @@ define([
 				followUpTasks(obj, part, directiveObject);
 			}
 		},
+		partial:{
+			feedback: function(obj, part){
+				directiveObject.state = directiveObject.message = "partial";
+				directiveObject.disable = false;
+				followUpTasks(obj, part, directiveObject);
+			},
+			nofeedback: function(obj, part){
+				directiveObject.state = "partial";
+				followUpTasks(obj, part, directiveObject);
+			}
+		},
 		defaultAction: {
 			feedback: function(obj, part){
 				followUpTasks(obj, part, directiveObject);
 			},
 			nofeedback: function(obj, part){
-				followUpTasks(obj, part, directiveObject);
-			}
-		},
-		partial:{
-			feedback: function(obj, part){
-				directiveObject.state = directiveObject.message = "partial";
-				directiveObject.disable = directiveObject.displayNext = "";
-				followUpTasks(obj, part, directiveObject);
-			},
-			nofeedback: function(obj, part){
-				directiveObject.state = "partial";
-				directiveObject.message = directiveObject.disable = directiveObject.displayNext = "";
 				followUpTasks(obj, part, directiveObject);
 			}
 		}
@@ -267,6 +265,7 @@ define([
 					break;
 				case "value":
 				case "units":
+				case "equations":
 					break;
 				default:
 					display(obj, "description", "block");

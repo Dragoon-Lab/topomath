@@ -184,7 +184,8 @@ define([
 			 for text boxes.   */
 			// console.log(">>>>>>>>>>>>> setting color ", this.domNode.id, " to ", value);
 			if(this.domNode && this.domNode.firstChild &&
-				this.domNode.firstChild.name == "variableType"){
+				(this.domNode.firstChild.name == "variableType" ||
+				this.domNode.name == "variableType")){
 				// TODO remove the old color as well
 				array.forEach(_variableTypes, function(type){
 					updateColor(registry.byId(type+"Type").domNode.firstChild.labels[0], "");
@@ -567,9 +568,23 @@ define([
 				w.set("status", '');  // remove colors
 			}));
 
+			// reset the variablte type radio button labels
+			if(this.nodeType == "quantity"){
+				array.forEach(this._variableTypes, function(type){
+					var w = registry.byId(type+"Type")
+					w.set("status", "");
+					w.set("disabled", false);
+				});
+			}
+
 			for(control in this.genericDivMap)
-				domStyle.set(this.genericDivMap[control], "display", "none");
-			
+				domStyle.set(this.genericDivMap[control], "display", "none"); // hide everything
+
+			/* Erase messages, eventually, we probably want to save and restore
+			messages for each node. */
+			var messageWidget = registry.byId(this.widgetMap.message);
+			messageWidget.set('content', '');
+
 			this.disableHandlers = true;
 			//TODO: check logging
 		},
