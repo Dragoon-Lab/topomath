@@ -63,7 +63,7 @@ define([
 		},
 		secondFailure:{
 			feedback: function(obj, part){
-				directiveObject.state = "demo"
+				directiveObject.state = "demo";
 				directiveObject.message = "secondFailure";
 				directiveObject.disable = directiveObject.displayNext = true;
 				followUpTasks(obj, part, directiveObject);
@@ -82,10 +82,14 @@ define([
 		},
 		partial:{
 			feedback: function(obj, part){
-				followUpTasks(obj, part, /*state*/ "partial", /*message*/ "partial", /*disable*/"");
+				directiveObject.state = directiveObject.message = "partial";
+				directiveObject.disable = directiveObject.displayNext = "";
+				followUpTasks(obj, part, directiveObject);
 			},
 			nofeedback: function(obj, part){
-				followUpTasks(obj, part, /*state*/ "partial", /*message*/ "", /*disable*/"");
+				directiveObject.state = "partial";
+				directiveObject.message = directiveObject.disable = directiveObject.displayNext = "";
+				followUpTasks(obj, part, directiveObject);
 			}
 		}
 	};
@@ -148,10 +152,14 @@ define([
 		},
 		partial:{
 			feedback: function(obj, part){
-				followUpTasks(obj, part, /*state*/ "partial", /*message*/ "partial", /*disable*/ false);
+				directiveObject.state = directiveObject.message = "partial";
+				directiveObject.disable = directiveObject.displayNext = "";
+				followUpTasks(obj, part, directiveObject);
 			},
 			nofeedback: function(obj, part){
-				followUpTasks(obj, part, /*state*/ "partial", /*message*/ "", /*disable*/"");
+				directiveObject.state = "partial";
+				directiveObject.message = directiveObject.disable = directiveObject.displayNext = "";
+				followUpTasks(obj, part, directiveObject);
 			}
 		}
 	};
