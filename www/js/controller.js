@@ -836,6 +836,8 @@ define([
 			this._model.active.setVariableType(id, _variableType);
 			if( _variableType != "unknown"){
 				//domStyle.set('valueInputboxContainer','display','block');
+				var initLabel = dom.byId("initLabel");
+				initLabel.innerHTML = "";
 				if(_variableType == "dynamic"){
 					var givenID = this._model.active.getAuthoredID(id);
 					var position = this._model.authored.getPosition(givenID, 1);
@@ -844,6 +846,7 @@ define([
 					// Update position to avoid overlap of node
 					if(this._model.active.getPosition(id).length === 1)
 						this._model.active.updatePositionXY(id);
+					initLabel.innerHTML = "Initial ";
 				}
 			}else{
 				// Find all nodes that have reference to the initial node of this node and delete links to them
