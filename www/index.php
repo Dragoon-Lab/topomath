@@ -313,7 +313,7 @@
 						<label>Insert above </label>
 					</span>
 					<div class="vertical">
-						<div id="inputSelectorContainer" style="background-color:#fff; display: block;">
+						<div id="inputSelectorContainer" style="background-color:#fff; display: none;">
 							<select id="inputSelector" data-dojo-type="dijit/form/ComboBox">
 							</select>
 						</div>

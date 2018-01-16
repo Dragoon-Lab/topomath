@@ -310,7 +310,7 @@ define([
 				registry.byId(_variableType+"Type").set('checked', 'checked');
 			}
 			this.applyDirectives(nodeDirectives);
-
+			style.set(this.genericDivMap.inputs, "display", "block");
 		},
 
 		// Need to save state of the node editor in the status section

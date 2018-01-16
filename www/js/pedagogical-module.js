@@ -38,26 +38,37 @@ define([
 				followUpTasks(obj, part, directiveObject);
 			},
 			nofeedback: function(obj, part){
+				directiveObject.state = directiveObject.message = "";
+				directiveObject.disable = false;
+				directiveObject.displayNext = true;
 				followUpTasks(obj, part, directiveObject);
 			}
 		},
 		incorrect:{
 			feedback: function(obj, part){
 				directiveObject.state = directiveObject.message = "incorrect";
-				directiveObject.displayNext = "";
+				directiveObject.disable = false;
+				directiveObject.displayNext = false;
 				followUpTasks(obj, part, directiveObject);
 			},
 			nofeedback: function(obj, part){
+				directiveObject.state = directiveObject.message = "";
+				directiveObject.disable = false;
+				directiveObject.displayNext = true;
 				followUpTasks(obj, part, directiveObject);
 			}
 		},
 		firstFailure: {
 			feedback: function(obj, part){
 				directiveObject.state = directiveObject.message = "incorrect";
-				directiveObject.displayNext = "";
+				directiveObject.disable = false;
+				directiveObject.displayNext = false;
 				followUpTasks(obj, part, directiveObject);
 			},
 			nofeedback: function(obj, part){
+				directiveObject.state = directiveObject.message = "";
+				directiveObject.disable = false;
+				directiveObject.displayNext = true;
 				followUpTasks(obj, part, directiveObject);
 			}
 		},
@@ -69,6 +80,9 @@ define([
 				followUpTasks(obj, part, directiveObject);
 			},
 			nofeedback: function(obj, part){
+				directiveObject.state = directiveObject.message = "";
+				directiveObject.disable = false;
+				directiveObject.displayNext = true;
 				followUpTasks(obj, part, directiveObject);
 			}
 		},
@@ -79,16 +93,23 @@ define([
 				followUpTasks(obj, part, directiveObject);
 			},
 			nofeedback: function(obj, part){
-				directiveObject.state = "partial";
-				directiveObject.message =  directiveObject.displayNext = "";
+				directiveObject.state = directiveObject.message = "";
+				directiveObject.disable = false;
+				directiveObject.displayNext = true;
 				followUpTasks(obj, part, directiveObject);
 			}
 		},
 		defaultAction: {
 			feedback: function(obj, part){
+				directiveObject.state = directiveObject.message = "";
+				directiveObject.disable = false;
+				directiveObject.displayNext = true;
 				followUpTasks(obj, part, directiveObject);
 			},
 			nofeedback: function(obj, part){
+				directiveObject.state = directiveObject.message = "";
+				directiveObject.disable = false;
+				directiveObject.displayNext = true;
 				followUpTasks(obj, part, directiveObject);
 			}
 		}
@@ -108,15 +129,23 @@ define([
 				followUpTasks(obj, part, directiveObject);
 			},
 			nofeedback: function(obj, part){
+				directiveObject.state = directiveObject.message = "";
+				directiveObject.disable = false;
+				directiveObject.displayNext = true;
 				followUpTasks(obj, part, directiveObject);
 			}
 		},
 		incorrect:{
 			feedback: function(obj, part){
 				directiveObject.state = directiveObject.message = "incorrect";
+				directiveObject.disable = false;
+				directiveObject.displayNext = false;
 				followUpTasks(obj, part, directiveObject);
 			},
 			nofeedback: function(obj, part){
+				directiveObject.state = directiveObject.message = "";
+				directiveObject.disable = false;
+				directiveObject.displayNext = true;
 				followUpTasks(obj, part, directiveObject);
 			}
 		},
@@ -127,6 +156,9 @@ define([
 				followUpTasks(obj, part, directiveObject);
 			},
 			nofeedback: function(obj, part){
+				directiveObject.state = directiveObject.message = "";
+				directiveObject.disable = false;
+				directiveObject.displayNext = true;
 				followUpTasks(obj, part, directiveObject);
 			}
 		},
@@ -138,6 +170,9 @@ define([
 				followUpTasks(obj, part, directiveObject);
 			},
 			nofeedback: function(obj, part){
+				directiveObject.state = directiveObject.message = "";
+				directiveObject.disable = false;
+				directiveObject.displayNext = true;
 				followUpTasks(obj, part, directiveObject);
 			}
 		},
@@ -145,18 +180,27 @@ define([
 			feedback: function(obj, part){
 				directiveObject.state = directiveObject.message = "partial";
 				directiveObject.disable = false;
+				directiveObject.displayNext = false;
 				followUpTasks(obj, part, directiveObject);
 			},
 			nofeedback: function(obj, part){
-				directiveObject.state = "partial";
+				directiveObject.state = directiveObject.message = "";
+				directiveObject.disable = false;
+				directiveObject.displayNext = true;
 				followUpTasks(obj, part, directiveObject);
 			}
 		},
 		defaultAction: {
 			feedback: function(obj, part){
+				directiveObject.state = directiveObject.message = "";
+				directiveObject.disable = false;
+				directiveObject.displayNext = true;
 				followUpTasks(obj, part, directiveObject);
 			},
 			nofeedback: function(obj, part){
+				directiveObject.state = directiveObject.message = "";
+				directiveObject.disable = false;
+				directiveObject.displayNext = true;
 				followUpTasks(obj, part, directiveObject);
 			}
 		}
@@ -516,7 +560,7 @@ define([
 				var logCorrectAnswer = this.model.student.getCorrectAnswer(id, nodePart);
 
 				if(nodePart === "equation")
-					if(interpretation == "FirstFailure"){
+					if(interpretation == "firstFailure"){
 						var params = {
 							subModel: this.model.authored,
 							equation: logCorrectAnswer

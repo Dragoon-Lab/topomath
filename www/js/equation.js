@@ -315,17 +315,14 @@ define([
 			var variables = {};
 			var authorValue = [];
 			var studentValue = [];
-			var flag = false;
+			var flag;
 			for(var i = 0; i < numberOfEvaluations; i++){
 				variables = this.createEvaluationPoint(model);
 				for(var j = 0; j < 2; j++){
-					flag = false;
-					// verify student has not written an unknown variable
-					array.forEach(sParse[i].variables(), function(id){
-						if(!(id in variables))
-							flag = true;
+					flag = array.every(sParse[j].variables(), function(id){
+						return (id in variables);
 					});
-					if(flag)
+					if(!flag)
 						return this._status["incorrect"];
 					authorValue[j] = aParse[j].evaluate(variables);
 					studentValue[j] = sParse[j].evaluate(variables);

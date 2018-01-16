@@ -76,7 +76,8 @@ define([
 			variableType: 'variableTypeContainer',
 			value: "valueInputboxContainer",
 			units: "unitsSelectorContainerStudent",
-			equation: "expressionDiv"
+			equation: "expressionDiv",
+			inputs: "inputSelectorContainerStudent"
 		},
 		// A list of all widgets.  (The constructor mixes this with controlMap)
 		widgetMap: {
