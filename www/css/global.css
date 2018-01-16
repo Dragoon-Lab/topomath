@@ -359,3 +359,7 @@ table.solution th{
 div.legend{
 	margin: 0 auto;
 }
+
+.dijitTextBoxDisabled .dijitInputField.dijitInputContainer {
+	background-color: transparent;
+}

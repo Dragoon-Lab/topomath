@@ -536,7 +536,7 @@ define([
 				var parameter = parameters[index];
 				var variable = choice ? this._model.active.getVariable(parameter)
 										: this._model.authored.getVariable(parameter);
-				if(variable == staticSelect.value){
+				if(staticSelect && variable == staticSelect.value){
 					result = parameter;
 					break;
 				}

@@ -278,7 +278,7 @@ define([
 			// initialize the solution object
 			array.forEach(equations.xvars, function(id){
 				solution[id] = [];
-				solution[id].push(equations.initValues[id + subModel.getInitialNodeString()]);
+				solution[id].push(equations.initValues[id + subModel.getInitialNodeIDString()]);
 			});
 			array.forEach(equations.func, function(id){
 				solution[id] = [];
