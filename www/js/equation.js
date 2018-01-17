@@ -93,18 +93,25 @@ define([
 									variable: variable,
 									type: "quantity"
 								};
-								var newId = subModel.addNode(newNodeOptions);
-								nodeList.push({ "id": newId, "variable":variable});
-								expr.substitute(variable, newId);
-								if(currentPriorList.length>0){
-									currentPriorList.some(function(eachPrior){
-										if(eachPrior === variable){
-											// In this case along with new node a corresponding prior node has to be created
-											// We store the node data into dynamicList and send to controller where it further makes UI changes for prior node
-											dynamicList.push({ "id": newId, "variable":variable});
-											expr.substitutePrior(newId+subModel.getInitialNodeIDString());		
-										}
-									});
+								// check whether a correct node has been added by the student
+								var doReplace = true;
+								if(subModel.isStudentMode()){
+									doReplace = subModel.getAuthoredIDForName(variable) ? true : false;
+								}
+								if(doReplace){
+									var newId = subModel.addNode(newNodeOptions);
+									nodeList.push({ "id": newId, "variable":variable});
+									expr.substitute(variable, newId);
+									if(currentPriorList.length>0){
+										currentPriorList.some(function(eachPrior){
+											if(eachPrior === variable){
+												// In this case along with new node a corresponding prior node has to be created
+												// We store the node data into dynamicList and send to controller where it further makes UI changes for prior node
+												dynamicList.push({ "id": newId, "variable":variable});
+												expr.substitutePrior(newId+subModel.getInitialNodeIDString());		
+											}
+										});
+									}
 								}
 							} else {
 								// when auto created nodes were not allowed but equation had non-existent nodes.
@@ -113,6 +120,10 @@ define([
 						}
 					}, this);
 					var _c = this.createConnections(expr, subModel);
+					for(var i = 0; i < _c.length; i++){
+						if(!_c[i].ID)
+							_c.splice(i, 1);
+					}
 					connections = connections.concat(_c);
 					connections = Array.from(new Set(connections.map(JSON.stringify))).map(JSON.parse);
 				}, this);
@@ -197,10 +208,11 @@ define([
 			// General expression
 			// TODO: ensure that initial node has a different ID
 			return array.map(parse.variables(), function(x){
-				if(x.indexOf("id") != 0)
+				if(x.indexOf("id") != 0){
 					return {ID: subModel.getNodeIDByName(x)};
-				else
+				} else {
 					return {ID: x};
+				}
 			}, this);
 		},
 
@@ -265,9 +277,9 @@ define([
 				});
 			}
 			if(timeStepSolution && timeStepSolution.hasOwnProperty('vars'))
-				solution.xvars = timeStepSolution.vars;
+				solution.plotVariables = timeStepSolution.vars;
 			else
-				solution.xvars = solution.xvars.concat(solution.func);
+				solution.plotVariables = solution.xvars.concat(solution.func);
 			console.log("solution for the system of equations ", solution);
 
 			return solution;

@@ -853,6 +853,9 @@ define([
 				var node = this.getNode(id);
 				return node && node.authoredID;
 			},
+			getAuthoredIDForName: function(variable){
+				return obj.authored.getNodeIDByName(variable);
+			},
 			getInputs: function(/*string*/ id){
 				// Summary: return an array containing the input ids for a node.
 				var ret = this.getNode(id);
@@ -988,7 +991,7 @@ define([
 							var studentNodeID = this.getNodeIDFor(id);
 							if(studentNodeID) point[studentNodeID] = values[id][index];
 							if(nodeType && nodeType == "dynamic"){
-								point[v + this.getInitialNodeIDString()] = values[id][index - 1];
+								point[id + this.getInitialNodeIDString()] = values[id][index - 1];
 								if(studentNodeID) point[studentNodeID + this.getInitialNodeIDString()] = values[id][index - 1];
 							}
 						}

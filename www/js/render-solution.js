@@ -129,9 +129,9 @@ define([
 					return;
 				}
 				if(this.activeSolution.params.indexOf(paramID) >= 0){
-					this.activeSolution.initValues[paramID] = textBox.value;
+					this.activeSolution.initValues[paramID] = parseFloat(textBox.value);
 				} else if (this.activeSolution.xvars.indexOf(paramID) >= 0){
-					this.activeSolution.initValues[paramID + this._model.getNodeIDString()] = textBox.value;
+					this.activeSolution.initValues[paramID + this._model.active.getInitialNodeIDString()] = parseFloat(textBox.value);
 				} else {
 					throw new Error("Invalid ID", paramID);
 				}

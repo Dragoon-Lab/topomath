@@ -22,7 +22,7 @@ define([
 		},
 
 		init: function(){
-			this.vars = lang.mixin(this._solution.xvars, this._solution.params);
+			this.vars = this._solution.xvars.concat(this._solution.params);
 			if(this.vars.length > 0){
 				var content = this.sliderPane.get("content");
 				this.sliderValues = this._getValues(this.vars);
@@ -44,12 +44,12 @@ define([
 
 		_getValues: function(sliderVars){
 			var values = {};
-			keys = Object.keys(this._solution.values);
+			var keys = Object.keys(this._solution.values);
 			array.forEach(sliderVars, function(ID){
 				for(var i in keys){
 					var key = keys[i];
 					if(ID == key || key.indexOf(ID + "_") >= 0){
-						values[ID] = this._solution.values[key];
+						values[ID] = this._solution.initValues[key];
 						break;
 					}
 				}
