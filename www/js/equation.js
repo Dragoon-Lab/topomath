@@ -121,8 +121,10 @@ define([
 					}, this);
 					var _c = this.createConnections(expr, subModel);
 					for(var i = 0; i < _c.length; i++){
-						if(!_c[i].ID)
+						if(!_c[i].ID){
 							_c.splice(i, 1);
+							i--;
+						}
 					}
 					connections = connections.concat(_c);
 					connections = Array.from(new Set(connections.map(JSON.stringify))).map(JSON.parse);

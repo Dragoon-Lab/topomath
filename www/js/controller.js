@@ -879,7 +879,7 @@ define([
 			return id;
 		},
 
-		equationAnalysis: function(directives, ignoreUnknownTest){
+		equationAnalysis: function(directives, ignoreUnknownTest, eq){
 			this.equationEntered = true;
 			console.log("****** enter button");
 			/*
@@ -894,7 +894,7 @@ define([
 			 Also, the following section could just as well be placed in the PM?
 			 */
 			var widget = registry.byId(this.controlMap.equation);
-			var inputEquation = widget.get("value");
+			var inputEquation = eq || widget.get("value");
 
 			//var parse = null;
 			var returnObj = {};
@@ -940,8 +940,7 @@ define([
 				return null;
 			}
 			//rest of the analysis is only needed for the student mode. So returning in case the active model is not student.
-				return returnObj;
-			
+			return returnObj;
 		},
 		createExpressionNodes: function(parseObject, ignoreUnknownTest){
 			/*
@@ -999,7 +998,7 @@ define([
 				}
 
 				if(directives.length > 0){
-					this._model.active.setEquation(this.currentID, inputEquation);
+					this._model.active.setEquation(this.currentID, parseObject.equation);
 					this.applyDirectives(directives);
 					return;
 				}

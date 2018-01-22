@@ -212,13 +212,29 @@ define([
 			// TODO : Add Handler and process answer
 			var directives = [];
 			var parse = this.equationAnalysis(directives, false);
+			var tempParse;
 			console.log("************",parse);
 			if (parse) {
 				this._model.student.setEquation(this.currentID, parse.equation);
 				this.createExpressionNodes(parse, false);
 				var dd = this._PM.processAnswer(this.currentID, 'equation', parse,
 						registry.byId(this.controlMap.equation).get("value"));
-				directives = directives.concat(dd);
+				// work around to remove disable and status in case the demo
+				// equation has prior node error
+				for(var i = 0; i < dd.length; i++){
+					if(dd[i].attribute === "value")
+						tempParse = this.equationAnalysis([], false, dd[i].value);
+				}
+				if(tempParse && tempParse.priorError){
+					for(i = 0; i < dd.length; i++){
+						if(dd[i].attribute === "status" || dd[i].attribute === "disabled" || dd[i].id === "message"){
+							dd.splice(i, 1);
+							i--;
+						}
+					}
+				}
+				if(!parse.priorError)
+					directives = directives.concat(dd);
 				var context = this;
 			}
 			this.applyDirectives(directives);
@@ -242,7 +258,7 @@ define([
 				//Create expression nodes for parsed equation
 				this.createExpressionNodes(parse);
 				var dd = this._PM.processAnswer(this.currentID, 'equation', parse, registry.byId(this.controlMap.equation).get("value"));
-				this.applyDirectives(dd);
+				//this.applyDirectives(dd);
 			}
 		},
 		initialControlSettings: function (nodeid) {

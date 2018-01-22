@@ -24,7 +24,8 @@ define([
 		state: "",
 		message: "",
 		disable: false,
-		displayNext: true
+		displayNext: true,
+		displayValue: false
 	};
 
 	var descriptionTable = {
@@ -35,11 +36,12 @@ define([
 				directiveObject.state = directiveObject.message = "correct";
 				directiveObject.disable = true;
 				directiveObject.displayNext = true;
+				directiveObject.displayValue = false;
 				followUpTasks(obj, part, directiveObject);
 			},
 			nofeedback: function(obj, part){
 				directiveObject.state = directiveObject.message = "";
-				directiveObject.disable = false;
+				directiveObject.disable = directiveObject.displayValue = false;
 				directiveObject.displayNext = true;
 				followUpTasks(obj, part, directiveObject);
 			}
@@ -47,13 +49,12 @@ define([
 		incorrect:{
 			feedback: function(obj, part){
 				directiveObject.state = directiveObject.message = "incorrect";
-				directiveObject.disable = false;
-				directiveObject.displayNext = false;
+				directiveObject.disable = directiveObject.displayNext = directiveObject.displayValue = false;
 				followUpTasks(obj, part, directiveObject);
 			},
 			nofeedback: function(obj, part){
 				directiveObject.state = directiveObject.message = "";
-				directiveObject.disable = false;
+				directiveObject.disable = directiveObject.displayValue = false;
 				directiveObject.displayNext = true;
 				followUpTasks(obj, part, directiveObject);
 			}
@@ -61,13 +62,12 @@ define([
 		firstFailure: {
 			feedback: function(obj, part){
 				directiveObject.state = directiveObject.message = "incorrect";
-				directiveObject.disable = false;
-				directiveObject.displayNext = false;
+				directiveObject.disable = directiveObject.displayNext = directiveObject.displayValue = false;
 				followUpTasks(obj, part, directiveObject);
 			},
 			nofeedback: function(obj, part){
 				directiveObject.state = directiveObject.message = "";
-				directiveObject.disable = false;
+				directiveObject.disable = directiveObject.displayValue = false;
 				directiveObject.displayNext = true;
 				followUpTasks(obj, part, directiveObject);
 			}
@@ -76,12 +76,12 @@ define([
 			feedback: function(obj, part){
 				directiveObject.state = "demo";
 				directiveObject.message = "secondFailure";
-				directiveObject.disable = directiveObject.displayNext = true;
+				directiveObject.disable = directiveObject.displayNext = directiveObject.displayValue = true;
 				followUpTasks(obj, part, directiveObject);
 			},
 			nofeedback: function(obj, part){
 				directiveObject.state = directiveObject.message = "";
-				directiveObject.disable = false;
+				directiveObject.disable = directiveObject.displayValue = false;
 				directiveObject.displayNext = true;
 				followUpTasks(obj, part, directiveObject);
 			}
@@ -89,12 +89,13 @@ define([
 		partial:{
 			feedback: function(obj, part){
 				directiveObject.state = directiveObject.message = "partial";
+				directiveObject.disable = directiveObject.displayValue = false;
 				directiveObject.displayNext = "";
 				followUpTasks(obj, part, directiveObject);
 			},
 			nofeedback: function(obj, part){
 				directiveObject.state = directiveObject.message = "";
-				directiveObject.disable = false;
+				directiveObject.disable = directiveObject.displayValue = false;
 				directiveObject.displayNext = true;
 				followUpTasks(obj, part, directiveObject);
 			}
@@ -102,13 +103,13 @@ define([
 		defaultAction: {
 			feedback: function(obj, part){
 				directiveObject.state = directiveObject.message = "";
-				directiveObject.disable = false;
+				directiveObject.disable = directiveObject.displayValue = false;
 				directiveObject.displayNext = true;
 				followUpTasks(obj, part, directiveObject);
 			},
 			nofeedback: function(obj, part){
 				directiveObject.state = directiveObject.message = "";
-				directiveObject.disable = false;
+				directiveObject.disable = directiveObject.displayValue = false;
 				directiveObject.displayNext = true;
 				followUpTasks(obj, part, directiveObject);
 			}
@@ -125,12 +126,13 @@ define([
 			feedback: function(obj, part){
 				directiveObject.state = directiveObject.message = "correct";
 				directiveObject.disable = true;
+				directiveObject.diplayValue = false;
 				directiveObject.displayNext = true;
 				followUpTasks(obj, part, directiveObject);
 			},
 			nofeedback: function(obj, part){
 				directiveObject.state = directiveObject.message = "";
-				directiveObject.disable = false;
+				directiveObject.disable = directiveObject.displayValue = false;
 				directiveObject.displayNext = true;
 				followUpTasks(obj, part, directiveObject);
 			}
@@ -138,13 +140,13 @@ define([
 		incorrect:{
 			feedback: function(obj, part){
 				directiveObject.state = directiveObject.message = "incorrect";
-				directiveObject.disable = false;
+				directiveObject.disable = directiveObject.displayValue = false;
 				directiveObject.displayNext = false;
 				followUpTasks(obj, part, directiveObject);
 			},
 			nofeedback: function(obj, part){
 				directiveObject.state = directiveObject.message = "";
-				directiveObject.disable = false;
+				directiveObject.disable = directiveObject.displayValue = false;
 				directiveObject.displayNext = true;
 				followUpTasks(obj, part, directiveObject);
 			}
@@ -152,12 +154,13 @@ define([
 		firstFailure: {
 			feedback: function(obj, part){
 				directiveObject.state = directiveObject.message = "incorrect";
-				directiveObject.disable = false;
+				directiveObject.disable = directiveObject.displayValue = false;
+				directiveObject.displayNext = false;
 				followUpTasks(obj, part, directiveObject);
 			},
 			nofeedback: function(obj, part){
 				directiveObject.state = directiveObject.message = "";
-				directiveObject.disable = false;
+				directiveObject.disable = directiveObject.displayValue = false;
 				directiveObject.displayNext = true;
 				followUpTasks(obj, part, directiveObject);
 			}
@@ -166,12 +169,12 @@ define([
 			feedback: function(obj, part){
 				directiveObject.state = "demo"
 				directiveObject.message = "secondFailure";
-				directiveObject.disable = directiveObject.displayNext = true;
+				directiveObject.disable = directiveObject.displayNext = directiveObject.displayValue = true;
 				followUpTasks(obj, part, directiveObject);
 			},
 			nofeedback: function(obj, part){
 				directiveObject.state = directiveObject.message = "";
-				directiveObject.disable = false;
+				directiveObject.disable = directiveObject.displayValue = false;
 				directiveObject.displayNext = true;
 				followUpTasks(obj, part, directiveObject);
 			}
@@ -179,13 +182,13 @@ define([
 		partial:{
 			feedback: function(obj, part){
 				directiveObject.state = directiveObject.message = "partial";
-				directiveObject.disable = false;
+				directiveObject.disable = directiveObject.displayValue = false;
 				directiveObject.displayNext = false;
 				followUpTasks(obj, part, directiveObject);
 			},
 			nofeedback: function(obj, part){
 				directiveObject.state = directiveObject.message = "";
-				directiveObject.disable = false;
+				directiveObject.disable = directiveObject.displayValue = false;
 				directiveObject.displayNext = true;
 				followUpTasks(obj, part, directiveObject);
 			}
@@ -193,13 +196,13 @@ define([
 		defaultAction: {
 			feedback: function(obj, part){
 				directiveObject.state = directiveObject.message = "";
-				directiveObject.disable = false;
+				directiveObject.disable = directiveObject.displayValue = false;
 				directiveObject.displayNext = true;
 				followUpTasks(obj, part, directiveObject);
 			},
 			nofeedback: function(obj, part){
 				directiveObject.state = directiveObject.message = "";
-				directiveObject.disable = false;
+				directiveObject.disable = directiveObject.displayValue = false;
 				directiveObject.displayNext = true;
 				followUpTasks(obj, part, directiveObject);
 			}
@@ -211,22 +214,24 @@ define([
 	 */
 	function followUpTasks(obj , part, actions){
 		var stateVal = actions.state;
-		if(stateVal !== undefined){
+		if(stateVal !== undefined)
 			state(obj, part, stateVal);
-		}
+
 		var messageVal = actions.message;
-		if(messageVal !== undefined && messageVal !== ""){
+		if(messageVal !== undefined && messageVal !== "")
 			message(obj, part, messageVal);
-		}
+
 		var disabledVal = actions.disable;
-		if(disabledVal !== undefined){
+		if(disabledVal !== undefined)
 			disable(obj, part, disabledVal);
-		}
 
 		var displayNextVal = actions.displayNext;
-		if(displayNextVal !== undefined && displayNextVal !== ""){
+		if(displayNextVal !== undefined && displayNextVal !== "")
 			displayNext(obj, part, displayNextVal);
-		}
+
+		var displayValue = actions.displayValue;
+		if(displayValue !== undefined && displayValue !== "")
+			value(obj, part, displayValue);
 	}
 
 
@@ -235,7 +240,7 @@ define([
 	 *		statuses and messages to the return object array.
 	 *****/
 	function value(/*object*/ obj, /*string*/ nodePart, /*string*/ value){
-		obj.push({id: nodePart, attribute: "value", value: value});
+		obj.unshift({id: nodePart, attribute: "value", value: value});
 	}
 
 	function state(/*object*/ obj, /*string*/ nodePart, /*string*/ status, /*value*/ value){
@@ -313,6 +318,7 @@ define([
 					break;
 				default:
 					display(obj, "description", "block");
+					break;
 			}
 
 			return obj;
@@ -490,13 +496,13 @@ define([
 								this.model.student.incrementAssistanceScore(id);
 							}
 							if(returnObj[i].attribute === "status" &&
-								equationEvaluation === "partial") {
+								equationEvaluation === "partial" && interpretation !== "demo") {
 								returnObj[i].value = "partial";
 							}
 						}
 					}
 
-					if(equationEvaluation === "partial"){
+					if(equationEvaluation === "partial" && interpretation !== "secondFailure"){
 						var partialObj = [];
 						nodeEditorActionTable[equationEvaluation][this.feedbackMode](partialObj, nodePart, answer);
 						var variables = equation.getEquationVariables(this.model, id);
@@ -511,10 +517,11 @@ define([
 				}
 			}
 
-			if(interpretation === "lastFailure" || interpretation === "secondFailure"){
+			if(returnObj[0].value && (interpretation === "lastFailure"
+				|| interpretation === "secondFailure")){
 				answer = this.model.student.getCorrectAnswer(id, nodePart);
 				/*TO DO : Add Equation*/
-				if(nodePart === "equation"){
+				if(nodePart === "equation" && !answer.priorError){
 					var params = {
 						subModel: this.model.authored,
 						equation: answer
@@ -526,12 +533,19 @@ define([
 						returnObj.push({id: "message", attribute: "append", value: "You have already created all the necessary nodes."});
 					}else
 						console.error("Unexpected null from model.getCorrectAnswer().");
+				//}else if(returnObj[0].value){
 				}else{
-
-					returnObj.unshift({id: nodePart, attribute: "value", value: answer});
+					// index 0 is value uptill now and it is necessary that it should be
+					// returnObj.splice(0, 1);
+					// remove the original true value and replace it with actual answer
+					value(returnObj, nodePart, answer);
 					solutionGiven = true;
 				}
 			}
+			// remove value object from return object
+			if(solutionGiven) returnObj.splice(1, 1);
+			else returnObj.splice(0, 1);
+
 			var l = returnObj.length;
 			for(var i = 0; i < l; i++)
 				if(returnObj[i].attribute === "displayNext"){
