@@ -764,6 +764,10 @@ define([
 				var givenNode = this.getNode(id);
 				return (givenNode && givenNode.genus == "allowed");
 			},
+			isNodeIrrelevant: function(id){
+				var givenNode = this.getNode(id);
+				return (givenNode && givenNode.genus == "irrelevant");
+			},
 			getAttemptCount: function(/*string*/ id, /*string*/ part, /*boolean*/ ignoreExecution){
 					var node = this.getNode(id);
 					return node && node.attemptCount[part]? node.attemptCount[part]:0;
@@ -1044,6 +1048,10 @@ define([
 				var authoredID = this.getAuthoredID(id);
 				return !authoredID || obj.authored.isNodeAllowed(authoredID);
 			},
+			isNodeIrrelevant: function(id){
+				var authoredID = this.getAuthoredID(id);
+				return !authoredID || obj.authored.isNodeIrrelevant(authoredID);
+			},
 			getCorrectAnswer : function(/*string*/ studentID, /*string*/ part){
 				var id = this.getAuthoredID(studentID);
 				var node = obj.authored.getNode(id);
@@ -1067,6 +1075,11 @@ define([
 			},
 			getCorrectness: function(/*string*/ studentID){
 				var node = this.getNode(studentID);
+				// if node is irrelevant then it is not part of the equations and
+				// hence has to be marked incorrect
+				if(this.isNodeIrrelevant(studentID))
+					return "incorrect";
+
 				var rank = {
 					"incorrect": 3,
 					"demo": 2,
