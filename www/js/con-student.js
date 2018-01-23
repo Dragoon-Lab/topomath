@@ -46,6 +46,9 @@ define([
 			lang.mixin(this.widgetMap, this.controlMap);
 			this._PM = new PM(model, this._config.get("feedbackMode"));
 			ready(this, "populateSelections");
+			// used in equation done handler to handle scenario of new nodes created
+			// from demo nodes
+			this.demoParse = null;
 			this.init();
 		},
 
@@ -212,7 +215,6 @@ define([
 			// TODO : Add Handler and process answer
 			var directives = [];
 			var parse = this.equationAnalysis(directives, false);
-			var tempParse;
 			console.log("************",parse);
 			if (parse) {
 				this._model.student.setEquation(this.currentID, parse.equation);
@@ -223,9 +225,9 @@ define([
 				// equation has prior node error
 				for(var i = 0; i < dd.length; i++){
 					if(dd[i].attribute === "value")
-						tempParse = this.equationAnalysis([], false, dd[i].value);
+						this.demoParse = this.equationAnalysis([], false, dd[i].value);
 				}
-				if(tempParse && tempParse.priorError){
+				if(this.demoParse && this.demoParse.priorError){
 					for(i = 0; i < dd.length; i++){
 						if(dd[i].attribute === "status" || dd[i].attribute === "disabled" || dd[i].id === "message"){
 							dd.splice(i, 1);
@@ -248,7 +250,9 @@ define([
 			if(value != ""){
 				var directives = [];
 				// Parse and update model, connections, etc.
-				var parse = this.equationAnalysis(directives);
+				// if new nodes are created then demoParse will contain them
+				// if we parse again at this point then the newNodeList comes empty
+				var parse = this.demoParse || this.equationAnalysis(directives);
 				// Generally, since this is the correct solution, there should be no directives
 				this.applyDirectives(directives);
 
@@ -258,6 +262,7 @@ define([
 				//Create expression nodes for parsed equation
 				this.createExpressionNodes(parse);
 				var dd = this._PM.processAnswer(this.currentID, 'equation', parse, registry.byId(this.controlMap.equation).get("value"));
+				this.demoParse = null; // emptying it for next feedback
 				//this.applyDirectives(dd);
 			}
 		},
