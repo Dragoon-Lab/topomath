@@ -143,7 +143,7 @@
 				$get_sol_q = "select solutions.session_id,solutions.solution_graph from solutions INNER JOIN session ON solutions.session_id = session.session_id AND session.folder = '$src' AND session.problem = '$model' AND session.mode = 'AUTHOR' AND session.section = 'non-class-models' ORDER BY session.time DESC limit 1";
 				$sol_res = $this->getDBResults($get_sol_q);
 				$sol_data = mysqli_fetch_array($sol_res);
-				$solution_graph = $sol_data['solution_graph'];
+				$solution_graph = $this->db_connection->real_escape_string($sol_data['solution_graph']);
 				$old_session_id = $sol_data['session_id'];
 
 				//step 2 : create a new session id with current micro timestamp and session_id
