@@ -19,8 +19,8 @@
 		function setQueries(){
 			$q = array();
 			$q['classProblems'] = 'SELECT DISTINCT problem, user, folder FROM session WHERE user = "%s" AND folder IN (%s);';
-			$q['getNCModelWithGroup'] = 'SELECT session_id, problem, user, folder, solution_graph FROM session JOIN solutions USING (session_id) WHERE (user = "%s" OR folder = "%s") AND problem = "%s" AND mode = "%s" ORDER BY session.time desc LIMIT 1;';
-			$q['getNCModel'] = 'SELECT session_id, problem, user, folder, solution_graph FROM session JOIN solutions USING (session_id) WHERE user = "%s" AND problem = "%s" AND mode = "%s" ORDER BY session.time desc LIMIT 1;';
+			$q['getNCModelWithGroup'] = 'SELECT session_id, problem, user, folder, solution_graph FROM session JOIN solutions USING (session_id) WHERE (user = "%s" OR folder = "%s") AND problem = "%s" AND mode = "%s" AND section = "non-class-models" ORDER BY session.time desc LIMIT 1;';
+			$q['getNCModel'] = 'SELECT session_id, problem, user, folder, solution_graph FROM session JOIN solutions USING (session_id) WHERE user = "%s" AND problem = "%s" AND mode = "%s" AND section = "non-class-models" ORDER BY session.time desc LIMIT 1;';
 			$q['insertSession'] = 'INSERT INTO session (session_id, mode, user, section, problem, folder) VALUES ("%s", "%s", "%s", "%s", "%s", "%s");';
 			$q['insertSolutionGraph'] = 'INSERT INTO solutions (session_id, solution_graph) VALUES ("%s", "%s");';
 
@@ -55,7 +55,7 @@
 			$group = $this->db_connection->real_escape_string($parameters['g']);
 			//we made sure group is unique each time
 			//query by group name and return problem names
-			$query = "select DISTINCT problem from session where folder = '$group'";
+			$query = "select DISTINCT problem from session where folder = '$group' AND section = 'non-class-models'";
 			$result = $this->getDBResults($query);
 			$nc_probs = array();
 			if($result->num_rows != 0){
@@ -83,7 +83,7 @@
 				//escape quotes, make strings query safe
 				$new_folder = $this->db_connection->real_escape_string($new_folder);
 				$eachFolder = $this->db_connection->real_escape_string($eachFolder);
-				$del_folder_query = "update session set folder = '$new_folder',time = time where folder = '$eachFolder' ";
+				$del_folder_query = "update session set folder = '$new_folder',time = time where folder = '$eachFolder' AND section = 'non-class-models'";
 				//echo $del_folder_query;
 				$del_suc1 = $this->getDBResults($del_folder_query);
 			}
@@ -94,7 +94,7 @@
 				$new_folder = $new_folder.'-deleted';
 				$new_folder = $this->db_connection->real_escape_string($new_folder);
 				$name = $this->db_connection->real_escape_string($name);
-				$del_folder_query = "update session set folder = '$new_folder',time = time where folder = '$group' and problem='$name' ";
+				$del_folder_query = "update session set folder = '$new_folder',time = time where folder = '$group' and problem='$name' AND section = 'non-class-models'";
 				echo $del_folder_query;
 				$del_suc2 = $this->getDBResults($del_folder_query);
 			}
@@ -118,7 +118,7 @@
 
 			if($action == "moveModel"){
 				//move Model
-				$update_query = "update session set folder = '$dest',time = time where folder='$src' AND problem='$model' ";
+				$update_query = "update session set folder = '$dest',time = time where folder='$src' AND problem='$model' AND section = 'non-class-models'";
 				//echo $update_query;
 				$update_res = $this->getDBResults($update_query);
 				if($update_res)
@@ -140,7 +140,7 @@
 				*/
 
 				//step 1: retrieve the most recent session for the specific problem and group which has a corresponding solutions entry
-				$get_sol_q = "select solutions.session_id,solutions.solution_graph from solutions INNER JOIN session ON solutions.session_id = session.session_id AND session.folder = '$src' AND session.problem = '$model' AND session.mode = 'AUTHOR' ORDER BY session.time DESC limit 1";
+				$get_sol_q = "select solutions.session_id,solutions.solution_graph from solutions INNER JOIN session ON solutions.session_id = session.session_id AND session.folder = '$src' AND session.problem = '$model' AND session.mode = 'AUTHOR' AND session.section = 'non-class-models' ORDER BY session.time DESC limit 1";
 				$sol_res = $this->getDBResults($get_sol_q);
 				$sol_data = mysqli_fetch_array($sol_res);
 				$solution_graph = $sol_data['solution_graph'];
@@ -178,7 +178,7 @@
 			$new_item = $this->db_connection->real_escape_string($parameters['new_item']);
 			$action = $parameters['action'];
 			if($action == "Folder"){
-				$update_query = "update session set folder = '$new_item',time = time where folder='$old_folder'";
+				$update_query = "update session set folder = '$new_item',time = time where folder='$old_folder' AND section = 'non-class-models'";
 				//echo $update_query;
 				$update_res = $this->getDBResults($update_query);
 				echo $update_query;
@@ -188,7 +188,7 @@
 					return null;
 			}
 			else if($action == "Model"){
-				$update_query = "update session set problem = '$new_item',time = time where folder='$old_folder' AND problem='$old_model' ";
+				$update_query = "update session set problem = '$new_item',time = time where folder='$old_folder' AND problem='$old_model' AND section = 'non-class-models'";
 				echo $update_query;
 				$update_res = $this->getDBResults($update_query);
 				if($update_res)
