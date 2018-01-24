@@ -88,6 +88,8 @@ define([
 		// Controls that are select menus
 		selects: ['description', 'units', 'inputs'],
 
+		equationButtons: ["plus", "minus", "times", "divide", "equals", "undo", "equationDone"],
+
 		// attributes that should be saved in the status section
 		validStatus: {status: true, disabled: true},
 		_variableTypes: ["unknown","parameter","dynamic"],
@@ -474,8 +476,7 @@ define([
 
 			// For each button 'name', assume there is an associated widget in the HTML
 			// with id 'nameButton' and associated handler 'nameHandler' below.
-			var buttons = ["plus", "minus", "times", "divide", "equals", "undo", "equationDone"];
-			array.forEach(buttons, function(button){
+			array.forEach(this.equationButtons, function(button){
 				var w = registry.byId(button + 'Button');
 				if(!w){
 					this._logger.logClientEvent("assert", {
@@ -568,6 +569,12 @@ define([
 				w.set("disabled", false);  // enable everything
 				w.set("status", '');  // remove colors
 			}));
+
+			if(this.nodeType == "equation"){
+				array.forEach(this.equationButtons, function(button){
+					registry.byId(button + 'Button').set("disabled", false);
+				});
+			}
 
 			// reset the variablte type radio button labels
 			if(this.nodeType == "quantity"){
@@ -710,6 +717,13 @@ define([
 						this.disableHandlers = false;
 						//TODO : update explanation function but right now no directives with att value for explanations not being processed 
 					} else{
+						// disabling other buttons as well
+						if(w.id == this.controlMap["equation"] && directive.attribute === "disabled"
+							&& directive.value){
+							array.forEach(this.equationButtons, function(button){
+								registry.byId(button + 'Button').set(directive.attribute, directive.value);
+							});
+						}
 						w.set(directive.attribute, directive.value);
 						if(directive.attribute === "status"){
 							//tempDirective variable further input to editor tour

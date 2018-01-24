@@ -1050,7 +1050,9 @@ define([
 			},
 			isNodeIrrelevant: function(id){
 				var authoredID = this.getAuthoredID(id);
-				return !authoredID || obj.authored.isNodeIrrelevant(authoredID);
+				// changing the logic of authoredID because a just created node is returned
+				// irrelevant
+				return authoredID && obj.authored.isNodeIrrelevant(authoredID);
 			},
 			getCorrectAnswer : function(/*string*/ studentID, /*string*/ part){
 				var id = this.getAuthoredID(studentID);
