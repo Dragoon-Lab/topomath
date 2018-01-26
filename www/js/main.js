@@ -116,6 +116,11 @@ define([
 					//errorMessage.show();
 				}
 			}
+			if(_model.isStudentMode() && !_model.student.isSolutionAvailable()){
+				console.log("Solution model is not available")
+				var box = new messageBox("errorMessageBox", "warn", _messages["solution.missing"], true);
+				box.show();
+			}
 
 		} else {
 			console.log("Its a new problem");
