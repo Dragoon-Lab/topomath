@@ -1,8 +1,9 @@
 define([
 	"dojo/_base/array",
+	"dojo/_base/lang",
 	"parser/parser",
 	"solver/newton-raphson"
-], function(array, Parser, Solver){
+], function(array, lang, Parser, Solver){
 	return {
 		parse: function(equation){
 			return Parser.parse(equation);
@@ -10,7 +11,13 @@ define([
 		isVariable: Parser.isVariable,
 		equalto: "=",
 		_logger: null,
-		_numberOfEvaluations: 10,
+		epsilon: 10e-9,
+		cache: {},
+		_status: {
+			correct: "correct",
+			incorrect: "incorrect",
+			partial: "partial"
+		},
 		/*
 		* Converts an equation with ids to corresponding variable names
 		* It splits the equation at = and then replaces the variables in
@@ -86,18 +93,25 @@ define([
 									variable: variable,
 									type: "quantity"
 								};
-								var newId = subModel.addNode(newNodeOptions);
-								nodeList.push({ "id": newId, "variable":variable});
-								expr.substitute(variable, newId);
-								if(currentPriorList.length>0){
-									currentPriorList.some(function(eachPrior){
-										if(eachPrior === variable){
-											// In this case along with new node a corresponding prior node has to be created
-											// We store the node data into dynamicList and send to controller where it further makes UI changes for prior node
-											dynamicList.push({ "id": newId, "variable":variable});
-											expr.substitutePrior(newId+subModel.getInitialNodeIDString());		
-										}
-									});
+								// check whether a correct node has been added by the student
+								var doReplace = true;
+								if(subModel.isStudentMode()){
+									doReplace = subModel.getAuthoredIDForName(variable) ? true : false;
+								}
+								if(doReplace){
+									var newId = subModel.addNode(newNodeOptions);
+									nodeList.push({ "id": newId, "variable":variable});
+									expr.substitute(variable, newId);
+									if(currentPriorList.length>0){
+										currentPriorList.some(function(eachPrior){
+											if(eachPrior === variable){
+												// In this case along with new node a corresponding prior node has to be created
+												// We store the node data into dynamicList and send to controller where it further makes UI changes for prior node
+												dynamicList.push({ "id": newId, "variable":variable});
+												expr.substitutePrior(newId+subModel.getInitialNodeIDString());		
+											}
+										});
+									}
 								}
 							} else {
 								// when auto created nodes were not allowed but equation had non-existent nodes.
@@ -106,6 +120,12 @@ define([
 						}
 					}, this);
 					var _c = this.createConnections(expr, subModel);
+					for(var i = 0; i < _c.length; i++){
+						if(!_c[i].ID){
+							_c.splice(i, 1);
+							i--;
+						}
+					}
 					connections = connections.concat(_c);
 					connections = Array.from(new Set(connections.map(JSON.stringify))).map(JSON.parse);
 				}, this);
@@ -190,10 +210,11 @@ define([
 			// General expression
 			// TODO: ensure that initial node has a different ID
 			return array.map(parse.variables(), function(x){
-				if(x.indexOf("id") != 0)
+				if(x.indexOf("id") != 0){
 					return {ID: subModel.getNodeIDByName(x)};
-				else
+				} else {
 					return {ID: x};
+				}
 			}, this);
 		},
 
@@ -236,7 +257,7 @@ define([
 			/*array.forEach(equations.params, function(id){
 				values[id] = subModel.getValue(id);
 			});*/
-			values = equations.values;
+			values = lang.clone(equations.initValues);
 			var timeStepSolution;
 			for(var i = 1; i <= timeSteps; i++){
 				if(staticID)
@@ -258,7 +279,9 @@ define([
 				});
 			}
 			if(timeStepSolution && timeStepSolution.hasOwnProperty('vars'))
-				solution.xvars = timeStepSolution.vars;
+				solution.plotVariables = timeStepSolution.vars;
+			else
+				solution.plotVariables = solution.xvars.concat(solution.func);
 			console.log("solution for the system of equations ", solution);
 
 			return solution;
@@ -269,7 +292,7 @@ define([
 			// initialize the solution object
 			array.forEach(equations.xvars, function(id){
 				solution[id] = [];
-				solution[id].push(subModel.getValue(id));
+				solution[id].push(equations.initValues[id + subModel.getInitialNodeIDString()]);
 			});
 			array.forEach(equations.func, function(id){
 				solution[id] = [];
@@ -280,6 +303,11 @@ define([
 		/**
 		* to evaluate one equation from the student model and compare it with
 		* equation from the author model.
+		* TODO:
+		* The actual algorithm is not supposed to have authorValue check at all.
+		* This has been kept for backward compatibility and once all the models
+		* have been updated to have the solution numbers then this code needs to
+		* be updated to remove the author equation handling completely. ~ Sachin
 		**/
 		evaluate: function(model, id){
 			var sEquation = model.student.getEquation(id);
@@ -297,47 +325,88 @@ define([
 				console.log(e);
 			}
 
-			// create evaluation point
+			var numberOfEvaluations = model.student.isSolutionStatic() ? 1 : 10;
 			var variables = {};
-			var createEvaluationPoint = function(){
-				variables = {};
-				var addVariableValue = function(variable, value, doAddValue){
-					doAddValue = doAddValue || false;
-					if(!(variable in variables) || doAddValue){
-						value = value || Math.random();
-						variables[variable] = value;
-					}
-					return value;
-				};
-				for(var i = 0; i < 2; i++){
-					array.forEach(sParse[i].variables(), function(v)  {
-						var val = addVariableValue(v);
-						var authorID = model.student.getAuthoredID(v);
-						if(v.indexOf(str) > 0)
-							authorID += str;
-						addVariableValue(authorID, val, true);
-					}, this);
-					array.forEach(aParse[i].variables(), function(v){
-						addVariableValue(v);
-					});
-				}
-			};
-
 			var authorValue = [];
 			var studentValue = [];
-			for(var i = 0; i < this._numberOfEvaluations; i++){
-				createEvaluationPoint();
+			var flag;
+			for(var i = 0; i < numberOfEvaluations; i++){
+				variables = this.createEvaluationPoint(model);
 				for(var j = 0; j < 2; j++){
+					flag = array.every(sParse[j].variables(), function(id){
+						return (id in variables);
+					});
+					if(!flag)
+						return this._status["incorrect"];
 					authorValue[j] = aParse[j].evaluate(variables);
 					studentValue[j] = sParse[j].evaluate(variables);
 				}
 				var aValue = authorValue[0] - authorValue[1];
 				var sValue = studentValue[0] - studentValue[1];
-				if(aValue !== sValue && aValue !== -sValue)
+				// this check will only have sValue check
+				if(Math.abs(sValue) > this.epsilon &&
+					Math.abs(Math.abs(aValue) - Math.abs(sValue)) > this.epsilon)
+					return this._status["incorrect"];
+			}
+			if(this.validateVariables(model, aParse, sParse)){
+				return this._status["correct"];
+			}
+
+			return this._status["partial"];
+		},
+
+		validateVariables: function(model, aParse, sParse){
+			var sVariables = [];
+			var aVariables = [];
+			var idString = model.authored.getInitialNodeIDString();
+			for(var i = 0; i < 2; i++){
+				aVariables = aVariables.concat(aParse[i].variables());
+				sVariables = sVariables.concat(sParse[i].variables());
+			}
+			if(aVariables.length != sVariables.length)
+				return false;
+
+			for(i = 0; i < 2; i++){
+				var flag = array.every(sParse[i].variables(), function(id){
+					var authoredID = model.student.getAuthoredID(id);
+					if(authoredID){
+						if(id.indexOf(idString) > -1){
+							authoredID += idString;
+						}
+						return (aVariables.indexOf(authoredID) > -1);
+					} else
+						return false;
+				});
+				if(!flag)
 					return false;
 			}
 
 			return true;
+		},
+
+		check: function(evaluation){
+			return evaluation == this._status["correct"];
+		},
+
+		getEquationVariables: function(model, id){
+			var aEquation = model.authored.getEquation(model.student.getAuthoredID(id));
+			var aParse = this.parseEquation(aEquation);
+			var variables = [];
+			var flag; var variable;
+			array.forEach(aParse, function(p){
+				array.forEach(p.variables(), function(id){
+					flag = false;
+					if(id.indexOf(model.authored.getInitialNodeIDString()) > 0){
+						flag = true;
+						id = model.authored.getID(id);
+					}
+					variable = model.authored.getVariable(id);
+					variable = (flag ? "Prior value of " : "") + variable;
+					variables.push(variable);
+				});
+			});
+
+			return variables;
 		},
 
 		replace: function(expression, values){
@@ -348,8 +417,16 @@ define([
 					}
 				});
 			});
-
 			return expression;
+		},
+
+		createEvaluationPoint: function(model){
+			var isStatic = model.student.isSolutionStatic();
+			var point = {};
+			func = model.student.isSolutionAvailable() ? model.student.getSolutionPoint : model.student.getRandomPoint;
+			point = func.apply(model.student);
+
+			return point;
 		},
 
 		parseEquation: function(expression){
@@ -425,6 +502,7 @@ define([
 				}
 			}, this);
 			equations.plotVariables = equations.xvars.concat(equations.func);
+			equations.initValues = lang.clone(equations.values);
 
 			if(equations.plotVariables.length == 0){
 				status.error = true;

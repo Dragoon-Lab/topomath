@@ -7,7 +7,7 @@
 @import url("../dijit/themes/claro/form/Button.css");
 @import url("../dijit/themes/claro/form/Checkbox.css");
 @import url("../dijit/themes/claro/form/Select.css");
-/* @import url("../dijit/themes/claro/form/Slider.css"); */
+@import url("../dijit/themes/claro/form/Slider.css");
 @import url("../dijit/themes/claro/Menu.css");
 @import url("../dijit/themes/claro/Dialog.css");
 @import url("../dijit/themes/claro/document.css");
@@ -180,11 +180,6 @@ html, body, #main{
 
 input[type=radio]{
 	opacity:1 !important;
-}
-
-#unitsSelectorStudent{
-  overflow-x: scroll;
-  width: 10em !important;
 }
 
 #buttons{
@@ -363,4 +358,8 @@ table.solution th{
 
 div.legend{
 	margin: 0 auto;
+}
+
+.dijitTextBoxDisabled .dijitInputField.dijitInputContainer {
+	background-color: transparent;
 }
