@@ -342,6 +342,7 @@ define([
 				event.stop(e);
 				// This should return an object kind of structure and
 				var problemComplete = controllerObject.checkDone();
+				_session.saveModel(_model.model)
 				if( problemComplete.errorNotes === "" ){
 					// if in preview mode , Logging is not required:
 					// TODO : Add Logging
@@ -369,6 +370,7 @@ define([
 
 			aspect.after(registry.byId('solution'), "hide", function(){
 				sol.hide();
+				_session.saveModel(_model.model);
 			});
 
 		});
