@@ -27,10 +27,12 @@
 	}
 
 	function onModeChange(selected){
-		if(selected.value === "STUDENT"){
+		if(selected.value === "STUDENT" || selected.value === "NOFEEDBACK"){
 			document.getElementById('fixposition').innerHTML='<input name="fp" type="checkbox"/>';
+			document.getElementById('restartproblem').innerHTML='<input name="rp" type="checkbox"/>';
 		}else{
 			document.getElementById('fixposition').innerHTML='<label>N/A</label>';
+			document.getElementById('restartproblem').innerHTML='<label>N/A</label>';
 		}
 	}
 
@@ -70,6 +72,8 @@
 				<div class="fieldgroup">
 					<label for="fixposition"> Fix Position: <br/></label>
 					<div id="fixposition"><input name="fp" type="checkbox"/></div>
+					<label for="restartproblem"> Restart Problem: <br/></label>
+					<div id="restartproblem"><input name="rp" type="checkbox"/></div>
 				</div>
 
 				<div class="fieldgroup">
