@@ -609,7 +609,7 @@ define([
 		toggleSliders: function(widgetID, variables){
 			this.staticVar = this.checkStaticVar(true);
 			var id = this.staticVar;
-			console.log(dom.byId("sliderGraph_id1"));
+			if(!id) return;
 			array.forEach(variables, function(v){
 				domAttr.set("textGraph_" + v, 'disabled', false);
 				domAttr.set("textGraph_" + id, 'title', "");
