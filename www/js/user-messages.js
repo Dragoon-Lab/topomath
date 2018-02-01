@@ -37,7 +37,8 @@ define([], function(){
 		"missing.info": "The problem could not be loaded as there is some wrong with the information provided.",
 		"new.problem": "A new problem has been created. If you were trying to load a pre-existing problem, please check the name of the problem you have entered.",
 		"duplicate.nodes": "Nodes in the problem have duplicate node ID. ",
-		"duplicate.nodes.student": "This problem could not be loaded. Please contact the problem's author."
+		"duplicate.nodes.student": "This problem could not be loaded. Please contact the problem's author.",
+		"solution.missing": "The solution of the model is incomplete.  Please contact the author."
 	};
 
 	return {
