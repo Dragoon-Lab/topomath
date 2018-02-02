@@ -323,7 +323,7 @@ define([
 
 			return obj;
 		},
-		_getInterpretation: function(/*string*/ studentID, /*string*/ nodePart, /*string | object*/ answer){
+		_getInterpretation: function(/*string*/ studentID, /*string*/ nodePart, /*string | object*/ answer, /*string*/ unknownNodes){
 			// Summary: Returns the interpretation of a given answer (correct, incorrect, etc.)
 			//
 			// Tags: Private
@@ -338,7 +338,7 @@ define([
 			}
 
 			// Anonymous function assigned to interpret--used by most parts of the switch below
-			var interpret = function(correctAnswer){
+			var interpret = function(correctAnswer, unknownNodes){
 				console.log("nodePart", nodePart);
 				//we create temporary answer and temporary correct answer both parsed as float to compare if the numbers are strings in case of execution
 				answer_temp1=parseFloat(answer);
@@ -346,7 +346,7 @@ define([
 				if(answer === correctAnswer || correctAnswer === true || answer_temp1 == correctAnswer_temp1){
 					interpretation = "correct";
 				}else{
-					if(model.authored.getAttemptCount(authoredID, nodePart) > 0 ){
+					if(!unknownNodes && model.authored.getAttemptCount(authoredID, nodePart) > 0 ){
 						interpretation = "secondFailure";
 					}else{
 						interpretation = "firstFailure";
@@ -381,7 +381,7 @@ define([
 					break;
 				case "equation":
 					// Solver
-					interpret(equation.check(answer));
+					interpret(equation.check(answer), unknownNodes);
 					break;
 			}
 			return interpretation;
@@ -422,7 +422,7 @@ define([
 			// second incorrect. Thats why equation validation process is changed.
 			if(nodePart === "equation"){
 				equationEvaluation = equation.evaluate(this.model, id);
-				interpretation = this._getInterpretation(id, nodePart, equationEvaluation);
+				interpretation = this._getInterpretation(id, nodePart, equationEvaluation, answer.unknownNodesList.toString());
 			} else {
 				interpretation = this._getInterpretation(id, nodePart, answer);
 			}
@@ -490,14 +490,23 @@ define([
 							this.model.active.setPosition(id, 1, this.model.authored.getPosition(givenID, 1));
 						}
 					}else{
-						this.model.authored.setAttemptCount(givenID, nodePart, this.model.authored.getAttemptCount(givenID, nodePart) + 1);
-						for (var i = 0; i < returnObj.length; i++){
-							if (returnObj[i].value === "incorrect") {
-								this.model.student.incrementAssistanceScore(id);
-							}
-							if(returnObj[i].attribute === "status" &&
-								equationEvaluation === "partial" && interpretation !== "demo") {
-								returnObj[i].value = "partial";
+						if(nodePart === "equation" && answer.unknownNodesList.length > 0){
+							returnObj.push(
+								{
+									id: 'crisisAlert',
+									attribute: 'open',
+									value: fm.unknown + answer.unknownNodesList.toString()
+								});
+						}else{
+							this.model.authored.setAttemptCount(givenID, nodePart, this.model.authored.getAttemptCount(givenID, nodePart) + 1);
+							for (var i = 0; i < returnObj.length; i++){
+								if (returnObj[i].value === "incorrect") {
+									this.model.student.incrementAssistanceScore(id);
+								}
+								if(returnObj[i].attribute === "status" &&
+									equationEvaluation === "partial" && interpretation !== "demo") {
+									returnObj[i].value = "partial";
+								}
 							}
 						}
 					}

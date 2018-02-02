@@ -28,7 +28,8 @@ define([], function(){
 			secondFailure: "incorrect. The correct answer has been given.",
 			incorrect: "incorrect.",
 			correct: "correct.",
-			partial: "true. But the author would like you to use the following variables in it: "
+			partial: "true. But the author would like you to use the following variables in it: ",
+			unknown: "Unknown variable(s) entered in the equation : "
 		}
 	};
 
