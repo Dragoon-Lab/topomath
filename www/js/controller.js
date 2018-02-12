@@ -162,7 +162,7 @@ define([
 		// here as well as maintaining all the colors and feedback at different places
 		// could be difficult.
 		_setStatus : function(value){
-			var _variableTypes = ["unknown", "parameter", "dynamic"]
+			var _variableTypes = ["unknown", "parameter", "dynamic"];
 			var colorMap = {
 				correct: "lightGreen",
 				incorrect: "#FF8080",
@@ -195,7 +195,9 @@ define([
 				});
 				updateColor(this.domNode.firstChild.labels[0], colorMap[value]);
 			} else {
-				updateColor(this.domNode, colorMap[value]);
+				if(value!=""){
+					updateColor(this.domNode, colorMap[value]);
+				}
 			}
 		},
 
