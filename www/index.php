@@ -24,7 +24,7 @@
 			version = d;
 		}
 		dojoConfig = {
-			isDebug:true,
+			isDebug:false,
 			parseOnLoad:true,
 			async: true,
 			// popup:true,
@@ -50,8 +50,9 @@
 			document.write('<link href="css/global.css?'+ version+'" rel="stylesheet" />');
 			document.write('<scr'+'ipt src="dojo/dojo.js"></scr'+'ipt>');
 		} else {
-			document.write('<link href="release/css/state-machine.css?'+version+'" rel="stylesheet" />');
-			document.write('<link href="release/css/global.css?'+ version+'" rel="stylesheet" />');
+			document.write('<link href="css/state-machine.css?'+version+'" rel="stylesheet" />');
+			document.write('<link href="css/global.css?'+ version+'" rel="stylesheet" />');
+			document.write('<scr'+'ipt src="dojo/dojo.js"></scr'+'ipt>');
 		};
 	</script>
 
@@ -85,7 +86,6 @@
 				"dijit/layout/ContentPane",
 				"topomath", // Load up TopoMath itself
 				"topomath/menu", // Wire up menus
-				"topomath/customRadioButton"
 			]);
 		});
 	</script>

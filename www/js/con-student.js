@@ -74,7 +74,7 @@ define([
 			value: "valueInputbox",
 			unknown: "unknownType",
 			parameter: "parameterType",
-			dynamic: "dynamicType",
+			dynamic: "dynamicType"
 		},
 		populateSelections: function () {
 			/*
