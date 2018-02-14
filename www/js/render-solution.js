@@ -443,7 +443,7 @@ define([
 				//set values in table according to their table-headers
 				j = 1;
 				array.forEach(solution.plotVariables, function(id){
-					tableString += "<td align='center' style='overflow:visible' id='row" + i + "col" + j + "'>" + solution.plotValues[id][i].toPrecision(3) + "</td>";
+					tableString += "<td align='center' style='overflow:visible' id='row" + i + "col" + j + "'>" + Number(solution.plotValues[id][i].toFixed(4)) + "</td>";
 					j++;
 				});
 				tableString += "</tr>";
