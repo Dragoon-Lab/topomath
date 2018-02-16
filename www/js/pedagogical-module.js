@@ -521,7 +521,7 @@ define([
 				|| interpretation === "secondFailure")){
 				answer = this.model.student.getCorrectAnswer(id, nodePart);
 				/*TO DO : Add Equation*/
-				if(nodePart === "equation" && !answer.priorError){
+				if(nodePart === "equation" && !answer.error){
 					var params = {
 						subModel: this.model.authored,
 						equation: answer

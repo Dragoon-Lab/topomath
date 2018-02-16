@@ -36,17 +36,21 @@ define([
 			var subModel = params.subModel;
 
 			var eqs = equation.split(this.equalto);
+			if(eqs.length != 2){
+				throw new Error("Wrong number of equal to symbols in the equation");
+			}
 			var expressions = [];
 			try{
 				array.forEach(eqs, function(eq, count){
 					expressions[count] = Parser.parse(eq);
 				}, this);
 			}catch(e){
-				this._logger.logClientEvent("error", {
+				throw e;
+				/*this._logger.logClientEvent("error", {
 					message:'error in parser, error message : ' + e,
 					functionTag:'convert'
 				});
-				return equation;
+				return equation;*/
 			}
 
 			if(params.nameToId){
@@ -135,8 +139,7 @@ define([
 					connections: connections,
 					dynamicList: dynamicList,
 					equation: expressions[0].toString() + " " + this.equalto + " " + expressions[1].toString(),
-					success: !isError,
-					priorError: isError
+					error: isError,
 				};
 			}
 			else{
