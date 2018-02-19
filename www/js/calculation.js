@@ -73,7 +73,7 @@ define([
 				var temp = value[0];
 				for(var index in value){
 					var v = value[index];
-					if(Math.abs(v - temp) > 10e-4){
+					if(Math.abs(v - temp) > 10e-7){
 						isStatic = false;
 						break;
 					}
