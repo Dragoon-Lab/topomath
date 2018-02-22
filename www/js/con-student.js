@@ -52,7 +52,8 @@ define([
 			this.init();
 		},
 
-		resettableControls: ["variable","description","value","units","equation"],
+		// A list of control map specific to students
+		resettableControls: ["equation"],
 		variableNodeControls: ["variable","value","units"],
 		equationNodeControls: ["inputs","equation"],
 		commonNodeControls: ["modelType","description"],
@@ -61,8 +62,6 @@ define([
 			// TODO : Check Model Completeness
 			// this.studentControls();
 		},
-		// A list of control map specific to students
-		resettableControls: ["variable","description","value","units","equation"],
 
 		controlMap: {
 			inputs: "inputSelectorStudent",
