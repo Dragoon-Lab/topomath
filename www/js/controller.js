@@ -498,7 +498,7 @@ define([
 			array.forEach(this.resettableControls, function(con){
 				var w = registry.byId(this.controlMap[con]);
 				w.on("keydown", lang.hitch(this, function(evt){
-					if(evt.keyCode != keys.ENTER){
+					if(evt.keyCode != keys.ENTER && evt.keyCode != keys.TAB){
 						w.set('status','');
 					}
 				}));
