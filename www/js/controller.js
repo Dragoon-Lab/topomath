@@ -195,9 +195,7 @@ define([
 				});
 				updateColor(this.domNode.firstChild.labels[0], colorMap[value]);
 			} else {
-				if(value!=""){
-					updateColor(this.domNode, colorMap[value]);
-				}
+				updateColor(this.domNode, colorMap[value]);
 			}
 		},
 
@@ -500,7 +498,7 @@ define([
 			array.forEach(this.resettableControls, function(con){
 				var w = registry.byId(this.controlMap[con]);
 				w.on("keydown", lang.hitch(this, function(evt){
-					if(evt.keyCode != keys.ENTER){
+					if(evt.keyCode != keys.ENTER && evt.keyCode != keys.TAB){
 						w.set('status','');
 					}
 				}));
