@@ -195,9 +195,7 @@ define([
 				});
 				updateColor(this.domNode.firstChild.labels[0], colorMap[value]);
 			} else {
-				if(value!=""){
-					updateColor(this.domNode, colorMap[value]);
-				}
+				updateColor(this.domNode, colorMap[value]);
 			}
 		},
 
