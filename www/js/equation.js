@@ -139,7 +139,7 @@ define([
 					connections: connections,
 					dynamicList: dynamicList,
 					equation: expressions[0].toString() + " " + this.equalto + " " + expressions[1].toString(),
-					error: isError,
+					error: isError
 				};
 			}
 			else{
