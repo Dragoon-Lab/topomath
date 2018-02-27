@@ -9,6 +9,7 @@ define([
 				this.model = {
 					taskName: name,
 					time: {start: 0, end: 10, step: 1.0, units: "seconds"},
+					solution: {isStatic: false, variables: [], plotValues: {}},
 					authorModelNodes: [],
 					studentModelNodes: []
 				};
@@ -143,6 +144,16 @@ define([
 						units: "seconds"
 					}
 				}
+
+				// to handle color by numbers idea for evaluation of equations a solution object
+				// was added to the model. Adding this code for backward compatibility.
+				if(!this.model.solution){
+					this.model.solution = {
+						isStatic: false,
+						variables: [],
+						plotValues: {}
+					};
+				}
 			},
 			getModelAsString: function(){
 				// Summary: Returns a JSON object in string format
@@ -154,6 +165,9 @@ define([
 				return this.model.task.time.units;
 			},
 			*/
+			getTaskName: function(){
+				return obj.model.taskName;
+			},
 			getAllUnits: function(){
 				// Summary:	 returns a list of all distinct units
 				// (string format) defined in a problem.
@@ -239,6 +253,9 @@ define([
 			},
 			getTimeUnits: function(){
 				return obj.model.time.units || "seconds";
+			},
+			saveSolution: function(solution){
+				obj.model.solution = solution;
 			}
 		};
 
@@ -480,9 +497,10 @@ define([
 				// Summary: returns the id of a node matching the authored name from the
 				//          authored or extra nodes.  If none is found, return null.
 				var id;
+				var regEx = new RegExp('^'+name+'$', 'i');
 				var gotIt = array.some(this.getNodes(), function(node){
 					id = node.ID;
-					return node.variable === name;
+					return regEx.test(node.variable);
 				});
 				return gotIt ? id : null;
 			},
@@ -513,6 +531,42 @@ define([
 			},
 			isStudentMode: function(){
 				return obj.isStudentMode();
+			},
+			getDescriptions: function(){
+				// Summary: returns an array of all descriptions with
+				// name (label) and any associated node id (value).
+				// Note that the description may be empty.
+				// TODO:  The list should be sorted.
+				return array.map(this.getNodes(), function(node){
+
+					var desc = node.description !== undefined ? node.description : node.explanation;
+					return {label: desc, value: node.ID} ;
+				});
+			},
+			getDescriptionsSortedByName: function(){
+				var descriptions = obj.active.getDescriptions();
+				var descNameMap = array.map(descriptions, function (desc) {
+					var _name;
+					if(this.isStudentMode()){
+						var authoredID = obj.student.getAuthoredID(desc.value);
+						_name = obj.authored.getName(authoredID);
+					}
+					else{
+						_name = obj.authored.getName(desc.value);
+					}
+					if(_name){
+						return {name: _name, description: desc.label, id: desc.value};
+					}
+				}, this);
+				// To remove undefined values
+				descNameMap= descNameMap.filter(function(e){
+					return e;
+				})
+				descNameMap.sort(function (obj1, obj2) {
+					if(obj1.name && obj2.name)
+						return obj1.name.toLowerCase().localeCompare(obj2.name.toLowerCase());
+				}, this);
+				return descNameMap;
 			}
 		};
 
@@ -584,17 +638,6 @@ define([
 			**/
 			getNodeStatus: function(){
 				return null;
-			},
-			getDescriptions: function(){
-				// Summary: returns an array of all descriptions with
-				// name (label) and any associated node id (value).
-				// Note that the description may be empty.
-				// TODO:  The list should be sorted.
-				return array.map(this.getNodes(), function(node){
-
-					var desc = node.description !== undefined ? node.description : node.explanation;
-					return {label: desc, value: node.ID} ;
-				});
 			},
 			/*
 			* incorporating the new change to description.
@@ -702,7 +745,8 @@ define([
 				if(part != "executionValue")
 					this.getNode(id).status[part] = status;
 				else{
-					var node = this.getNode(id);
+					var node = this.getNode(id)
+					authoredNodes = obj.authoredNodes;;
 					if(!node.status.hasOwnProperty(part) || node.status[part] == undefined){
 						node.status[part] = [];
 					}
@@ -719,6 +763,10 @@ define([
 			isNodeAllowed: function(id){
 				var givenNode = this.getNode(id);
 				return (givenNode && givenNode.genus == "allowed");
+			},
+			isNodeIrrelevant: function(id){
+				var givenNode = this.getNode(id);
+				return (givenNode && givenNode.genus == "irrelevant");
 			},
 			getAttemptCount: function(/*string*/ id, /*string*/ part, /*boolean*/ ignoreExecution){
 					var node = this.getNode(id);
@@ -766,13 +814,13 @@ define([
 			getNodes: function(){
 				return obj.model.studentModelNodes;
 			},
-			getNodeIDFor: function(givenID){
+			getNodeIDFor: function(authoredID){
 				// Summary: returns the id of a student node having a matching authoredID;
 				//			return null if no match is found.
 				var id;
 				var gotIt = array.some(this.getNodes(), function(node){
 					id = node.ID;
-					return node.authoredID == givenID;
+					return node.authoredID == authoredID;
 				});
 				return gotIt ? id : null;
 			},
@@ -808,6 +856,9 @@ define([
 				id = this.getID(id);
 				var node = this.getNode(id);
 				return node && node.authoredID;
+			},
+			getAuthoredIDForName: function(variable){
+				return obj.authored.getNodeIDByName(variable);
 			},
 			getInputs: function(/*string*/ id){
 				// Summary: return an array containing the input ids for a node.
@@ -929,6 +980,66 @@ define([
 				else
 					return false;
 			},
+			getSolutionPoint: function(){
+				point = {};
+				values = obj.model.solution.values;
+				variables = obj.model.solution.variables;
+				numberOfVariables = variables.length;
+				if(numberOfVariables > 0){
+					timeSteps = values[variables[0]];
+					var index = Math.floor(Math.random() * (timeSteps.length - 2)) + 1;
+					array.forEach(variables, function(id){
+						if(obj.authored.getType(id) == "quantity"){
+							point[id] = values[id][index];
+							var nodeType = obj.authored.getVariableType(id);
+							var studentNodeID = this.getNodeIDFor(id);
+							if(studentNodeID) point[studentNodeID] = values[id][index];
+							if(nodeType && nodeType == "dynamic"){
+								point[id + this.getInitialNodeIDString()] = values[id][index - 1];
+								if(studentNodeID) point[studentNodeID + this.getInitialNodeIDString()] = values[id][index - 1];
+							}
+						}
+					}, this);
+				}
+
+				var nodes = obj.authored.getNodes();
+				array.forEach(nodes, function(node){
+					if(node.variableType == "parameter"){
+						point[node.ID] = node.value;
+						studentNodeID = this.getNodeIDFor(node.ID);
+						if(studentNodeID) point[studentNodeID] = node.value;
+					}
+				}, this);
+
+				return point;
+			},
+			getRandomPoint: function(){
+				point = {};
+				var value;
+				var nodes = obj.authored.getNodes();
+				array.forEach(nodes, function(node){
+					if(node.type == "quantity"){
+						value = Math.random();
+						point[node.ID] = value;
+						var studentNodeID = this.getNodeIDFor(node.ID);
+						if(studentNodeID) point[studentNodeID] = value;
+						if(node.variableType == "dynamic"){
+							value = Math.random();
+							point[node.ID + this.getInitialNodeIDString()] = value;
+							if(studentNodeID) point[studentNodeID + this.getInitialNodeIDString()] = value;
+						}
+					}
+				}, this);
+
+				return point;
+			},
+			isSolutionStatic: function(){
+				return obj.model.solution.isStatic;
+			},
+			isSolutionAvailable: function(){
+				return obj.model.solution.variables.length > 0;
+			},
+
 			isNodeRequired: function(id){
 				var authoredID = this.getAuthoredID(id);
 				return !authoredID || obj.authored.isNodeRequired(authoredID);
@@ -936,6 +1047,12 @@ define([
 			isNodeAllowed: function(id){
 				var authoredID = this.getAuthoredID(id);
 				return !authoredID || obj.authored.isNodeAllowed(authoredID);
+			},
+			isNodeIrrelevant: function(id){
+				var authoredID = this.getAuthoredID(id);
+				// changing the logic of authoredID because a just created node is returned
+				// irrelevant
+				return authoredID && obj.authored.isNodeIrrelevant(authoredID);
 			},
 			getCorrectAnswer : function(/*string*/ studentID, /*string*/ part){
 				var id = this.getAuthoredID(studentID);

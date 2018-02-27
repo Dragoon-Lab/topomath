@@ -19,6 +19,7 @@ $section = ((isset($_REQUEST['s']) && !empty($_REQUEST['s'])) ?
 			mysqli_real_escape_string($mysqli, $_REQUEST['s']) : '');
 $folder = ((isset($_REQUEST['f']) && !empty($_REQUEST['f'])) ?
 			mysqli_real_escape_string($mysqli, $_REQUEST['f']) : '');
+$restartProb = ((isset($_REQUEST['rp']) && $_REQUEST['rp'] == 'on')) ? true: false;
 
 /*
 * Author mode logic is to get a problem from the database.
@@ -50,13 +51,15 @@ if($mode == "AUTHOR"){
 	} else {
 		$query = sprintf(get_query('problem_without_folder_fetch'), $user, $mode, $section, $problem);
 	}
-} else {
+	get_model($mysqli, $query);
+} else if(!$restartProb){
 	if($folder != "")
 		$query = sprintf(get_query('problem_fetch'), $user, $mode, $section, $problem, $folder);
 	else
 		$query = sprintf(get_query('problem_without_folder_fetch'), $user, $mode, $section, $problem);
+	get_model($mysqli, $query);
 }
-get_model($mysqli, $query);
+
 
 //no previous data was found, that means there is no old work in database
 //check if it is non published problem (with a folder) for the problem under the AUTHOR mode

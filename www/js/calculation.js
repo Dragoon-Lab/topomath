@@ -23,23 +23,23 @@ define([
 		/**
 		* function which finds the solution for the system of equations.
 		**/
-		findSolution: function(isActive, id){
+		findSolution: function(isActive, id, isUpdate){
 			var system = isActive ? this.activeSolution : this.authorSolution;
 			var subModel = isActive ? this._model.active : this._model.authored;
 
 			if(!system.status.error){
 				// this will make sure than when id is given then new static models are created
-				if(id){
-					if(isActive)
-						system = this.initializeSystem(this._model.active, id);
-					else
-						system = this.initializeSystem(this._model.authored, id);
+				// if its a model update from sliders then we should not set the new values.
+				if(isUpdate){
+					system.time = equation.initXAxis(subModel, id);
+				} else if(id){
+					system = this.initializeSystem(subModel, id);
 				}
 				var solution = equation.graph(subModel, system, id);
 				system.plotValues = solution.plotValues;
 				//system equations might have different set of quantities than the ones defined by the user
 				//happens when user creates a quantity as unknown but does not use it in an equation
-				system.plotVariables = solution.xvars;
+				system.plotVariables = solution.plotVariables;
 				system.status = solution.status;
 			}
 
@@ -56,7 +56,6 @@ define([
 
 			return initSolution;
 		},
-
 		//checks if the solution is static
 		checkForStatic: function(subModel, solution) {
 			var values = solution.plotValues;
@@ -151,6 +150,21 @@ define([
 			else{
 				return text;
 			}
+		},
+		/**
+		* this function saves the active solution to the model. so that when the model is
+		* saved the solution is saved with it. Important point is this function is mapping
+		* of active solution variables to solution object saved with the model.
+		* It has no inputs and outputs, as I don't intend to use this function anywhere.
+		* whenever it is called it will save *active* solution to model object.
+		* Currently it is called from initSolution function during solution construction process.
+		**/
+		saveSolution: function(){
+			solution = {};
+			solution.isStatic = this.isStatic;
+			solution.variables = this.activeSolution.plotVariables;
+			solution.values = this.activeSolution.plotValues;
+			this._model.saveSolution(solution);
 		}
 	});
 });

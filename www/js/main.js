@@ -116,6 +116,11 @@ define([
 					//errorMessage.show();
 				}
 			}
+			if(_model.isStudentMode() && !_model.student.isSolutionAvailable()){
+				console.log("Solution model is not available")
+				var box = new messageBox("errorMessageBox", "warn", _messages["solution.missing"], true);
+				box.show();
+			}
 
 		} else {
 			console.log("Its a new problem");
@@ -158,10 +163,17 @@ define([
 
 			aspect.after(dm, "addNode", function(){
 				controllerObject.computeNodeCount();
+				controllerObject.sortDescriptions();
 			}, true);
+
 			aspect.after(dm, "updateNode", function(){
 				controllerObject.computeNodeCount();
+				controllerObject.sortDescriptions();
 			}, true);
+
+			aspect.after(controllerObject, "sortDescriptions",
+				lang.hitch(dm, dm.updateDescriptionView, true));
+
 			dm.init();
 
 			/*********  below this part are the event handling *********/
@@ -218,6 +230,9 @@ define([
 					}
 				}
 				_model.active.setPosition(id, index, {"x": g.x, "y": g.y+scrollTop});
+				if(!_model.isStudentMode()){				
+					controllerObject.updateAssignedNode(id, false);
+				}
 				_session.saveModel(_model.model);
 			}, true);
 	
@@ -242,6 +257,7 @@ define([
 			if(_model.isStudentMode()){
 				//controllerObject.setAssessment(session); //set up assessment for student.
 			}
+			
 			//next step is to add action to add quantity
 			menu.add("createQuantityNodeButton", function(e){
 				event.stop(e);
@@ -297,14 +313,17 @@ define([
 
 			aspect.after(controllerObject, "updateNodeView",
 				lang.hitch(dm, dm.updateNode), true);
-			
-			aspect.after(dm, "deleteNode", function(){
+
+			aspect.before(dm, "deleteNode", function(nodeID){
+				if(!_model.isStudentMode()){
+					controllerObject.updateAssignedNode(nodeID, true);
+				}
 				_session.saveModel(_model.model);
 				controllerObject.computeNodeCount();
-			});
+			}, true);
 
 			aspect.after(controllerObject, "computeNodeCount", function(id){
-                dm.updateNodeCount();
+				dm.updateNodeCount();
             });
 
 			aspect.after(dm, "deleteEquationLinks", function(nodeIDs){
@@ -328,6 +347,7 @@ define([
 				event.stop(e);
 				// This should return an object kind of structure and
 				var problemComplete = controllerObject.checkDone();
+				_session.saveModel(_model.model)
 				if( problemComplete.errorNotes === "" ){
 					// if in preview mode , Logging is not required:
 					// TODO : Add Logging
@@ -346,13 +366,18 @@ define([
 			});
 			//all the things we need to do once node is closed
 			aspect.after(registry.byId('nodeEditor'), "hide", function(){
+				if(!_model.isStudentMode()){
+					controllerObject.updateAssignedNode(controllerObject.currentID, false);
+				}
 				_session.saveModel(_model.model);
 				dm.updateNode(_model.active.getNode(controllerObject.currentID), true);
 			});
 
 			aspect.after(registry.byId('solution'), "hide", function(){
 				sol.hide();
+				_session.saveModel(_model.model);
 			});
+
 		});
 	});
 	

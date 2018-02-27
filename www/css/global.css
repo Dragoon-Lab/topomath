@@ -1,3 +1,4 @@
+
 @import url("../dojo/resources/dojo.css");
 @import url("../dijit/themes/dijit.css");
 @import url("../dijit/themes/claro/layout/BorderContainer.css");
@@ -6,11 +7,10 @@
 @import url("../dijit/themes/claro/form/Button.css");
 @import url("../dijit/themes/claro/form/Checkbox.css");
 @import url("../dijit/themes/claro/form/Select.css");
-/* @import url("../dijit/themes/claro/form/Slider.css"); */
+@import url("../dijit/themes/claro/form/Slider.css");
 @import url("../dijit/themes/claro/Menu.css");
 @import url("../dijit/themes/claro/Dialog.css");
 @import url("../dijit/themes/claro/document.css");
-@import url("state-machine.css");
 /*For styling the rich text editor*/
 @import url("../dijit/themes/claro/Toolbar.css");
 @import url("../dijit/themes/claro/Editor.css");
@@ -180,11 +180,6 @@ html, body, #main{
 
 input[type=radio]{
 	opacity:1 !important;
-}
-
-#unitsSelectorStudent{
-  overflow-x: scroll;
-  width: 10em !important;
 }
 
 #buttons{
@@ -363,4 +358,8 @@ table.solution th{
 
 div.legend{
 	margin: 0 auto;
+}
+
+.dijitTextBoxDisabled .dijitInputField.dijitInputContainer {
+	background-color: transparent;
 }

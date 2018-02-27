@@ -19,7 +19,12 @@ define([], function(){
 			],
 			erasedDemo: [
 				"Your choice matched the author's answer, however this part was previously completed by the model. It will continue to be marked this way."
-			]
+			],
+			irrelevant: [
+				"The quantity is irrelevant to this problem.  Choose a different one.",
+				"This quantity is irrelevant for modeling the system.  Try again.",
+				"Irrelevant.  Try again."
+			],
 		},
 		feedback: {
 			start: "The value entered for the ",
@@ -27,7 +32,9 @@ define([], function(){
 			lastFailure: "incorrect. The correct answer has been given.",
 			secondFailure: "incorrect. The correct answer has been given.",
 			incorrect: "incorrect.",
-			correct: "correct."
+			correct: "correct.",
+			partial: "true. But the author would like you to use the following variables in it: ",
+			irrelevant: "irrelevant."
 		}
 	};
 
@@ -36,7 +43,8 @@ define([], function(){
 		"missing.info": "The problem could not be loaded as there is some wrong with the information provided.",
 		"new.problem": "A new problem has been created. If you were trying to load a pre-existing problem, please check the name of the problem you have entered.",
 		"duplicate.nodes": "Nodes in the problem have duplicate node ID. ",
-		"duplicate.nodes.student": "This problem could not be loaded. Please contact the problem's author."
+		"duplicate.nodes.student": "This problem could not be loaded. Please contact the problem's author.",
+		"solution.missing": "The solution of the model is incomplete.  Please contact the author."
 	};
 
 	return {
@@ -47,7 +55,7 @@ define([], function(){
 				"app": global
 			}
 
-		 	return obj.hasOwnProperty(type) ? obj[type]: null;
+			return obj.hasOwnProperty(type) ? obj[type]: null;
 		}
 	};
 });
