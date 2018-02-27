@@ -19,7 +19,12 @@ define([], function(){
 			],
 			erasedDemo: [
 				"Your choice matched the author's answer, however this part was previously completed by the model. It will continue to be marked this way."
-			]
+			],
+			irrelevant: [
+				"The quantity is irrelevant to this problem.  Choose a different one.",
+				"This quantity is irrelevant for modeling the system.  Try again.",
+				"Irrelevant.  Try again."
+			],
 		},
 		feedback: {
 			start: "The value entered for the ",
@@ -28,7 +33,8 @@ define([], function(){
 			secondFailure: "incorrect. The correct answer has been given.",
 			incorrect: "incorrect.",
 			correct: "correct.",
-			partial: "true. But the author would like you to use the following variables in it: "
+			partial: "true. But the author would like you to use the following variables in it: ",
+			irrelevant: "irrelevant."
 		}
 	};
 
@@ -49,7 +55,7 @@ define([], function(){
 				"app": global
 			}
 
-		 	return obj.hasOwnProperty(type) ? obj[type]: null;
+			return obj.hasOwnProperty(type) ? obj[type]: null;
 		}
 	};
 });

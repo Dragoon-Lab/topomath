@@ -137,6 +137,7 @@ define([
 				}
 				//this.findSolution(true);
 				this.renderDialog();
+				this.fireLogEvent(["slider-change", paramID, textBox.value]);
 				if(paramID != this.staticVar)
 					this.renderStaticDialog(false, true);
 				this._rendering = false;
@@ -660,6 +661,10 @@ define([
 			dom.byId("graphErrorMessage").innerHTML = "";
 			dom.byId("SliderPane").innerHTML = "<div id= 'solutionMessage'></div>";
 			dom.byId("solutionMessage").innerHTML = "";
+		},
+
+		fireLogEvent: function(args){
+			// stub to log slider event. event defined in event-logs.js using aspect.after
 		}
 	});
 });

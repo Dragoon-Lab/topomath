@@ -162,7 +162,7 @@ define([
 		// here as well as maintaining all the colors and feedback at different places
 		// could be difficult.
 		_setStatus : function(value){
-			var _variableTypes = ["unknown", "parameter", "dynamic"]
+			var _variableTypes = ["unknown", "parameter", "dynamic"];
 			var colorMap = {
 				correct: "lightGreen",
 				incorrect: "#FF8080",
@@ -498,7 +498,7 @@ define([
 			array.forEach(this.resettableControls, function(con){
 				var w = registry.byId(this.controlMap[con]);
 				w.on("keydown", lang.hitch(this, function(evt){
-					if(evt.keyCode != keys.ENTER){
+					if(evt.keyCode != keys.ENTER && evt.keyCode != keys.TAB){
 						w.set('status','');
 					}
 				}));
