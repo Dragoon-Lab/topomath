@@ -162,7 +162,7 @@ define([
 		// here as well as maintaining all the colors and feedback at different places
 		// could be difficult.
 		_setStatus : function(value){
-			var _variableTypes = ["unknown", "parameter", "dynamic"]
+			var _variableTypes = ["unknown", "parameter", "dynamic"];
 			var colorMap = {
 				correct: "lightGreen",
 				incorrect: "#FF8080",
@@ -498,7 +498,7 @@ define([
 			array.forEach(this.resettableControls, function(con){
 				var w = registry.byId(this.controlMap[con]);
 				w.on("keydown", lang.hitch(this, function(evt){
-					if(evt.keyCode != keys.ENTER){
+					if(evt.keyCode != keys.ENTER && evt.keyCode != keys.TAB){
 						w.set('status','');
 					}
 				}));
@@ -927,6 +927,19 @@ define([
 					subModel: this._model.active
 				};
 				returnObj = expression.convert(equationParams);
+				// TODO - Replace this with activity Parameter, if possible
+				if(this._mode === "STUDENT" && returnObj.unknownNodesList && returnObj.unknownNodesList.length > 0){
+					// create nodes
+					array.forEach(returnObj.newNodeList, function(node){
+						this.addNode(this._model.active.getNode(node.id));
+						// Auto-populate node description only in Student mode
+						// check added to make sure that the node is not an unknown node
+						if(node.variable){
+							this.createStudentNode(node);
+						}
+					}, this);
+					throw new Error("Unknown variable(s) entered in the equation - " + returnObj.unknownNodesList.toString());
+				}
 			}catch(err){
 				console.log("Parser error: ", err);
 				console.log(err.message);
@@ -936,6 +949,10 @@ define([
 				//this._model.active.setEquation(this.currentID, inputEquation);
 				if(err.message.includes("unexpected variable"))
 					directives.push({id: 'message', attribute: 'append', value: 'The value entered for the equation is incorrect'});
+				if(err.message.includes("Unknown variable(s)")){
+					directives.push({ id: 'crisisAlert', attribute: 'open', value: err.message});
+					directives.push({id: 'message', attribute: 'append', value: err.message});
+				}
 				else
 					directives.push({id: 'message', attribute: 'append', value: 'Incorrect equation syntax.'});
 				directives.push({id: 'equation', attribute: 'status', value: 'incorrect'});
@@ -973,6 +990,7 @@ define([
 			if(parseObject){
 				var newNodesList = parseObject.newNodeList;
 				var variableList = parseObject.variableList;
+				var unknownNodesList = parseObject.unknownNodesList;
 				var autoCreationFlag = true; //can be read from the source
 				var cancelUpdate = false; // any purpose of this variable ??
 				var directives = [];
@@ -980,6 +998,7 @@ define([
 				var inputEquation = widget.get("value");
 
 				//TODO : ignoreUnknownTest should be discussed
+
 				if(autoCreationFlag){
 					array.forEach(newNodesList, function(newNode){
 						//newNodeList containts those nodes which were not present when equation has been parsed

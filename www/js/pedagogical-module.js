@@ -27,6 +27,10 @@ define([
 		displayNext: true,
 		displayValue: false
 	};
+	// TODO : this has to go to user state
+	var hintCounter = {
+		"irrelevant": 0
+	};
 
 	var descriptionTable = {
 		// Summary: This table is used for determining the proper response to a student's 'description' answer (see 
@@ -91,6 +95,21 @@ define([
 				directiveObject.state = directiveObject.message = "partial";
 				directiveObject.disable = directiveObject.displayValue = false;
 				directiveObject.displayNext = "";
+				followUpTasks(obj, part, directiveObject);
+			},
+			nofeedback: function(obj, part){
+				directiveObject.state = directiveObject.message = "";
+				directiveObject.disable = directiveObject.displayValue = false;
+				directiveObject.displayNext = true;
+				followUpTasks(obj, part, directiveObject);
+			}
+		},
+		irrelevant: {
+			feedback: function(obj, part){
+				directiveObject.state = "incorrect";
+				directiveObject.message = "irrelevant";
+				directiveObject.disable = directiveObject.displayValue = false;
+				directiveObject.displayNext = false;
 				followUpTasks(obj, part, directiveObject);
 			},
 			nofeedback: function(obj, part){
@@ -253,6 +272,11 @@ define([
 	function message(/*object*/ obj, /*string*/ nodePart, /*string*/ status){
 		// TO DO : Add Hint messages
 		obj.push({id: "message", attribute: "append", value: fm.start + nodePart + fm.connector + fm[status]});
+		if(status === "irrelevant"){
+			var length = hints[status].length;
+			var index = hintCounter[status] >= length ? length - 1 : hintCounter[status]++;
+			obj.push({id: "message", attribute: "append", value: hints[status][index]});
+		}
 	}
 
 	function disable(/*object*/ obj, /*string*/ nodePart, /*boolean*/ disable){
@@ -323,7 +347,7 @@ define([
 
 			return obj;
 		},
-		_getInterpretation: function(/*string*/ studentID, /*string*/ nodePart, /*string | object*/ answer, /*string*/ unknownNodes){
+		_getInterpretation: function(/*string*/ studentID, /*string*/ nodePart, /*string | object*/ answer){
 			// Summary: Returns the interpretation of a given answer (correct, incorrect, etc.)
 			//
 			// Tags: Private
@@ -338,7 +362,7 @@ define([
 			}
 
 			// Anonymous function assigned to interpret--used by most parts of the switch below
-			var interpret = function(correctAnswer, unknownNodes){
+			var interpret = function(correctAnswer){
 				console.log("nodePart", nodePart);
 				//we create temporary answer and temporary correct answer both parsed as float to compare if the numbers are strings in case of execution
 				answer_temp1=parseFloat(answer);
@@ -346,7 +370,7 @@ define([
 				if(answer === correctAnswer || correctAnswer === true || answer_temp1 == correctAnswer_temp1){
 					interpretation = "correct";
 				}else{
-					if(!unknownNodes && model.authored.getAttemptCount(authoredID, nodePart) > 0 ){
+					if( model.authored.getAttemptCount(authoredID, nodePart) > 0 ){
 						interpretation = "secondFailure";
 					}else{
 						interpretation = "firstFailure";
@@ -357,15 +381,15 @@ define([
 			switch(nodePart){
 				case "description":
 					this.descriptionCounter++;
-					if(this.model.active.getType(studentID) === this.model.authored.getType(authoredID)){
+					if(this.model.active.isNodeIrrelevant(studentID))
+						interpretation = "irrelevant";
+					else if(this.model.active.getType(studentID) === this.model.authored.getType(authoredID))
 						interpretation = "correct";
-					}else{
-						if(model.authored.getAttemptCount(authoredID, nodePart) > 0 ){
+					else
+						if(model.authored.getAttemptCount(authoredID, nodePart) > 0 )
 							interpretation = "secondFailure";
-						}else{
+						else
 							interpretation = "firstFailure";
-						}
-					}
 					break;
 				case "variable":
 					interpret(this.model.authored.getVariable(authoredID));
@@ -381,7 +405,7 @@ define([
 					break;
 				case "equation":
 					// Solver
-					interpret(equation.check(answer), unknownNodes);
+					interpret(equation.check(answer));
 					break;
 			}
 			return interpretation;
@@ -422,7 +446,7 @@ define([
 			// second incorrect. Thats why equation validation process is changed.
 			if(nodePart === "equation"){
 				equationEvaluation = equation.evaluate(this.model, id);
-				interpretation = this._getInterpretation(id, nodePart, equationEvaluation, answer.unknownNodesList.toString());
+				interpretation = this._getInterpretation(id, nodePart, equationEvaluation);
 			} else {
 				interpretation = this._getInterpretation(id, nodePart, answer);
 			}
@@ -477,7 +501,8 @@ define([
 								updateStatus(returnObj, this.model);
 							this.descriptionCounter = 0;
 							this.model.active.setPosition(id, 0, this.model.authored.getPosition(givenID,0));
-						}
+						} else if(returnObj[i].value === "incorrect")
+							this.model.student.incrementAssistanceScore(id);
 					}
 				}else{
 					givenID = this.model.student.getAuthoredID(id);
@@ -490,23 +515,14 @@ define([
 							this.model.active.setPosition(id, 1, this.model.authored.getPosition(givenID, 1));
 						}
 					}else{
-						if(nodePart === "equation" && answer.unknownNodesList.length > 0){
-							returnObj.push(
-								{
-									id: 'crisisAlert',
-									attribute: 'open',
-									value: fm.unknown + answer.unknownNodesList.toString()
-								});
-						}else{
-							this.model.authored.setAttemptCount(givenID, nodePart, this.model.authored.getAttemptCount(givenID, nodePart) + 1);
-							for (var i = 0; i < returnObj.length; i++){
-								if (returnObj[i].value === "incorrect") {
-									this.model.student.incrementAssistanceScore(id);
-								}
-								if(returnObj[i].attribute === "status" &&
-									equationEvaluation === "partial" && interpretation !== "demo") {
-									returnObj[i].value = "partial";
-								}
+						this.model.authored.setAttemptCount(givenID, nodePart, this.model.authored.getAttemptCount(givenID, nodePart) + 1);
+						for (var i = 0; i < returnObj.length; i++){
+							if (returnObj[i].value === "incorrect") {
+								this.model.student.incrementAssistanceScore(id);
+							}
+							if(returnObj[i].attribute === "status" &&
+								equationEvaluation === "partial" && interpretation !== "demo") {
+								returnObj[i].value = "partial";
 							}
 						}
 					}

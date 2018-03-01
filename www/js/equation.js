@@ -48,7 +48,6 @@ define([
 				});
 				return equation;
 			}
-
 			if(params.nameToId){
 				var nodeList = []; //this holds new node ids and variable objects
 				var variableList = []; // this holds the variable list
