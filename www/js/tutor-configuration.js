@@ -1,8 +1,9 @@
-define(["dojo/_base/lang"], function(lang){
+define([], function(){
 	var properties = {
 		STUDENT: {
 			feedbackMode: "feedback",
 			userType: "student",
+			showGraphFeedback: true,
 			feedbacks: [
 				"correct",
 				"firstFailure",
@@ -12,12 +13,14 @@ define(["dojo/_base/lang"], function(lang){
 
 		NOFEEDBACK: {
 			feedbackMode: "nofeedback",
-			userType: "student"
+			userType: "student",
+			feedbacks: []
 		},
 
 		DEFAULT: {
 			feedbackMode: "author",
-			userType: "student",
+			userType: "author",
+			showGraphFeedback: false,
 			buttons: [
 				"createQuantityNodeButton",
 				"createEquationNodeButton",
@@ -26,26 +29,39 @@ define(["dojo/_base/lang"], function(lang){
 				"doneButton"
 			],
 			feedbacks: [
-				"correct",
-				"incorrect"
+				"correct"
 			]
 		}
 	};
 
-	var setParameters = function(mode){
-		parameters = mode !== "AUTHOR" ? lang.mixin(properties.DEFAULT, properties[mode]) : properties.DEFAULT;
+	// tutorial configuration for author mode is the default one
+	var p = properties.DEFAULT;
+	var Parameters = function(mode){
+		if(mode in properties)
+			p = Object.assign(properties.DEFAULT, properties[mode]);
 	};
 
-	var parameters = {};
+	Parameters.prototype = {
+		get: function(key){
+			return key in p ? p[key] : undefined;
+		},
+		set: function(key, value){
+			p[key] = value;
+		}
+	};
 
-	var functions = function(mode){
-		setParameters(mode);
+	return (function(){
+		var instance = null;
+		var setInstance = function(mode){
+			instance = new Parameters(mode);
+		};
+
 		return {
-			get: function(key){
-				return parameters.hasOwnProperty(key) ? parameters[key] : undefined;
+			getInstance: function(mode){
+				if(instance == null)
+					setInstance(mode);
+				return instance;
 			}
 		};
-	};
-
-	return functions;
+	})();
 });

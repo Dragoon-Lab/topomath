@@ -2,8 +2,9 @@ define([
 	"dojo/_base/declare",
 	"dojo/_base/lang",
 	"dojo/_base/array",
+	"./tutor-configuration",
 	"./equation"
-], function(declare, lang, array, equation){
+], function(declare, lang, array, configurations, equation){
 	return declare(null, {
 		/**
 		* this is the common calculations file which is the interface for calling and
@@ -16,7 +17,9 @@ define([
 		constructor: function(model){
 			this._model = model;
 			this.activeSolution = this.initializeSystem(this._model.active);
-			this.isStudentMode = this._model.active === this._model.student;
+			this._config = configurations.getInstance();
+			this.isStudentMode = this._config.get("showGraphFeedback");
+			//this.isStudentMode = this._model.active === this._model.student;
 			if(this.isStudentMode)
 				this.authorSolution = this.initializeSystem(this._model.authored);
 		},
