@@ -927,19 +927,6 @@ define([
 					subModel: this._model.active
 				};
 				returnObj = expression.convert(equationParams);
-				// TODO - Replace this with activity Parameter, if possible
-				if(this._mode === "STUDENT" && returnObj.unknownNodesList && returnObj.unknownNodesList.length > 0){
-					// create nodes
-					array.forEach(returnObj.newNodeList, function(node){
-						this.addNode(this._model.active.getNode(node.id));
-						// Auto-populate node description only in Student mode
-						// check added to make sure that the node is not an unknown node
-						if(node.variable){
-							this.createStudentNode(node);
-						}
-					}, this);
-					throw new Error("Unknown variable(s) entered in the equation - " + returnObj.unknownNodesList.toString());
-				}
 			}catch(err){
 				console.log("Parser error: ", err);
 				console.log(err.message);
@@ -949,9 +936,12 @@ define([
 				//this._model.active.setEquation(this.currentID, inputEquation);
 				if(err.message.includes("unexpected variable"))
 					directives.push({id: 'message', attribute: 'append', value: 'The value entered for the equation is incorrect'});
-				if(err.message.includes("Unknown variable(s)")){
-					directives.push({ id: 'crisisAlert', attribute: 'open', value: err.message});
-					directives.push({id: 'message', attribute: 'append', value: err.message});
+				if(err.message.includes("unknown variables")){
+					var _returnObj = JSON.parse(err.message.replace("unknown variables", ""));
+					var _message = "Unknown variable(s) entered in the equation : " + _returnObj.unknownNodesList.toString();
+					directives.push({ id: 'crisisAlert', attribute: 'open', value: _message});
+					directives.push({id: 'message', attribute: 'append', value: _message});
+					this.autoCreateNodes(_returnObj.newNodeList);
 				}
 				else
 					directives.push({id: 'message', attribute: 'append', value: 'Incorrect equation syntax.'});
@@ -972,6 +962,18 @@ define([
 			}
 			//rest of the analysis is only needed for the student mode. So returning in case the active model is not student.
 			return returnObj;
+		},
+		autoCreateNodes: function(newNodeList){
+			//newNodeList contains those nodes which were not present when equation has been parsed
+			//these nodes were added to model, substituted into equation but should be added here
+			array.forEach(newNodeList, function(newNode){
+				this.addNode(this._model.active.getNode(newNode.id));
+				// Auto-populate node description only in Student mode
+				// check added to make sure that the node is not an unknown node
+				if(newNode.variable){
+					this.createStudentNode(newNode);
+				}
+			}, this);
 		},
 		createExpressionNodes: function(parseObject, ignoreUnknownTest){
 			/*
@@ -1000,16 +1002,7 @@ define([
 				//TODO : ignoreUnknownTest should be discussed
 
 				if(autoCreationFlag){
-					array.forEach(newNodesList, function(newNode){
-						//newNodeList containts those nodes which were not present when equation has been parsed
-						//these nodes were added to model, substituted into equation but should be added here
-						this.addNode(this._model.active.getNode(newNode.id));
-						// Auto-populate node description only in Student mode
-						// check added to make sure that the node is not an unknown node
-						if(newNode.variable){
-							this.createStudentNode(newNode);
-						}
-					}, this);
+					this.autoCreateNodes(newNodesList);
 					//dynamicList contains those nodes for which prior node UI changes have to be made
 					//Accordingly, make the node dynamic by changing the variable type and setting the accumulator
 					//Also updateNodeView makes sure changes are reflected instantly on the UI

@@ -130,6 +130,10 @@ define([
 					connections = connections.concat(_c);
 					connections = Array.from(new Set(connections.map(JSON.stringify))).map(JSON.parse);
 				}, this);
+				if(subModel.isStudentMode() && unknownNodesList && unknownNodesList.length > 0){
+					var _returnObj = {"newNodeList": nodeList, "unknownNodesList" : unknownNodesList};
+					throw new Error("unknown variables" + JSON.stringify(_returnObj));
+				}
 				return {
 					variableList: variableList,
 					newNodeList: nodeList,
