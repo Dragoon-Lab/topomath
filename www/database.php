@@ -16,6 +16,10 @@
 			return (array_key_exists($name, self::$queries) ? self::$queries[$name] : '');		
 		}
 
+		function getAffectedRows(){
+			return mysqli_affected_rows($this->db_connection);
+		}
+
 		function setQueries(){
 			$q = array();
 			$q['classProblems'] = 'SELECT DISTINCT problem, user, folder FROM session WHERE user = "%s" AND folder IN (%s);';
@@ -23,7 +27,13 @@
 			$q['getNCModel'] = 'SELECT session_id, problem, user, folder, solution_graph FROM session JOIN solutions USING (session_id) WHERE user = "%s" AND problem = "%s" AND mode = "%s" AND section = "non-class-models" ORDER BY session.time desc LIMIT 1;';
 			$q['insertSession'] = 'INSERT INTO session (session_id, mode, user, section, problem, folder) VALUES ("%s", "%s", "%s", "%s", "%s", "%s");';
 			$q['insertSolutionGraph'] = 'INSERT INTO solutions (session_id, solution_graph) VALUES ("%s", "%s");';
-
+			$q['listNCModelsInGroup'] = 'SELECT DISTINCT problem FROM session WHERE `folder` = "%s";';
+			$q['countModelsInFolder'] = 'SELECT COUNT(DISTINCT problem) AS model_count FROM session WHERE `folder` = "%s";';
+			$q['updateFolderGivenFolder'] = 'UPDATE session SET `folder` = "%s",time = time WHERE `folder` = "%s";';
+			$q['updateFolderGivenProblemFolder'] = 'UPDATE session SET `folder` = "%s",time = time WHERE `folder` = "%s" AND problem="%s";';
+			$q['updateModelGivenProblemFolder'] = 'UPDATE session SET problem = "%s",time = time WHERE `folder` = "%s" AND problem="%s";';
+			$q['getSolutionGraph'] = 'SELECT solutions.session_id,solutions.solution_graph FROM solutions INNER JOIN session ON solutions.session_id = session.session_id AND session.folder = "%s" AND session.problem = "%s" AND session.mode = "%s" ORDER BY session.time DESC limit 1;';
+			$q['checkDupModels'] = 'SELECT COUNT(*) AS modelCount FROM session WHERE `folder` = "%s" AND problem = "%s";';
 			return $q;
 		}
 
@@ -55,7 +65,9 @@
 			$group = $this->db_connection->real_escape_string($parameters['g']);
 			//we made sure group is unique each time
 			//query by group name and return problem names
-			$query = "select DISTINCT problem from session where folder = '$group' AND section = 'non-class-models'";
+			$query = $this->getQuery('listNCModelsInGroup');
+			if($query != '')
+				$query = sprintf($query, $group);
 			$result = $this->getDBResults($query);
 			$nc_probs = array();
 			if($result->num_rows != 0){
@@ -65,43 +77,76 @@
 			} else {
 				return null;
 			}
-
+			if($parameters['s'] == '1')
+				ksort($nc_probs);
 			return json_encode($nc_probs);
 
 		}
 
-		function deleteNonClassProblems($parameters){
-			//first delete folders which implies updating the group ids with tag deleted
-			$del_folders = $parameters['df'];
+		function getProblemCount($parameters){
+			$group = $this->db_connection->real_escape_string($parameters['g']);
+			$query = $this->getQuery('countModelsInFolder');
+			if($query != '')
+				$query = sprintf($query, $group);
+			$result = $this->getDBResults($query);
+			$count_det = $result->fetch_assoc();
+			return $count_det['model_count'];
+		}
+
+		function deleteSpecificModels($parameters){
 			$del_models = $parameters['dm'];
-			$del_suc1=$del_suc2=false;
-
-			foreach($del_folders as $eachFolder){
-				$user = explode("-",$eachFolder);
-				$new_folder = ($user[1] == 'private') ? $user[0] : $user[1];
-				$new_folder = $new_folder."-deleted";
-				//escape quotes, make strings query safe
-				$new_folder = $this->db_connection->real_escape_string($new_folder);
-				$eachFolder = $this->db_connection->real_escape_string($eachFolder);
-				$del_folder_query = "update session set folder = '$new_folder',time = time where folder = '$eachFolder' AND section = 'non-class-models'";
-				//echo $del_folder_query;
-				$del_suc1 = $this->getDBResults($del_folder_query);
+			$del_fails = array();
+			if($del_models){
+				foreach($del_models as $mname => $group){
+					$user = explode("-",$group);
+					$new_folder = ($user[1] == 'private') ? $user[0] : $user[1];
+					$new_folder = $new_folder.'-deleted';
+					$new_folder = $this->db_connection->real_escape_string($new_folder);
+					$mname = $this->db_connection->real_escape_string($mname);
+					$group = $this->db_connection->real_escape_string($group);
+					$query = $this->getQuery('updateFolderGivenProblemFolder');
+					if($query != ''){
+						$query = sprintf($query, $new_folder, $group, $mname);
+					} else {
+						return null;
+					}
+					$result = $this->getDBResults($query);
+					if(($this->getAffectedRows()) == 0)
+						$del_fails[$mname] = $group;
+				}	
+				if(sizeof($del_fails) > 0)
+					return json_encode($del_fails);
+				else
+					return "success";	
 			}
-
-			foreach($del_models as $name=>$group){
-				$user = explode("-",$group);
-				$new_folder = ($user[1] == 'private') ? $user[0] : $user[1];
-				$new_folder = $new_folder.'-deleted';
-				$new_folder = $this->db_connection->real_escape_string($new_folder);
-				$name = $this->db_connection->real_escape_string($name);
-				$del_folder_query = "update session set folder = '$new_folder',time = time where folder = '$group' and problem='$name' AND section = 'non-class-models'";
-				echo $del_folder_query;
-				$del_suc2 = $this->getDBResults($del_folder_query);
+			else{
+				return null;
 			}
-			if($del_suc1 && $del_suc2)
-				return $del_folders;
-			else return null;
+		}
 
+		function deleteAllModelsFromFolder($parameters){
+			// This function is supposed to delete models from the passed folder
+			$folder_id = $this->db_connection->real_escape_string($parameters['fol']);
+			//check if the folder is empty and then return true
+			$model_count = $this->getProblemCount(['g' => $folder_id]);
+			if($model_count == 0)
+				return "success";
+			$user = explode("-",$folder_id);
+			$folder_name = ($user[1] == 'private') ? $user[0] : $user[1];
+			$new_folder = $folder_name."-deleted";
+			$new_folder = $this->db_connection->real_escape_string($new_folder);
+			$folder_name = $this->db_connection->real_escape_string($folder_name);
+			$query = $this->getQuery('updateFolderGivenFolder');
+			if($query != ''){
+				$query = sprintf($query, $new_folder, $folder_id);
+			} else {
+				return null;
+			}
+			$result = $this->getDBResults($query);
+			if(($this->getAffectedRows()) > 0)
+				return "success";
+			else
+				return null;
 		}
 
 		function modelAction($parameters){
@@ -111,37 +156,32 @@
 			$action = $parameters['action'];
 			$user = $this->db_connection->real_escape_string($parameters['user']);
 			$copy_sec = "non-class-models";
-			print_r($parameters);
 			if(isset($parameters['section'])){
 				$copy_sec = $parameters['section'];
 			}
 
 			if($action == "moveModel"){
-				//move Model
-				$update_query = "update session set folder = '$dest',time = time where folder='$src' AND problem='$model' AND section = 'non-class-models'";
-				//echo $update_query;
-				$update_res = $this->getDBResults($update_query);
-				if($update_res)
-					return "success";
-				else
+				$query = $this->getQuery('updateFolderGivenProblemFolder');
+				if($query != '')
+					$query = sprintf($query, $dest, $src, $model);
+				$update_res = $this->getDBResults($query);
+				if(($this->getAffectedRows()) == 0)
 					return null;
+				else
+					return "success";
 			}
 			else if($action == "copyModel"){
-				//step 1 : retrieve the most recent copy of model authored ( session id and other params)
-				/*
-				$get_q = "select * from session where folder = '$src' AND problem='$model' AND mode = 'AUTHOR' ORDER BY time DESC limit 1";
-				$res = $this->getDBResults($get_q);
-				if(!$res) {
-					//echo "session selection failed"."<br/>";
-					return null;
-				}
-				$data = mysqli_fetch_array($res);
-				$old_session_id = $data["session_id"];
-				*/
-
 				//step 1: retrieve the most recent session for the specific problem and group which has a corresponding solutions entry
-				$get_sol_q = "select solutions.session_id,solutions.solution_graph from solutions INNER JOIN session ON solutions.session_id = session.session_id AND session.folder = '$src' AND session.problem = '$model' AND session.mode = 'AUTHOR' AND session.section = 'non-class-models' ORDER BY session.time DESC limit 1";
-				$sol_res = $this->getDBResults($get_sol_q);
+				//$get_sol_q = "select solutions.session_id,solutions.solution_graph from solutions INNER JOIN session ON solutions.session_id = session.session_id AND session.group = '$src' AND session.problem = '$model' AND session.mode = 'AUTHOR' ORDER BY session.time DESC limit 1";
+				$query = $this->getQuery('getSolutionGraph');
+				if($query != '')
+					$query = sprintf($query, $src, $model, 'AUTHOR');
+				else
+					return null;
+				$sol_res = $this->getDBResults($query);
+				//number of rows selected has to be exactly 1
+				if(mysqli_num_rows($sol_res) !== 1)
+					return "source model cannot be found";
 				$sol_data = mysqli_fetch_array($sol_res);
 				$solution_graph = $this->db_connection->real_escape_string($sol_data['solution_graph']);
 				$old_session_id = $sol_data['session_id'];
@@ -154,44 +194,74 @@
 
 				//step 3 : insert new session
 
-				$create_sess_q = "insert into session(`session_id`,`user`,problem,`mode`,folder,`section`)
-								  VALUES ('$new_session_id','$user','$model','AUTHOR','$dest','$copy_sec')";
-				$create_sess_res = $this->getDBResults($create_sess_q);
-				if(!$create_sess_res)
-					return null;
-
-				$create_new_sol = "insert into solutions(`session_id`,`solution_graph`)
-								   VALUES ('$new_session_id','$solution_graph')";
-				$create_sol_res = $this->getDBResults($create_new_sol);
-				echo "sol query".$create_new_sol;
-				if($create_sol_res)
-					return "success";
+				$new_model = $this->db_connection->real_escape_string($parameters['new_mod']);
+				if($new_model == "")
+					$new_model = $model;
+				$query = $this->getQuery('insertSession');
+				if($query != '')
+					$query = sprintf($query, $new_session_id, 'AUTHOR', $user, $copy_sec, $new_model, $dest);
 				else
 					return null;
+				$create_sess_res = $this->getDBResults($query);
+				
+				if($this->getAffectedRows() != 1)
+					return "could not create a new model";
+
+				// insert solution
+				$query = $this->getQuery('insertSolutionGraph');
+				if($query != ''){
+					$query = sprintf($query, $new_session_id, $solution_graph);
+				} else {
+					return null;
+				}
+
+				$create_sol_res = $this->getDBResults($query);
+				//echo $create_new_sol;
+				if($this->getAffectedRows() == 1)
+					return "success";
+				else
+					return "could not create new model solution";
 			}
 
 		}
 
 		function renameAction($parameters){
 			$old_folder = $this->db_connection->real_escape_string($parameters['old_folder']);
-			$old_model = $this->db_connection->real_escape_string($parameters['old_model']);
-			$new_item = $this->db_connection->real_escape_string($parameters['new_item']);
+			$new_name = $this->db_connection->real_escape_string($parameters['new_name']);
 			$action = $parameters['action'];
 			if($action == "Folder"){
-				$update_query = "update session set folder = '$new_item',time = time where folder='$old_folder' AND section = 'non-class-models'";
-				//echo $update_query;
-				$update_res = $this->getDBResults($update_query);
-				echo $update_query;
-				if($update_res)
+				$query = $this->getQuery('updateFolderGivenFolder');
+				if($query != ''){
+					$query = sprintf($query, $new_name, $old_folder);
+				} else {
+					return null;
+				}
+				$result = $this->getDBResults($query);
+				if(($this->getAffectedRows()) > 0)
 					return "success";
 				else
 					return null;
 			}
 			else if($action == "Model"){
-				$update_query = "update session set problem = '$new_item',time = time where folder='$old_folder' AND problem='$old_model' AND section = 'non-class-models'";
-				echo $update_query;
-				$update_res = $this->getDBResults($update_query);
-				if($update_res)
+				$old_model = $this->db_connection->real_escape_string($parameters['old_model']);
+				$dup_q = $this->getQuery('checkDupModels');
+				if($dup_q != ''){
+					$dup_query = sprintf($dup_q, $old_folder, $new_name);
+				} else {
+					return null;
+				}
+				$dup_res = $this->getDBResults($dup_query);
+				$is_dup = mysqli_fetch_array($dup_res);
+				if($is_dup['modelCount'] != 0)
+					return "duplicate";
+				$query = $this->getQuery('updateModelGivenProblemFolder');
+				if($query != ''){
+					$query = sprintf($query, $new_name, $old_folder, $old_model);
+				} else {
+					return null;
+				}
+				$result = $this->getDBResults($query);
+				if(($this->getAffectedRows()) > 0)
 					return "success";
 				else
 					return null;
@@ -254,5 +324,7 @@
 
 			return "success";
 		}
+
+
 	}
 ?>
