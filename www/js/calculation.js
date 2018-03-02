@@ -18,8 +18,12 @@ define([
 			this._model = model;
 			this.activeSolution = this.initializeSystem(this._model.active);
 			this._config = configurations.getInstance();
-			this.isStudentMode = this._config.get("showGraphFeedback");
-			//this.isStudentMode = this._model.active === this._model.student;
+			// previously student mode was for every student mode and it is used for two purposes
+			// show student feedback, and render author graph
+			// and save author solution
+			this.isStudentMode = !this._config.get("showActiveGraphOnly");
+			// since now it can not be used for the second pupose
+			this.isAuthorMode = !this._model.isStudentMode();
 			if(this.isStudentMode)
 				this.authorSolution = this.initializeSystem(this._model.authored);
 		},
@@ -27,7 +31,15 @@ define([
 		* function which finds the solution for the system of equations.
 		**/
 		findSolution: function(isActive, id, isUpdate){
-			var system = isActive ? this.activeSolution : this.authorSolution;
+			var system = null;
+
+			if(isActive)
+				system = this.activeSolution;
+			else if(id)
+				system = this.authorStaticSolution;
+			else
+				system = this.authorSolution;
+
 			var subModel = isActive ? this._model.active : this._model.authored;
 
 			if(!system.status.error){

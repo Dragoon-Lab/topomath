@@ -3,7 +3,7 @@ define([], function(){
 		STUDENT: {
 			feedbackMode: "feedback",
 			userType: "student",
-			showGraphFeedback: true,
+			showActiveGraphOnly: false,
 			feedbacks: [
 				"correct",
 				"firstFailure",
@@ -20,7 +20,7 @@ define([], function(){
 		DEFAULT: {
 			feedbackMode: "author",
 			userType: "author",
-			showGraphFeedback: false,
+			showActiveGraphOnly: true,
 			buttons: [
 				"createQuantityNodeButton",
 				"createEquationNodeButton",
