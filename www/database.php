@@ -128,7 +128,9 @@
 			// This function is supposed to delete models from the passed folder
 			$folder_id = $this->db_connection->real_escape_string($parameters['fol']);
 			//check if the folder is empty and then return true
-			$model_count = $this->getProblemCount(['g' => $folder_id]);
+			//short hand arrays not allowed before 5.4
+			$grp_ar = array('g' => $folder_id);
+			$model_count = $this->getProblemCount($grp_ar);
 			if($model_count == 0)
 				return "success";
 			$user = explode("-",$folder_id);
