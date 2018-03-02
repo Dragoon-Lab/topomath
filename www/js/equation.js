@@ -278,11 +278,13 @@ define([
 					solution.plotValues[id].push(timeStepSolution.point.get(counter, 0));
 				});
 			}
-			if(timeStepSolution && timeStepSolution.hasOwnProperty('vars'))
-				solution.plotVariables = timeStepSolution.vars;
-			else
-				solution.plotVariables = solution.xvars.concat(solution.func);
-			console.log("solution for the system of equations ", solution);
+			if(!solution.status.error){
+				if(timeStepSolution && timeStepSolution.hasOwnProperty('vars'))
+					solution.plotVariables = timeStepSolution.vars;
+				else
+					solution.plotVariables = solution.xvars.concat(solution.func);
+				console.log("solution for the system of equations ", solution);
+			}
 
 			return solution;
 		},

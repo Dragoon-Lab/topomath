@@ -920,6 +920,7 @@ define([
 					}
 				}
 				//Removes the current node from student Model
+				this._model.authored.setAttemptCount(nodeid, "assistanceScore", 0);
 				this._model.student.deleteNode(studentNodeID);
 			}
 		},

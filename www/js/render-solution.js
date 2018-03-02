@@ -137,6 +137,7 @@ define([
 				}
 				//this.findSolution(true);
 				this.renderDialog();
+				this.fireLogEvent(["slider-change", paramID, textBox.value]);
 				if(paramID != this.staticVar)
 					this.renderStaticDialog(false, true);
 				this._rendering = false;
@@ -443,7 +444,7 @@ define([
 				//set values in table according to their table-headers
 				j = 1;
 				array.forEach(solution.plotVariables, function(id){
-					tableString += "<td align='center' style='overflow:visible' id='row" + i + "col" + j + "'>" + solution.plotValues[id][i].toPrecision(3) + "</td>";
+					tableString += "<td align='center' style='overflow:visible' id='row" + i + "col" + j + "'>" + Number(solution.plotValues[id][i].toFixed(4)) + "</td>";
 					j++;
 				});
 				tableString += "</tr>";
@@ -609,7 +610,7 @@ define([
 		toggleSliders: function(widgetID, variables){
 			this.staticVar = this.checkStaticVar(true);
 			var id = this.staticVar;
-			console.log(dom.byId("sliderGraph_id1"));
+			if(!id) return;
 			array.forEach(variables, function(v){
 				domAttr.set("textGraph_" + v, 'disabled', false);
 				domAttr.set("textGraph_" + id, 'title', "");
@@ -660,6 +661,10 @@ define([
 			dom.byId("graphErrorMessage").innerHTML = "";
 			dom.byId("SliderPane").innerHTML = "<div id= 'solutionMessage'></div>";
 			dom.byId("solutionMessage").innerHTML = "";
+		},
+
+		fireLogEvent: function(args){
+			// stub to log slider event. event defined in event-logs.js using aspect.after
 		}
 	});
 });

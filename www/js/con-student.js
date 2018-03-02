@@ -52,7 +52,8 @@ define([
 			this.init();
 		},
 
-		resettableControls: ["variable","description","value","units","equation"],
+		// A list of control map specific to students
+		resettableControls: ["equation"],
 		variableNodeControls: ["variable","value","units"],
 		equationNodeControls: ["inputs","equation"],
 		commonNodeControls: ["modelType","description"],
@@ -61,8 +62,6 @@ define([
 			// TODO : Check Model Completeness
 			// this.studentControls();
 		},
-		// A list of control map specific to students
-		resettableControls: ["variable","description","value","units","equation"],
 
 		controlMap: {
 			inputs: "inputSelectorStudent",
@@ -362,7 +361,9 @@ define([
 			var authoredID = this._model.authored.getNodeIDByName(variable);
 			//console.log(id,descID,this._model.given.getName(descID));
 			var directives = this._PM.processAnswer(id, 'description', authoredID);
-			directives.push.apply(directives, this._PM.processAnswer(id, 'variable', variable));
+			if(!this._model.authored.isNodeIrrelevant(authoredID))
+				directives.push.apply(directives,
+						this._PM.processAnswer(id, 'variable', variable));
 			// Need to send to PM and update status, but don't actually
 			// apply directives since they are for a different node.
 			array.forEach(directives, function (directive) {
