@@ -288,6 +288,9 @@ define([
 			}
 
 			if(!this._model.isComplete(node.ID)){
+				if((this._model.isStudentMode() && this._feedbackMode == "nofeedback") || !this._model.isStudentMode()){
+					classTag += " editor";
+				}
 				classTag += " incomplete";
 			}
 			var nodeDOM = domConstruct.create("div", {
