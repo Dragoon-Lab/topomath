@@ -6,7 +6,7 @@
 	<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 	<title>TopoMath</title>
 	<link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon"/>
-	<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+	<link rel="stylesheet" href="css/fontawesome.min.css">
 	<link rel="stylesheet" href="./dijit/themes/claro/claro.css">
 
 	<script type="text/javascript">
@@ -262,11 +262,11 @@
 				<label for="unknownType">Unknown</label>
 				<input data-dojo-type="dijit/form/RadioButton" name="variableType" class="handleVariable" id="parameterType" value="parameter"/>
 				<label for="parameterType">Parameter</label>
-				<!--input data-dojo-type="dijit/form/RadioButton" name="variableType" class="handleVariable" id="dynamicType" value="dynamic"/>
-				<label for="dynamicType">Dynamic</label-->
+				<input data-dojo-type="dijit/form/RadioButton" name="variableType" class="handleVariable" id="dynamicType" value="dynamic"/>
+				<label for="dynamicType">Dynamic</label>
 			</div>
 
-			<div class="fieldgroup" id="valueUnitsContainer" style="display: none;">
+			<div class="fieldgroup" id="valueUnitsContainer" style="display: block;">
 				<!-- adding a div for value field to control its display in UI -->
 				<div id="valueInputboxContainer" class="fieldgroup" style="display: none;">
 					<span class="fixedwidth">
@@ -278,7 +278,7 @@
 				
 				<div id = "unitsSelectorContainerStudent" class="fieldgroup" style="display: none">
 					<label for="unitsSelectorStudent">Units</label>
-					<select id="unitsSelectorStudent" data-dojo-type="dijit/form/Select" style="width: 6em;">
+					<select id="unitsSelectorStudent" data-dojo-type="dijit/form/Select">
 						<option value='defaultSelect'>No Units</option>
 					</select>
 				</div>
@@ -303,8 +303,7 @@
 						<label for="equationInputbox">Equation</label>
 					</div>
 					<div id="equationInputboxContainer" class="fieldgroup">
-						<textarea id="equationInputbox" rows=4 cols=50 data-dojo-type="dijit/form/SimpleTextarea" style="min-height:60px;display: none;"></textarea>
-						<textarea id="equationInputboxStudent" rows=4 cols=50 data-dojo-type="dijit/form/SimpleTextarea" style="min-height:60px; display: none;"></textarea>
+						<textarea id="equationInputbox" rows=4 cols=50 data-dojo-type="dijit/form/SimpleTextarea" style="min-height:60px;display: display: none;"></textarea>
 					</div>
 				</div>
 

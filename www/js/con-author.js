@@ -23,13 +23,14 @@ define([
 	'dojo/aspect',
 	'dojo/dom',
 	'dojo/dom-class',
+	"dojo/dom-style",
 	'dijit/registry',
 	'dojo/NodeList-dom',
 	'./controller',
 	"./equation",
 	"./typechecker",
 	"dojo/domReady!"
-], function(array, declare, lang, style, keys, ready, on, memory, aspect, dom, domClass, registry, domList, controller, equation, typechecker){
+], function(array, declare, lang, style, keys, ready, on, memory, aspect, dom, domClass, domStyle, registry, domList, controller, equation, typechecker){
 
 	// Summary:
 	//			MVC for the node editor, for authors
@@ -476,6 +477,7 @@ define([
 				return;
 			}
 			this.variableTypeControls(this.currentID, _variableType);
+			this.updateNodeEditorView(_variableType);
 			this.logSolutionStep({
                 property: "variableType",
                 value: _variableType
@@ -817,6 +819,18 @@ define([
 			console.log("model obj is",this._model);
 		},
 		*/
+		updateNodeEditorView: function(variableType){
+			if(variableType != "unknown"){
+				domStyle.set('valueInputboxContainer','display','block');
+			} else {
+				domStyle.set('valueInputboxContainer','display','none');
+				var w = registry.byId(this.controlMap.value)
+				w.set('value','');
+				w.set('status', '');
+				registry.byId(this.controlMap.value)
+				this._model.active.setValue(this.currentID, '');
+			}
+		},
 		getModelType: function(){
 			return (registry.byId(this.controlMap.setStudent).checked ? registry.byId(this.controlMap.modelType).value : "authored");
 		},
@@ -906,6 +920,7 @@ define([
 					}
 				}
 				//Removes the current node from student Model
+				this._model.authored.setAttemptCount(nodeid, "assistanceScore", 0);
 				this._model.student.deleteNode(studentNodeID);
 			}
 		},

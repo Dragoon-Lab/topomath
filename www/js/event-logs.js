@@ -40,6 +40,16 @@ define([
 		});
 	});
 
+	aspect.after(solution.prototype, "fireLogEvent", function(args){
+		_logger.logUserEvent({
+			type: "solution-manipulation",
+			name: args[0],
+			nodeID: args[1],
+			node: this._model.active.getVariable(args[1]) || this._model.active.getDescription(args[1]),
+			value: args.length > 1 ? args[2] : null
+		});
+	}, true);
+
 	aspect.after(solution.prototype, "hide", function(){
 		_logger.logUserEvent({
 			type: "menu-choice",

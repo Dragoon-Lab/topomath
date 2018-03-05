@@ -116,6 +116,11 @@ define([
 					//errorMessage.show();
 				}
 			}
+			if(_model.isStudentMode() && !_model.student.isSolutionAvailable()){
+				console.log("Solution model is not available")
+				var box = new messageBox("errorMessageBox", "warn", _messages["solution.missing"], true);
+				box.show();
+			}
 
 		} else {
 			console.log("Its a new problem");
@@ -342,6 +347,7 @@ define([
 				event.stop(e);
 				// This should return an object kind of structure and
 				var problemComplete = controllerObject.checkDone();
+				_session.saveModel(_model.model)
 				if( problemComplete.errorNotes === "" ){
 					// if in preview mode , Logging is not required:
 					// TODO : Add Logging
@@ -369,6 +375,7 @@ define([
 
 			aspect.after(registry.byId('solution'), "hide", function(){
 				sol.hide();
+				_session.saveModel(_model.model);
 			});
 
 		});
