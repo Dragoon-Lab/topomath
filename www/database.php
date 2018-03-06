@@ -232,6 +232,10 @@
 			$new_name = $this->db_connection->real_escape_string($parameters['new_name']);
 			$action = $parameters['action'];
 			if($action == "Folder"){
+				$grp_ar = array('g' => $old_folder);
+				$model_count = $this->getProblemCount($grp_ar);
+				if($model_count == 0)
+					return "success";
 				$query = $this->getQuery('updateFolderGivenFolder');
 				if($query != ''){
 					$query = sprintf($query, $new_name, $old_folder);
