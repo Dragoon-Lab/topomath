@@ -14,7 +14,7 @@ var studentFieldNamesMap = {
     "variableType":"variableType",
     "value":"valueInputbox",
     "units":"unitsSelectorStudent",
-    "equation":"equationInputboxStudent"
+    "equation":"equationInputbox"
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Utility functions (used within the API)
@@ -210,6 +210,7 @@ exports.setNodeDescription = function(client, description){
         client.setValue('#descriptionInputbox', description);
     }
     else if(client.isVisibleWithinViewport('#selectDescription')){
+        client.waitForVisible('#selectDescription', TIMEOUT);
         client.click("#selectDescription");
         client.execute(function(description){
             var ele = dijit.byId('selectDescription');
@@ -220,6 +221,7 @@ exports.setNodeDescription = function(client, description){
             }, _desc);
             ele.set("value",_id[0].value);
         }, description);
+        client.waitForVisible('#selectDescription', TIMEOUT);
         client.click("#selectDescription");
     }
 }
@@ -272,6 +274,8 @@ exports.setQuantityNodeRoot = function(client){
 }
 
 exports.nodeEditorDone = function(client){
+    client.doubleClick("#nodeEditor_title"); // Click on title of the editor to get closeButton in viewport
+    client.waitForVisible('#closeButton', TIMEOUT);
     client.click('#closeButton');
     client.waitUntil(function(){
         return getCssPropertyofElement(client, "#nodeEditor", 'opacity') === 0;
