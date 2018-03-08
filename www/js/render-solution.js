@@ -166,6 +166,23 @@ define([
 			});
 
 			var obj = this.getMinMaxFromArray(solution.plotValues[id]);
+			var authorID = this._model.active.getAuthoredID(id);
+			if(this.isStudentMode && this.authorSolution && this.authorSolution.plotValues[authorID]){
+				var authorObj = this.getMinMaxFromArray(this.authorSolution.plotValues[authorID]);
+				if (authorObj.min < obj.min) {
+					obj.min = authorObj.min;
+				}
+				if (authorObj.max > obj.max) {
+					obj.max = authorObj.max;
+				}
+				var step = (obj.max - obj.min)/10;
+				if(obj.min >= obj.min - step){
+					obj.min = obj.min - step;
+				}
+				if(obj.max <= obj.max + step){
+					obj.max = obj.max + step;
+				}
+			}
 
 			chart.addAxis("y", {
 				vertical: true, // min: obj.min, max: obj.max,
@@ -198,17 +215,21 @@ define([
 
 			dom.byId("graphMessage" + id).innerHTML = "";
 			var obj = this.getMinMaxFromArray(solution.plotValues[id]);
-
-
-			if(this.isStudentMode) {
-				var authorID = this._model.active.getAuthoredID(id);
-				var authorObj = this.getMinMaxFromArray(authorSolution.plotValues[authorID]);
-
+			var authorID = this._model.active.getAuthoredID(id);
+			if(this.isStudentMode && this.authorSolution && this.authorSolution.plotValues[authorID]){
+				var authorObj = this.getMinMaxFromArray(this.authorSolution.plotValues[authorID]);
 				if (authorObj.min < obj.min) {
 					obj.min = authorObj.min;
 				}
 				if (authorObj.max > obj.max) {
 					obj.max = authorObj.max;
+				}
+				var step = (obj.max - obj.min)/10;
+				if(obj.min >= obj.min - step){
+					obj.min = obj.min - step;
+				}
+				if(obj.max <= obj.max + step){
+					obj.max = obj.max + step;
 				}
 			}
 
@@ -346,11 +367,11 @@ define([
 					this.authorStaticSolution = this.authorStaticSolution.plotVariables ? this.findSolution(false, authorStaticVar) : "";
 				}
 
-				array.forEach(this.activeSolution.plotVariables, function(id, index){
+				array.forEach(this.activeSolution.plotVariables, function(id){
 					var domNode = "chartStatic" + id ;
 					var xAxis = dom.byId("staticSelect").value;
 					var yAxis = this.labelString(id);
-					this.chartsStatic[id] = this.createChart(domNode, id, xAxis, yAxis, this.activeSolution, this.authorStaticSolution, index);
+					this.chartsStatic[id] = this.createChart(domNode, id, xAxis, yAxis, this.activeSolution, this.authorStaticSolution);
 					var l = registry.byId("legendStatic"+id);
 					if(registry.byId("legendStatic"+id))
 						l.destroyRecursive();
