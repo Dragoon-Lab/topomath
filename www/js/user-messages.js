@@ -24,7 +24,7 @@ define([], function(){
 				"The quantity is irrelevant to this problem.  Choose a different one.",
 				"This quantity is irrelevant for modeling the system.  Try again.",
 				"Irrelevant.  Try again."
-			],
+			]
 		},
 		feedback: {
 			start: "The value entered for the ",
