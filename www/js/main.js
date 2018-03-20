@@ -314,7 +314,7 @@ define([
 			aspect.after(controllerObject, "updateNodeView",
 				lang.hitch(dm, dm.updateNode), true);
 
-			aspect.before(dm, "deleteNode", function(nodeID){
+			aspect.after(dm, "deleteNode", function(nodeID){
 				if(!_model.isStudentMode()){
 					controllerObject.updateAssignedNode(nodeID, true);
 				}
