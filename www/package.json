@@ -46,6 +46,7 @@
     "webdriverio": "^4.10.2"
   },
   "dependencies": {
-    "fibers": "^2.0.0"
+    "fibers": "^2.0.0",
+    "gulp-scp2": "^0.2.0"
   }
 }
