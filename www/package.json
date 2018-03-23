@@ -32,17 +32,20 @@
     "gulp-jshint-cached": "^1.4.2",
     "gulp-mocha": "^4.3.1",
     "gulp-replace": "^0.5.4",
-    "gulp-shell": "^0.6.3",
+    "gulp-shell": "^0.6.5",
     "gulp-webdriver": "^2.0.3",
-    "gulp-zip": "^4.0.0",
+    "gulp-zip": "^4.1.0",
     "jshint-stylish": "^2.2.1",
-    "semver": "^5.3.0",
+    "semver": "^5.5.0",
     "serve-static": "^1.12.3",
     "wdio-mocha-framework": "^0.5.10",
     "wdio-screenshot": "^0.6.0",
     "wdio-selenium-standalone-service": "0.0.8",
     "wdio-spec-reporter": "^0.1.0",
     "webdriver": "0.0.1",
-    "webdriverio": "^4.8.0"
+    "webdriverio": "^4.10.2"
+  },
+  "dependencies": {
+    "gulp-scp2": "^0.2.0"
   }
 }

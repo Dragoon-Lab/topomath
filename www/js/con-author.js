@@ -23,13 +23,14 @@ define([
 	'dojo/aspect',
 	'dojo/dom',
 	'dojo/dom-class',
+	"dojo/dom-style",
 	'dijit/registry',
 	'dojo/NodeList-dom',
 	'./controller',
 	"./equation",
 	"./typechecker",
 	"dojo/domReady!"
-], function(array, declare, lang, style, keys, ready, on, memory, aspect, dom, domClass, registry, domList, controller, equation, typechecker){
+], function(array, declare, lang, style, keys, ready, on, memory, aspect, dom, domClass, domStyle, registry, domList, controller, equation, typechecker){
 
 	// Summary:
 	//			MVC for the node editor, for authors
@@ -323,6 +324,8 @@ define([
 				var studentNode = this._model.student.getNodeIDFor(this.currentID);
 				if(studentNode == null){
 					this.addStudentNode(this.currentID);
+				}else{
+					this.updateStudentNode(this.currentID, studentNode);
 				}
 			}else{
 				this._model.active = this._model.authored;
@@ -474,6 +477,7 @@ define([
 				return;
 			}
 			this.variableTypeControls(this.currentID, _variableType);
+			this.updateNodeEditorView(_variableType);
 			this.logSolutionStep({
                 property: "variableType",
                 value: _variableType
@@ -815,35 +819,48 @@ define([
 			console.log("model obj is",this._model);
 		},
 		*/
+		updateNodeEditorView: function(variableType){
+			if(variableType != "unknown"){
+				domStyle.set('valueInputboxContainer','display','block');
+			} else {
+				domStyle.set('valueInputboxContainer','display','none');
+				var w = registry.byId(this.controlMap.value)
+				w.set('value','');
+				w.set('status', '');
+				registry.byId(this.controlMap.value)
+				this._model.active.setValue(this.currentID, '');
+			}
+		},
 		getModelType: function(){
 			return (registry.byId(this.controlMap.setStudent).checked ? registry.byId(this.controlMap.modelType).value : "authored");
 		},
 
 		addStudentNode: function(nodeid){
-			this.removeStudentNode(nodeid);
-			var currentNode = this._model.authored.getNode(nodeid);
 			var newNodeID = this._model.student.addNode();
-
+			this.updateStudentNode(nodeid, newNodeID);
+		},
+		updateStudentNode: function(nodeid, studentNodeID){
+			var currentNode = this._model.authored.getNode(nodeid);
 			//copy correct values into student node
-			this._model.student.setType(newNodeID, currentNode.type);
-			this._model.student.setAuthoredID(newNodeID, currentNode.ID);
+			this._model.student.setType(studentNodeID, currentNode.type);
+			this._model.student.setAuthoredID(studentNodeID, currentNode.ID);
 			var description = this._model.authored.getDescription(currentNode.ID);
-			this._model.student.setDescription(newNodeID, description);
+			this._model.student.setDescription(studentNodeID, description);
 			if(typeof currentNode.value !== 'undefined'){
-				this._model.student.setValue(newNodeID, currentNode.value);
-				this._model.student.setStatus(newNodeID, "value", {"disabled": true, "status": "correct"});
+				this._model.student.setValue(studentNodeID, currentNode.value);
+				this._model.student.setStatus(studentNodeID, "value", {"disabled": true, "status": "correct"});
 			}
 			if(currentNode.units){
-				this._model.student.setUnits(newNodeID, currentNode.units);
-				this._model.student.setStatus(newNodeID, "units" , {"disabled":true,"status":"correct"});
+				this._model.student.setUnits(studentNodeID, currentNode.units);
+				this._model.student.setStatus(studentNodeID, "units" , {"disabled":true,"status":"correct"});
 			}
 			if(currentNode.variableType){
-				this._model.student.setVariableType(newNodeID, currentNode.variableType);
-				this._model.student.setStatus(newNodeID, "variableType" , {"disabled":true,"status":"correct"});
+				this._model.student.setVariableType(studentNodeID, currentNode.variableType);
+				this._model.student.setStatus(studentNodeID, "variableType" , {"disabled":true,"status":"correct"});
 			}
 			if(currentNode.variable){
-				this._model.student.setVariable(newNodeID, currentNode.variable);
-				this._model.student.setStatus(newNodeID, "variable" , {"disabled":true,"status":"correct"});
+				this._model.student.setVariable(studentNodeID, currentNode.variable);
+				this._model.student.setStatus(studentNodeID, "variable" , {"disabled":true,"status":"correct"});
 			}
 
 			if(currentNode.equation){
@@ -861,29 +878,27 @@ define([
 				convert = equation.convert(params);
 				if(convert.success){
 					var links = [];
-					this._model.student.setLinks(convert.connections, newNodeID);
-					this._model.student.setEquation(newNodeID, convert.equation);
-					this._model.student.setStatus(newNodeID, "equation" , {"disabled":true,"status":"correct"});
+					this._model.student.setLinks(convert.connections, studentNodeID);
+					this._model.student.setEquation(studentNodeID, convert.equation);
+					this._model.student.setStatus(studentNodeID, "equation" , {"disabled":true,"status":"correct"});
 				}else{
-					this._model.student.setInputs([], newNodeID);
-					this._model.student.setEquation(newNodeID, "");
+					this._model.student.setInputs([], studentNodeID);
+					this._model.student.setEquation(studentNodeID, "");
 					//this.errorStatus.push({"id": nodeid, "isExpressionCleared":true});
-					//this._model.student.setStatus(newNodeID, "equation" , {"disabled":false,"status":"incorrect"});
+					//this._model.student.setStatus(nodeid, "equation" , {"disabled":false,"status":"incorrect"});
 				}
 			}
 			array.forEach(currentNode.position, function(p, counter){
-				this._model.student.setPosition(newNodeID, counter, p);
+				this._model.student.setPosition(studentNodeID, counter, p);
 			}, this);
 
 			//Set default status to correct for all the fields
-			this._model.student.setStatus(newNodeID, "description" , {"disabled":true,"status":"correct"});
-			if(this._model.student.isComplete(newNodeID) && !this._model.student.getAssistanceScore(newNodeID))
-				this._model.student.incrementAssistanceScore(newNodeID);
-			else if(!this._model.student.isComplete(newNodeID) && this._model.student.getAssistanceScore(newNodeID))
+			this._model.student.setStatus(studentNodeID, "description" , {"disabled":true,"status":"correct"});
+			if(this._model.student.isComplete(studentNodeID) && !this._model.student.getAssistanceScore(studentNodeID))
+				this._model.student.incrementAssistanceScore(studentNodeID);
+			else if(!this._model.student.isComplete(studentNodeID) && this._model.student.getAssistanceScore(studentNodeID))
 				this._model.authored.setAttemptCount(currentNode.ID, "assistanceScore", 0);
-
 		},
-
 		removeStudentNode: function(nodeid){
 			// Track which expressions are cleared for given model on removing node
 			var studentNodeID = this._model.student.getNodeIDFor(nodeid);
@@ -905,6 +920,7 @@ define([
 					}
 				}
 				//Removes the current node from student Model
+				this._model.authored.setAttemptCount(nodeid, "assistanceScore", 0);
 				this._model.student.deleteNode(studentNodeID);
 			}
 		},
@@ -1086,6 +1102,23 @@ define([
 			
 			console.log("returning ", returnObj);
 			return returnObj;
+		},
+		updateAssignedNode: function(id, isDelete){
+			if(!this._model.isStudentMode()){
+				if(isDelete) {
+					this.removeStudentNode(id);
+				}else{
+					var givenNode = this._model.authored.getNode(id);
+					var studentNodes = this._model.student.getNodes();
+					var studentNode = false;
+					studentNode = studentNodes.find(function(node){
+						return node.authoredID === givenNode.ID;
+					}, this);
+					if(studentNode && studentNode.ID){
+						this.updateStudentNode(id, studentNode.ID);
+					}
+				}				
+			}
 		}
 	});
 });

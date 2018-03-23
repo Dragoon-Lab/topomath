@@ -22,7 +22,9 @@ define([
 	"./user-messages",
 	"./message-box",
 	"./state",
-], function(declare, array, lang, registry, Chart, Default, Lines, Grid, Legend, tooltipDialog, popup, on, dom, domStyle, domAttr, ComboBox, Memory, domClass, Dialog, calculations, errorMessages, messageBox, state){
+	"./typechecker",
+	"./sliders"
+], function(declare, array, lang, registry, Chart, Default, Lines, Grid, Legend, tooltipDialog, popup, on, dom, domStyle, domAttr, ComboBox, Memory, domClass, Dialog, calculations, errorMessages, messageBox, state, typechecker, sliders){
 	return declare(calculations, {
 		_colors: {
 			majorHLine: "#CACACA",
@@ -37,6 +39,7 @@ define([
 		state: null,
 		chartsStatic: {},
 		legendStatic: {},
+		_rendering: false,
 
 		constructor: function(model, state){
 			this._messages = errorMessages.get("graph");
@@ -55,7 +58,6 @@ define([
 			this.tabContainer = registry.byId("GraphTabContainer");
 			this.graphTab = registry.byId("GraphTab");
 			this.tableTab = registry.byId("TableTab");
-
 			domStyle.set(this.tabContainer.domNode, "display", "none");
 
 			this.activeSolution = this.findSolution(true);
@@ -77,11 +79,27 @@ define([
 
 				this.initializeGraphTab();
 
+				var slider = new sliders(this._model, this.activeSolution);
+				slider.init();
+				this.sliderVars = slider.vars;
+				array.forEach(slider.vars, function(ID){
+					this.applyTextValueToGraph(slider.textBoxIDs[ID], ID);
+				}, this);
+
 				this.createTable(this.activeSolution.plotVariables);
 
 				//checks if the given solution is a static solution
 				this.isStatic = !this.isStudentMode ? this.checkForStatic(this._model.active, this.activeSolution) :
 					this.checkForStatic(this._model.authored, this.authorSolution);
+
+				// save author solution for color by numbers
+				if(!this.isStudentMode){
+					try {
+						this.saveSolution();
+					} catch (e){
+						console.error("solution was not saved, error message ", e);
+					}
+				}
 
 				if(this.isStatic) {
 					//add static tab if solution is static
@@ -96,14 +114,17 @@ define([
 				}
 
 				this.showHideGraphsHandler();
+
 				domStyle.set(this.tabContainer.domNode, "display", "block");
+				this.tabContainer.watch("selectedChildWidget", lang.hitch(this, function(name, oval, nval){
+					this.toggleSliders(nval.id, this.sliderVars);
+				}));
 			} else {
 				var sol = this.activeSolution.status.error ? this.activeSolution : this.authorSolution;
 				this.showMessage(sol, "graphErrorMessage", "error", false);
 			}
 			this.resizeWindow();
-			var helpButton = registry.byId("graphHelpButton");
-
+			var helpButton = dom.byId("graphHelpButton");
 			on(helpButton, "click", lang.hitch(this, function () {
 				if(!this.helpDialog) {
 					var content = "<ul>";
@@ -119,6 +140,34 @@ define([
 				}
 				this.helpDialog.show();
 				domClass.remove("graphHelpButton", "glowNode");
+			}));
+		},
+
+		applyTextValueToGraph: function(textBoxID, paramID){
+			var textBox = dom.byId(textBoxID);
+			var textValue = {value: textBox.value};
+			on(textBox, "change",  lang.hitch(this, function(){
+				console.log("value of the input has been changed ", textBox.value);
+				var valueStatus = typechecker.checkLastInputValue(textBoxID, textValue);
+				if(valueStatus.errorType) return;
+				if(this._rendering){
+					console.log("previous rendering going on");
+					return;
+				}
+				if(this.activeSolution.params.indexOf(paramID) >= 0){
+					this.activeSolution.initValues[paramID] = parseFloat(textBox.value);
+				} else if (this.activeSolution.xvars.indexOf(paramID) >= 0){
+					this.activeSolution.initValues[paramID + this._model.active.getInitialNodeIDString()] = parseFloat(textBox.value);
+				} else {
+					throw new Error("Invalid ID", paramID);
+				}
+				//this.findSolution(true);
+				this.renderDialog();
+				this.fireLogEvent(["slider-change", paramID, textBox.value]);
+				if(paramID != this.staticVar)
+					this.renderStaticDialog(false, true);
+				this._rendering = false;
+				console.log("new plot completed");
 			}));
 		},
 
@@ -315,16 +364,19 @@ define([
 				}, this);
 				this.staticTab.set("content", "<div id='staticSelectContainer'></div>" + staticContent);
 				this.createComboBox(staticNodes);
-				var staticVar = this.checkStaticVar(true);
-				this.activeSolution = this.findSolution(true, staticVar);
+				this.staticVar = this.checkStaticVar(true);
+				this.activeSolution = this.findSolution(true, this.staticVar);
 				if(this.isStudentMode)
-					this.authorSolution = this.authorSolution.plotVariables ? this.findSolution(false, this._model.student.getAuthoredID(staticVar)) : "";
+					this.authorSolution = this.authorSolution.plotVariables ? this.findSolution(false, this._model.student.getAuthoredID(this.staticVar)) : "";
 
 				array.forEach(this.activeSolution.plotVariables, function(id, index){
 					var domNode = "chartStatic" + id ;
 					var xAxis = dom.byId("staticSelect").value;
 					var yAxis = this.labelString(id);
 					this.chartsStatic[id] = this.createChart(domNode, id, xAxis, yAxis, this.activeSolution, index);
+					var l = registry.byId("legendStatic"+id);
+					if(registry.byId("legendStatic"+id))
+						l.destroyRecursive();
 					this.legendStatic[id] = new Legend({chart: this.chartsStatic[id]}, "legendStatic" + id);
 				}, this);
 			} else {
@@ -418,7 +470,7 @@ define([
 				//set values in table according to their table-headers
 				j = 1;
 				array.forEach(solution.plotVariables, function(id){
-					tableString += "<td align='center' style='overflow:visible' id='row" + i + "col" + j + "'>" + solution.plotValues[id][i].toPrecision(3) + "</td>";
+					tableString += "<td align='center' style='overflow:visible' id='row" + i + "col" + j + "'>" + Number(solution.plotValues[id][i].toFixed(4)) + "</td>";
 					j++;
 				});
 				tableString += "</tr>";
@@ -495,6 +547,7 @@ define([
 			//console.log(comboBox);
 			//this.disableStaticSlider();
 			on(comboBox, "change", lang.hitch(this, function(){
+				this.toggleSliders(this.tabContainer.selectedChildWidget.id, this.sliderVars);
 				this.renderStaticDialog(true);// Call the function for updating both the author graph and the student graph
 				//this.disableStaticSlider();
 			}));
@@ -510,7 +563,7 @@ define([
 				var parameter = parameters[index];
 				var variable = choice ? this._model.active.getVariable(parameter)
 										: this._model.authored.getVariable(parameter);
-				if(variable == staticSelect.value){
+				if(staticSelect && variable == staticSelect.value){
 					result = parameter;
 					break;
 				}
@@ -520,13 +573,13 @@ define([
 		},
 
 		//changes the static graph when sliders or dropdown change
-		renderStaticDialog: function(updateAuthorGraph){
+		renderStaticDialog: function(updateAuthorGraph, isUpdate){
 			console.log("rendering static");
 			if(this.isStatic) {
-				var staticVar = this.checkStaticVar(true);
-				var activeSolution = this.findSolution(true, staticVar);
-				if(this.isStudentMode)
-					this.authorSolution = this.findSolution(false, this._model.student.getAuthoredID(staticVar));
+				this.staticVar = this.checkStaticVar(true);
+				var activeSolution = this.findSolution(true, this.staticVar, isUpdate);
+				if(this.isStudentMode && updateAuthorGraph)
+					this.authorSolution = this.findSolution(false, this._model.student.getAuthoredID(this.staticVar));
 
 				//update and render the charts
 				array.forEach(this.activeSolution.plotVariables, function(id, k){
@@ -551,7 +604,7 @@ define([
 		 */
 		renderDialog: function(){
 			console.log("rendering graph and table");
-			var activeSolution = this.findSolution(true);
+			var activeSolution = this.findSolution(true, null, true);
 			//update and render the charts
 			array.forEach(this.activeSolution.plotVariables, function(id, k){
 
@@ -565,7 +618,7 @@ define([
 				}
 			}, this);
 
-			this.createTable(this.active.plotVariables);
+			this.createTable(this.activeSolution.plotVariables);
 		},
 
 		labelString: function(id){
@@ -580,23 +633,19 @@ define([
 		},
 
 		//hides the slider for the variable that is selected
-		disableStaticSlider: function() {
-			var staticVar = this.checkStaticVar(true);
-			var id = staticVar.ID;
-			var parameters = this.checkForParameters(true);
-			array.forEach(parameters, function(parameter){
-				dom.byId("labelGraph_" + parameter.ID).style.display = "initial";
-				dom.byId("textGraph_" + parameter.ID).style.display = "initial";
-				dom.byId("sliderGraph_" + parameter.ID).style.display = "initial";
-				if(dom.byId("sliderUnits_" + parameter.ID)){ // Some nodes have no units.
-					dom.byId("sliderUnits_" + parameter.ID).style.display = "initial";
-				}
+		toggleSliders: function(widgetID, variables){
+			this.staticVar = this.checkStaticVar(true);
+			var id = this.staticVar;
+			if(!id) return;
+			array.forEach(variables, function(v){
+				domAttr.set("textGraph_" + v, 'disabled', false);
+				domAttr.set("textGraph_" + id, 'title', "");
+				domStyle.set("sliderGraph_" + v, 'visibility', "visible");
 			});
-			dom.byId("labelGraph_" +id).style.display = "none";
-			dom.byId("textGraph_" + id).style.display = "none";
-			dom.byId("sliderGraph_" + id).style.display = "none";
-			if(dom.byId("sliderUnits_" + id)){  // Some nodes have no units
-				dom.byId("sliderUnits_" + id).style.display = "none";
+			if(widgetID == "StaticTab"){
+				domAttr.set("textGraph_" + id, 'disabled', true);
+				domAttr.set("textGraph_" + id, 'title', "Value can not be changed for Graph vs. Parameters");
+				domStyle.set("sliderGraph_" + id, 'visibility', "hidden");
 			}
 		},
 
@@ -618,27 +667,34 @@ define([
 
 		render: function(_tab){
 			var selectedTab = this.tableTab;
-			if(_tab == "graph")
+			var type = "Table";
+			if(_tab == "graph"){
 				if(this.isStatic)
 					selectedTab = this.staticTab
 				else
 					selectedTab = this.graphTab;
+				type = "Graph";
+			}
 			if(!this.activeSolution.status.error &&
 				(!this.authorSolution || !this.authorSolution.status.error))
 				this.tabContainer.selectChild(selectedTab);
+			this.dialogWindow.set("title", this._model.getTaskName() + " -- " + type);
 			this.dialogWindow.show();
 			var graphHelpButton = dom.byId('graphHelpButton');
-			console.log("graph help shown",this._model.getGraphHelpShown());
-			if(!this._model.getGraphHelpShown()&&graphHelpButton ) {
-				domClass.add(graphHelpButton, "glowNode");
-				this._model.setGraphHelpShown(true);
-				this.state.put("isGraphHelpShown",true);
-			}
+			this.state.get("isGraphHelpShown").then(lang.hitch(this,function(reply){
+				console.log("reply for graph",reply);
+				if(!reply && graphHelpButton ) {
+					domClass.add(graphHelpButton, "glowNode");
+					this.state.put("isGraphHelpShown",true);
+				}
+			}));
+			
 		},
 
 		hide: function(){
 			//stub for logging graph closing event
 			dom.byId("graphErrorMessage").innerHTML = "";
+			dom.byId("SliderPane").innerHTML = "<div id= 'solutionMessage'></div>";
 			dom.byId("solutionMessage").innerHTML = "";
 			var problemComplete = this._model.matchesGivenSolutionAndCorrect();
 			var problemDoneHint;
@@ -665,6 +721,10 @@ define([
 					this.state.put("isDoneMessageShown",true);
 				}
 			}
+		},
+
+		fireLogEvent: function(args){
+			// stub to log slider event. event defined in event-logs.js using aspect.after
 		}
 	});
 });

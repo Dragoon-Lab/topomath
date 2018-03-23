@@ -6,7 +6,7 @@
 
 define([
 	"dojo/_base/array", "dojo/_base/declare", "dojo/_base/lang", "./equation", "dojo/dom", "./user-messages"
-], function(array, declare, lang, check, dom, userMessages){
+], function(array, declare, lang, equation, dom, userMessages){
 	// Summary: 
 	//			Processes student selections and returns instructions to the 
 	//			program
@@ -20,41 +20,117 @@ define([
 	var messages = userMessages.get("pm");
 	var hints = messages.hints;
 	var fm = messages.feedback;
+	var directiveObject = {
+		state: "",
+		message: "",
+		disable: false,
+		displayNext: true,
+		displayValue: false
+	};
+	// TODO : this has to go to user state
+	var hintCounter = {
+		"irrelevant": 0
+	};
 
 	var descriptionTable = {
 		// Summary: This table is used for determining the proper response to a student's 'description' answer (see 
 		//		'Pedagogical_Module.docx' in the documentation)
 		correct: {
 			feedback: function(obj, part){
-				followUpTasks(obj, part, /*state*/ "correct", /*message*/ "correct", /*disable*/ true);
+				directiveObject.state = directiveObject.message = "correct";
+				directiveObject.disable = true;
+				directiveObject.displayNext = true;
+				directiveObject.displayValue = false;
+				followUpTasks(obj, part, directiveObject);
 			},
 			nofeedback: function(obj, part){
-				followUpTasks(obj, part, /*state*/ "correct", /*message*/ "", /*disable*/ "");
+				directiveObject.state = directiveObject.message = "";
+				directiveObject.disable = directiveObject.displayValue = false;
+				directiveObject.displayNext = true;
+				followUpTasks(obj, part, directiveObject);
 			}
-
 		},
 		incorrect:{
 			feedback: function(obj, part){
-				followUpTasks(obj, part, /*state*/ "incorrect", /*message*/ "incorrect", /*disable*/ false);
+				directiveObject.state = directiveObject.message = "incorrect";
+				directiveObject.disable = directiveObject.displayNext = directiveObject.displayValue = false;
+				followUpTasks(obj, part, directiveObject);
 			},
 			nofeedback: function(obj, part){
-				followUpTasks(obj, part, /*state*/ "incorrect", /*message*/ "", /*disable*/ "");
+				directiveObject.state = directiveObject.message = "";
+				directiveObject.disable = directiveObject.displayValue = false;
+				directiveObject.displayNext = true;
+				followUpTasks(obj, part, directiveObject);
 			}
 		},
 		firstFailure: {
 			feedback: function(obj, part){
-				followUpTasks(obj, part, /*state*/ "incorrect", /*message*/ "incorrect", /*disable*/ false);
+				directiveObject.state = directiveObject.message = "incorrect";
+				directiveObject.disable = directiveObject.displayNext = directiveObject.displayValue = false;
+				followUpTasks(obj, part, directiveObject);
 			},
 			nofeedback: function(obj, part){
-				followUpTasks(obj, part, /*state*/ "incorrect", /*message*/ "", /*disable*/ "");
+				directiveObject.state = directiveObject.message = "";
+				directiveObject.disable = directiveObject.displayValue = false;
+				directiveObject.displayNext = true;
+				followUpTasks(obj, part, directiveObject);
 			}
 		},
 		secondFailure:{
 			feedback: function(obj, part){
-				followUpTasks(obj, part, /*state*/ "demo", /*message*/ "secondFailure", /*disable*/ true);
+				directiveObject.state = "demo";
+				directiveObject.message = "secondFailure";
+				directiveObject.disable = directiveObject.displayNext = directiveObject.displayValue = true;
+				followUpTasks(obj, part, directiveObject);
 			},
 			nofeedback: function(obj, part){
-				followUpTasks(obj, part, /*state*/ "incorrect", /*message*/ "", /*disable*/ "");
+				directiveObject.state = directiveObject.message = "";
+				directiveObject.disable = directiveObject.displayValue = false;
+				directiveObject.displayNext = true;
+				followUpTasks(obj, part, directiveObject);
+			}
+		},
+		partial:{
+			feedback: function(obj, part){
+				directiveObject.state = directiveObject.message = "partial";
+				directiveObject.disable = directiveObject.displayValue = false;
+				directiveObject.displayNext = "";
+				followUpTasks(obj, part, directiveObject);
+			},
+			nofeedback: function(obj, part){
+				directiveObject.state = directiveObject.message = "";
+				directiveObject.disable = directiveObject.displayValue = false;
+				directiveObject.displayNext = true;
+				followUpTasks(obj, part, directiveObject);
+			}
+		},
+		irrelevant: {
+			feedback: function(obj, part){
+				directiveObject.state = "incorrect";
+				directiveObject.message = "irrelevant";
+				directiveObject.disable = directiveObject.displayValue = false;
+				directiveObject.displayNext = false;
+				followUpTasks(obj, part, directiveObject);
+			},
+			nofeedback: function(obj, part){
+				directiveObject.state = directiveObject.message = "";
+				directiveObject.disable = directiveObject.displayValue = false;
+				directiveObject.displayNext = true;
+				followUpTasks(obj, part, directiveObject);
+			}
+		},
+		defaultAction: {
+			feedback: function(obj, part){
+				directiveObject.state = directiveObject.message = "";
+				directiveObject.disable = directiveObject.displayValue = false;
+				directiveObject.displayNext = true;
+				followUpTasks(obj, part, directiveObject);
+			},
+			nofeedback: function(obj, part){
+				directiveObject.state = directiveObject.message = "";
+				directiveObject.disable = directiveObject.displayValue = false;
+				directiveObject.displayNext = true;
+				followUpTasks(obj, part, directiveObject);
 			}
 		}
 	};
@@ -67,52 +143,114 @@ define([
 		//		All the actions remain same, only add additional field(s) in _getInterpretation and _enableNext
 		correct: {
 			feedback: function(obj, part){
-				followUpTasks(obj, part, /*state*/ "correct", /*message*/ "correct", /*disable*/ true);
+				directiveObject.state = directiveObject.message = "correct";
+				directiveObject.disable = true;
+				directiveObject.diplayValue = false;
+				directiveObject.displayNext = true;
+				followUpTasks(obj, part, directiveObject);
 			},
 			nofeedback: function(obj, part){
-				followUpTasks(obj, part, /*state*/ "correct", /*message*/ "", /*disable*/ "");
+				directiveObject.state = directiveObject.message = "";
+				directiveObject.disable = directiveObject.displayValue = false;
+				directiveObject.displayNext = true;
+				followUpTasks(obj, part, directiveObject);
 			}
 		},
 		incorrect:{
 			feedback: function(obj, part){
-				followUpTasks(obj, part, /*state*/ "incorrect", /*message*/ "incorrect", /*disable*/ false);
+				directiveObject.state = directiveObject.message = "incorrect";
+				directiveObject.disable = directiveObject.displayValue = false;
+				directiveObject.displayNext = false;
+				followUpTasks(obj, part, directiveObject);
 			},
 			nofeedback: function(obj, part){
-				followUpTasks(obj, part, /*state*/ "incorrect", /*message*/ "", /*disable*/ "");
+				directiveObject.state = directiveObject.message = "";
+				directiveObject.disable = directiveObject.displayValue = false;
+				directiveObject.displayNext = true;
+				followUpTasks(obj, part, directiveObject);
 			}
 		},
 		firstFailure: {
 			feedback: function(obj, part){
-				followUpTasks(obj, part, /*state*/ "incorrect", /*message*/ "incorrect", /*disable*/ false);
+				directiveObject.state = directiveObject.message = "incorrect";
+				directiveObject.disable = directiveObject.displayValue = false;
+				directiveObject.displayNext = false;
+				followUpTasks(obj, part, directiveObject);
 			},
 			nofeedback: function(obj, part){
-				followUpTasks(obj, part, /*state*/ "incorrect", /*message*/ "", /*disable*/ "");
+				directiveObject.state = directiveObject.message = "";
+				directiveObject.disable = directiveObject.displayValue = false;
+				directiveObject.displayNext = true;
+				followUpTasks(obj, part, directiveObject);
 			}
 		},
 		secondFailure:{
 			feedback: function(obj, part){
-				followUpTasks(obj, part, /*state*/ "demo", /*message*/ "secondFailure", /*disable*/ true);
+				directiveObject.state = "demo"
+				directiveObject.message = "secondFailure";
+				directiveObject.disable = directiveObject.displayNext = directiveObject.displayValue = true;
+				followUpTasks(obj, part, directiveObject);
 			},
 			nofeedback: function(obj, part){
-				followUpTasks(obj, part, /*state*/ "incorrect", /*message*/ "", /*disable*/ "");
+				directiveObject.state = directiveObject.message = "";
+				directiveObject.disable = directiveObject.displayValue = false;
+				directiveObject.displayNext = true;
+				followUpTasks(obj, part, directiveObject);
+			}
+		},
+		partial:{
+			feedback: function(obj, part){
+				directiveObject.state = directiveObject.message = "partial";
+				directiveObject.disable = directiveObject.displayValue = false;
+				directiveObject.displayNext = false;
+				followUpTasks(obj, part, directiveObject);
+			},
+			nofeedback: function(obj, part){
+				directiveObject.state = directiveObject.message = "";
+				directiveObject.disable = directiveObject.displayValue = false;
+				directiveObject.displayNext = true;
+				followUpTasks(obj, part, directiveObject);
+			}
+		},
+		defaultAction: {
+			feedback: function(obj, part){
+				directiveObject.state = directiveObject.message = "";
+				directiveObject.disable = directiveObject.displayValue = false;
+				directiveObject.displayNext = true;
+				followUpTasks(obj, part, directiveObject);
+			},
+			nofeedback: function(obj, part){
+				directiveObject.state = directiveObject.message = "";
+				directiveObject.disable = directiveObject.displayValue = false;
+				directiveObject.displayNext = true;
+				followUpTasks(obj, part, directiveObject);
 			}
 		}
-	};
-	
+	};	
 	var record = null;
 	/*
 	 * Add additional tables for activities that does not use node editor.
 	 */
-	function followUpTasks(obj , part, /*state*/ stateVal, /*message*/ messageVal, /*disable*/ disabledVal){
-		if(stateVal !== undefined && stateVal !== ""){
+	function followUpTasks(obj , part, actions){
+		var stateVal = actions.state;
+		if(stateVal !== undefined)
 			state(obj, part, stateVal);
-		}
-		if(messageVal !== undefined && messageVal !== ""){
+
+		var messageVal = actions.message;
+		if(messageVal !== undefined && messageVal !== "")
 			message(obj, part, messageVal);
-		}
-		if(disabledVal !== undefined && disabledVal !== ""){
+
+		var disabledVal = actions.disable;
+		if(disabledVal !== undefined)
 			disable(obj, part, disabledVal);
-		}
+
+		var displayNextVal = actions.displayNext;
+		if(displayNextVal !== undefined && displayNextVal !== "")
+			displayNext(obj, part, displayNextVal);
+
+		var displayValue = actions.displayValue;
+		if(displayValue !== undefined && displayValue !== "")
+			value(obj, part, displayValue);
 	}
 
 
@@ -121,7 +259,7 @@ define([
 	 *		statuses and messages to the return object array.
 	 *****/
 	function value(/*object*/ obj, /*string*/ nodePart, /*string*/ value){
-		obj.push({id: nodePart, attribute: "value", value: value});
+		obj.unshift({id: nodePart, attribute: "value", value: value});
 	}
 
 	function state(/*object*/ obj, /*string*/ nodePart, /*string*/ status, /*value*/ value){
@@ -135,6 +273,11 @@ define([
 		// TO DO : Add Hint messages
 		record.increment(status, 1);
 		obj.push({id: "message", attribute: "append", value: fm.start + nodePart + fm.connector + fm[status]});
+		if(status === "irrelevant"){
+			var length = hints[status].length;
+			var index = hintCounter[status] >= length ? length - 1 : hintCounter[status]++;
+			obj.push({id: "message", attribute: "append", value: hints[status][index]});
+		}
 	}
 
 	function disable(/*object*/ obj, /*string*/ nodePart, /*boolean*/ disable){
@@ -143,6 +286,10 @@ define([
 
 	function display(/*object*/ obj, /*string*/ nodeDiv, /*string*/ display){
 		obj.push({id: nodeDiv, attribute: "display", value: display});
+	}
+
+	function displayNext(obj, nodeDiv, display){
+		obj.push({id: nodeDiv, attribute: "displayNext", value: display});
 	}
 
 	/*****
@@ -167,6 +314,40 @@ define([
 		/*****
 		 * Private Functions
 		 *****/
+		_displayNext: function(obj, studentID, nodePart, answer){
+			var type = this.model.active.getType(studentID);
+			var authoredID = this.model.student.getAuthoredID(studentID);
+			switch(nodePart){
+				case "description":
+					if(type === "equation")
+						display(obj, "equation", "block");
+					else
+						display(obj, "variable", "block");
+					break;
+				case "variable":
+					display(obj, "variableType", "block");
+					break;
+				case "variableType":
+					display(obj, "value", "none");
+					if(authoredID && this.model.authored.getUnits(authoredID)){
+						display(obj, "units", "block");
+					}
+					answer = answer ? answer : this.model.student.getVariableType(studentID);
+					if(answer != "unknown"){
+						display(obj, "value", "block");
+					}
+					break;
+				case "value":
+				case "units":
+				case "equations":
+					break;
+				default:
+					display(obj, "description", "block");
+					break;
+			}
+
+			return obj;
+		},
 		_getInterpretation: function(/*string*/ studentID, /*string*/ nodePart, /*string | object*/ answer){
 			// Summary: Returns the interpretation of a given answer (correct, incorrect, etc.)
 			//
@@ -191,7 +372,7 @@ define([
 					interpretation = "correct";
 				}else{
 					if(model.authored.getAttemptCount(authoredID, nodePart) > 0 ){
-						interpretation = "secondFailure"
+						interpretation = "secondFailure";
 					}else{
 						interpretation = "firstFailure";
 					}
@@ -201,15 +382,15 @@ define([
 			switch(nodePart){
 				case "description":
 					this.descriptionCounter++;
-					if(this.model.active.getType(studentID) === this.model.authored.getType(authoredID)){
+					if(this.model.active.isNodeIrrelevant(studentID))
+						interpretation = "irrelevant";
+					else if(this.model.active.getType(studentID) === this.model.authored.getType(authoredID))
 						interpretation = "correct";
-					}else{
-						if(model.authored.getAttemptCount(authoredID, nodePart) > 0 ){
-							interpretation = "secondFailure"
-						}else{
+					else
+						if(model.authored.getAttemptCount(authoredID, nodePart) > 0 )
+							interpretation = "secondFailure";
+						else
 							interpretation = "firstFailure";
-						}
-					}
 					break;
 				case "variable":
 					interpret(this.model.authored.getVariable(authoredID));
@@ -225,7 +406,7 @@ define([
 					break;
 				case "equation":
 					// Solver
-					interpret(check.evaluate(this.model, studentID));
+					interpret(equation.check(answer));
 					break;
 			}
 			return interpretation;
@@ -266,12 +447,22 @@ define([
 			//
 			// Tags: Private
 			var actual_id = this.model.student.getAuthoredID(id);
+			var equationEvaluation = ""; var interpretation = "";
 			console.log("actual id is",actual_id);
-			var interpretation = this._getInterpretation(id, nodePart, answer);
+			var givenAnswer = answer; //keeping a copy of answer for logging purposes.
+			// evaluation returns correct incorrect and partial, which is something that
+			// we want to use. in case it is partial we need to change the color
+			// and the message. Interpretation only returns correct incorrect first and
+			// second incorrect. Thats why equation validation process is changed.
+			if(nodePart === "equation"){
+				equationEvaluation = equation.evaluate(this.model, id);
+				interpretation = this._getInterpretation(id, nodePart, equationEvaluation);
+			} else {
+				interpretation = this._getInterpretation(id, nodePart, answer);
+			}
 			var returnObj = [], currentStatus;
 			var givenID ;  // ID of the correct node, if it exists
 			var solutionGiven = false;
-			var givenAnswer = answer; //keeping a copy of answer for logging purposes.
 
 			var updateStatus = function(returnObj, model){
 				returnObj.forEach(function(i){
@@ -300,7 +491,7 @@ define([
 							}
 						}
 						else{
-							model.authored.setStatus(givenID, nodePart, "incorrect");
+							model.authored.setStatus(givenID, nodePart, i.value);
 						}
 					}
 				});
@@ -320,7 +511,8 @@ define([
 								updateStatus(returnObj, this.model);
 							this.descriptionCounter = 0;
 							this.model.active.setPosition(id, 0, this.model.authored.getPosition(givenID,0));
-						}
+						} else if(returnObj[i].value === "incorrect")
+							this.model.student.incrementAssistanceScore(id);
 					}
 				}else{
 					givenID = this.model.student.getAuthoredID(id);
@@ -338,32 +530,66 @@ define([
 							if (returnObj[i].value === "incorrect") {
 								this.model.student.incrementAssistanceScore(id);
 							}
+							if(returnObj[i].attribute === "status" &&
+								equationEvaluation === "partial" && interpretation !== "demo") {
+								returnObj[i].value = "partial";
+							}
+						}
+					}
+
+					if(equationEvaluation === "partial" && interpretation !== "secondFailure"){
+						var partialObj = [];
+						nodeEditorActionTable[equationEvaluation][this.feedbackMode](partialObj, nodePart, answer);
+						var variables = equation.getEquationVariables(this.model, id);
+						for(i = 0; i < partialObj.length; i++){
+							if(partialObj[i].id == "message"){
+								partialObj[i].value += variables.join(", ");
+								returnObj.push(partialObj[i]);
+								break;
+							}
 						}
 					}
 				}
 			}
 
-			if(interpretation === "lastFailure" || interpretation === "secondFailure"){
+			if(returnObj[0].value && (interpretation === "lastFailure"
+				|| interpretation === "secondFailure")){
 				answer = this.model.student.getCorrectAnswer(id, nodePart);
 				/*TO DO : Add Equation*/
-				if(nodePart === "equation"){
+				if(nodePart === "equation" && !answer.priorError){
 					var params = {
 						subModel: this.model.authored,
 						equation: answer
 					};
-					answer = check.convert(params).equation;
+					answer = equation.convert(params).equation;
 				}
 				if(answer == null){
 					if(nodePart === "description"){
 						returnObj.push({id: "message", attribute: "append", value: "You have already created all the necessary nodes."});
 					}else
 						console.error("Unexpected null from model.getCorrectAnswer().");
+				//}else if(returnObj[0].value){
 				}else{
-
-					returnObj.push({id: nodePart, attribute: "value", value: answer});
+					// index 0 is value uptill now and it is necessary that it should be
+					// returnObj.splice(0, 1);
+					// remove the original true value and replace it with actual answer
+					value(returnObj, nodePart, answer);
 					solutionGiven = true;
 				}
 			}
+			// remove value object from return object
+			if(solutionGiven) returnObj.splice(1, 1);
+			else returnObj.splice(0, 1);
+
+			var l = returnObj.length;
+			for(var i = 0; i < l; i++)
+				if(returnObj[i].attribute === "displayNext"){
+					break;
+				}
+			if(returnObj[i].value){
+				this._displayNext(returnObj, id, nodePart, answer);
+			}
+			returnObj.splice(i, 1);
 
 			var logObj = {};
 			var l = returnObj.length;
@@ -383,12 +609,12 @@ define([
 				var logCorrectAnswer = this.model.student.getCorrectAnswer(id, nodePart);
 
 				if(nodePart === "equation")
-					if(interpretation == "FirstFailure"){
+					if(interpretation == "firstFailure"){
 						var params = {
-						subModel: this.model.authored,
+							subModel: this.model.authored,
 							equation: logCorrectAnswer
 						};
-						logCorrectAnswer = check.convert(params).equation;
+						logCorrectAnswer = equation.convert(params).equation;
 					} else {
 						logCorrectAnswer = answer;
 					}
@@ -415,11 +641,38 @@ define([
 			* status was needed to ensure that the node status is saved in the model and it is logged correctly
 			* by explicitly setting it to empty will make sure we don't need to do any changes to applydirectives in controlled
 			* which I think should not be touched as what to tell the student should be a pedagogical module decision ~ Sachin
-			**/
 			if(this.feedbackMode === "nofeedback")
 				returnObj = [];
-
+			**/
 			console.log("directives from process answer ", returnObj)
+			return returnObj;
+		},
+
+		getNodeDisplayStatus: function(studentID, nodePart, status){
+			var returnObj = [];
+			if(!nodePart){
+				this._displayNext(returnObj, studentID);
+				return returnObj;
+			}
+
+			var obj = [];
+			if(status == "demo") status = "secondFailure";
+			else if(status == "") status = "defaultAction";
+			if(nodePart == "description"){
+				descriptionTable[status][this.feedbackMode](obj, nodePart);
+			} else {
+				nodeEditorActionTable[status][this.feedbackMode](obj, nodePart);
+			}
+
+			array.forEach(obj, function(d){
+				if(d.attribute == "displayNext" && d.value)
+					this._displayNext(returnObj, studentID, nodePart);
+				else if(d.attribute == "status")
+					returnObj.push(d);
+				else if(d.attribute == "disabled")
+					returnObj.push(d);
+			}, this);
+
 			return returnObj;
 		},
 
@@ -437,6 +690,6 @@ define([
 				this.logSolutionStep(logObj);
 				record.increment("problemCompleted", 1);
 			}
-		},
+		}
 	});
 });
