@@ -19,7 +19,7 @@ pipeline {
         stage('Test'){
             steps {
                 dir("www"){
-                    sh 'gulp test'
+                    sh 'npm run test'
                 }
             }
         }
