@@ -306,6 +306,9 @@ define([
 				var nodeStatusClass = this._model.getNodeStatus(node.ID);
 				nodeDOM.querySelector(".topomath-feedback").className += this._statusClassMap[nodeStatusClass];
 			}
+			this.makeDraggable(nodeDOM);
+			/*
+			Nodes are always draggable
 			if(this._dragNodes){
 				this.makeDraggable(nodeDOM);
 			}else{
@@ -316,7 +319,7 @@ define([
                     this.checkNodeClick(node);
                 }));
                 this.makeVertexSource(nodeDOM);
-			}
+			}*/
 			
 			// creating menu for each DOM element
 			pMenu = new Menu({

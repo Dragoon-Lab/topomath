@@ -102,13 +102,15 @@ define([
 					"questionMarkRoot": "Mark this node as Sought node",
 					"descriptionQuestionMark": "Select a description for node"
 		},
-		constructor: function(mode, model, config){
+		constructor: function(mode, model, config, fixPosition){
 			console.log("+++++++++ In generic controller constructor");
 			lang.mixin(this.controlMap, this.genericControlMap);
 
 			this._model = model;
 			this._mode = mode;
 			this._config = config;
+			if(this._model.isStudentMode())
+				this._fixPosition = fixPosition;
 
 			ready(this, this._initCrisisAlert);
 			// The Node Editor widget must be set up before modifications

@@ -44,7 +44,7 @@ define([
 		constructor: function (mode, model) {
 			console.log("++++++++ In student constructor");
 			lang.mixin(this.widgetMap, this.controlMap);
-			this._PM = new PM(model, this._config.get("feedbackMode"));
+			this._PM = new PM(model, this._config.get("feedbackMode"), this._fixPosition);
 			ready(this, "populateSelections");
 			// used in equation done handler to handle scenario of new nodes created
 			// from demo nodes
