@@ -370,7 +370,7 @@ define([
 				if(answer === correctAnswer || correctAnswer === true || answer_temp1 == correctAnswer_temp1){
 					interpretation = "correct";
 				}else{
-					if( model.authored.getAttemptCount(authoredID, nodePart) > 0 ){
+					if(model.authored.getAttemptCount(authoredID, nodePart) > 0 ){
 						interpretation = "secondFailure";
 					}else{
 						interpretation = "firstFailure";
