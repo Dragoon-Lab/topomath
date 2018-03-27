@@ -4,6 +4,7 @@
 */
 
 var testPath = require('./test-paths.js');
+var assert = require('../../www/node_modules/chai').assert;
 var MAX_DROPDOWN_IDS = 27 // The maximum number of dropdown IDs we'll support
 //var lastDropdownID = 0;  // Tracks the last dropdown ID.  Should be reset to 0 for every new session
 var popupDialogButtonCloseID = 0; // Tracks number of times the popup dialog dialog is opened.

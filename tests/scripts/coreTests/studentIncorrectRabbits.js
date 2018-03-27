@@ -1,12 +1,11 @@
 // Set up initial variables
 
-// import chai assertion library
-var assert = require('chai').assert;
+
 // Import Library
 var dtest = require('../library.js');
 var atest = require('../assertTestLib.js');
-// For Screenshots
-var fs = require("fs");
+var assert = dtest.assert;
+
 var INCORRECT_COLOR = "rgb(255, 128, 128)";
 var DEMO_COLOR = "yellow";
 var PERFECT_COLOR = 'lightgreen';

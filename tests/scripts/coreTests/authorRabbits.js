@@ -1,9 +1,9 @@
 // Set up initial variables
 
-// import chai assertion library
-var assert = require('chai').assert;
 // Import Library
 var dtest = require('../library.js');
+var assert = dtest.assert;
+
 // For Screenshots
 var fs = require("fs");
 
