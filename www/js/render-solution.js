@@ -84,7 +84,7 @@ define([
 					this.checkForStatic(this._model.authored, this.authorSolution);
 
 				// save author solution for color by numbers
-				if(!this.isStudentMode){
+				if(this.isAuthorMode){
 					try {
 						this.saveSolution();
 					} catch (e){
@@ -145,7 +145,7 @@ define([
 			}));
 		},
 
-		createChart: function(domNode, id, xAxis, yAxis, solution){
+		createChart: function(domNode, id, xAxis, yAxis, solution, authorSolution){
 			//Chart Node
 			var chart = new Chart(domNode);
 
@@ -166,6 +166,23 @@ define([
 			});
 
 			var obj = this.getMinMaxFromArray(solution.plotValues[id]);
+			var authorID = this._model.active.getAuthoredID(id);
+			if(this.isStudentMode && this.authorSolution && this.authorSolution.plotValues[authorID]){
+				var authorObj = this.getMinMaxFromArray(this.authorSolution.plotValues[authorID]);
+				if (authorObj.min < obj.min) {
+					obj.min = authorObj.min;
+				}
+				if (authorObj.max > obj.max) {
+					obj.max = authorObj.max;
+				}
+				var step = (obj.max - obj.min)/10;
+				if(obj.min >= obj.min - step){
+					obj.min = obj.min - step;
+				}
+				if(obj.max <= obj.max + step){
+					obj.max = obj.max + step;
+				}
+			}
 
 			chart.addAxis("y", {
 				vertical: true, // min: obj.min, max: obj.max,
@@ -176,7 +193,7 @@ define([
 				labelFunc: this.formatAxes
 			});
 
-			var series = this.formatChartSeries(solution, id);
+			var series = this.formatChartSeries(solution, authorSolution, id);
 			array.forEach(series, function(s){
 				chart.addSeries(
 					s.title, s.data, s.stroke
@@ -192,23 +209,27 @@ define([
 			return chart;
 		},
 
-		updateChart: function(id, solution, index, isStatic){
+		updateChart: function(id, solution, authorSolution, index, isStatic){
 
 			var charts = isStatic? this.chartsStatic : this.charts;
 
 			dom.byId("graphMessage" + id).innerHTML = "";
 			var obj = this.getMinMaxFromArray(solution.plotValues[id]);
-
-
-			if(this.isStudentMode) {
-				var authorID = this._model.active.getAuthoredID(id);
+			var authorID = this._model.active.getAuthoredID(id);
+			if(this.isStudentMode && this.authorSolution && this.authorSolution.plotValues[authorID]){
 				var authorObj = this.getMinMaxFromArray(this.authorSolution.plotValues[authorID]);
-
 				if (authorObj.min < obj.min) {
 					obj.min = authorObj.min;
 				}
 				if (authorObj.max > obj.max) {
 					obj.max = authorObj.max;
+				}
+				var step = (obj.max - obj.min)/10;
+				if(obj.min >= obj.min - step){
+					obj.min = obj.min - step;
+				}
+				if(obj.max <= obj.max + step){
+					obj.max = obj.max + step;
 				}
 			}
 
@@ -229,7 +250,7 @@ define([
 				});
 			}
 
-			var series = this.formatChartSeries(solution, id);
+			var series = this.formatChartSeries(solution, authorSolution, id, isStatic);
 
 			array.forEach(series, function(s){
 				charts[id].updateSeries(
@@ -240,7 +261,7 @@ define([
 			charts[id].render();
 		},
 
-		formatChartSeries: function(solution, id){
+		formatChartSeries: function(solution, authorSolution, id, isStatic){
 			var series = [];
 			var temp = {};
 			temp.title = "Your Solution";
@@ -255,7 +276,7 @@ define([
 			if(this.isStudentMode){
 				series.push({
 					title: "Author's solution",
-					data: this.formatSeriesForChart(this.authorSolution, this._model.student.getAuthoredID(id)),
+					data: this.formatSeriesForChart(authorSolution, this._model.student.getAuthoredID(id)),
 					stroke: {stroke: this._colors.authorGraph, width: 2}
 				});
 			}
@@ -303,7 +324,7 @@ define([
 				}
 				var xAxis = this.labelString();
 				var yAxis = this.labelString(id);
-				this.charts[id] = this.createChart(domNode, id, xAxis, yAxis, this.activeSolution);
+				this.charts[id] = this.createChart(domNode, id, xAxis, yAxis, this.activeSolution, this.authorSolution);
 				this.legends[id] = new Legend({chart: this.charts[id]}, "legend" + id);
 			}, this);
 		},
@@ -340,14 +361,17 @@ define([
 				this.createComboBox(staticNodes);
 				this.staticVar = this.checkStaticVar(true);
 				this.activeSolution = this.findSolution(true, this.staticVar);
-				if(this.isStudentMode)
-					this.authorSolution = this.authorSolution.plotVariables ? this.findSolution(false, this._model.student.getAuthoredID(this.staticVar)) : "";
+				if(this.isStudentMode){
+					var authorStaticVar =  this._model.student.getAuthoredID(this.staticVar);
+					this.authorStaticSolution = this.initializeSystem(this._model.authored, authorStaticVar);
+					this.authorStaticSolution = this.authorStaticSolution.plotVariables ? this.findSolution(false, authorStaticVar) : "";
+				}
 
-				array.forEach(this.activeSolution.plotVariables, function(id, index){
+				array.forEach(this.activeSolution.plotVariables, function(id){
 					var domNode = "chartStatic" + id ;
 					var xAxis = dom.byId("staticSelect").value;
 					var yAxis = this.labelString(id);
-					this.chartsStatic[id] = this.createChart(domNode, id, xAxis, yAxis, this.activeSolution, index);
+					this.chartsStatic[id] = this.createChart(domNode, id, xAxis, yAxis, this.activeSolution, this.authorStaticSolution);
 					var l = registry.byId("legendStatic"+id);
 					if(registry.byId("legendStatic"+id))
 						l.destroyRecursive();
@@ -566,7 +590,7 @@ define([
 					}
 					else {
 						dom.byId("staticGraphMessage" + id).innerHTML = "";
-						this.updateChart(id, activeSolution, k, true, updateAuthorGraph);
+						this.updateChart(id, activeSolution, this.authorStaticSolution, k, true, updateAuthorGraph);
 					}
 				}, this);
 			}
@@ -588,7 +612,7 @@ define([
 					dom.byId("graphMessage" + id).innerHTML = "The values you have chosen caused the graph to go infinite. (See table.)";
 				}
 				else {
-					this.updateChart(id, activeSolution, k, false);
+					this.updateChart(id, activeSolution, this.authorSolution, k, false);
 				}
 			}, this);
 
