@@ -1,25 +1,41 @@
 define([
 	"dojo/_base/declare",
+	"dojo/_base/array",
 	"dojox/charting/widget/Legend",
+	"dijit/registry",
+	"dojo/dom",
 	"./chart"
-], function(declare, Legend, chart){
+], function(declare, array, Legend, registry, dom, chart){
 	return declare(chart, {
-		constructor: function(model, solutions, isStatic){
+		constructor: function(model, solutions){
 			this._model = model;
 			this.activeSolution = solutions["active"];
 			this.authorSolution = solutions["author"];
 			this.authorStaticSolution = solutions["authorStatic"];
-			this.isStatic = isStatic;
+			this.graphTab = registry.byId("GraphTab");
 		},
 
-		init: funciton(createStatic){
+		init: function(staticVar){
 			var message = {};
-			if(createStatic)
-				message = this.initializeStaticTab()
+			if(staticVar)
+				message = this.initializeStaticTab(staticVar)
 			else
 				message = this.initializeGraphTab()
 
 			return message;
+		},
+
+		setSolution: function(type, solution){
+			switch(type){
+				case "active":
+					this.activeSolution = solution;
+					break;
+				case "author":
+					this.authorSolution = solution;
+					break;
+				case "authorStatic":
+					this.authorStaticSolution = solution;
+			}
 		},
 
 		initializeGraphTab: function(){
@@ -29,8 +45,9 @@ define([
 			for(var index in variables){
 				var id = variables[index];
 				//Create graph divs along with their error message
-				
+				graphContent += this.html(id);
 			}
+			console.log(graphContent);
 
 			this.graphTab.set("content", graphContent);
 
@@ -44,104 +61,92 @@ define([
 				}
 				var xAxis = this.labelString();
 				var yAxis = this.labelString(id);
-				this.charts[id] = this.createChart(domNode, id, xAxis, yAxis, this.activeSolution);
+				this.charts[id] = this.createChart(domNode, id, xAxis, yAxis, this.activeSolution, this.authorSolution);
 				this.legends[id] = new Legend({chart: this.charts[id]}, "legend" + id);
 			}, this);
 		},
 
-		initializeStaticTab: function(){
-			var staticContent = "";
-			this.staticVar = 0;
-			var staticNodes = this.activeSolution.params;
+		initializeStaticTab: function(staticVar){
+			this.staticVar = staticVar;
+			this.isStatic = true;
+			var staticContent = dom.byId("StaticTab").innerHTML;
 			this.staticTab = registry.byId("StaticTab");
-			dom.byId("StaticTab").innerHTML = "";
 			/**
 			* this function is called only when this.isStatic is true. Updating the condition to include parameters
 			* as well because after this there is a lot of logic which is used for showing static tab things.
 			* So basically the legends and all the she band will be shown only if parameters are there are as well.
 			**/
-			this.isStatic = this.isStatic && staticNodes.length > 0;
 
 			//TODO: Duplicate code in forEach
-			if(this.isStatic){
-				array.forEach(this.activeSolution.plotVariables, function(id){
-					
-				}, this);
-				this.staticTab.set("content", "<div id='staticSelectContainer'></div>" + staticContent);
-				this.createComboBox(staticNodes);
-				this.staticVar = this.checkStaticVar(true);
-				this.activeSolution = this.findSolution(true, this.staticVar);
-				if(this.isStudentMode)
-					this.authorSolution = this.authorSolution.plotVariables ? this.findSolution(false, this._model.student.getAuthoredID(this.staticVar)) : "";
+			array.forEach(this.activeSolution.plotVariables, function(id){
+				staticContent += this.html(id, "Static");
+			}, this);
+			this.staticTab.set("content", staticContent);
 
-				array.forEach(this.activeSolution.plotVariables, function(id, index){
-					var domNode = "chartStatic" + id ;
-					var xAxis = dom.byId("staticSelect").value;
-					var yAxis = this.labelString(id);
-					this.chartsStatic[id] = this.createChart(domNode, id, xAxis, yAxis, this.activeSolution, index);
-					var l = registry.byId("legendStatic"+id);
-					if(registry.byId("legendStatic"+id))
-						l.destroyRecursive();
-					this.legendStatic[id] = new Legend({chart: this.chartsStatic[id]}, "legendStatic" + id);
-				}, this);
-			} else {
-				if(!this.activeSolution.status)
-					this.activeSolution.status = {};
-				this.activeSolution.status.message = "no.parameters.static";
-
-				this.showMessage(this.activeSolution, "StaticTab", "warn", false);
-			}
+			// cant merge this array foreach because different variables are being 
+			// used in initializeTab and initializeStaticTab.
+			array.forEach(this.activeSolution.plotVariables, function(id){
+				var domNode = "chartStatic" + id ;
+				var xAxis = dom.byId("staticSelect").value;
+				var yAxis = this.labelString(id);
+				this.chartsStatic[id] = this.createChart(domNode, id, xAxis, yAxis, this.activeSolution, this.authorStaticSolution);
+				var l = registry.byId("legendStatic"+id);
+				if(registry.byId("legendStatic"+id))
+					l.destroyRecursive();
+				this.legendStatic[id] = new Legend({chart: this.chartsStatic[id]}, "legendStatic" + id);
+			}, this);
 		},
 
 		html: function(id, staticString){
-			var show = this._model.active.getType(id) == "dynamic";
+			staticString = staticString ? staticString : "";
+			var show = this._model.active.getVariableType(id) == "dynamic";
 			var checked = show ? " checked='checked'" : "";
-			content += "<div><input id='sel" + staticString + id + "' data-dojo-type='dijit/form/CheckBox' class='show_graphs' thisid='" +
+			var content = "<div><input id='sel" + staticString + id + "' data-dojo-type='dijit/form/CheckBox' class='show_graphs' thisid='" +
 								id + "'" + checked + "/>" + " Show " + this._model.active.getName(id) + "</div>";
 			var style = show ? "" : " style='display: none;'";
-			content += "<div	 id='chart" + staticString + id + "'" + style + "></div>";
+			content += "<div id='chart" + staticString + id + "'" + style + "></div>";
 
 			//graph error message
-			content += "<font color='red' id='"+ staticString.toLowerCase() +"GraphMessage" + id + "'></font>";
+			content += "<font color='red' id='graphMessage" + staticString + id + "'></font>";
 			// Since the legend div is replaced, we cannot hide the legend here.
 			content += "<div class='legend' id='legend" + staticString + id + "'></div>";
-
+			console.log(content);
 			return content;
 		},
 
 		//changes the static graph when sliders or dropdown change
-		renderStaticDialog: function(updateAuthorGraph, isUpdate){
+		renderStaticDialog: function(activeSolution, authorSolution, updateAuthorGraph){
 			console.log("rendering static");
-			if(this.isStatic) {
-				this.staticVar = this.checkStaticVar(true);
-				var activeSolution = this.findSolution(true, this.staticVar, isUpdate);
-				if(this.isStudentMode && updateAuthorGraph)
-					this.authorSolution = this.findSolution(false, this._model.student.getAuthoredID(this.staticVar));
+			
+			//this.staticVar = this.checkStaticVar(true);
+			//var activeSolution = this.findSolution(true, staticVar, isUpdate);
+			//if(this.isStudentMode && updateAuthorGraph)
+			//	this.authorSolution = this.findSolution(false, this._model.student.getAuthoredID(staticVar));
 
-				//update and render the charts
-				array.forEach(this.activeSolution.plotVariables, function(id, k){
-					var inf = this.checkForInfinity(activeSolution.plotValues[id]);
-					if(inf) {
-						dom.byId("staticGraphMessage" + id).innerHTML = "The values you have chosen caused the graph to go infinite.";
-						domStyle.set("chartStatic"+id, "display", "none");
-						domStyle.set("legendStatic" + id, "display", "none");
-						domAttr.remove("staticGraphMessage"+id, "style");
-					}
-					else {
-						dom.byId("staticGraphMessage" + id).innerHTML = "";
-						this.updateChart(id, activeSolution, k, true, updateAuthorGraph);
-					}
-				}, this);
-			}
+			//update and render the charts
+			array.forEach(this.activeSolution.plotVariables, function(id, k){
+				var inf = this.checkForInfinity(activeSolution.plotValues[id]);
+				if(inf) {
+					dom.byId("graphMessageStatic" + id).innerHTML = "The values you have chosen caused the graph to go infinite.";
+					domStyle.set("chartStatic"+id, "display", "none");
+					domStyle.set("legendStatic" + id, "display", "none");
+					domAttr.remove("graphMessageStatic"+id, "style");
+				}
+				else {
+					dom.byId("graphMessageStatic" + id).innerHTML = "";
+					this.updateChart(id, activeSolution, authorSolution, k, true, updateAuthorGraph);
+				}
+			}, this);
+
 		},
 
-				/*
+		/*
 		 * @brief: this function re-renders dialog  when slider event is fired and
 		 * new values for student nodes are calculated
 		 */
-		renderDialog: function(){
+		renderDialog: function(activeSolution){
 			console.log("rendering graph and table");
-			var activeSolution = this.findSolution(true, null, true);
+			//var activeSolution = this.findSolution(true, null, true);
 			//update and render the charts
 			array.forEach(this.activeSolution.plotVariables, function(id, k){
 
@@ -151,22 +156,11 @@ define([
 					dom.byId("graphMessage" + id).innerHTML = "The values you have chosen caused the graph to go infinite. (See table.)";
 				}
 				else {
-					this.updateChart(id, activeSolution, k, false);
+					this.updateChart(id, activeSolution, this.authorSolution, k, false);
 				}
 			}, this);
 
-			this.createTable(this.activeSolution.plotVariables);
-		},
-
-		labelString: function(id){
-			// Summary:  Return a string containing the quantity name and any units.
-			// id:  Node id for active model; null returns time label
-			var label = id?this._model.active.getName(id):"time";
-			var units = id?this._model.active.getUnits(id):this._model.getTimeUnits();
-			if(units){
-				label += " (" + units + ")";
-			}
-			return label;
+			//this.createTable(this.activeSolution.plotVariables);
 		}
 	});
 });
