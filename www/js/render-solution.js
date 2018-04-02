@@ -18,13 +18,13 @@ define([
 	"./sliders"
 ], function(declare, array, lang, registry, on, dom, domStyle, domAttr, ComboBox, Memory, calculations, errorMessages, messageBox, typechecker, Graph, Table, Sliders){
 	return declare(calculations, {
-		_colors: {
+	/*	_colors: {
 			majorHLine: "#CACACA",
 			majorVLine: "#CACACA",
 			incorrectGraph: "red",
 			correctGraph: "#5cd65c",
 			authorGraph: "black"
-		},
+		},*/
 		_rendering: false,
 
 		constructor: function(model){
@@ -60,23 +60,29 @@ define([
 					this.showMessage(this.activeSolution, "solutionMessage", type, true);
 				}
 
-				var g = new Graph()
+				var solutions = {};
+				solutions["active"] = this.activeSolution;
+				solutions["author"] = this.isStudentMode ? this.authorSolution : null;
+				solutions["authorStatic"] = null;
+				this.graph = new Graph(this._model, solutions);
+				this.graph.init();
 
-				var slider = new sliders(this._model, this.activeSolution);
+				var slider = new Sliders(this._model, this.activeSolution);
 				slider.init();
 				this.sliderVars = slider.vars;
 				array.forEach(slider.vars, function(ID){
 					this.applyTextValueToGraph(slider.textBoxIDs[ID], ID);
 				}, this);
 
-				this.createTable(this.activeSolution.plotVariables);
+				this.table = new Table(this._model, this.activeSolution);
+				this.table.init();
 
 				//checks if the given solution is a static solution
 				this.isStatic = !this.isStudentMode ? this.checkForStatic(this._model.active, this.activeSolution) :
 					this.checkForStatic(this._model.authored, this.authorSolution);
 
 				// save author solution for color by numbers
-				if(!this.isStudentMode){
+				if(this.isAuthorMode){
 					try {
 						this.saveSolution();
 					} catch (e){
@@ -86,7 +92,25 @@ define([
 
 				if(this.isStatic) {
 					//add static tab if solution is static
-					this.initializeStaticTab();
+					if(this.activeSolution.params.length > 0){
+						dom.byId("StaticTab").innerHTML = "<div id='staticSelectContainer'></div>";
+						this.createComboBox(this.activeSolution.params);
+						this.staticVar = this.checkStaticVar(true);
+						this.activeSolution = this.findSolution(true, this.staticVar);
+						if(this.isStudentMode){
+							var authorStaticVar =  this._model.student.getAuthoredID(this.staticVar);
+							this.authorStaticSolution = this.initializeSystem(this._model.authored, authorStaticVar);
+							this.authorStaticSolution = this.authorStaticSolution.plotVariables ? this.findSolution(false, authorStaticVar) : "";
+							this.graph.setSolution("authorStatic", this.authorStaticSolution);
+						}
+						this.graph.setSolution("active", this.activeSolution);
+						this.graph.init(this.staticVar);
+					} else {
+						if(!this.activeSolution.status)
+							this.activeSolution.status = {};
+						this.activeSolution.status.message = "no.parameters.static";
+						this.showMessage(this.activeSolution, "StaticTab", "warn", false);
+					}
 				}else{
 					//Hide static Tab
 					this.staticTab = registry.byId("StaticTab");
@@ -128,10 +152,14 @@ define([
 					throw new Error("Invalid ID", paramID);
 				}
 				//this.findSolution(true);
-				this.renderDialog();
+				var activeSolution = this.findSolution(true, null, true);
+				this.graph.renderDialog(activeSolution);
 				this.fireLogEvent(["slider-change", paramID, textBox.value]);
-				if(paramID != this.staticVar)
-					this.renderStaticDialog(false, true);
+				if(this.isStatic && paramID != this.staticVar){
+					activeSolution = this.findSolution(true, this.staticVar, true);
+					this.graph.renderStaticDialog(activeSolution, authorStaticSolution, false);
+				}
+				this.table.init(activeSolution);
 				this._rendering = false;
 				console.log("new plot completed");
 			}));
@@ -162,28 +190,6 @@ define([
 			box.show();
 		},
 
-		/*
-		 * @brief: function to set contents of table according to node values
-		 */
-		setTableContent: function(){
-			var tableString="";
-			var errorMessage = null;
-			var solution = this.activeSolution;
-			var j = 0;
-			for(var i=0; i<solution.time.length; i++){
-				tableString += "<tr style='overflow:visible'>";
-				tableString += "<td align='center' style='overflow:visible' id ='row" + i + "col0'>" + solution.time[i].toPrecision(4) + "</td>";
-				//set values in table according to their table-headers
-				j = 1;
-				array.forEach(solution.plotVariables, function(id){
-					tableString += "<td align='center' style='overflow:visible' id='row" + i + "col" + j + "'>" + Number(solution.plotValues[id][i].toFixed(4)) + "</td>";
-					j++;
-				});
-				tableString += "</tr>";
-			}
-			return tableString;
-		},
-
 		showHideGraphsHandler: function(){
 			//// The following loop makes sure legends of function node graphs are not visible initially
 			//// until the user requests, we use the display : none property
@@ -211,20 +217,20 @@ define([
 					var staticCheck = registry.byId("selStatic" + id);
 					staticCheck.on("Change", function (checked) {
 						if (checked) {
-							if (dom.byId("staticGraphMessage" + id).innerHTML == "") {
+							if (dom.byId("graphMessageStatic" + id).innerHTML == "") {
 								domAttr.remove("chartStatic" + id, "style");
 								domAttr.remove("legendStatic" + id, "style");
 							} else {
 								var obj = {display: "none"};
 								domAttr.set("chartStatic" + id, "style", obj);
 								domAttr.set("legendStatic" + id, "style", obj);
-								domAttr.remove("staticGraphMessage" + id, "style");
+								domAttr.remove("graphMessageStatic" + id, "style");
 							}
 						} else {
 							var obj = {display: "none"};
 							domAttr.set("chartStatic" + id, "style", obj);
 							domAttr.set("legendStatic" + id, "style", obj);
-							domAttr.set("staticGraphMessage" + id, "style", obj);
+							domAttr.set("graphMessageStatic" + id, "style", obj);
 						}
 					});
 				}
