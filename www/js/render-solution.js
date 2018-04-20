@@ -235,6 +235,12 @@ define([
 					});
 				}
 			}, this);
+			if(this.activeSolution.xvars.length == 0){
+				id = this.activeSolution.func[0];
+				registry.byId("sel"+id).set('checked', true);
+				if(this.isStatic)
+					registry.byId("selStatic"+id).set('checked', true);
+			}
 		},
 
 		//creates the dropdown menu for the static window

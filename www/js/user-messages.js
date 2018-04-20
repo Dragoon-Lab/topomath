@@ -9,7 +9,8 @@ define([], function(){
 		"decomposition": ["There is something wrong with the equations. Solver says that the system of equation is not solvable. Kindly, try rearranging the variables, like if you are dividing some variables, then try to multiply them on the other side of the equation, and try again."],
 		"variable.mismatch": ["Number of equations do not match the number of unknown quantities. Please check the system that you have created."],
 		"no.parameters.static": ["There are no parameters to graph the unknowns against."],
-		"default": ["Something went wrong. Please ask your instructor to help you. Thanks!"]
+		"default": ["Something went wrong. Please ask your instructor to help you. Thanks!"],
+		"no.variables": ["System of equations has no unknown or dynamic variables to solve."]
 	};
 
 	var pedagogical = {
