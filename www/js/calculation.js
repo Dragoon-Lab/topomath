@@ -18,11 +18,13 @@ define([
 			this._model = model;
 			this.activeSolution = this.initializeSystem(this._model.active);
 			this._config = configurations.getInstance();
-			// previously student mode was for every student mode and it is used for two purposes
+			// previously student mode was for every mode other than authors that is coached and so on
+			// and it was used for three purposes
 			// show student feedback, and render author graph
 			// and save author solution
 			this.isStudentMode = !this._config.get("showActiveGraphOnly");
-			// since now it can not be used for the second pupose
+			// since now it can not be used for saving author solution
+			// a new variable is used for that purpose
 			this.isAuthorMode = !this._model.isStudentMode();
 			if(this.isStudentMode)
 				this.authorSolution = this.initializeSystem(this._model.authored);

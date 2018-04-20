@@ -43,6 +43,11 @@ define([
 			this.tableTab = registry.byId("TableTab");
 			domStyle.set(this.tabContainer.domNode, "display", "none");
 
+			// cleaning the div
+			dom.byId("graphErrorMessage").innerHTML = "";
+			dom.byId("SliderPane").innerHTML = "<div id= 'solutionMessage'></div>";
+			dom.byId("solutionMessage").innerHTML = "";
+
 			this.activeSolution = this.findSolution(true);
 			if(this.isStudentMode && !this.activeSolution.status.error){
 				this.authorSolution = this.findSolution(false);
@@ -61,12 +66,14 @@ define([
 				}
 
 				var solutions = {};
+				// setup graph solution
 				solutions["active"] = this.activeSolution;
 				solutions["author"] = this.isStudentMode ? this.authorSolution : null;
 				solutions["authorStatic"] = null;
 				this.graph = new Graph(this._model, solutions);
 				this.graph.init();
 
+				// setup sliders
 				var slider = new Sliders(this._model, this.activeSolution);
 				slider.init();
 				this.sliderVars = slider.vars;
@@ -74,6 +81,7 @@ define([
 					this.applyTextValueToGraph(slider.textBoxIDs[ID], ID);
 				}, this);
 
+				// setup table solution
 				this.table = new Table(this._model, this.activeSolution);
 				this.table.init();
 
@@ -90,6 +98,8 @@ define([
 					}
 				}
 
+				// setup static solution
+				this.staticTab = registry.byId("StaticTab");
 				if(this.isStatic) {
 					//add static tab if solution is static
 					if(this.activeSolution.params.length > 0){
@@ -113,7 +123,6 @@ define([
 					}
 				}else{
 					//Hide static Tab
-					this.staticTab = registry.byId("StaticTab");
 					if(this.staticTab) {
 						this.tabContainer.removeChild(this.staticTab);
 						registry.byId("StaticTab").destroyRecursive();
@@ -157,7 +166,7 @@ define([
 				this.fireLogEvent(["slider-change", paramID, textBox.value]);
 				if(this.isStatic && paramID != this.staticVar){
 					activeSolution = this.findSolution(true, this.staticVar, true);
-					this.graph.renderStaticDialog(activeSolution, authorStaticSolution, false);
+					this.graph.renderStaticDialog(activeSolution, this.authorStaticSolution, false);
 				}
 				this.table.init(activeSolution);
 				this._rendering = false;
@@ -195,51 +204,56 @@ define([
 			//// until the user requests, we use the display : none property
 			//// The legend div is replaced in the dom, so we must hide it dynamically.
 			array.forEach(this.activeSolution.plotVariables, function(id){
+				var domIDs = this.graph.domIDs(id);
+				var staticDomIDs = this.graph.staticDomIDs(id);
 				if(this._model.active.getVariableType(id) == "unknown"){
 					var leg_style = { display: "none" };
-					domAttr.set("legend" + id, "style", leg_style);
+					domAttr.set(domIDs["legend"], "style", leg_style);
 					if(this.isStatic) {
-						domAttr.set("legendStatic" + id, "style", leg_style);
+						domAttr.set(staticDomIDs["legend"], "style", leg_style);
 					}
 				}
-				var check = registry.byId("sel" + id);
+				var check = registry.byId(domIDs["select"]);
 				check.on("Change", function(checked){
 					if(checked) {
-						domAttr.remove("chart" + id, "style");
-						domAttr.remove("legend" + id, "style");
+						domAttr.remove(domIDs["chart"], "style");
+						domAttr.remove(domIDs["legend"], "style");
 					}else{
 						var obj = { display: "none" };
-						domAttr.set("chart" + id, "style", obj);
-						domAttr.set("legend" + id, "style", obj);
+						domAttr.set(domIDs["chart"], "style", obj);
+						domAttr.set(domIDs["legend"], "style", obj);
 					}
 				});
 				if(this.isStatic) {
 					var staticCheck = registry.byId("selStatic" + id);
 					staticCheck.on("Change", function (checked) {
 						if (checked) {
-							if (dom.byId("graphMessageStatic" + id).innerHTML == "") {
-								domAttr.remove("chartStatic" + id, "style");
-								domAttr.remove("legendStatic" + id, "style");
+							if (dom.byId(staticDomIDs["message"]).innerHTML == "") {
+								domAttr.remove(staticDomIDs["chart"], "style");
+								domAttr.remove(staticDomIDs["legend"], "style");
 							} else {
 								var obj = {display: "none"};
-								domAttr.set("chartStatic" + id, "style", obj);
-								domAttr.set("legendStatic" + id, "style", obj);
-								domAttr.remove("graphMessageStatic" + id, "style");
+								domAttr.set(staticDomIDs["chart"], "style", obj);
+								domAttr.set(staticDomIDs["legend"], "style", obj);
+								domAttr.remove(staticDomIDs["message"], "style");
 							}
 						} else {
 							var obj = {display: "none"};
-							domAttr.set("chartStatic" + id, "style", obj);
-							domAttr.set("legendStatic" + id, "style", obj);
-							domAttr.set("graphMessageStatic" + id, "style", obj);
+							domAttr.set(staticDomIDs["chart"], "style", obj);
+							domAttr.set(staticDomIDs["legend"], "style", obj);
+							domAttr.set(staticDomIDs["message"], "style", obj);
 						}
 					});
 				}
 			}, this);
 			if(this.activeSolution.xvars.length == 0){
 				id = this.activeSolution.func[0];
-				registry.byId("sel"+id).set('checked', true);
-				if(this.isStatic)
-					registry.byId("selStatic"+id).set('checked', true);
+				domIDs = this.graph.domIDs(id);
+				registry.byId(domIDs["select"]).set('checked', true);
+				if(this.isStatic){
+					staticDomIDs = this.graph.staticDomIDs(id);
+					registry.byId(staticDomIDs["select"]).set('checked', true);
+				}
 			}
 		},
 
@@ -336,15 +350,14 @@ define([
 			if(!this.activeSolution.status.error &&
 				(!this.authorSolution || !this.authorSolution.status.error))
 				this.tabContainer.selectChild(selectedTab);
-			this.dialogWindow.set("title", this._model.getTaskName() + " -- " + type);
+			var name = this._model.getTaskName() ? this._model.getTaskName() + "--" : "";
+			this.dialogWindow.set("title", name + type);
+
 			this.dialogWindow.show();
 		},
 
 		hide: function(){
 			//stub for logging graph closing event
-			dom.byId("graphErrorMessage").innerHTML = "";
-			dom.byId("SliderPane").innerHTML = "<div id= 'solutionMessage'></div>";
-			dom.byId("solutionMessage").innerHTML = "";
 		},
 
 		fireLogEvent: function(args){
