@@ -67,7 +67,7 @@ define([
 
 	var _session = session(query);
 	var _model = new model(_session, query.m, query.p);
-	var _config = new tutorConfiguration(query.m);
+	var _config = tutorConfiguration.getInstance(query.m);
 	var _feedback = _config.get("feedbackMode");
 	console.log(_model);
 
