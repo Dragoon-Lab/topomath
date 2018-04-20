@@ -314,12 +314,15 @@ define([
 			aspect.after(controllerObject, "updateNodeView",
 				lang.hitch(dm, dm.updateNode), true);
 
-			aspect.after(dm, "deleteNode", function(nodeID){
+			aspect.before(dm, "deleteNode", function(nodeID){
 				if(!_model.isStudentMode()){
 					controllerObject.updateAssignedNode(nodeID, true);
 				}
-				_session.saveModel(_model.model);
 				controllerObject.computeNodeCount();
+			}, true);
+
+			aspect.after(dm, "deleteNode", function(nodeID){
+				_session.saveModel(_model.model);
 			}, true);
 
 			aspect.after(controllerObject, "computeNodeCount", function(id){
