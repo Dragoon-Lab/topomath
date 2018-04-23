@@ -4,8 +4,9 @@ define([
 	"dojox/charting/widget/Legend",
 	"dijit/registry",
 	"dojo/dom",
+	"./tutor-configuration",
 	"./chart"
-], function(declare, array, Legend, registry, dom, chart){
+], function(declare, array, Legend, registry, dom, configurations, chart){
 	return declare(chart, {
 		domIDs: function(nodeID){
 			return {
@@ -31,6 +32,10 @@ define([
 			this.authorSolution = solutions["author"];
 			this.authorStaticSolution = solutions["authorStatic"];
 			this.graphTab = registry.byId("GraphTab");
+			this._config = configurations.getInstance();
+			this.isStudentMode = !this._config.get("showActiveGraphOnly");
+			this.isAuthorMode = !this._model.isStudentMode();
+			this.isCorrect = this._model.matchesGivenSolutionAndCorrect() ? true : false; 
 		},
 
 		init: function(staticVar){

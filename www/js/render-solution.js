@@ -29,7 +29,6 @@ define([
 
 		constructor: function(model){
 			this._messages = errorMessages.get("graph");
-			this.isCorrect = false;
 			if(this.activeSolution){
 				this.initialize();
 			}
@@ -60,7 +59,6 @@ define([
 					if(this._model.matchesGivenSolutionAndCorrect()){
 						this.activeSolution.status.message = "correct";
 						type = "success";
-						this.isCorrect = true;
 					}
 					this.showMessage(this.activeSolution, "solutionMessage", type, true);
 				}
