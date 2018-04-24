@@ -104,13 +104,6 @@ define([
 					} else {
 						value = this.defaultString;
 					}
-					if(model.getVariableType(nodeID) == "parameter"){
-						var v = model.getValue(nodeID);
-						v = typeof(v) === "number" ? v : "";
-						if(v){
-							value += " = " + v;
-						}
-					}
 					break;
 				case "value":
 					var initial = model.getValue(nodeID);

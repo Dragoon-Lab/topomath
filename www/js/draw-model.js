@@ -155,10 +155,12 @@ define([
 			// update variable name
 			if(cachedNode.variable != node.variable){
 				if(node.type && node.type == "quantity"){
-					dom.byId(domIDTags['nodeDOM']).innerHTML = graphObjects.getDomUIStrings(this._model, "variable", node.ID);
-					// updating the corresponsing initial node
+					// Updating the variable name and corresponsing initial node
 					if(node.value && node.variableType == "dynamic" && dom.byId(domIDTags['initialNode'])){
+						dom.byId(domIDTags['nodeDOM']).innerHTML = graphObjects.getDomUIStrings(this._model, "variable", node.ID);
 						dom.byId(domIDTags['initialNode']).innerHTML = graphObjects.getDomUIStrings(this._model, "value", node.ID);
+					}else{
+						dom.byId(domIDTags['nodeDOM']).innerHTML = graphObjects.getDomUIStrings(this._model, "value", node.ID);
 					}
 				}
 				// updating the corresponding equations
