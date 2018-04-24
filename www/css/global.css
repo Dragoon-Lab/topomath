@@ -205,6 +205,7 @@ input[type=radio]{
   width: 90%;
   text-align: center;
   margin-bottom:8px;
+  opacity: 0.85;
 }
 
 .error-message-close{

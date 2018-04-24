@@ -56,15 +56,15 @@ var profile = (function(){
 			},
 			"topomath/index": {
 				include: [ 
-					"topomath/con-author",
+					"topomath/main",
+					"topomath/menu",
 					"topomath/controller",
+					"topomath/con-author",
 					"topomath/draw-model",
 					"topomath/equation",
 					"topomath/event-logs",
 					"topomath/graph-objects",
 					"topomath/logging",
-					"topomath/main" ,
-					"topomath/menu",
 					"topomath/model",
 					"topomath/popup-dialog",
 					"topomath/session",

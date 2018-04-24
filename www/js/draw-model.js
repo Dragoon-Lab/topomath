@@ -105,7 +105,7 @@ define([
 		addNode: function(/* object */ node){
 			type = node.type || "circle";
 			if(!node.ID){
-				conole.error("addNode called with a node without ID");
+				console.error("addNode called with a node without ID");
 				return;
 			}
 			if(dom.byId(this.domIDs(node.ID).parentDOM)){
