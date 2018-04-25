@@ -67,7 +67,7 @@ define([
 
 	var _session = session(query);
 	var _model = new model(_session, query.m, query.p);
-	var _config = new tutorConfiguration(query.m);
+	var _config = tutorConfiguration.getInstance(query.m);
 	var _feedback = _config.get("feedbackMode");
 	console.log(_model);
 
@@ -350,7 +350,6 @@ define([
 				_session.saveModel(_model.model)
 				if( problemComplete.errorNotes === "" ){
 					// if in preview mode , Logging is not required:
-					// TODO : Add Logging
 					if(window.history.length === 1)
 						window.close();
 					else
@@ -363,6 +362,12 @@ define([
 					buttons.push(exitButton);
 					errDialog.showDialog(title, problemComplete.errorNotes, buttons, /*optional argument*/"Don't Exit");
 				}
+				var solved = _model.matchesGivenSolution();
+				_logger.logUserEvent({
+					type: "menu-choice",
+					name: "done-node",
+					problemComplete: solved
+				});
 			});
 			//all the things we need to do once node is closed
 			aspect.after(registry.byId('nodeEditor'), "hide", function(){
@@ -382,33 +387,17 @@ define([
 	});
 	
 	var exitTopomath = function(){
-		console.log("Force Exit Topomath");	
-		if(/*controllerObject.logging.doLogging*/ false){
-			/*
-				controllerObject.logging.log('close-problem', {
-					type: "",
-					name: "",
-				}).then(function(){
-					
-				});
-				console.log("Close Called!! ");
-				if(window.history.length === 1)
-					window.close();
-				else
-					window.history.back();
-			*/
-		}else{
-			console.log("Close Called!! ");
-			if(window.history.length === 1)
-				window.close();
-			else
-				window.history.back();
-		}
+		console.log("Force Exit Topomath");
+		// TODO: Add Logging
+		console.log("Close Called!! ");
+		if(window.history.length === 1)
+			window.close();
+		else
+			window.history.back();
 	};
 	var sol;
 	var initSolution = function(_type){
 		sol = new Solution(_model);
-		// TODO: add proble completeness and logging
 		sol.render(_type);
 	};
 });
