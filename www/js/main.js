@@ -387,28 +387,13 @@ define([
 	});
 	
 	var exitTopomath = function(){
-		console.log("Force Exit Topomath");	
-		if(/*controllerObject.logging.doLogging*/ false){
-			/*
-				controllerObject.logging.log('close-problem', {
-					type: "",
-					name: "",
-				}).then(function(){
-					
-				});
-				console.log("Close Called!! ");
-				if(window.history.length === 1)
-					window.close();
-				else
-					window.history.back();
-			*/
-		}else{
-			console.log("Close Called!! ");
-			if(window.history.length === 1)
-				window.close();
-			else
-				window.history.back();
-		}
+		console.log("Force Exit Topomath");
+		// TODO: Add Logging
+		console.log("Close Called!! ");
+		if(window.history.length === 1)
+			window.close();
+		else
+			window.history.back();
 	};
 	var sol;
 	var initSolution = function(_type){
