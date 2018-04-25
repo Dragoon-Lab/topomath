@@ -201,7 +201,8 @@ define([
 
 		hideCloseNodeEditor: function(/* originical hide method*/ doHide){
 			doHide.apply(this._nodeEditor);
-			this.closeEditor.call(this);
+			// added this.currentID because it is needed for logging node details
+			this.closeEditor.call(this, this.currentID);
 			this._removeTooltips.call(this);
 		},
 
@@ -594,7 +595,6 @@ define([
 			messageWidget.set('content', '');
 
 			this.disableHandlers = true;
-			//TODO: check logging
 		},
 
 		// Stub to be overwritten by student or author mode-specific method.
