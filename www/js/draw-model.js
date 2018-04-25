@@ -10,9 +10,10 @@ define([
 	"dijit/Menu",
 	"dijit/MenuItem",
 	"dojo/on",
+	"./tutor-configuration",
 	"./graph-objects",
 	"jsPlumb/jsPlumb"
-], function(declare, array, lang, attr, domConstruct, domClass, dom, domStyle, Menu, MenuItem, on, graphObjects){
+], function(declare, array, lang, attr, domConstruct, domClass, dom, domStyle, Menu, MenuItem, on, configurations, graphObjects){
 	return declare(null, {
 		_instance: null,
 		_model: null,
@@ -65,6 +66,7 @@ define([
 				Container:"statemachine-demo"
 			});
 			this._instance = instance;
+			this._config = configurations.getInstance();
 			return instance;
 		},
 
@@ -290,7 +292,7 @@ define([
 			}
 
 			if(!this._model.isComplete(node.ID)){
-				if((this._model.isStudentMode() && this._feedbackMode == "nofeedback") || !this._model.isStudentMode()){
+				if(this._config.get("allowEdit")){
 					classTag += " editor";
 				}
 				classTag += " incomplete";

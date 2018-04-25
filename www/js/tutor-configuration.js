@@ -4,6 +4,7 @@ define([], function(){
 			feedbackMode: "feedback",
 			userType: "student",
 			showActiveGraphOnly: false,
+			allowEdit: false,
 			feedbacks: [
 				"correct",
 				"firstFailure",
@@ -21,6 +22,7 @@ define([], function(){
 			feedbackMode: "author",
 			userType: "author",
 			showActiveGraphOnly: true,
+			allowEdit: true,
 			buttons: [
 				"createQuantityNodeButton",
 				"createEquationNodeButton",
