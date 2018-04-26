@@ -171,9 +171,10 @@ define([
 				this._model.active.setValue(this.currentID, newValue);
 				//console.log("ini value action");
 				this.applyDirectives(this._PM.processAnswer(this.currentID, 'value', newValue));
-			} else if (valueFlag.errorType) {
-				// Log Error
 			}
+			//else if (valueFlag.errorType) {
+				// Log Error
+			//}
 		},
 		handleVariableType: function(e){
 			// Summary : Sets variableType to Unknown/Parameter/Dynamic
@@ -329,6 +330,7 @@ define([
 			if(_variableType){
 				registry.byId(_variableType+"Type").set('checked', 'checked');
 			}
+
 			this.applyDirectives(nodeDirectives);
 			style.set(this.genericDivMap.inputs, "display", "block");
 		},
