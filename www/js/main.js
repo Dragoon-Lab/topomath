@@ -317,8 +317,11 @@ define([
 				if(!_model.isStudentMode()){
 					controllerObject.updateAssignedNode(nodeID, true);
 				}
-				_session.saveModel(_model.model);
 				controllerObject.computeNodeCount();
+			}, true);
+
+			aspect.after(dm, "deleteNode", function(nodeID){
+				_session.saveModel(_model.model);
 			}, true);
 
 			aspect.after(controllerObject, "computeNodeCount", function(id){

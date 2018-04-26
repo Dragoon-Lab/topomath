@@ -344,6 +344,10 @@ input[type=radio]{
   border-color: orange;
 }
 
+.incomplete .topomath-feedback.fa-check, .incomplete .topomath-feedback.fa-minus{
+  color: white;
+}
+
 table.solution, table.solution th, table.solution td {
 	border: 1px solid black;
 	border-spacing: 0px;
