@@ -858,7 +858,7 @@ define([
 				if(_variableType == "dynamic"){
 					var givenID = this._model.active.getAuthoredID(id);
 					var position = this._model.authored.getPosition(givenID, 1);
-					if(position)
+					if(this._config.get("feedbackMode") !== "nofeedback" && position && this._fixPosition)
 						this._model.active.setPosition(id, 1, position);
 					// Update position to avoid overlap of node
 					if(this._model.active.getPosition(id).length === 1)

@@ -406,7 +406,10 @@ define([
 			if(authoredID){
 				this._model.active.setAuthoredID(id, authoredID);
 				this._model.active.setDescription(id, this._model.authored.getDescription(authoredID));
-				this._model.active.setPosition(id, 0, this._model.authored.getPosition(authoredID,0));
+				// Fixing position is a part of feedback to student
+				if(this._config.get("feedbackMode") !== "nofeedback" && this._fixPosition){
+					this._model.active.setPosition(id, 0, this._model.authored.getPosition(authoredID,0));
+				}
 			}
 			return authoredID;
 		},
