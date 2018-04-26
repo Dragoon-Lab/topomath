@@ -292,7 +292,7 @@ define([
 			}
 
 			if(!this._model.isComplete(node.ID)){
-				if(this._config.get("allowEdit")){
+				if(this._config.get("dottedNodesUI")){
 					classTag += " editor";
 				}
 				classTag += " incomplete";
