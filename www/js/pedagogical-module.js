@@ -297,11 +297,12 @@ define([
 	 *
 	 *****/	
 	return declare(null, {
-		constructor: function(/*string*/ model, /*model.js object*/ feedbackMode){
+		constructor: function(/*string*/ model, /*model.js object*/ feedbackMode, /*string*/ fixPosition){
 			this.model = model;
 			this.showCorrectAnswer = true;
 			this.enableNextFromAuthor = true;
 			this.feedbackMode = feedbackMode;
+			this.fixPosition = fixPosition;
 		},
 		matchingID: null,
 		logging: null,
@@ -500,7 +501,8 @@ define([
 							else
 								updateStatus(returnObj, this.model);
 							this.descriptionCounter = 0;
-							this.model.active.setPosition(id, 0, this.model.authored.getPosition(givenID,0));
+							if(this.feedbackMode !== "nofeedback" && this.fixPosition)
+								this.model.active.setPosition(id, 0, this.model.authored.getPosition(givenID,0));
 						} else if(returnObj[i].value === "incorrect")
 							this.model.student.incrementAssistanceScore(id);
 					}
@@ -511,7 +513,7 @@ define([
 					updateStatus(returnObj, this.model);
 					currentStatus = this.model.authored.getStatus(givenID, nodePart); //get current status set in given model
 					if (currentStatus === "correct" || currentStatus === "demo") {
-						if(nodePart === "variableType"){
+						if(nodePart === "variableType" && this.feedbackMode !== "nofeedback" && this.fixPosition){
 							this.model.active.setPosition(id, 1, this.model.authored.getPosition(givenID, 1));
 						}
 					}else{
