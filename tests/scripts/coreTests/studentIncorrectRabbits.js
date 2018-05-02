@@ -15,8 +15,7 @@ describe("Test Student mode - First and Second Failure", function() {
     dtest.openProblem(browser,[
         ["mode","STUDENT"],
         ["section","login.html"],
-        ["folder","regression-test"],
-        ["problem","Author-Rabbits2"]]);
+        ["problem","rabbits"]]);
 
     describe("Create and Verify Nodes", function(){
         it("Should create Parameter Quantity Node - Birth Probability Incorrectly in Attempt 1", function(){

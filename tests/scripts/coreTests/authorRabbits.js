@@ -9,11 +9,12 @@ var fs = require("fs");
 
 describe("Test author mode", function() {
 
+    var problem = "Author-Rabbits"+new Date();
     dtest.openProblem(browser,[
         ["mode","AUTHOR"],
         ["section","login.html"],
         ["folder","regression-test"],
-        ["problem","Author-Rabbits2"]]);
+        ["problem",problem]]);
 
     describe("Testing check on empty problem", function(){
         it("Should detect that the problem is empty", function(){
@@ -133,7 +134,7 @@ describe("Test author mode", function() {
             assert(nodeBorderColor === quantityDescriptionColor, "Node Color not matching");
             dtest.nodeEditorDone(browser);
         })
-        
+
         it("Should verify prior node", function(){
             nodeName = "id3_initial";
             dtest.openEditorforNode(browser,nodeName, true);

@@ -12,8 +12,7 @@ describe("Test Student mode", function() {
     dtest.openProblem(browser,[
         ["mode","STUDENT"],
         ["section","login.html"],
-        ["folder","regression-test"],
-        ["problem","Author-Rabbits2"]]);
+        ["problem","rabbits"]]);
 
     describe("Creating Nodes", function(){
         it("Should create Dynamic Quantity Node - Rabbits", function(){
@@ -42,8 +41,7 @@ describe("Test Student mode", function() {
             dtest.setQuantityNodeUnits(browser,"1/year");
             dtest.nodeEditorDone(browser);
         })
-        
-        
+
         it("Should open a node and edit - Rabbits", function () {
             dtest.openEditorforNode(browser, "Rabbits", false);
             //dtest.setNodeDescription(browser, "Speed (rate) of a winner");
@@ -59,6 +57,7 @@ describe("Test Student mode", function() {
             dtest.checkExpression(browser);
             dtest.nodeEditorDone(browser);
         })
+
         it("Should create Equation Node - Births = Rabbits * Birth Probability", function(){
             dtest.menuCreateNode(browser, 'equation');
             dtest.setNodeDescription(browser, 'The number of births is the number of rabbits times the birth probability');
@@ -68,6 +67,7 @@ describe("Test Student mode", function() {
             dtest.checkExpression(browser);
             dtest.nodeEditorDone(browser);
         })
+        
     })
 
     describe("Verify Nodes", function(){
@@ -95,7 +95,7 @@ describe("Test Student mode", function() {
             atest.checkNodeFieldValues("The number of births is the number of rabbits times the birth probability", "", "", "", "Births = Rabbits * Birth Probability");
             dtest.nodeEditorDone(browser);
         })
-        it("Should have correct equation values and colors - Births = Rabbits * Birth Probability", function () {
+        it("Should have correct equation values and colors - Rabbits = prior(Rabbits) + Births", function () {
             dtest.openEditorforNode(browser, "id9", true);
             atest.checkNodeFieldColors(PERFECT_COLOR, "", "", "", PERFECT_COLOR);
             atest.checkNodeFieldValues("The number of rabbits increase by the number of births each year", "", "", "", "Rabbits = prior(Rabbits) + Births");

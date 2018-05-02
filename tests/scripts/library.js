@@ -4,7 +4,7 @@
 */
 
 var testPath = require('./test-paths.js');
-var assert = require('../../www/node_modules/chai').assert;
+exports.assert = require('../../www/node_modules/chai').assert;
 var MAX_DROPDOWN_IDS = 27 // The maximum number of dropdown IDs we'll support
 //var lastDropdownID = 0;  // Tracks the last dropdown ID.  Should be reset to 0 for every new session
 var popupDialogButtonCloseID = 0; // Tracks number of times the popup dialog dialog is opened.
@@ -455,10 +455,8 @@ exports.getNodeFieldValue = function (client, field) {
 exports.getGraphMessage = function (client) {
     var returnObj = client.execute(function (){
         var ele = dojo.byId('solution');
-        debugger;
         return ele.children[1].children.SliderPane.children.solutionMessage.children[0].children[0].children[0].innerText;
     });
-    console.log(returnObj);
     return returnObj.value;
 }
 
