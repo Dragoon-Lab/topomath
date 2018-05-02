@@ -186,7 +186,6 @@ define([
 			 Previously, just set domNode.bgcolor but this approach didn't work
 			 for text boxes.   */
 			// console.log(">>>>>>>>>>>>> setting color ", this.domNode.id, " to ", value);
-
 			if(this.domNode && this.domNode.firstChild &&
 				(this.domNode.firstChild.name == "variableType" ||
 				this.domNode.name == "variableType")){
