@@ -28,6 +28,23 @@ used in Dragoon and integration strategy was replicated from there.
 * Node descriptions -- The values shows are nothing but node descriptions here and the
 border or background color. The implementation was done using simple js tricks.
 
+### Feedback to Node ###
+
+Feedback to student's is provided in Immediate Feedback mode only. No feedback mode serves as editor.
+
+Feedback is shown on the node's border. Following are the rules followed - 
+* The body of the nodes now always have solid borders.
+Icons in the top left of the node will be empty for green and yellow nodes, if the node is incomplete (new behavior in bold, unchanged behaviors in normal font):
+* If no description selected yet: grey node with no icon and text "Click here!"
+Else if node has an incorrect value: icon has red border with "x" (same as now)
+Else if user took too many tries on one field (got a yellow), but node is still incomplete: yellow border with no icon in center
+Else if user took too many tries on one field (got a yellow), but node is complete: yellow border with minus sign
+Else if node is complete and all answers input so far are correct on the first try: green border with gold star
+Else if node is complete and all everything is correct but not on the first try: green border with green check
+Else if node is incomplete but all answers input so far are correct: green border with no icon in center
+
+Feedback is also given as Position of nodes. 'fp' parameter controls the position of node in student mode.
+
 ### Files ###
 
 The major files used for the complete debvelopment are:
