@@ -371,7 +371,7 @@
 			</div>
 			<div id= "graphHelpButton" data-dojo-type='dijit/form/Button' type='button' style="margin:10px; float: right;">Help</div>
 			<div id="SliderPane" data-dojo-type='dijit/layout/ContentPane' style='overflow:visible; min-height: 95%; width:40%; float:right; background-color: #FFFFFF'>
-				<div id= 'solutionMessage' style="position: relative; top: 20px; clear: both;"></div>
+				<div id= 'solutionMessage' style="position: relative; clear: both;"></div>
 			</div>
 		</div>
 		<!-- popup Dialog to show unfinished tasks before closing -->
@@ -381,6 +381,26 @@
 				<div id="popupDialogContent">
 				</div>
 				<div id="popupDialogButtons">
+				</div>
+			</div>
+		</div>
+		<div data-dojo-type="dijit/Dialog" data-dojo-id="helpDialog" id ="helpDialog" title="Graph Help" style="width: 400px;">
+			<div class="dijitDialogPaneContentArea">
+				<div id="helpDialogContent">
+				<ul>
+				<li>
+				Welcome to the graph window.
+				</li>
+				<li>
+				The results of the model’s computations are shown here as graphs and tables.
+				</li>
+				The model consists of inter-related numerical quantities.
+				<li>
+				The left side of the window displays the quantities in the model calculated by the equations in the accumulator and function nodes.
+				</li>
+				<li>
+				The “static” tab appears when all graphed quantities are constant with time.  In this tab, you can select a quantity from the list and Dragoon will use it as the horizontal axis for every graph.
+				</li>
 				</div>
 			</div>
 		</div>

@@ -62,7 +62,7 @@ define([
 			this.isBrowserCompatible = true;
 			var checkBrowser = this.browser.name;
 			var checkVersion = this.browser.version;
-			if((checkBrowser ==="Chrome" && checkVersion<62	) ||
+			if((checkBrowser ==="Chrome" && checkVersion<62 ) ||
 				(checkBrowser==="Safari" && checkVersion<8) ||
 				(checkBrowser==="msie" && checkVersion<11) ||
 				(checkBrowser==="Firefox") || (checkBrowser==="Opera")){
@@ -121,6 +121,9 @@ define([
 					console.error("This should be sent to apache logs");
 				}));
 			}
+		},
+		checkBrowserCompatibility: function(state){
+			return state;
 		},
 		getTime: function(){
 			// Returns time in seconds since start of session.

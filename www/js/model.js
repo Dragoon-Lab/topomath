@@ -28,8 +28,6 @@ define([
 			 _unknownQuantityNodeCount : 0,
 			 _equationNodeCount: 0,
 			isCompleteFlag: false,
-			_isGraphHelpShown: false,
-			_isDoneMessageShown: false,
 			_updateNextXYPosition: function(){
 				var pos = {
 					x: this.x,
@@ -49,10 +47,6 @@ define([
 					};
 				}
 			},
-			setDoneMessageShown : function(_isDoneMessageShown) {
-				this._isDoneMessageShown = _isDoneMessageShown;
-			},
-
 			updatePosition: function(){
 				if((this.x + this.nodeWidth) < (document.documentElement.clientWidth - this.nodeWidth))
 					this.x += this.nodeWidth;

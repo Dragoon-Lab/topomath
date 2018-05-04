@@ -20,15 +20,16 @@ define([
 	'./draw-model',
 	'./con-author',
 	'./con-student',
-	'./state',
 	'./logging',
 	'./popup-dialog',
 	'./event-logs',
 	'./render-solution',
 	'./user-messages',
-	'./message-box'
+	'./message-box',
+	'./state',
+	'./state-events'
 ], function(array, geometry, dom, style, aspect, ready, registry, event, ioQuery, on, Button, domConstruct, lang,
-			menu, tutorConfiguration, session, model, equation, drawModel, controlAuthor, controlStudent, State, logging, popupDialog, eventLogs, Solution, messages, messageBox){
+			menu, tutorConfiguration, session, model, equation, drawModel, controlAuthor, controlStudent, logging, popupDialog, eventLogs, Solution, messages, messageBox, State, stateEvents){
 
 	console.log("load main.js");
 	// Get session parameters
@@ -68,31 +69,13 @@ define([
 
 	var _session = session(query);
 	var _model = new model(_session, query.m, query.p);
-	var _config = new tutorConfiguration(query.m);
+	var _config = tutorConfiguration.getInstance(query.m);
 	var _feedback = _config.get("feedbackMode");
-	console.log(_model);
 
+	console.log(_model);
+	var state = new State(query.u, query.s, "action");
 	_session.getModel(query).then(function(solutionGraph){
-		//TODO :Check versions for topomath compatibility
-		if(!_session.isBrowserCompatible){
-			var errorMessage = new messageBox("errorMessageBox", "warn","You are using "+ _session.browser.name+
-				" version "+_session.browser.version +
-				"." + _messages["incompatible"]);
-			// adding close callback to update the state for browser message
-			var compatibiltyState = new State(query.u, query.s, "action");
-			compatibiltyState.get("browserCompatibility").then(function(res) {
-				var v;
-				if(window.location.hostname == "topomath.asu.edu"){
-					v = getVersion();
-				}else{
-					v = Date.now();
-				}
-				if(!(res && res == "ack_" + v)){
-					errorMessage.show();
-					compatibiltyState.put("browserCompatibility", "ack_" + v);
-				}
-			});
-		}
+		_session.checkBrowserCompatibility(state);
 		if(solutionGraph){
 			try{
 				_model.loadModel(solutionGraph);
@@ -159,11 +142,11 @@ define([
 			* this has to be the first to be instantiated
 			* so that session object is not to be passed again and again. ~ Sachin
 			*/
+			var state = new State(query.u, query.s, "action");
 			var _dragNodes = query.fp == "on"? false : true;
 			console.log("Fixing position of nodes ", _dragNodes);
 			var _logger = logging.getInstance(_session);
 			_logger.log('open-problem', {problem: _logger._session.params.p});
-			var state = new State(query.u, query.s, "action");
 			/**
 			* equation does not have a constructor because
 			* we dont want to run it on it's own. So there is an explicit call
@@ -183,7 +166,6 @@ define([
 			var controllerObject = (!_model.isStudentMode()) ?
 				new controlAuthor(query.m, _model, _config) :
 				new controlStudent(query.m, _model, _config);
-
 			controllerObject.setState(state);
 
 			aspect.after(dm, "addNode", function(){
@@ -282,7 +264,6 @@ define([
 			if(_model.isStudentMode()){
 				//controllerObject.setAssessment(session); //set up assessment for student.
 			}
-			
 			//next step is to add action to add quantity
 			menu.add("createQuantityNodeButton", function(e){
 				event.stop(e);
@@ -343,8 +324,11 @@ define([
 				if(!_model.isStudentMode()){
 					controllerObject.updateAssignedNode(nodeID, true);
 				}
-				_session.saveModel(_model.model);
 				controllerObject.computeNodeCount();
+			}, true);
+
+			aspect.after(dm, "deleteNode", function(nodeID){
+				_session.saveModel(_model.model);
 			}, true);
 
 			aspect.after(controllerObject, "computeNodeCount", function(id){
@@ -376,6 +360,10 @@ define([
 				dm.deleteNode(controllerObject.currentID);
 			});
 
+			on(registry.byId("graphHelpButton"), "click", function(){
+				registry.byId("helpDialog").show();
+			}, this);
+
 			menu.add("doneButton", function (e) {
 				event.stop(e);
 				// This should return an object kind of structure and
@@ -383,7 +371,6 @@ define([
 				_session.saveModel(_model.model)
 				if( problemComplete.errorNotes === "" ){
 					// if in preview mode , Logging is not required:
-					// TODO : Add Logging
 					if(window.history.length === 1)
 						window.close();
 					else
@@ -396,6 +383,12 @@ define([
 					buttons.push(exitButton);
 					errDialog.showDialog(title, problemComplete.errorNotes, buttons, /*optional argument*/"Don't Exit");
 				}
+				var solved = _model.matchesGivenSolution();
+				_logger.logUserEvent({
+					type: "menu-choice",
+					name: "done-node",
+					problemComplete: solved
+				});
 			});
 			//all the things we need to do once node is closed
 			aspect.after(registry.byId('nodeEditor'), "hide", function(){
@@ -415,33 +408,19 @@ define([
 	});
 	
 	var exitTopomath = function(){
-		console.log("Force Exit Topomath");	
-		if(/*controllerObject.logging.doLogging*/ false){
-			/*
-				controllerObject.logging.log('close-problem', {
-					type: "",
-					name: "",
-				}).then(function(){
-					
-				});
-				console.log("Close Called!! ");
-				if(window.history.length === 1)
-					window.close();
-				else
-					window.history.back();
-			*/
-		}else{
-			console.log("Close Called!! ");
-			if(window.history.length === 1)
-				window.close();
-			else
-				window.history.back();
-		}
+		console.log("Force Exit Topomath");
+		// TODO: Add Logging
+		console.log("Close Called!! ");
+		if(window.history.length === 1)
+			window.close();
+		else
+			window.history.back();
 	};
 	var sol;
 	var initSolution = function(_type, state){
 		sol = new Solution(_model, state);
 		// TODO: add proble completeness and logging
+
 		sol.render(_type);
 	};
 });

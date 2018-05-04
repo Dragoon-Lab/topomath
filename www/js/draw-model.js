@@ -10,9 +10,10 @@ define([
 	"dijit/Menu",
 	"dijit/MenuItem",
 	"dojo/on",
+	"./tutor-configuration",
 	"./graph-objects",
 	"jsPlumb/jsPlumb"
-], function(declare, array, lang, attr, domConstruct, domClass, dom, domStyle, Menu, MenuItem, on, graphObjects){
+], function(declare, array, lang, attr, domConstruct, domClass, dom, domStyle, Menu, MenuItem, on, configurations, graphObjects){
 	return declare(null, {
 		_instance: null,
 		_model: null,
@@ -65,6 +66,7 @@ define([
 				Container:"statemachine-demo"
 			});
 			this._instance = instance;
+			this._config = configurations.getInstance();
 			return instance;
 		},
 
@@ -105,7 +107,7 @@ define([
 		addNode: function(/* object */ node){
 			type = node.type || "circle";
 			if(!node.ID){
-				conole.error("addNode called with a node without ID");
+				console.error("addNode called with a node without ID");
 				return;
 			}
 			if(dom.byId(this.domIDs(node.ID).parentDOM)){
@@ -155,10 +157,12 @@ define([
 			// update variable name
 			if(cachedNode.variable != node.variable){
 				if(node.type && node.type == "quantity"){
-					dom.byId(domIDTags['nodeDOM']).innerHTML = graphObjects.getDomUIStrings(this._model, "variable", node.ID);
-					// updating the corresponsing initial node
+					// Updating the variable name and corresponsing initial node
 					if(node.value && node.variableType == "dynamic" && dom.byId(domIDTags['initialNode'])){
+						dom.byId(domIDTags['nodeDOM']).innerHTML = graphObjects.getDomUIStrings(this._model, "variable", node.ID);
 						dom.byId(domIDTags['initialNode']).innerHTML = graphObjects.getDomUIStrings(this._model, "value", node.ID);
+					}else{
+						dom.byId(domIDTags['nodeDOM']).innerHTML = graphObjects.getDomUIStrings(this._model, "value", node.ID);
 					}
 				}
 				// updating the corresponding equations
@@ -288,6 +292,9 @@ define([
 			}
 
 			if(!this._model.isComplete(node.ID)){
+				if(this._config.get("dottedNodesUI")){
+					classTag += " editor";
+				}
 				classTag += " incomplete";
 			}
 			var nodeDOM = domConstruct.create("div", {

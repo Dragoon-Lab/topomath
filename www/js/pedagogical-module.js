@@ -226,8 +226,7 @@ define([
 				followUpTasks(obj, part, directiveObject);
 			}
 		}
-	};	
-	var record = null;
+	};
 	/*
 	 * Add additional tables for activities that does not use node editor.
 	 */
@@ -271,7 +270,6 @@ define([
 
 	function message(/*object*/ obj, /*string*/ nodePart, /*string*/ status){
 		// TO DO : Add Hint messages
-		record.increment(status, 1);
 		obj.push({id: "message", attribute: "append", value: fm.start + nodePart + fm.connector + fm[status]});
 		if(status === "irrelevant"){
 			var length = hints[status].length;
@@ -310,6 +308,7 @@ define([
 		_assessment: null,
 		nodeOrder: [],
 		nodeCounter: 0,
+		state: null,
 
 		/*****
 		 * Private Functions
@@ -416,13 +415,9 @@ define([
 		 * Public Functions
 		 *****/
 
-		setState: function(/*state.js object*/ State){
-			record = State;
-			allInterpretations = ['correct', 'firstFailure', 'secondFailure','incorrect'];
-			for(var i in allInterpretations){
-				record.init(allInterpretations[i], 0);
-			};
-			record.init("problemCompleted", 0);
+		setState: function(/*state.js object*/ state){
+			this.state = state;
+			return state;
 		},
 
 		getActionForType: function(id, answer){
@@ -625,7 +620,7 @@ define([
 					pmInterpretation: interpretation
 				};
 			}
-
+			this.updateState(this.state, interpretation, 1);
 			var logObj = lang.mixin({
 				type: "solution-check",
 				nodeID: id,
@@ -688,8 +683,12 @@ define([
 					problemComplete: model.isCompleteFlag
 				}, logObj);
 				this.logSolutionStep(logObj);
-				record.increment("problemCompleted", 1);
+				this.updateState(this.state,"problemCompleted",1);
 			}
+		},
+
+		updateState:function(state, property, val){
+			return [state, property, val];
 		}
 	});
 });

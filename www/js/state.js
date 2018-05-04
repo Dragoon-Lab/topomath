@@ -7,8 +7,9 @@ define([
 	"dojo/_base/lang",
 	"dojo/promise/Promise",
 	"dojo/request/xhr",
-	"dojo/when"
-], function(declare, json, lang, promise, xhr, when){
+	"dojo/when",
+	"./user-messages",
+], function(declare, json, lang, promise, xhr, when, messages){
 	// Summary: 
 	//			Routines for saving state.
 	// Description:
@@ -57,8 +58,10 @@ define([
 		// Add a trailing slash to path, if it exists
 		if(path && path.substr(-1) != '/') path += '/';
 		this.path = (path || "") + "state.php";
+		this._messages = messages.get("app");
 	},
-	
+
+
 	/*
 	 This is not in dojo store API, no value will be initiated less than 0.
 	 */
@@ -137,6 +140,5 @@ define([
 		this.put(property, x);
 		return x;
 	}
-
 	});
 });

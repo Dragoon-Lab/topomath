@@ -17,14 +17,12 @@ define([
 	"dijit/form/ComboBox",
 	"dojo/store/Memory",
 	"dojo/dom-class",
-	"dijit/Dialog",
 	"./calculation",
 	"./user-messages",
 	"./message-box",
-	"./state",
 	"./typechecker",
-	"./sliders"
-], function(declare, array, lang, registry, Chart, Default, Lines, Grid, Legend, tooltipDialog, popup, on, dom, domStyle, domAttr, ComboBox, Memory, domClass, Dialog, calculations, errorMessages, messageBox, state, typechecker, sliders){
+	"./sliders",
+], function(declare, array, lang, registry, Chart, Default, Lines, Grid, Legend, tooltipDialog, popup, on, dom, domStyle, domAttr, ComboBox, Memory, domClass, calculations, errorMessages, messageBox, typechecker, sliders){
 	return declare(calculations, {
 		_colors: {
 			majorHLine: "#CACACA",
@@ -43,7 +41,6 @@ define([
 
 		constructor: function(model, state){
 			this._messages = errorMessages.get("graph");
-			this._helpText = errorMessages.get("help");
 			this.isCorrect = false;
 			if(this.activeSolution){
 				this.initialize(state);
@@ -52,12 +49,10 @@ define([
 
 		initialize: function(state){
 			this.dialogWindow = registry.byId("solution");
-			if(!this.state) {
-				this.state = state;
-			}
 			this.tabContainer = registry.byId("GraphTabContainer");
 			this.graphTab = registry.byId("GraphTab");
 			this.tableTab = registry.byId("TableTab");
+			this.state = state;
 			domStyle.set(this.tabContainer.domNode, "display", "none");
 
 			this.activeSolution = this.findSolution(true);
@@ -93,7 +88,7 @@ define([
 					this.checkForStatic(this._model.authored, this.authorSolution);
 
 				// save author solution for color by numbers
-				if(!this.isStudentMode){
+				if(this.isAuthorMode){
 					try {
 						this.saveSolution();
 					} catch (e){
@@ -124,23 +119,7 @@ define([
 				this.showMessage(sol, "graphErrorMessage", "error", false);
 			}
 			this.resizeWindow();
-			var helpButton = dom.byId("graphHelpButton");
-			on(helpButton, "click", lang.hitch(this, function () {
-				if(!this.helpDialog) {
-					var content = "<ul>";
-					for(var msg in this._helpText){
-						content += "<li>" + this._helpText[msg] + "</li>";
-					}
-					content += "</ul>";
-					this.helpDialog = new Dialog({
-						"class": 'graphHintUnderLay',
-						"title": "Graph Help",
-						content: content
-					});
-				}
-				this.helpDialog.show();
-				domClass.remove("graphHelpButton", "glowNode");
-			}));
+			this.setGraphHelpState(this.state);
 		},
 
 		applyTextValueToGraph: function(textBoxID, paramID){
@@ -171,7 +150,7 @@ define([
 			}));
 		},
 
-		createChart: function(domNode, id, xAxis, yAxis, solution){
+		createChart: function(domNode, id, xAxis, yAxis, solution, authorSolution){
 			//Chart Node
 			var chart = new Chart(domNode);
 
@@ -192,6 +171,23 @@ define([
 			});
 
 			var obj = this.getMinMaxFromArray(solution.plotValues[id]);
+			var authorID = this._model.active.getAuthoredID(id);
+			if(this.isStudentMode && this.authorSolution && this.authorSolution.plotValues[authorID]){
+				var authorObj = this.getMinMaxFromArray(this.authorSolution.plotValues[authorID]);
+				if (authorObj.min < obj.min) {
+					obj.min = authorObj.min;
+				}
+				if (authorObj.max > obj.max) {
+					obj.max = authorObj.max;
+				}
+				var step = (obj.max - obj.min)/10;
+				if(obj.min >= obj.min - step){
+					obj.min = obj.min - step;
+				}
+				if(obj.max <= obj.max + step){
+					obj.max = obj.max + step;
+				}
+			}
 
 			chart.addAxis("y", {
 				vertical: true, // min: obj.min, max: obj.max,
@@ -202,7 +198,7 @@ define([
 				labelFunc: this.formatAxes
 			});
 
-			var series = this.formatChartSeries(solution, id);
+			var series = this.formatChartSeries(solution, authorSolution, id);
 			array.forEach(series, function(s){
 				chart.addSeries(
 					s.title, s.data, s.stroke
@@ -218,23 +214,27 @@ define([
 			return chart;
 		},
 
-		updateChart: function(id, solution, index, isStatic){
+		updateChart: function(id, solution, authorSolution, index, isStatic){
 
 			var charts = isStatic? this.chartsStatic : this.charts;
 
 			dom.byId("graphMessage" + id).innerHTML = "";
 			var obj = this.getMinMaxFromArray(solution.plotValues[id]);
-
-
-			if(this.isStudentMode) {
-				var authorID = this._model.active.getAuthoredID(id);
+			var authorID = this._model.active.getAuthoredID(id);
+			if(this.isStudentMode && this.authorSolution && this.authorSolution.plotValues[authorID]){
 				var authorObj = this.getMinMaxFromArray(this.authorSolution.plotValues[authorID]);
-
 				if (authorObj.min < obj.min) {
 					obj.min = authorObj.min;
 				}
 				if (authorObj.max > obj.max) {
 					obj.max = authorObj.max;
+				}
+				var step = (obj.max - obj.min)/10;
+				if(obj.min >= obj.min - step){
+					obj.min = obj.min - step;
+				}
+				if(obj.max <= obj.max + step){
+					obj.max = obj.max + step;
 				}
 			}
 
@@ -255,7 +255,7 @@ define([
 				});
 			}
 
-			var series = this.formatChartSeries(solution, id);
+			var series = this.formatChartSeries(solution, authorSolution, id, isStatic);
 
 			array.forEach(series, function(s){
 				charts[id].updateSeries(
@@ -266,7 +266,7 @@ define([
 			charts[id].render();
 		},
 
-		formatChartSeries: function(solution, id){
+		formatChartSeries: function(solution, authorSolution, id, isStatic){
 			var series = [];
 			var temp = {};
 			temp.title = "Your Solution";
@@ -281,7 +281,7 @@ define([
 			if(this.isStudentMode){
 				series.push({
 					title: "Author's solution",
-					data: this.formatSeriesForChart(this.authorSolution, this._model.student.getAuthoredID(id)),
+					data: this.formatSeriesForChart(authorSolution, this._model.student.getAuthoredID(id)),
 					stroke: {stroke: this._colors.authorGraph, width: 2}
 				});
 			}
@@ -329,7 +329,7 @@ define([
 				}
 				var xAxis = this.labelString();
 				var yAxis = this.labelString(id);
-				this.charts[id] = this.createChart(domNode, id, xAxis, yAxis, this.activeSolution);
+				this.charts[id] = this.createChart(domNode, id, xAxis, yAxis, this.activeSolution, this.authorSolution);
 				this.legends[id] = new Legend({chart: this.charts[id]}, "legend" + id);
 			}, this);
 		},
@@ -366,14 +366,17 @@ define([
 				this.createComboBox(staticNodes);
 				this.staticVar = this.checkStaticVar(true);
 				this.activeSolution = this.findSolution(true, this.staticVar);
-				if(this.isStudentMode)
-					this.authorSolution = this.authorSolution.plotVariables ? this.findSolution(false, this._model.student.getAuthoredID(this.staticVar)) : "";
+				if(this.isStudentMode){
+					var authorStaticVar =  this._model.student.getAuthoredID(this.staticVar);
+					this.authorStaticSolution = this.initializeSystem(this._model.authored, authorStaticVar);
+					this.authorStaticSolution = this.authorStaticSolution.plotVariables ? this.findSolution(false, authorStaticVar) : "";
+				}
 
-				array.forEach(this.activeSolution.plotVariables, function(id, index){
+				array.forEach(this.activeSolution.plotVariables, function(id){
 					var domNode = "chartStatic" + id ;
 					var xAxis = dom.byId("staticSelect").value;
 					var yAxis = this.labelString(id);
-					this.chartsStatic[id] = this.createChart(domNode, id, xAxis, yAxis, this.activeSolution, index);
+					this.chartsStatic[id] = this.createChart(domNode, id, xAxis, yAxis, this.activeSolution, this.authorStaticSolution);
 					var l = registry.byId("legendStatic"+id);
 					if(registry.byId("legendStatic"+id))
 						l.destroyRecursive();
@@ -523,6 +526,12 @@ define([
 					});
 				}
 			}, this);
+			if(this.activeSolution.xvars.length == 0){
+				id = this.activeSolution.func[0];
+				registry.byId("sel"+id).set('checked', true);
+				if(this.isStatic)
+					registry.byId("selStatic"+id).set('checked', true);
+			}
 		},
 
 		//creates the dropdown menu for the static window
@@ -592,7 +601,7 @@ define([
 					}
 					else {
 						dom.byId("staticGraphMessage" + id).innerHTML = "";
-						this.updateChart(id, activeSolution, k, true, updateAuthorGraph);
+						this.updateChart(id, activeSolution, this.authorStaticSolution, k, true, updateAuthorGraph);
 					}
 				}, this);
 			}
@@ -614,7 +623,7 @@ define([
 					dom.byId("graphMessage" + id).innerHTML = "The values you have chosen caused the graph to go infinite. (See table.)";
 				}
 				else {
-					this.updateChart(id, activeSolution, k, false);
+					this.updateChart(id, activeSolution, this.authorSolution, k, false);
 				}
 			}, this);
 
@@ -680,15 +689,6 @@ define([
 				this.tabContainer.selectChild(selectedTab);
 			this.dialogWindow.set("title", this._model.getTaskName() + " -- " + type);
 			this.dialogWindow.show();
-			var graphHelpButton = dom.byId('graphHelpButton');
-			this.state.get("isGraphHelpShown").then(lang.hitch(this,function(reply){
-				console.log("reply for graph",reply);
-				if(!reply && graphHelpButton ) {
-					domClass.add(graphHelpButton, "glowNode");
-					this.state.put("isGraphHelpShown",true);
-				}
-			}));
-			
 		},
 
 		hide: function(){
@@ -696,35 +696,21 @@ define([
 			dom.byId("graphErrorMessage").innerHTML = "";
 			dom.byId("SliderPane").innerHTML = "<div id= 'solutionMessage'></div>";
 			dom.byId("solutionMessage").innerHTML = "";
-			var problemComplete = this._model.matchesGivenSolutionAndCorrect();
-			var problemDoneHint;
-			if(problemComplete){
-				if(!this._model._isDoneMessageShown) {
-					problemDoneHint = new tooltipDialog({
-						style: "width: 300px;",
-						content: '<p>'+this._messages['problemComplete']+'</p>' +
-							' <button type="button" data-dojo-type="dijit/form/Button" id="closeHint">Ok</button>',
-						onShow: function () {
-							on(registry.byId('closeHint'), 'click', function () {
-								popup.close(problemDoneHint);
-							});
-						},
-						onBlur: function(){
-							popup.close(problemDoneHint);
-						}
-					});
-					popup.open({
-						popup: problemDoneHint,
-						around: dom.byId('doneButton')
-					});
-					this._model._isDoneMessageShown = true;
-					this.state.put("isDoneMessageShown",true);
-				}
+			if(this.isStudentMode && this._model.matchesGivenSolutionAndCorrect()){
+				this.setDoneMessageShown(this.state);
 			}
 		},
 
 		fireLogEvent: function(args){
 			// stub to log slider event. event defined in event-logs.js using aspect.after
+		},
+
+		setGraphHelpState: function(state){
+			return state;
+		},
+
+		setDoneMessageShown: function(state){
+			return state;
 		}
 	});
 });
