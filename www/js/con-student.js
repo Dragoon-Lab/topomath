@@ -44,7 +44,7 @@ define([
 		constructor: function (mode, model) {
 			console.log("++++++++ In student constructor");
 			lang.mixin(this.widgetMap, this.controlMap);
-			this._PM = new PM(model, this._config.get("feedbackMode"));
+			this._PM = new PM(model, this._config.get("feedbackMode"), this._fixPosition);
 			ready(this, "populateSelections");
 			// used in equation done handler to handle scenario of new nodes created
 			// from demo nodes
@@ -411,7 +411,10 @@ define([
 			if(authoredID){
 				this._model.active.setAuthoredID(id, authoredID);
 				this._model.active.setDescription(id, this._model.authored.getDescription(authoredID));
-				this._model.active.setPosition(id, 0, this._model.authored.getPosition(authoredID,0));
+				// Fixing position is a part of feedback to student
+				if(this._config.get("feedbackMode") !== "nofeedback" && this._fixPosition){
+					this._model.active.setPosition(id, 0, this._model.authored.getPosition(authoredID,0));
+				}
 			}
 			return authoredID;
 		},

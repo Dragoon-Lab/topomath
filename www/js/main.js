@@ -143,7 +143,7 @@ define([
 			* so that session object is not to be passed again and again. ~ Sachin
 			*/
 			var state = new State(query.u, query.s, "action");
-			var _dragNodes = query.fp == "on"? false : true;
+			var _dragNodes = query.fp == "on"? true : false;
 			console.log("Fixing position of nodes ", _dragNodes);
 			var _logger = logging.getInstance(_session);
 			_logger.log('open-problem', {problem: _logger._session.params.p});
@@ -157,12 +157,10 @@ define([
 			//remove the loading division, now that the problem is being loaded
 			var loading = document.getElementById('loadingOverlay');
 			loading.style.display = "none";
-
-			var dm = new drawModel(_model.active, _dragNodes, _feedback);
-
+			var dm = new drawModel(_model.active, _fixPosition, _feedback);
 			var errDialog = new popupDialog();
 			//create a controller object
-			//For now using empty  ui_config 
+			//For now using empty  ui_config
 			var controllerObject = (!_model.isStudentMode()) ?
 				new controlAuthor(query.m, _model, _config) :
 				new controlStudent(query.m, _model, _config);

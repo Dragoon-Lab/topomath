@@ -102,13 +102,15 @@ define([
 					"questionMarkRoot": "Mark this node as Sought node",
 					"descriptionQuestionMark": "Select a description for node"
 		},
-		constructor: function(mode, model, config){
+		constructor: function(mode, model, config, fixPosition){
 			console.log("+++++++++ In generic controller constructor");
 			lang.mixin(this.controlMap, this.genericControlMap);
 
 			this._model = model;
 			this._mode = mode;
 			this._config = config;
+			if(this._model.isStudentMode())
+				this._fixPosition = fixPosition;
 
 			ready(this, this._initCrisisAlert);
 			// The Node Editor widget must be set up before modifications
@@ -860,7 +862,7 @@ define([
 				if(_variableType == "dynamic"){
 					var givenID = this._model.active.getAuthoredID(id);
 					var position = this._model.authored.getPosition(givenID, 1);
-					if(position)
+					if(this._config.get("feedbackMode") !== "nofeedback" && position && this._fixPosition)
 						this._model.active.setPosition(id, 1, position);
 					// Update position to avoid overlap of node
 					if(this._model.active.getPosition(id).length === 1)
