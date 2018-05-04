@@ -2,7 +2,7 @@ define([
 	"dojo/_base/array",
 	"dojo/_base/lang",
 	"parser/parser",
-	"solver/newton-raphson"
+	"solver/solve-wrapper"
 ], function(array, lang, Parser, Solver){
 	return {
 		parse: function(equation){

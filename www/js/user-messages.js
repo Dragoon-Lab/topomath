@@ -10,7 +10,10 @@ define([], function(){
 		"variable.mismatch": ["Number of equations do not match the number of unknown quantities. Please check the system that you have created."],
 		"no.parameters.static": ["There are no parameters to graph the unknowns against."],
 		"default": ["Something went wrong. Please ask your instructor to help you. Thanks!"],
-		"no.variables": ["System of equations has no unknown or dynamic variables to solve."]
+		"no.variables": ["System of equations has no unknown or dynamic variables to solve."],
+		"inconsistent.system": ["Number of equations are more than the number of variables, and solver can not decide which equations to remove for calculating the solution"],
+		"under.determined.system": ["The number of equations are less than the number of variables, hence the system is not solvable."],
+		"overdetermined.no.solution": ["The number of equations are more than number of variables, and no single solution solves all of them."]
 	};
 
 	var pedagogical = {
