@@ -1,11 +1,10 @@
 # Student Controller #
 ### Summary ###
-* Controller for the node editor in student mode (in con-student.js)		
-* Makes pedagogical decisions for student modes - Feedback and No Feedback (editor mode) using Pedagogical Module; 
-* Inherits the main controller (in controller.js)
+* Controller for the node editor in student mode (in [con-student.js](https://github.com/Dragoon-Lab/topomath/blob/master/www/js/controller.js))
+* Renders pedagogical decisions taken by pedagogical module for student mode
 
 ### Functionalities ###
-* Student Pedagogical Module(in pedagogical-module.js):
+* Student Pedagogical Module (in [pedagogical-module.js](https://github.com/Dragoon-Lab/topomath/blob/master/www/js/pedagogical-module.js)):
 	* processes user inputs in student mode using four parameters nodeId, nodeType, value and validInput
 	* returns an object which is used to produce appropriate feedback inside node editor, to the nodes on canvas (in feedback mode) each time an input is handled 
 	* feedback returned is in the form of directives which contain status -correct/incorrect/demo, message to the user, disable state, value of the node attribute.
