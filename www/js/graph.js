@@ -4,9 +4,12 @@ define([
 	"dojox/charting/widget/Legend",
 	"dijit/registry",
 	"dojo/dom",
+	"dijit/form/Select",
+	"dojo/store/Memory",
+	"dojo/data/ObjectStore",
 	"./tutor-configuration",
 	"./chart"
-], function(declare, array, Legend, registry, dom, configurations, chart){
+], function(declare, array, Legend, registry, dom, Select, Memory, ObjectStore, configurations, chart){
 	return declare(chart, {
 		domIDs: function(nodeID){
 			return {
@@ -35,7 +38,7 @@ define([
 			this._config = configurations.getInstance();
 			this.isStudentMode = !this._config.get("showActiveGraphOnly");
 			this.isAuthorMode = !this._model.isStudentMode();
-			this.isCorrect = this._model.matchesGivenSolutionAndCorrect() ? true : false; 
+			this.isCorrect = this._model.matchesGivenSolutionAndCorrect() ? true : false;
 		},
 
 		init: function(staticVar){
@@ -105,12 +108,12 @@ define([
 				staticContent += this.html(id, "Static");
 			}, this);
 			this.staticTab.set("content", staticContent);
-
+			this.createSelectBox(this.activeSolution.params);
 			// cant merge this array foreach because different variables are being 
 			// used in initializeTab and initializeStaticTab.
 			array.forEach(this.activeSolution.plotVariables, function(id){
 				var domIDs = this.staticDomIDs(id);
-				var xAxis = dom.byId("staticSelect").value;
+				var xAxis = this.labelString(this.staticVar);
 				var yAxis = this.labelString(id);
 				this.chartsStatic[id] = this.createChart(domIDs["chart"], id, xAxis, yAxis, this.activeSolution, this.authorStaticSolution);
 				var l = registry.byId(domIDs["legend"]);
@@ -139,11 +142,6 @@ define([
 		//changes the static graph when sliders or dropdown change
 		renderStaticDialog: function(activeSolution, authorSolution, updateAuthorGraph){
 			console.log("rendering static");
-			
-			//this.staticVar = this.checkStaticVar(true);
-			//var activeSolution = this.findSolution(true, staticVar, isUpdate);
-			//if(this.isStudentMode && updateAuthorGraph)
-			//	this.authorSolution = this.findSolution(false, this._model.student.getAuthoredID(staticVar));
 
 			//update and render the charts
 			array.forEach(this.activeSolution.plotVariables, function(id, k){
@@ -183,8 +181,28 @@ define([
 					this.updateChart(id, activeSolution, this.authorSolution, k, false);
 				}
 			}, this);
-
-			//this.createTable(this.activeSolution.plotVariables);
+		},
+		//creates the dropdown menu for the static window
+		createSelectBox: function(staticIDs){
+			var stateStore = new Memory();
+			var combo = registry.byId("staticSelect");
+			if(combo){
+				combo.destroyRecursive();
+			}
+			var names = [];
+			array.forEach(staticIDs, function(id, counter){
+				names[counter] = this._model.active.getVariable(id);
+				stateStore.put({id: names[counter], label: names[counter]});
+			}, this);
+			var os = new ObjectStore({objectStore: stateStore});
+			this.staticSelect = new Select({
+				id: "staticSelect",
+				name: "state",
+				value: names[0],
+				store: os,
+				style: {width: '100px'},
+				searchAttr: 'label'
+			}, "staticSelectContainer");
 		}
 	});
 });
