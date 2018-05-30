@@ -78,9 +78,9 @@
 		},
 		{
 			"Name": "Unit Cost",
-			"Equation": "C = U * N",
+			"Equation": "T = U * N",
 			"Mapping": {
-				"C": "Total Cost",
+				"T": "Total Cost",
 				"U": "Unit Cost",
 				"N": "Number of Units"
 			},
