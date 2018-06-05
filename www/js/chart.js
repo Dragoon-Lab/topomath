@@ -122,7 +122,7 @@ define([
 
 			if(isStatic){
 				charts[id].addAxis("x", {
-					title: dom.byId("staticSelect").value,
+					title: this.labelString(this.staticVar),
 					titleOrientation: "away", titleGap: 5
 				});
 			}

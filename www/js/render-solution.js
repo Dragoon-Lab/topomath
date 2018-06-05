@@ -7,7 +7,6 @@ define([
 	"dojo/dom",
 	"dojo/dom-style",
 	"dojo/dom-attr",
-	"dijit/form/ComboBox",
 	"dojo/store/Memory",
 	"./calculation",
 	"./user-messages",
@@ -16,15 +15,8 @@ define([
 	"./graph",
 	"./table",
 	"./sliders"
-], function(declare, array, lang, registry, on, dom, domStyle, domAttr, ComboBox, Memory, calculations, errorMessages, messageBox, typechecker, Graph, Table, Sliders){
+], function(declare, array, lang, registry, on, dom, domStyle, domAttr, Memory, calculations, errorMessages, messageBox, typechecker, Graph, Table, Sliders){
 	return declare(calculations, {
-	/*	_colors: {
-			majorHLine: "#CACACA",
-			majorVLine: "#CACACA",
-			incorrectGraph: "red",
-			correctGraph: "#5cd65c",
-			authorGraph: "black"
-		},*/
 		_rendering: false,
 
 		constructor: function(model){
@@ -102,7 +94,7 @@ define([
 					//add static tab if solution is static
 					if(this.activeSolution.params.length > 0){
 						dom.byId("StaticTab").innerHTML = "<div id='staticSelectContainer'></div>";
-						this.createComboBox(this.activeSolution.params);
+						//this.createComboBox(this.activeSolution.params);
 						this.staticVar = this.checkStaticVar(true);
 						this.activeSolution = this.findSolution(true, this.staticVar);
 						if(this.isStudentMode){
@@ -127,7 +119,7 @@ define([
 					}
 				}
 
-				this.showHideGraphsHandler();
+				this.setSolutionEvents();
 
 				domStyle.set(this.tabContainer.domNode, "display", "block");
 				this.tabContainer.watch("selectedChildWidget", lang.hitch(this, function(name, oval, nval){
@@ -197,7 +189,7 @@ define([
 			box.show();
 		},
 
-		showHideGraphsHandler: function(){
+		setSolutionEvents: function(){
 			//// The following loop makes sure legends of function node graphs are not visible initially
 			//// until the user requests, we use the display : none property
 			//// The legend div is replaced in the dom, so we must hide it dynamically.
@@ -253,41 +245,23 @@ define([
 					registry.byId(staticDomIDs["select"]).set('checked', true);
 				}
 			}
-		},
+			if(this.isStatic){
+				on(this.graph.staticSelect, "change", lang.hitch(this, function(){
+					this.toggleSliders(this.tabContainer.selectedChildWidget.id, this.sliderVars);
 
-		//creates the dropdown menu for the static window
-		createComboBox: function(staticIDs){
-			var stateStore = new Memory();
-			var combo = registry.byId("staticSelect");
-			if(combo){
-				combo.destroyRecursive();
+					var activeSolution = this.findSolution(true, this.staticVar, true);
+					this.graph.staticVar = this.staticVar;
+					this.graph.renderStaticDialog(activeSolution, this.authorStaticSolution, true);// Call the function for updating both the author graph and the student graph
+					//this.disableStaticSlider();
+				}));
 			}
-			var names = [];
-			array.forEach(staticIDs, function(id, counter){
-				names[counter] = this._model.active.getVariable(id);
-				stateStore.put({id: names[counter], name: names[counter]});
-			}, this);
-			var comboBox = new ComboBox({
-				id: "staticSelect",
-				name: "state",
-				value: names[0],
-				store: stateStore,
-				searchAttr: "name"
-			}, "staticSelectContainer");
-			//console.log(comboBox);
-			//this.disableStaticSlider();
-			on(comboBox, "change", lang.hitch(this, function(){
-				this.toggleSliders(this.tabContainer.selectedChildWidget.id, this.sliderVars);
-				this.renderStaticDialog(true);// Call the function for updating both the author graph and the student graph
-				//this.disableStaticSlider();
-			}));
 		},
 
 		//checks for which variables are static
 		checkStaticVar: function(choice){	//true is active, false is given
 			var parameters = choice ? this.activeSolution.params : this.authorSolution.params;
 			var result = parameters[0];
-			var staticSelect = dom.byId("staticSelect");
+			var staticSelect = registry.byId("staticSelect");
 
 			for(var index in parameters){
 				var parameter = parameters[index];
