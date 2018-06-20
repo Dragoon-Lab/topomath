@@ -1,7 +1,7 @@
 # Author Controller #
 ### Summary ###
 * Controller for the node editor in author mode	(in con-author.js)		
-* Makes pedagogical desicions for author mode; handles selections
+* Makes pedagogical decisions for author mode; handles selections
 				from the author
 * Inherits the main controller (in controller.js)
 

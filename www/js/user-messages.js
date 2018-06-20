@@ -9,7 +9,8 @@ define([], function(){
 		"decomposition": ["There is something wrong with the equations. Solver says that the system of equation is not solvable. Kindly, try rearranging the variables, like if you are dividing some variables, then try to multiply them on the other side of the equation, and try again."],
 		"variable.mismatch": ["Number of equations do not match the number of unknown quantities. Please check the system that you have created."],
 		"no.parameters.static": ["There are no parameters to graph the unknowns against."],
-		"default": ["Something went wrong. Please ask your instructor to help you. Thanks!"]
+		"default": ["Something went wrong. Please ask your instructor to help you. Thanks!"],
+		"no.variables": ["System of equations has no unknown or dynamic variables to solve."]
 	};
 
 	var pedagogical = {
@@ -19,6 +20,11 @@ define([], function(){
 			],
 			erasedDemo: [
 				"Your choice matched the author's answer, however this part was previously completed by the model. It will continue to be marked this way."
+			],
+			irrelevant: [
+				"The quantity is irrelevant to this problem.  Choose a different one.",
+				"This quantity is irrelevant for modeling the system.  Try again.",
+				"Irrelevant.  Try again."
 			]
 		},
 		feedback: {
@@ -28,7 +34,8 @@ define([], function(){
 			secondFailure: "incorrect. The correct answer has been given.",
 			incorrect: "incorrect.",
 			correct: "correct.",
-			partial: "true. But the author would like you to use the following variables in it: "
+			partial: "true. But the author would like you to use the following variables in it: ",
+			irrelevant: "irrelevant."
 		}
 	};
 
@@ -49,7 +56,7 @@ define([], function(){
 				"app": global
 			}
 
-		 	return obj.hasOwnProperty(type) ? obj[type]: null;
+			return obj.hasOwnProperty(type) ? obj[type]: null;
 		}
 	};
 });

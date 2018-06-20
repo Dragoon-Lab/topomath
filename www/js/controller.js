@@ -102,13 +102,15 @@ define([
 					"questionMarkRoot": "Mark this node as Sought node",
 					"descriptionQuestionMark": "Select a description for node"
 		},
-		constructor: function(mode, model, config){
+		constructor: function(mode, model, config, fixPosition){
 			console.log("+++++++++ In generic controller constructor");
 			lang.mixin(this.controlMap, this.genericControlMap);
 
 			this._model = model;
 			this._mode = mode;
 			this._config = config;
+			if(this._model.isStudentMode())
+				this._fixPosition = fixPosition;
 
 			ready(this, this._initCrisisAlert);
 			// The Node Editor widget must be set up before modifications
@@ -162,7 +164,7 @@ define([
 		// here as well as maintaining all the colors and feedback at different places
 		// could be difficult.
 		_setStatus : function(value){
-			var _variableTypes = ["unknown", "parameter", "dynamic"]
+			var _variableTypes = ["unknown", "parameter", "dynamic"];
 			var colorMap = {
 				correct: "lightGreen",
 				incorrect: "#FF8080",
@@ -201,7 +203,8 @@ define([
 
 		hideCloseNodeEditor: function(/* originical hide method*/ doHide){
 			doHide.apply(this._nodeEditor);
-			this.closeEditor.call(this);
+			// added this.currentID because it is needed for logging node details
+			this.closeEditor.call(this, this.currentID);
 			this._removeTooltips.call(this);
 		},
 
@@ -464,6 +467,19 @@ define([
 				return this.disableHandlers || this.handleEquation.apply(this, arguments);
 			}));
 
+			equationWidget.on("focus", function(){
+				var cursorPosition = this.get("cursorPosition");
+				if(cursorPosition){
+					this.textbox.setSelectionRange(cursorPosition[0], cursorPosition[1]);
+				}
+			});
+
+			equationWidget.on("blur", function(){
+				var start = this.textbox.selectionStart;
+				var end = this.textbox.selectionEnd;
+				this.set("cursorPosition", [start, end]);
+			});
+
 			// When the equation box is enabled/disabled, do the same for
 			// the inputs widgets.
 			array.forEach(["inputSelectorStudent"], function(input){
@@ -498,7 +514,7 @@ define([
 			array.forEach(this.resettableControls, function(con){
 				var w = registry.byId(this.controlMap[con]);
 				w.on("keydown", lang.hitch(this, function(evt){
-					if(evt.keyCode != keys.ENTER){
+					if(evt.keyCode != keys.ENTER && evt.keyCode != keys.TAB){
 						w.set('status','');
 					}
 				}));
@@ -594,7 +610,6 @@ define([
 			messageWidget.set('content', '');
 
 			this.disableHandlers = true;
-			//TODO: check logging
 		},
 
 		// Stub to be overwritten by student or author mode-specific method.
@@ -725,11 +740,11 @@ define([
 							});
 						}
 						w.set(directive.attribute, directive.value);
-						if(directive.attribute === "status"){
+						//if(directive.attribute === "status"){
 							//tempDirective variable further input to editor tour
 							//for now commenting the variable copy
 							//tempDirective = directive;
-						}
+						//}
 					}
 				}else if(directive.attribute == "display"){
 					//directives where display is updated/ given feedback from here
@@ -809,12 +824,14 @@ define([
 			var widget = registry.byId(this.controlMap.equation);
 			var oldEqn = widget.get("value");
 			// Get current cursor position or go to end of input
-			// console.log("	   Got offsets, length: ", widget.domNode.selectionStart, widget.domNode.selectionEnd, oldEqn.length);
-			var p1 = widget.domNode.selectionStart;
-			var p2 = widget.domNode.selectionEnd;
+			// console.log("	   Got offsets, length: ", widget.domNode.selectionStart, widget.domNode.selectionEnd, oldEqn.length, widget.cursorPosition);
+			var p1 = widget.textbox.selectionStart;
+			var p2 = widget.textbox.selectionEnd;
 			widget.set("value", oldEqn.substr(0, p1) + text + oldEqn.substr(p2));
+			widget.focus();
+			var newPosition = p1+text.length;
+			widget.textbox.setSelectionRange(newPosition, newPosition);
 			// Set cursor to end of current paste
-			widget.domNode.selectionStart = widget.domNode.selectionEnd = p1 + text.length;
 		},
 
 		enableEquation: function(nodeIDs){
@@ -856,7 +873,7 @@ define([
 				if(_variableType == "dynamic"){
 					var givenID = this._model.active.getAuthoredID(id);
 					var position = this._model.authored.getPosition(givenID, 1);
-					if(position)
+					if(this._config.get("feedbackMode") !== "nofeedback" && position && this._fixPosition)
 						this._model.active.setPosition(id, 1, position);
 					// Update position to avoid overlap of node
 					if(this._model.active.getPosition(id).length === 1)
@@ -936,6 +953,13 @@ define([
 				//this._model.active.setEquation(this.currentID, inputEquation);
 				if(err.message.includes("unexpected variable"))
 					directives.push({id: 'message', attribute: 'append', value: 'The value entered for the equation is incorrect'});
+				if(err.message.includes("unknown variables")){
+					var _returnObj = JSON.parse(err.message.replace("unknown variables", ""));
+					var _message = "Unknown variable(s) entered in the equation : " + _returnObj.unknownNodesList.toString();
+					directives.push({ id: 'crisisAlert', attribute: 'open', value: _message});
+					directives.push({id: 'message', attribute: 'append', value: _message});
+					this.autoCreateNodes(_returnObj.newNodeList);
+				}
 				else
 					directives.push({id: 'message', attribute: 'append', value: 'Incorrect equation syntax.'});
 				directives.push({id: 'equation', attribute: 'status', value: 'incorrect'});
@@ -956,6 +980,18 @@ define([
 			//rest of the analysis is only needed for the student mode. So returning in case the active model is not student.
 			return returnObj;
 		},
+		autoCreateNodes: function(newNodeList){
+			//newNodeList contains those nodes which were not present when equation has been parsed
+			//these nodes were added to model, substituted into equation but should be added here
+			array.forEach(newNodeList, function(newNode){
+				this.addNode(this._model.active.getNode(newNode.id));
+				// Auto-populate node description only in Student mode
+				// check added to make sure that the node is not an unknown node
+				if(newNode.variable){
+					this.createStudentNode(newNode);
+				}
+			}, this);
+		},
 		createExpressionNodes: function(parseObject, ignoreUnknownTest){
 			/*
 			 Create Expression nodes if equation is valid and parsed sucessfully.
@@ -973,6 +1009,7 @@ define([
 			if(parseObject){
 				var newNodesList = parseObject.newNodeList;
 				var variableList = parseObject.variableList;
+				var unknownNodesList = parseObject.unknownNodesList;
 				var autoCreationFlag = true; //can be read from the source
 				var cancelUpdate = false; // any purpose of this variable ??
 				var directives = [];
@@ -980,17 +1017,9 @@ define([
 				var inputEquation = widget.get("value");
 
 				//TODO : ignoreUnknownTest should be discussed
+
 				if(autoCreationFlag){
-					array.forEach(newNodesList, function(newNode){
-						//newNodeList containts those nodes which were not present when equation has been parsed
-						//these nodes were added to model, substituted into equation but should be added here
-						this.addNode(this._model.active.getNode(newNode.id));
-						// Auto-populate node description only in Student mode
-						// check added to make sure that the node is not an unknown node
-						if(newNode.variable){
-							this.createStudentNode(newNode);
-						}
-					}, this);
+					this.autoCreateNodes(newNodesList);
 					//dynamicList contains those nodes for which prior node UI changes have to be made
 					//Accordingly, make the node dynamic by changing the variable type and setting the accumulator
 					//Also updateNodeView makes sure changes are reflected instantly on the UI

@@ -48,5 +48,3 @@ There are a particular smaller modules needed to be calculated and tested separa
 method which is a known method for calculating inverse of the matrix.
 * Matrix multiplication
 * Matrix addition
-
-The exact implementation details with the functions will ve added once a detailed implementation plan is complete.

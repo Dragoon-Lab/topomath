@@ -1,0 +1,216 @@
+{ 
+	"modules" : [
+		{
+			"names": false,
+			"display": "errors",
+			"options": false,
+			"heading": "Open learner model (Problems)",
+			"subHeading": "Each cell shows Green checks / Total checks. Your row is light blue. Refresh page to update.",
+			"colors": true, 
+			"sessionLink": false,
+			"completeAnalysis": false,
+			"userData": false,
+			"tName": "sosOLM",
+			"query": "custom",
+			"qObject": {
+				"m": "!AUTHOR",
+				"s": "sos326_f15"
+			}
+		},
+		{
+			"names": false,
+			"display": "errors",
+			"options": false,
+			"heading": "Open learner model (Problems)",
+			"subHeading": "Each cell shows Green checks / Total checks. Your row is light blue. Refresh page to update.",
+			"colors": true, 
+			"sessionLink": false,
+			"completeAnalysis": false,
+			"userData": false,
+			"tName": "leader",
+			"query": "general"
+		},
+		{
+			"names": true,
+			"display": "empty",
+			"options": true,
+			"heading": "Dashboard",
+			"subHeading": "Click on the box to show the complete session details of the user.",
+			"colors": true,
+			"sessionLink": false,
+			"completeAnalysis": true,
+			"userData": true,
+			"tName": "complete",
+			"query": "general"
+		},
+		{
+			"names": false,
+			"display": "errors",
+			"options": false,
+			"heading": "Leader Board",
+			"subHeading": "Each cell shows your proportion of correct selections in the node editor. Each time you get a red or yellow box, it goes down. (Remember, however, that homework does not affect your grade--only the in-class quizzes.) Your cells have red borders and bold numbers. The number of boxes in the column corresponds to the number of people who have started that problem. Refresh page to update.",
+			"colors": true,
+			"sessionLink": false,
+			"completeAnalysis": false,
+			"userData": false,
+			"tName": "cpiLeader",
+			"query": "custom",
+			"qObject": {
+				"m": "!AUTHOR",
+				"p": "%CPI-2014-ps%",
+				"s": "tutor_cpi360"
+			}
+		},
+		{
+			"names": true,
+			"display": "empty",
+			"options": true,
+			"heading": "Dashboard",
+			"subHeading": "Click on the box to show the complete session details of the user.",
+			"colors": true,
+			"sessionLink": false,
+			"completeAnalysis": false,
+			"userData": true,
+			"tName": "cpiTutor",
+			"query": "custom",
+			"qObject": {
+				"m": "!AUTHOR",
+				"p": "%CPI-2014-ps%",
+				"s": "tutor_cpi360"
+			}
+		},
+		{
+			"names": true,
+			"display": "empty",
+			"options": true,
+			"heading": "Dashboard",
+			"subHeading": "Click on the box to show the complete session details of the user.",
+			"colors": true,
+			"sessionLink": false,
+			"completeAnalysis": false,
+			"userData": true,
+			"tName": "cpiEditor",
+			"query": "custom",
+			"qObject": {
+				"m": "!AUTHOR",
+				"p": "%CPI-2014-ps%",
+				"s": "editor_cpi360"
+			}
+		},
+		{
+			"names": true,
+			"display": "empty",
+			"options": true,
+			"heading": "Dashboard",
+			"subHeading": "Click on the box to show the complete session details of the user.",
+			"colors": true,
+			"sessionLink": false,
+			"completeAnalysis": false,
+			"userData": true,
+			"tName": "cpiComplete",
+			"query": "custom",
+			"qObject": {
+				"m": "!AUTHOR",
+				"p": "%CPI-2014-ps%",
+				"s": "%cpi360%"
+			}
+		},
+		{
+			"names": true,
+			"display": "empty",
+			"options": true,
+			"heading": "Dashboard (Problems)",
+			"subHeading": "Click on the box to check the complete session of the student.",
+			"colors": true,
+			"sessionLink": true,
+			"completeAnalysis": false,
+			"userData": true,
+			"tName": "sosDb",
+			"query": "custom",
+			"qObject": {
+				"m": "!AUTHOR",
+				"s": "sos326_f15"
+			}
+		},
+		{
+			"names": true,
+			"display": "empty",
+			"options": true,
+			"heading": "Dashboard (Problems)",
+			"subHeading": "Click on the box to check the complete session of the student.",
+			"colors": true,
+			"sessionLink": true,
+			"completeAnalysis": false,
+			"userData": true,
+			"tName": "sosDb_s16",
+			"query": "custom",
+			"qObject": {
+				"m": "!AUTHOR",
+				"s": "sos326_s16"
+			}
+		},
+		{
+			"names": false,
+			"display": "errors",
+			"options": false,
+			"heading": "Leader Board",
+			"subHeading": "Each cell shows your proportion of correct selections in the node editor. Each time you get a red or yellow box, it goes down. (Remember, however, that homework does not affect your grade--only the in-class quizzes.) Your cells have red borders and bold numbers. The number of boxes in the column corresponds to the number of people who have started that problem. Refresh page to update.",
+			"colors": true,
+			"sessionLink": false,
+			"completeAnalysis": false,
+			"userData": false,
+			"tName": "testing",
+			"query": "custom",
+			"showUsers": 10,
+			"qObject": {
+				"m": "STUDENT",
+				"s": "testing"
+			}
+		},
+		{
+			"names": false,
+			"display": "errors",
+			"options": false,
+			"heading": "Leader Board",
+			"subHeading": "Each cell shows your proportion of correct selections in the node editor. Each time you get a red or yellow box, it goes down. Your cells have red borders and bold numbers. The number of boxes in the column corresponds to the number of people who have started that problem. Refresh page to update.",
+			"colors": true,
+			"sessionLink": false,
+			"completeAnalysis": false,
+			"userData": false,
+			"tName": "lms-leader",
+			"query": "custom",
+			"qObject": {
+				"m": "%AUTHOR!"
+			}
+		},
+		{
+			"names": true,
+			"display": "empty",
+			"options": true,
+			"heading": "Dashboard",
+			"subHeading": "Click on the box to show the complete session details of the user.",
+			"colors": true,
+			"sessionLink": true,
+			"completeAnalysis": true,
+			"userData": true,
+			"tName": "lms-dashboard",
+			"query": "custom",
+			"qObject": {
+				"m": "%AUTHOR!"
+			}
+		},
+		{
+			"names": true,
+			"display": "empty",
+			"options": true,
+			"heading": "Dashboard (Problems)",
+			"subHeading": "Click on the box to check the complete session of the student.",
+			"colors": true,
+			"sessionLink": true,
+			"completeAnalysis": false,
+			"userData": true,
+			"tName": "default",
+			"query": "general"
+		}
+	]
+}

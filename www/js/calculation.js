@@ -2,8 +2,9 @@ define([
 	"dojo/_base/declare",
 	"dojo/_base/lang",
 	"dojo/_base/array",
+	"./tutor-configuration",
 	"./equation"
-], function(declare, lang, array, equation){
+], function(declare, lang, array, configurations, equation){
 	return declare(null, {
 		/**
 		* this is the common calculations file which is the interface for calling and
@@ -16,7 +17,15 @@ define([
 		constructor: function(model){
 			this._model = model;
 			this.activeSolution = this.initializeSystem(this._model.active);
-			this.isStudentMode = this._model.active === this._model.student;
+			this._config = configurations.getInstance();
+			// previously student mode was for every mode other than authors that is coached and so on
+			// and it was used for three purposes
+			// show student feedback, and render author graph
+			// and save author solution
+			this.isStudentMode = !this._config.get("showActiveGraphOnly");
+			// since now it can not be used for saving author solution
+			// a new variable is used for that purpose
+			this.isAuthorMode = !this._model.isStudentMode();
 			if(this.isStudentMode)
 				this.authorSolution = this.initializeSystem(this._model.authored);
 		},
@@ -24,7 +33,15 @@ define([
 		* function which finds the solution for the system of equations.
 		**/
 		findSolution: function(isActive, id, isUpdate){
-			var system = isActive ? this.activeSolution : this.authorSolution;
+			var system = null;
+
+			if(isActive)
+				system = this.activeSolution;
+			else if(id)
+				system = this.authorStaticSolution;
+			else
+				system = this.authorSolution;
+
 			var subModel = isActive ? this._model.active : this._model.authored;
 
 			if(!system.status.error){
@@ -73,7 +90,7 @@ define([
 				var temp = value[0];
 				for(var index in value){
 					var v = value[index];
-					if(Math.abs(v - temp) > 10e-10){
+					if(Math.abs(v - temp) > 10e-7){
 						isStatic = false;
 						break;
 					}
@@ -83,74 +100,6 @@ define([
 			return isStatic;
 		},
 
-		getMinMaxFromArray: function(array){
-			var i;
-			var min = array[0];
-			var max = array[0];
-			for(i = 1; i < array.length; i++){
-				if(array[i] < min){
-					min = array[i];
-				}
-				if(array[i] > max){
-					max = array[i];
-				}
-			}
-			// Check if the maximum and minimum are same and change the min and max values
-			if(Math.abs(max - min) < 10e-10){
-				if (min < 0){
-					min = min * 2;
-					max = 0;
-				} else if (min > 0) {
-					min = 0;
-					max = max * 2;
-				} else {
-					min = -1;
-					max = +1;
-				}
-			}
-			return {min: min, max: max};
-		},
-
-		checkForNan: function(){
-			var solution = this.findSolution(true, this.plotVariables);
-			var nan = false;
-			for(var i = 0; i < solution.times.length; i++){
-				if(isNaN(solution.times[i].toPrecision(4)))
-					nan = true;
-				array.forEach(solution.plotValues, function(value){
-					if(isNaN(value[i]))
-						nan = true;
-				});
-			}
-			return nan;
-		},
-
-		checkForInfinity: function(values) {
-			var result = false;
-			array.forEach(values, function(value){
-				if(!isFinite(value)){
-					result = true;
-				}
-			});
-			return result;
-		},
-
-		//checks if the difference between min and max values for plot is not less than 10^-15
-		checkEpsilon: function(solution, id){
-			var obj = this.getMinMaxFromArray(solution.plotValues[id]);
-			return (obj.max - obj.min < Math.pow(10, -15)) && (obj.max != obj.min) && obj.max;
-		},
-
-		formatAxes: function(text, value, precision){
-			if(value > 10000){
-				return value.toPrecision(3);
-			}else if(value % 1 != 0){
-				return value.toPrecision(3);
-			}
-			else{
-				return text;
-			}
-		},
 		/**
 		* this function saves the active solution to the model. so that when the model is
 		* saved the solution is saved with it. Important point is this function is mapping

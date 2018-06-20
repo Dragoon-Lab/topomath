@@ -67,7 +67,7 @@ define([
 
 	var _session = session(query);
 	var _model = new model(_session, query.m, query.p);
-	var _config = new tutorConfiguration(query.m);
+	var _config = tutorConfiguration.getInstance(query.m);
 	var _feedback = _config.get("feedbackMode");
 	console.log(_model);
 
@@ -117,9 +117,17 @@ define([
 				}
 			}
 			if(_model.isStudentMode() && !_model.student.isSolutionAvailable()){
-				console.log("Solution model is not available")
+				/*console.log("Solution model is not available")
 				var box = new messageBox("errorMessageBox", "warn", _messages["solution.missing"], true);
-				box.show();
+				box.show();*/
+				// making the software believe that it is
+				// starting in author mode, as the solution has to
+				// calculated from the author model
+				_model.setStudentMode(false);
+				_config.set("showActiveGraphOnly", true);
+				var g = new Solution(_model);
+				_model.setStudentMode(true);
+				_config.set("showActiveGraphOnly", false);
 			}
 
 		} else {
@@ -138,8 +146,7 @@ define([
 			* this has to be the first to be instantiated
 			* so that session object is not to be passed again and again. ~ Sachin
 			*/
-			var _dragNodes = query.fp == "on"? false : true;
-			console.log("Fixing position of nodes ", _dragNodes);
+			var _fixPosition = query.fp == "on"? true : false;
 			var _logger = logging.getInstance(_session);
 			_logger.log('open-problem', {problem: _logger._session.params.p});
 			/**
@@ -153,13 +160,13 @@ define([
 			var loading = document.getElementById('loadingOverlay');
 			loading.style.display = "none";
 
-			var dm = new drawModel(_model.active, _dragNodes, _feedback);
+			var dm = new drawModel(_model.active, _fixPosition, _feedback);
 			var errDialog = new popupDialog();
 			//create a controller object
-			//For now using empty  ui_config 
+			//For now using empty  ui_config
 			var controllerObject = (!_model.isStudentMode()) ?
 				new controlAuthor(query.m, _model, _config) :
-				new controlStudent(query.m, _model, _config);
+				new controlStudent(query.m, _model, _config, _fixPosition);
 
 			aspect.after(dm, "addNode", function(){
 				controllerObject.computeNodeCount();
@@ -318,8 +325,11 @@ define([
 				if(!_model.isStudentMode()){
 					controllerObject.updateAssignedNode(nodeID, true);
 				}
-				_session.saveModel(_model.model);
 				controllerObject.computeNodeCount();
+			}, true);
+
+			aspect.after(dm, "deleteNode", function(nodeID){
+				_session.saveModel(_model.model);
 			}, true);
 
 			aspect.after(controllerObject, "computeNodeCount", function(id){
@@ -350,7 +360,6 @@ define([
 				_session.saveModel(_model.model)
 				if( problemComplete.errorNotes === "" ){
 					// if in preview mode , Logging is not required:
-					// TODO : Add Logging
 					if(window.history.length === 1)
 						window.close();
 					else
@@ -363,6 +372,12 @@ define([
 					buttons.push(exitButton);
 					errDialog.showDialog(title, problemComplete.errorNotes, buttons, /*optional argument*/"Don't Exit");
 				}
+				var solved = _model.matchesGivenSolution();
+				_logger.logUserEvent({
+					type: "menu-choice",
+					name: "done-node",
+					problemComplete: solved
+				});
 			});
 			//all the things we need to do once node is closed
 			aspect.after(registry.byId('nodeEditor'), "hide", function(){
@@ -382,33 +397,17 @@ define([
 	});
 	
 	var exitTopomath = function(){
-		console.log("Force Exit Topomath");	
-		if(/*controllerObject.logging.doLogging*/ false){
-			/*
-				controllerObject.logging.log('close-problem', {
-					type: "",
-					name: "",
-				}).then(function(){
-					
-				});
-				console.log("Close Called!! ");
-				if(window.history.length === 1)
-					window.close();
-				else
-					window.history.back();
-			*/
-		}else{
-			console.log("Close Called!! ");
-			if(window.history.length === 1)
-				window.close();
-			else
-				window.history.back();
-		}
+		console.log("Force Exit Topomath");
+		// TODO: Add Logging
+		console.log("Close Called!! ");
+		if(window.history.length === 1)
+			window.close();
+		else
+			window.history.back();
 	};
 	var sol;
 	var initSolution = function(_type){
 		sol = new Solution(_model);
-		// TODO: add proble completeness and logging
 		sol.render(_type);
 	};
 });

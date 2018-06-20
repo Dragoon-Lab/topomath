@@ -44,7 +44,7 @@ define([
 		constructor: function (mode, model) {
 			console.log("++++++++ In student constructor");
 			lang.mixin(this.widgetMap, this.controlMap);
-			this._PM = new PM(model, this._config.get("feedbackMode"));
+			this._PM = new PM(model, this._config.get("feedbackMode"), this._fixPosition);
 			ready(this, "populateSelections");
 			// used in equation done handler to handle scenario of new nodes created
 			// from demo nodes
@@ -52,7 +52,8 @@ define([
 			this.init();
 		},
 
-		resettableControls: ["variable","description","value","units","equation"],
+		// A list of control map specific to students
+		resettableControls: ["equation"],
 		variableNodeControls: ["variable","value","units"],
 		equationNodeControls: ["inputs","equation"],
 		commonNodeControls: ["modelType","description"],
@@ -61,8 +62,6 @@ define([
 			// TODO : Check Model Completeness
 			// this.studentControls();
 		},
-		// A list of control map specific to students
-		resettableControls: ["variable","description","value","units","equation"],
 
 		controlMap: {
 			inputs: "inputSelectorStudent",
@@ -74,7 +73,7 @@ define([
 			value: "valueInputbox",
 			unknown: "unknownType",
 			parameter: "parameterType",
-			dynamic: "dynamicType",
+			dynamic: "dynamicType"
 		},
 		populateSelections: function () {
 			/*
@@ -172,9 +171,10 @@ define([
 				this._model.active.setValue(this.currentID, newValue);
 				//console.log("ini value action");
 				this.applyDirectives(this._PM.processAnswer(this.currentID, 'value', newValue));
-			} else if (valueFlag.errorType) {
-				// Log Error
 			}
+			//else if (valueFlag.errorType) {
+				// Log Error
+			//}
 		},
 		handleVariableType: function(e){
 			// Summary : Sets variableType to Unknown/Parameter/Dynamic
@@ -330,6 +330,7 @@ define([
 			if(_variableType){
 				registry.byId(_variableType+"Type").set('checked', 'checked');
 			}
+
 			this.applyDirectives(nodeDirectives);
 			style.set(this.genericDivMap.inputs, "display", "block");
 		},
@@ -362,7 +363,9 @@ define([
 			var authoredID = this._model.authored.getNodeIDByName(variable);
 			//console.log(id,descID,this._model.given.getName(descID));
 			var directives = this._PM.processAnswer(id, 'description', authoredID);
-			directives.push.apply(directives, this._PM.processAnswer(id, 'variable', variable));
+			if(!this._model.authored.isNodeIrrelevant(authoredID))
+				directives.push.apply(directives,
+						this._PM.processAnswer(id, 'variable', variable));
 			// Need to send to PM and update status, but don't actually
 			// apply directives since they are for a different node.
 			array.forEach(directives, function (directive) {
@@ -403,7 +406,10 @@ define([
 			if(authoredID){
 				this._model.active.setAuthoredID(id, authoredID);
 				this._model.active.setDescription(id, this._model.authored.getDescription(authoredID));
-				this._model.active.setPosition(id, 0, this._model.authored.getPosition(authoredID,0));
+				// Fixing position is a part of feedback to student
+				if(this._config.get("feedbackMode") !== "nofeedback" && this._fixPosition){
+					this._model.active.setPosition(id, 0, this._model.authored.getPosition(authoredID,0));
+				}
 			}
 			return authoredID;
 		},

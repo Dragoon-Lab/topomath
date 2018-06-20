@@ -27,6 +27,10 @@ define([
 		displayNext: true,
 		displayValue: false
 	};
+	// TODO : this has to go to user state
+	var hintCounter = {
+		"irrelevant": 0
+	};
 
 	var descriptionTable = {
 		// Summary: This table is used for determining the proper response to a student's 'description' answer (see 
@@ -91,6 +95,21 @@ define([
 				directiveObject.state = directiveObject.message = "partial";
 				directiveObject.disable = directiveObject.displayValue = false;
 				directiveObject.displayNext = "";
+				followUpTasks(obj, part, directiveObject);
+			},
+			nofeedback: function(obj, part){
+				directiveObject.state = directiveObject.message = "";
+				directiveObject.disable = directiveObject.displayValue = false;
+				directiveObject.displayNext = true;
+				followUpTasks(obj, part, directiveObject);
+			}
+		},
+		irrelevant: {
+			feedback: function(obj, part){
+				directiveObject.state = "incorrect";
+				directiveObject.message = "irrelevant";
+				directiveObject.disable = directiveObject.displayValue = false;
+				directiveObject.displayNext = false;
 				followUpTasks(obj, part, directiveObject);
 			},
 			nofeedback: function(obj, part){
@@ -253,6 +272,11 @@ define([
 	function message(/*object*/ obj, /*string*/ nodePart, /*string*/ status){
 		// TO DO : Add Hint messages
 		obj.push({id: "message", attribute: "append", value: fm.start + nodePart + fm.connector + fm[status]});
+		if(status === "irrelevant"){
+			var length = hints[status].length;
+			var index = hintCounter[status] >= length ? length - 1 : hintCounter[status]++;
+			obj.push({id: "message", attribute: "append", value: hints[status][index]});
+		}
 	}
 
 	function disable(/*object*/ obj, /*string*/ nodePart, /*boolean*/ disable){
@@ -273,11 +297,12 @@ define([
 	 *
 	 *****/	
 	return declare(null, {
-		constructor: function(/*string*/ model, /*model.js object*/ feedbackMode){
+		constructor: function(/*string*/ model, /*model.js object*/ feedbackMode, /*string*/ fixPosition){
 			this.model = model;
 			this.showCorrectAnswer = true;
 			this.enableNextFromAuthor = true;
 			this.feedbackMode = feedbackMode;
+			this.fixPosition = fixPosition;
 		},
 		matchingID: null,
 		logging: null,
@@ -357,15 +382,15 @@ define([
 			switch(nodePart){
 				case "description":
 					this.descriptionCounter++;
-					if(this.model.active.getType(studentID) === this.model.authored.getType(authoredID)){
+					if(this.model.active.isNodeIrrelevant(studentID))
+						interpretation = "irrelevant";
+					else if(this.model.active.getType(studentID) === this.model.authored.getType(authoredID))
 						interpretation = "correct";
-					}else{
-						if(model.authored.getAttemptCount(authoredID, nodePart) > 0 ){
+					else
+						if(model.authored.getAttemptCount(authoredID, nodePart) > 0 )
 							interpretation = "secondFailure";
-						}else{
+						else
 							interpretation = "firstFailure";
-						}
-					}
 					break;
 				case "variable":
 					interpret(this.model.authored.getVariable(authoredID));
@@ -476,8 +501,10 @@ define([
 							else
 								updateStatus(returnObj, this.model);
 							this.descriptionCounter = 0;
-							this.model.active.setPosition(id, 0, this.model.authored.getPosition(givenID,0));
-						}
+							if(this.feedbackMode !== "nofeedback" && this.fixPosition)
+								this.model.active.setPosition(id, 0, this.model.authored.getPosition(givenID,0));
+						} else if(returnObj[i].value === "incorrect")
+							this.model.student.incrementAssistanceScore(id);
 					}
 				}else{
 					givenID = this.model.student.getAuthoredID(id);
@@ -486,7 +513,7 @@ define([
 					updateStatus(returnObj, this.model);
 					currentStatus = this.model.authored.getStatus(givenID, nodePart); //get current status set in given model
 					if (currentStatus === "correct" || currentStatus === "demo") {
-						if(nodePart === "variableType"){
+						if(nodePart === "variableType" && this.feedbackMode !== "nofeedback" && this.fixPosition){
 							this.model.active.setPosition(id, 1, this.model.authored.getPosition(givenID, 1));
 						}
 					}else{

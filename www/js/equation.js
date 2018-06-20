@@ -52,7 +52,6 @@ define([
 				});
 				return equation;*/
 			}
-
 			if(params.nameToId){
 				var nodeList = []; //this holds new node ids and variable objects
 				var variableList = []; // this holds the variable list
@@ -60,7 +59,7 @@ define([
 				var dynamicList = []; //this list holds the prior nodes which are to be created further in controller
 				var isError = false; //this is a special variable which indicates to the controller whether there is an error
 										// with using prior function on a variable which is non dynamic
-
+				var unknownNodesList = []; // List that holds nodes created by student not in the model
 				array.forEach(expressions, function(expr){
 					variableList = variableList.concat(expr.variables());
 					var currentPriorList = expr.priors();
@@ -116,6 +115,8 @@ define([
 											}
 										});
 									}
+								}else{
+									unknownNodesList.push(variable);
 								}
 							} else {
 								// when auto created nodes were not allowed but equation had non-existent nodes.
@@ -133,13 +134,18 @@ define([
 					connections = connections.concat(_c);
 					connections = Array.from(new Set(connections.map(JSON.stringify))).map(JSON.parse);
 				}, this);
+				if(subModel.isStudentMode() && unknownNodesList && unknownNodesList.length > 0){
+					var _returnObj = {"newNodeList": nodeList, "unknownNodesList" : unknownNodesList};
+					throw new Error("unknown variables" + JSON.stringify(_returnObj));
+				}
 				return {
 					variableList: variableList,
 					newNodeList: nodeList,
 					connections: connections,
 					dynamicList: dynamicList,
 					equation: expressions[0].toString() + " " + this.equalto + " " + expressions[1].toString(),
-					error: isError
+					error: isError,
+					unknownNodesList : unknownNodesList
 				};
 			}
 			else{

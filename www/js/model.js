@@ -215,6 +215,9 @@ define([
 			isStudentMode: function(){
 				return obj._session.isStudentMode;
 			},
+			setStudentMode: function(value){
+				obj._session.isStudentMode = value;
+			},
 			matchesGivenSolution: function(){
 				var flag = this.areRequiredNodesVisible() &&
 						array.every(this.student.getNodes(), function(sNode){
@@ -1077,11 +1080,6 @@ define([
 			},
 			getCorrectness: function(/*string*/ studentID){
 				var node = this.getNode(studentID);
-				// if node is irrelevant then it is not part of the equations and
-				// hence has to be marked incorrect
-				if(this.isNodeIrrelevant(studentID))
-					return "incorrect";
-
 				var rank = {
 					"incorrect": 3,
 					"demo": 2,

@@ -5,7 +5,7 @@ define([
 	"dijit/registry",
 	"dojo/dom",
 	"dojo/on",
-	"dijit/form/HorizontalSlider",
+	"dijit/form/HorizontalSlider"
 ], function(declare, lang, array, registry, dom, on, HorizontalSlider){
 	return declare(null, {
 		sliderIDPrefix: "sliderGraph",
