@@ -151,7 +151,9 @@ define([
 		authorControls: function(){
 			console.log("++++++++ Setting AUTHOR format in Node Editor.");
 			style.set('givenToStudentToggleContainer', 'display', 'block');
-			style.set('variableOptionalityContainer', 'display', 'block');
+			//disabling the variable optionality container for now since new author mode variable editor does not necessiate this field
+			//TODO: further code clean up on discussion
+			//style.set('variableOptionalityContainer', 'display', 'block');
 			style.set('descriptionInputboxContainer', 'display', 'inline-block');
 			style.set('variableInputboxContainer', 'display', 'inline-block');
 			style.set('valueInputboxContainer', 'display', 'block');
@@ -583,7 +585,9 @@ define([
 
 		initialViewSettings: function(type){
 			//make display none for all fields initially
-			var qtyElements = ["variableOptionalityContainer","descriptionInputboxContainer","variableTypeContainer","variableInputboxContainer","valueUnitsContainer","rootNodeToggleContainer"];
+			//removed optionality container from initial view settings
+			//TODO: further clean up necessary after discussion
+			var qtyElements = ["descriptionInputboxContainer","variableTypeContainer","variableInputboxContainer","valueUnitsContainer","rootNodeToggleContainer"];
 			var eqElements = ["descriptionInputboxContainer","expressionDiv"];
 		
 			if(type == "quantity"){

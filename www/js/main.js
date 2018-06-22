@@ -121,9 +121,17 @@ define([
 				}
 			}
 			if(_model.isStudentMode() && !_model.student.isSolutionAvailable()){
-				console.log("Solution model is not available")
+				/*console.log("Solution model is not available")
 				var box = new messageBox("errorMessageBox", "warn", _messages["solution.missing"], true);
-				box.show();
+				box.show();*/
+				// making the software believe that it is
+				// starting in author mode, as the solution has to
+				// calculated from the author model
+				_model.setStudentMode(false);
+				_config.set("showActiveGraphOnly", true);
+				var g = new Solution(_model);
+				_model.setStudentMode(true);
+				_config.set("showActiveGraphOnly", false);
 			}
 
 		} else {

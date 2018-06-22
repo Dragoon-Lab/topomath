@@ -217,6 +217,9 @@ define([
 			isStudentMode: function(){
 				return obj._session.isStudentMode;
 			},
+			setStudentMode: function(value){
+				obj._session.isStudentMode = value;
+			},
 			matchesGivenSolution: function(){
 				var flag = this.areRequiredNodesVisible() &&
 						array.every(this.student.getNodes(), function(sNode){
