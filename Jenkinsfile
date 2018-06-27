@@ -16,6 +16,13 @@ pipeline {
 		sh 'touch db_user_password'
             }
         }
+        stage('Test'){
+            steps {
+                dir("www"){
+                    sh 'npm run test'
+                }
+            }
+        }
         stage('Build'){
             steps {
                 dir("www"){

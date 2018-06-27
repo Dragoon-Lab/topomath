@@ -4,10 +4,19 @@
 */
 
 var testPath = require('./test-paths.js');
+exports.assert = require('../../www/node_modules/chai').assert;
 var MAX_DROPDOWN_IDS = 27 // The maximum number of dropdown IDs we'll support
 //var lastDropdownID = 0;  // Tracks the last dropdown ID.  Should be reset to 0 for every new session
 var popupDialogButtonCloseID = 0; // Tracks number of times the popup dialog dialog is opened.
 var TIMEOUT = 5000;
+var studentFieldNamesMap = {
+    "description":"selectDescription",
+    "variable":"variableInputboxStudent",
+    "variableType":"variableType",
+    "value":"valueInputbox",
+    "units":"unitsSelectorStudent",
+    "equation":"equationInputbox"
+}
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Utility functions (used within the API)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -55,6 +64,10 @@ function findIdbyName(client, nodeName){
         counter++;
     }
     return result;
+}
+
+function findIdbyDescription(client, description){
+    client.execute()
 }
 
 function getUrlRoot(){
@@ -144,7 +157,7 @@ exports.closeModel = function(client){
     client.waitUntil(function(){
         return getCssPropertyofElement(client, "#popupDialog", 'display') === 'none';
     }, TIMEOUT);
-    client.click("#DoneButton");
+    client.click("#doneButton");
     popupDialogButtonCloseID++;
 }
 
@@ -163,6 +176,13 @@ exports.forceCloseModel = function(client){
         return getCssPropertyofElement(client, "#popupDialog", 'display') !== 'none';
     }, TIMEOUT);
     client.click("#dijit_form_Button_"+(popupDialogButtonCloseID-1));
+}
+
+exports.selectGraphTab = function(client) {
+    client.waitUntil(function(){
+        return getCssPropertyofElement(client, "#popupDialog", 'display') === 'none';
+    }, TIMEOUT);
+    client.click("#graphButton");
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -187,11 +207,40 @@ exports.openEditorforNode = function(client, nodeName, isID){
 }
 
 exports.setNodeDescription = function(client, description){
-    client.setValue('#descriptionInputbox', description);
+    if(client.isVisibleWithinViewport('#descriptionInputbox')){
+        client.setValue('#descriptionInputbox', description);
+    }
+    else if(client.isVisibleWithinViewport('#selectDescription')){
+        client.waitForVisible('#selectDescription', TIMEOUT);
+        client.click("#selectDescription");
+        client.execute(function(description){
+            var ele = dijit.byId('selectDescription');
+            var options = ele.options;
+            var _desc = description;
+            var _id = options.filter(function(el){
+                return el.label === _desc;
+            }, _desc);
+            ele.set("value",_id[0].value);
+        }, description);
+        client.waitForVisible('#selectDescription', TIMEOUT);
+        client.click("#selectDescription");
+    }
 }
 
 exports.setQuantityNodeVariable = function(client, variable){
-    client.setValue('#variableInputbox', variable);
+    if(client.isVisibleWithinViewport('#variableInputbox'))
+        client.setValue('#variableInputbox', variable);
+    else if(client.isVisibleWithinViewport('#variableInputboxStudent')){
+        client.execute(function(variable){
+            var ele = dijit.byId('variableInputboxStudent');
+            var options = ele.options;
+            var _desc = variable;
+            var _id = options.filter(function(el){
+                return el.label === _desc;
+            }, _desc);
+            ele.set("value",_id[0].value);
+        }, variable);
+    }
 }
 
 exports.setQuantityNodeVariableType = function(client, variableType){
@@ -204,8 +253,21 @@ exports.setQuantityNodeValue = function(client,value){
 }
 
 exports.setQuantityNodeUnits = function(client, unitsValue){
-    client.setValue('#unitsSelector', unitsValue);
-    client.buttonDown(2);
+    if(client.isVisibleWithinViewport('#unitsSelector')){
+        client.setValue('#unitsSelector', unitsValue);
+    }else if(client.isVisibleWithinViewport('#unitsSelectorStudent')){
+        client.click('#unitsSelectorStudent');
+        client.execute(function(unitsValue){
+            var ele = dijit.byId('unitsSelectorStudent');
+            var options = ele.options;
+            var _desc = unitsValue;
+            var _id = options.filter(function(el){
+                return el.label === _desc;
+            }, _desc);
+            ele.set("value",_id[0].value);
+        }, unitsValue);
+        client.click('#unitsSelectorStudent');
+    }
 }
 
 exports.setQuantityNodeRoot = function(client){ 
@@ -213,6 +275,8 @@ exports.setQuantityNodeRoot = function(client){
 }
 
 exports.nodeEditorDone = function(client){
+    client.doubleClick("#nodeEditor_title"); // Click on title of the editor to get closeButton in viewport
+    client.waitForVisible('#closeButton', TIMEOUT);
     client.click('#closeButton');
     client.waitUntil(function(){
         return getCssPropertyofElement(client, "#nodeEditor", 'opacity') === 0;
@@ -249,7 +313,7 @@ exports.getNodeVariableType = function(client){
 }
 
 exports.getNodeValue = function(client){
-    return client.getValue('#valueInputbox')
+    return client.getValue('#valueInputbox');
 }
 
 exports.getNodeUnits = function(client){
@@ -257,7 +321,11 @@ exports.getNodeUnits = function(client){
 }
 
 exports.getNodeEquation = function(client){
-    return client.getValue("#equationInputbox");
+    if(client.isVisibleWithinViewport("#equationInputbox")){
+        return client.getValue("#equationInputbox");
+    }else if(client.isVisibleWithinViewport("equationInputboxStudent")){
+        return client.getValue("#equationInputboxStudent");
+    }
 }
 
 exports.pressPlusButton = function(client){    
@@ -289,7 +357,11 @@ exports.isRoot = function(client){
 }
 
 exports.setNodeExpression = function(client, expression){
-    client.setValue('#equationInputbox', expression);
+    if(client.isVisibleWithinViewport('#equationInputbox')){
+        client.setValue('#equationInputbox', expression);
+    }else if(client.isVisibleWithinViewport('#equationInputboxStudent')){
+        client.setValue('#equationInputboxStudent', expression);
+    }
 }
 
 exports.checkRootNode = function(client){
@@ -298,9 +370,9 @@ exports.checkRootNode = function(client){
     }, TIMEOUT);
     var errors = client.getHTML("#popupDialogContent li", false);
     var result = errors.find(function(err){
-        return err === 'No variable is marked as Root';
+        return err === 'No quantity is marked as Sought';
     })
-    if(result === "No variable is marked as Root") return false;
+    if(result === "No quantity is marked as Sought") return false;
     else return true;
 }
 
@@ -322,7 +394,7 @@ exports.getNodeColor = function(client, nodeName, isID){
     }else{
         nodeName = "#id"+findIdbyName(client, nodeName);
     }
-    return getCssPropertyofElement(client, nodeName, 'border-color');
+    return getCssPropertyofElement(client, nodeName, 'background-color');
 }
 
 exports.getNodeDescriptionColor = function(client, nodeName, isID){
@@ -332,7 +404,7 @@ exports.getNodeDescriptionColor = function(client, nodeName, isID){
         nodeName = "#id"+findIdbyName(client, nodeName);
     }
     var element = nodeName + '_description';
-    return getCssPropertyofElement(client, element, 'border-color');
+    return getCssPropertyofElement(client, element, 'background-color');
 }
 
 exports.getNodeDescriptionContent = function(client, nodeName, isID){
@@ -359,4 +431,40 @@ exports.deleteEquationNodeByRightClick = function(client, nodeName){
     client.rightClick("#"+nodeName,50,10);
     nodeName = nodeName.replace("id","");
     client.click('#dijit_Menu_'+nodeName);
+}
+
+exports.getNodeFieldColor = function (client, field) {
+    var returnObj =  client.execute(function(studentFieldNamesMap, field){
+                        var ele = dijit.byId(studentFieldNamesMap[field]);
+                        return ele.domNode.style.backgroundColor;
+                    }, studentFieldNamesMap, field);
+    return returnObj.value;
+}
+
+exports.getNodeFieldValue = function (client, field) {
+    var returnObj = client.execute(function(studentFieldNamesMap, field){
+                        var ele = dijit.byId(studentFieldNamesMap[field]);
+                        var _returnObj = ele.options.filter(function(el){
+                            return el.selected == true;
+                        });
+                        return _returnObj[0].label;
+                    }, studentFieldNamesMap, field);
+    return returnObj.value;
+}
+
+exports.getGraphMessage = function (client) {
+    var returnObj = client.execute(function (){
+        var ele = dojo.byId('solution');
+        return ele.children[1].children.SliderPane.children.solutionMessage.children[0].children[0].children[0].innerText;
+    });
+    return returnObj.value;
+}
+
+exports.getPopupMessage = function(client, msg){
+    client.waitUntil(function(){
+        return getCssPropertyofElement(client, "#popupDialog", 'display') !== 'none';
+    }, TIMEOUT);
+    var errors = client.getHTML("#popupDialogContent li", false);
+    if(errors === msg) return true;
+    else return false;
 }
