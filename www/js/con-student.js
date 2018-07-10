@@ -227,7 +227,7 @@ define([
 					if(dd[i].attribute === "value")
 						this.demoParse = this.equationAnalysis([], false, dd[i].value);
 				}
-				if(this.demoParse && this.demoParse.priorError){
+				if(this.demoParse && this.demoParse.error){
 					for(i = 0; i < dd.length; i++){
 						if(dd[i].attribute === "status" || dd[i].attribute === "disabled" || dd[i].id === "message"){
 							dd.splice(i, 1);
@@ -235,7 +235,7 @@ define([
 						}
 					}
 				}
-				if(!parse.priorError)
+				if(!parse.error)
 					directives = directives.concat(dd);
 				var context = this;
 			}

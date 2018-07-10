@@ -1029,7 +1029,7 @@ define([
 					}));
 				}
 
-				if(parseObject.priorError){ //priorError specifically indicates if there is an error where in a non dynamic node/variable is used inside prior function
+				if(parseObject.error){ //error specifically indicates if there is an error where in a non dynamic node/variable is used inside prior function
 					directives.push({id: 'message', attribute: 'append', value: 'Please make a node dynamic before using it in prior function'});
 					directives.push({id: 'equation', attribute: 'status', value: 'incorrect'});
 					if(widget.disabled)

@@ -880,7 +880,7 @@ define([
 					autoCreateNodes: false
 				};
 				convert = equation.convert(params);
-				if(convert.success){
+				if(!convert.error){
 					var links = [];
 					this._model.student.setLinks(convert.connections, studentNodeID);
 					this._model.student.setEquation(studentNodeID, convert.equation);
