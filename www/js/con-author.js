@@ -29,8 +29,9 @@ define([
 	'./controller',
 	"./equation",
 	"./typechecker",
+	"./popup-dialog",
 	"dojo/domReady!"
-], function(array, declare, lang, style, keys, ready, on, memory, aspect, dom, domClass, domStyle, registry, domList, controller, equation, typechecker){
+], function(array, declare, lang, style, keys, ready, on, memory, aspect, dom, domClass, domStyle, registry, domList, controller, equation, typechecker, popupDialog){
 
 	// Summary:
 	//			MVC for the node editor, for authors
@@ -115,6 +116,33 @@ define([
 						}
 						break;
 
+					case "schema":
+						var message = "Please enter a valid schema";
+						if(value){
+							returnObj.push({id:"schemas", attribute:"status", value:"entered"});
+							var message = "valid schema has been entered";
+						}else{
+							returnObj.push({id:"schemas", attribute:"status", value:""});
+						}
+						returnObj.push({id:"message", attribute:"append", value:message});
+						break;
+
+					case "entity":
+						var message = "a valid entity name has been entered";
+						if(!validInput){
+							returnObj.push({id:"entity", attribute:"status", value:"incorrect"});
+							message = "entity values can only have alphanumerics separated by a semicolon (;)"
+						}
+						else if(!value){
+							message = "entity cannot be an empty value";
+							returnObj.push({id:"entity", attribute:"status", value:""});
+						}
+						else{
+							returnObj.push({id:"entity", attribute:"status", value:"entered"});
+						}
+						returnObj.push({id:"message", attribute:"append", value:message});
+						break;
+
 					default:
 						throw new Error("Unknown type: "+ nodeType + ".");
 				}
@@ -134,11 +162,11 @@ define([
 
 		resettableControls: ["variable","description","value","units","equation"],
 		variableNodeControls: ["variable","value","units","kind","root"],
-		equationNodeControls: ["inputs","equation"],
+		equationNodeControls: ["inputs","equation","schemas"],
 		commonNodeControls: ["setStudent","modelType","description"],
 
 		controlMap: {
-			inputs: "inputSelector",
+			//inputs: "inputSelector",
 			variable: "variableInputbox",
 			equation: "equationInputbox",
 			description: "descriptionInputbox",
@@ -146,7 +174,10 @@ define([
 			units: "unitsSelector",
 			root: "rootNodeToggleCheckbox",
 			setStudent: "givenToStudentCheckbox",
-			modelType: "modelSelector"
+			modelType: "modelSelector",
+			schemas: "schemaSelector",
+			schemaDisplay: "schemaDescriptionQuestionMark",
+			entity: "entityInputbox"
 		},
 		authorControls: function(){
 			console.log("++++++++ Setting AUTHOR format in Node Editor.");
@@ -154,14 +185,17 @@ define([
 			//disabling the variable optionality container for now since new author mode variable editor does not necessiate this field
 			//TODO: further code clean up on discussion
 			//style.set('variableOptionalityContainer', 'display', 'block');
+			style.set('schemaSelectorContainer', 'display', 'block');
+			style.set('entityInputboxContainer', 'display', 'block');
 			style.set('descriptionInputboxContainer', 'display', 'inline-block');
 			style.set('variableInputboxContainer', 'display', 'inline-block');
-			style.set('valueInputboxContainer', 'display', 'block');
+			//style.set('valueInputboxContainer', 'display', 'block');
 			//style.set('unitDiv', 'display', 'none');
-			style.set('unitsSelectorContainer', 'display', 'block');
-			style.set('rootNodeToggleContainer', 'display', 'block');
+			//style.set('unitsSelectorContainer', 'display', 'block');
+			//style.set('rootNodeToggleContainer', 'display', 'block');
 			style.set('expressionDiv', 'display', 'block');
-			style.set('inputSelectorContainer', 'display', 'block');
+			//This has been removed in new author mode editor design
+			//style.set('inputSelectorContainer', 'display', 'block');
 			style.set('equationInputbox', 'display', 'block');
 
 		},
@@ -279,6 +313,7 @@ define([
 				value: kind
 			});
 		},
+		/* old version for a qty based node, keeping this for now as comments for future use
 		handleDescription: function(description){
 			// Summary: Checks to see if the given quantity node description exists; if the
 			//		description doesn't exist, it sets the description of the current node.
@@ -307,6 +342,13 @@ define([
 			}, logObj);
 			this.logSolutionStep(logObj);
 			this.enableDisableSetStudentNode();
+		}, */
+
+		handleEquationDescription: function(description){
+			console.log("In handle equation description");
+			//equation is auto generated
+			//so, no feedback coloring/messages is necessary here
+			this._model.authored.setDescription(this.currentID,schema);		
 		},
 		
 		handleRoot: function(root){
@@ -396,6 +438,37 @@ define([
 				property: "units",
 				usage: valueFor
 			});
+		},
+
+		handleSchemas: function(schema){
+			console.log("handle schemas called", schema);
+			if(schema == "defaultSelect")
+				schema = null;
+			var returnObj = this.authorPM.process(this.currentID, "schema", schema);
+			console.log("Returned from author PM schemas: ", returnObj);
+			this.applyDirectives(returnObj);
+			this._model.authored.setSchema(this.currentID,schema);
+			this.updateEquationDescription();
+		},
+
+		handleEntities: function(entity){
+			console.log("handle entities called", entity);
+			//entities can only be alphanumerics and are separated by semi colons
+			var validInput = true;
+			if(entity == ''){
+				entity = null;
+			}
+			else{
+				var ourReg = /^([a-zA-Z0-9 ;]+)$/;
+				entity = ""+entity;
+				if(!entity.match(ourReg))
+					validInput = false;
+			}
+			var returnObj = this.authorPM.process(this.currentID, "entity", entity, validInput);
+			console.log("return obj for entities", returnObj);
+			this.applyDirectives(returnObj);
+			this._model.authored.setEntities(this.currentID,entity);
+			this.updateEquationDescription();
 		},
 		/*
 		 Handler for value input
@@ -583,6 +656,24 @@ define([
 			//Summary: Displays a message on opening node editor if expression was cleared
 		},
 
+		handleSchemaDisplay: function(){
+			console.log("handle schema display called");
+			var schemaDialog =  new popupDialog();
+			var schemaHtml = "<table id='schemaDisplayTable'><col style='width: 20%''><col style='width:20%'><col style='width:60%'><thead><tr><th>Name</th><th>Equation</th><th>Description</th></tr></thead><tbody>";
+			var schemaTabOb = JSON.parse(sessionStorage.getItem("schema_tab_topo"));
+				for(var parSchema in schemaTabOb){
+					schemaTabOb[parSchema].forEach(function(atomSchema){
+								var sname = atomSchema["Name"];
+								var seq = atomSchema["Equation"];
+								var scom = atomSchema["Comments"];
+								schemaHtml = schemaHtml + "<tr><td>"+ sname + "</td><td>" + seq + "</td><td>" + scom + "</td></tr>";
+					})
+				}
+				schemaHtml = schemaHtml + "</tbody></table>";
+			schemaDialog.showDialog("Schema Table", schemaHtml, [], "Close Table");
+
+		},
+
 		initialViewSettings: function(type){
 			//make display none for all fields initially
 			//removed optionality container from initial view settings
@@ -631,6 +722,7 @@ define([
 			var quantityDescriptions = [];
 			var equationDescriptions = [];
 			var units = [];	
+			var schemaList = [];
 
 			var desc = this._model.authored.getDescription(nodeid);
 			registry.byId(this.controlMap.description).set('value', desc || '', false);
@@ -701,7 +793,7 @@ define([
 				var varWidget = registry.byId(this.controlMap.variable);
 				var unitsWidget = registry.byId(this.controlMap.units);
 				var kind = registry.byId(this.controlMap.kind);
-			
+				
 				var value = this._model.authored.getGenus(this.currentID);
 				if(!value)
 					value='required';
@@ -768,8 +860,10 @@ define([
 			else if(nodeType == "equation"){
 				
 				// populate inputs
-				var inputsWidget = registry.byId(this.controlMap.inputs);
+				//var inputsWidget = registry.byId(this.controlMap.inputs);
 				var eqWidget = registry.byId(this.controlMap.equation);
+				var schemaWidget = registry.byId(this.controlMap.schemas);
+			
 
 				//Enable or disable the given to student checkbox
 				if(desc != null){
@@ -779,10 +873,11 @@ define([
 					registry.byId(this.controlMap.setStudent).set('disabled', true);
 				}
 
-				m = new memory({data: inputs});
-				inputsWidget.set("store", m);
+				//m = new memory({data: inputs});
+				//inputsWidget.set("store", m);
 				
-				descriptionWidget.set("store", new memory({data: equationDescriptions}));
+				descriptionWidget.set('disabled', true);
+				this.updateEquationDescription();
 
 				//In case equation node is already present
 				//color Equation widget
@@ -795,6 +890,22 @@ define([
 					else
 						this.applyDirectives(this.authorPM.process(this.currentID, 'equation', this._model.authored.getEquation(this.currentID), true));
 				}
+				//sessionStorage contains the schema table, load options from schema table
+				var schemasList = [];
+				var schemaTabOb = JSON.parse(sessionStorage.getItem("schema_tab_topo"));
+				for(var parSchema in schemaTabOb){
+					schemaTabOb[parSchema].forEach(function(atomSchema){
+								var sname = atomSchema["Name"];
+								var obj = {value: sname, label: sname};
+								schemaWidget.addOption(obj);
+					})
+				}
+				/*
+				console.log("schema list", schemasList);
+				var sm = new memory({data: schemasList});
+				console.log(sm);
+				schemaWidget.set("store", sm);
+				*/
 			}
 			
 			//color description widget , common to both node types
@@ -1123,6 +1234,84 @@ define([
 					}
 				}				
 			}
-		}
+		},
+		updateEquationDescription: function(){
+			console.log("updating equation description ...");
+			var schema = registry.byId(this.controlMap.schemas).get("value");
+			if(schema == 'defaultSelect')
+				schema = '';
+			var entity_ar = registry.byId(this.controlMap.entity).get("value");
+			var entity = entity_ar.split(';');
+			registry.byId(this.controlMap.description).set("value", schema+": "+entity[0]);
+		},
+
+		/* commenting these for this PR
+		updateEquationFromSchema: function(){
+			//equation from schema name
+			var schemaTabOb = JSON.parse(sessionStorage.getItem("schema_tab_topo"));
+			//var eqWidget = this.controlMap.equation;
+			var eqVarAr = [];
+			var rootEq = '';
+			//console.log("schema table obj", schemaTabOb);
+			
+			for(var parSchema in schemaTabOb){
+				var schema = registry.byId(this.controlMap.schemas).get("value");
+				var hasEq = schemaTabOb[parSchema].some(function(atomSchema){
+								if(schema == atomSchema["Name"]){
+									// For the matched schema, generate appropriate equation
+									rootEq = atomSchema["Equation"];
+									eqVarAr = Object.keys(atomSchema["Mapping"]);
+									return true;
+								}
+							});
+				//console.log("equation retrieved", hasEq, rootEq, eqVarAr);
+				if(hasEq)
+					break;
+			}
+
+			var cur_num = this.generateNumber(eqVarAr);
+			//using this cur_num replace the equation with suffixed to that number	
+			console.log("generated num", cur_num);
+		},
+	
+		generateNumber: function(eqVarAr){
+			//this function has to generate the appropriate equation numbers to the current schema for the current session
+			//there has to be a session level data structure of numbers keeping track of the variables 
+			//need some more work, pausing for now
+			if(!sessionStorage.getItem("num_generator")){
+				//if the ds does not exists, create one and assign all 1's in the basic case. THis could generally occur when user is creating first equation
+				var numGenOb = {'1': eqVarAr};
+				sessionStorage.setItem("num_generator", JSON.stringify(numGenOb));
+				console.log("new num_generator created",sessionStorage);
+				return "1";
+			}
+			else{
+				var numGenOb = JSON.parse(sessionStorage.getItem("num_generator"));
+				var numList = Object.keys(numGenOb);
+				var isExisting = numList.some(function(num){
+					//check from eqAr
+					var i = 0;
+					var hit = 0;
+					while(!hit){
+						
+						var found = numGenOb[num].some(function(elem){
+							if( eqAr[i] == elem)
+								return true;
+						});
+						if(found)
+							break;
+						else
+							i++;
+						if(i == eqAr.length){
+							//none has been found
+							hit = 1;
+						}
+					}
+					if(hit)
+						return num;	
+				});
+			}
+
+		} */
 	});
 });

@@ -24,7 +24,6 @@ define([], function(){
 			showActiveGraphOnly: true,
 			dottedNodesUI: true,
 			buttons: [
-				"createQuantityNodeButton",
 				"createEquationNodeButton",
 				"graphButton",
 				"tableButton",

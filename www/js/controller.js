@@ -77,7 +77,7 @@ define([
 			value: "valueInputboxContainer",
 			units: "unitsSelectorContainerStudent",
 			equation: "expressionDiv",
-			inputs: "inputSelectorContainerStudent"
+			inputs: "inputSelectorContainerStudent",
 		},
 		// A list of all widgets.  (The constructor mixes this with controlMap)
 		widgetMap: {
@@ -86,21 +86,24 @@ define([
 		},
 
 		// Controls that are select menus
-		selects: ['description', 'units', 'inputs'],
-
-		equationButtons: ["plus", "minus", "times", "divide", "equals", "undo", "equationDone"],
-
+		// note that topomath author design has been updated, so updating selects and equationButtons array
+		//selects: ['description', 'units', 'inputs'],
+		selects: ['description', 'units'],
+		
+		//equationButtons: ["plus", "minus", "times", "divide", "equals", "undo", "equationDone"],
+		equationButtons: [],
 		// attributes that should be saved in the status section
 		validStatus: {status: true, disabled: true},
 		_variableTypes: ["unknown","parameter","dynamic"],
 		
 		questionMarkButtons : {
 					"authorDescriptionQuestionMark": "The quantity computed by the node ",
-					"inputsQuestionMark": "Select a quantity to enter into the expression above.  Much faster than typing.",
+					//"inputsQuestionMark": "Select a quantity to enter into the expression above.  Much faster than typing.",
 					"valueQuestionMark": "This is a number, typically given to you in the system description.",
-					"operationsQuestionMark": "Click one of these to enter it in the expression above. <br> See the Help menu at the top of the screen for a list of other mathematical operators and functions that you can type in.",
+					//"operationsQuestionMark": "Click one of these to enter it in the expression above. <br> See the Help menu at the top of the screen for a list of other mathematical operators and functions that you can type in.",
 					"questionMarkRoot": "Mark this node as Sought node",
-					"descriptionQuestionMark": "Select a description for node"
+					"descriptionQuestionMark": "Select a description for node",
+					"entityDescriptionQuestionMark": "Enter a list of valid entity names, separated by semicolons"
 		},
 		constructor: function(mode, model, config, fixPosition){
 			console.log("+++++++++ In generic controller constructor");
@@ -412,9 +415,9 @@ define([
 			}));
 
 			 //event handler for quantity node description field
-			var desc_qty = registry.byId(this.controlMap.description);
-			desc_qty.on('Change', lang.hitch(this, function(){
-				return this.disableHandlers || this.handleDescription.apply(this, arguments);
+			var desc_eq = registry.byId(this.controlMap.description);
+			desc_eq.on('Change', lang.hitch(this, function(){
+				return this.disableHandlers || this.handleEquationDescription.apply(this, arguments);
 			}));
 
 			/*
@@ -452,14 +455,25 @@ define([
 				}
 			}));
 
+			/*
 			var inputsWidget = registry.byId(this.controlMap.inputs);
 			inputsWidget.on('Change',  lang.hitch(this, function(){
 				return this.disableHandlers || this.handleInputs.apply(this, arguments);
 			}));
-
+			*/
 			var unitsWidget = registry.byId(this.controlMap.units);
 			unitsWidget.on('Change', lang.hitch(this, function(){
 				return this.disableHandlers || this.handleUnits.apply(this, arguments);
+			}));
+
+			var schemasWidget = registry.byId(this.controlMap.schemas);
+			schemasWidget.on('Change', lang.hitch(this, function(){
+				return this.disableHandlers || this.handleSchemas.apply(this, arguments);
+			}));
+
+			var entityWidget = registry.byId(this.controlMap.entity);
+			entityWidget.on('Change', lang.hitch(this, function(){
+				return this.disableHandlers || this.handleEntities.apply(this, arguments);
 			}));
 
 			var equationWidget = registry.byId(this.controlMap.equation);
@@ -479,6 +493,11 @@ define([
 				var end = this.textbox.selectionEnd;
 				this.set("cursorPosition", [start, end]);
 			});
+
+			var schemaDisplayQmark = registry.byId(this.controlMap.schemaDisplay);
+			schemaDisplayQmark.on('Click', lang.hitch(this, function(){
+				return this.disableHandlers || this.handleSchemaDisplay.apply(this, arguments);
+			}));
 
 			// When the equation box is enabled/disabled, do the same for
 			// the inputs widgets.
