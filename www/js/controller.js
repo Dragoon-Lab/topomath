@@ -97,7 +97,6 @@ define([
 		_variableTypes: ["unknown","parameter","dynamic"],
 		
 		questionMarkButtons : {
-					"authorDescriptionQuestionMark": "The quantity computed by the node ",
 					//"inputsQuestionMark": "Select a quantity to enter into the expression above.  Much faster than typing.",
 					"valueQuestionMark": "This is a number, typically given to you in the system description.",
 					//"operationsQuestionMark": "Click one of these to enter it in the expression above. <br> See the Help menu at the top of the screen for a list of other mathematical operators and functions that you can type in.",
@@ -414,7 +413,7 @@ define([
 				return this.disableHandlers || this.handleVariableName.apply(this, arguments);
 			}));
 
-			 //event handler for quantity node description field
+			 //event handler for equation node description field
 			var desc_eq = registry.byId(this.controlMap.description);
 			desc_eq.on('Change', lang.hitch(this, function(){
 				return this.disableHandlers || this.handleEquationDescription.apply(this, arguments);
@@ -1158,6 +1157,42 @@ define([
 
 		sortDescriptions: function(){
 			return this._model.active.getDescriptionsSortedByName();
+		},
+
+		getSchemaHtml: function(){
+			//store schema html once in sessionStorage if it does not exist and return from sessionStorage each time
+			if(sessionStorage.getItem("schema_table"))
+				return sessionStorage.getItem("schema_table");
+			var schemaHtml = "<table id='schemaDisplayTable'><col style='width: 20%''><col style='width:20%'><col style='width:60%'><thead><tr><th>Name</th><th>Equation</th><th>Description</th></tr></thead><tbody>";
+			var schemaTabOb = JSON.parse(sessionStorage.getItem("schema_tab_topo"));
+			for(var parSchema in schemaTabOb){
+				schemaTabOb[parSchema].forEach(function(atomSchema){
+					var sname = atomSchema["Name"];
+					var seq = atomSchema["Equation"];
+					var scom = atomSchema["Comments"];
+					schemaHtml = schemaHtml + "<tr><td>"+ sname + "</td><td>" + seq + "</td><td>" + scom + "</td></tr>";
+				})
+			}
+			schemaHtml = schemaHtml + "</tbody></table>";
+			sessionStorage.setItem("schema_table", schemaHtml);
+			return sessionStorage.getItem("schema_table");	
+		},
+
+		loadSchemaOptions: function(){
+			//check if schema options have been loaded and if not, load them to schemaWidget
+			if(sessionStorage.getItem("schema_options_loaded"))
+				return;
+			var schemasList = [];
+			var schemaTabOb = JSON.parse(sessionStorage.getItem("schema_tab_topo"));
+			var schemaWidget = registry.byId(this.controlMap.schemas);
+			for(var parSchema in schemaTabOb){
+				schemaTabOb[parSchema].forEach(function(atomSchema){
+					var sname = atomSchema["Name"];
+					var obj = {value: sname, label: sname};
+					schemaWidget.addOption(obj);
+				})
+			}
+			sessionStorage.setItem("schema_options_loaded", true);
 		}
 	});
 });

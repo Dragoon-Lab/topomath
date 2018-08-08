@@ -8,7 +8,6 @@
 				"PB": "Part B"
 			},
 			"Comments": "The whole is equal to the sum of two parts.",
-			"slot names": "Whole, Part A, Part B"
 		},
 		{
 			"Name": "P3W",
@@ -20,7 +19,6 @@
 				"PC": "Part C"
 			},
 			"Comments": "The whole is equal to the sum of three parts.",
-			"slot names": "Whole, Part A, Part B, Part C"
 		},
 		{
 			"Name": "P4W",
@@ -33,7 +31,6 @@
 				"PD": "PART D"
 			},
 			"Comments": "The whole is equal to the sum of four parts.",
-			"slot names": "Whole, Part A, Part B, Part C, Part D"
 		},
 		{
 			"Name": "P5W",
@@ -47,7 +44,6 @@
 				"PE": "PART E"
 			},
 			"Comments": "The whole is equal to the sum of five parts.",
-			"slot names": "Whole, Part A, Part B, Part C, Part D, Part E"
 		},
 		{
 			"Name": "Tailwind",
@@ -58,7 +54,6 @@
 				"AS": "Air Speed"
 			},
 			"Comments": "If a vehicle travels through a moving medium (e.g., airplane in wind; boat on river current), and the vehicle is travelling the same direction as the medium (i.e., with a tailwind for the airplane; downstream for the boat), then slots are: GroundSpeed is the rate of the vehicle relative to land, AirSpeed is the rate of the vehicle relative to the medium, Windspeed is the rate of the medium (i.e., wind’s speed; river current’s speed).",
-			"slot names": "Ground Speed, Wind Speed, Air Speed"
 		},
 		{
 			"Name": "Headwind",
@@ -69,7 +64,6 @@
 				"AS": "Air Speed"
 			},
 			"Comments": "If a vehicle travels through a moving medium (e.g., airplane in wind; boat on river current), and the vehicle is travelling in the opposite direction to the medium (i.e., with a headwind for the airplane; upstream for the boat), then slots are: GroundSpeed is the rate of the vehicle relative to the land, AirSpeed is the rate of the vehicle relative to the medium (i.e., how fast the plane or boat travels in still air or still water), WindSpeed is the rate of the medium (i.e., wind’s speed; river current’s speed)",
-			"slot names": "Ground Speed, Wind Speed, Air Speed"
 		}
 	],
 	"Multiplication Schemas": [{
@@ -81,7 +75,6 @@
 				"T": "Time"
 			},
 			"Comments": "This is used for any problem that talks about a rate per unit of time, such as miles per hour, feet per second, gallons per hour, jobs done per hour, pizzas eaten per minute, etc. The slots are: Rate:  The amount of X per unit of time, Distance:  The amount of X accumulated over the given time, Time:  The amount of time.",
-			"slot names": "Distance, Rate, Time"
 		},
 		{
 			"Name": "Unit Cost",
@@ -92,7 +85,6 @@
 				"N": "Number of Units"
 			},
 			"Comments": "If the total cost (or other quantity) of a set of object is mentioned along with the cost per object, then use this.  Used for any problem talking about rate per object, e.g.,  Calories per candy, weight per car, nuts per tree.   The slots are: TotalCost is the total cost of the set of objects, NumberUnits is the number of objects, UnitCost is the cost per object.",
-			"slot names": "Total Cost, Unit Cost, Number of Units"
 		},
 		{
 			"Name": "Wet solutions",
@@ -103,7 +95,6 @@
 				"P": "Proportion of I to S"
 			},
 			"Comments": "If a drink is composed of water and alcohol (or any substance is composed of a filler and an active ingredient, e.g., acid in a water solution, fat in sausage), then Amount of Ingredient is the amount of alcohol, measured by weight or volume, Amount of Solution is the total amount of the drink, measured by weight or volume, Proportion of I to S is the proportion (converted from a percentage or proof) of alcohol in the drink.",
-			"slot names": "Amount of Ingredient, Amount of Solution, Proportion of I to S"
 		},
 		{
 			"Name": "Map scale",
@@ -114,7 +105,6 @@
 				"MD": "MapDistance"
 			},
 			"Comments": "If a problem mentions a certain distance in the world corresponds to a certain distance on a map (e.g., 250 miles per inch), then the slots are Distance is the distance in the real world, MapDistance is the distance on the map, MapScale is the map’s scale, when the map’s scale is expressed as “MapScale per Unit” where Unit is the unit used in measuring the distance on the map (e.g., inches, cm).  Thus, if the problem says “250 miles per quarter inch” then we need to convert that to “1000 miles per inch” and then use 1000 as MapScale.",
-			"slot names": "Distance, MapScale, MapDistance"
 		}
 	],
 	"Other schemas": [{
@@ -127,7 +117,6 @@
 				"NM": "Number of Multiplications"
 			},
 			"Comments": "This is used when a starting quantity is multiplied several times by a multiplier.  For example, if John foolishly borrows $500 from a loan shark who charges 25% a month, then the multiplier is 1.25, the starting amount is $500, and the number of multiplications is the number of months.  The slots are: Final is the final amount after all the multiplications have occurred, Start is the amount before all the multiplications have occurred, Multiplier is the factor multiplied over and over, Multiplications is the number of multiplications done.",
-			"slot names": "End, Beginning, Multiplier, Number of Multiplications"
 		},
 		{
 			"Name": "Avg2",
@@ -138,7 +127,6 @@
 				"PY": "Part Y"
 			},
 			"Comments": "Average is the Arithmetic Mean of 2 parts",
-			"slot names": "Average, Part W, Part Y"
 		},
 		{
 			"Name": "Avg3",
@@ -150,7 +138,6 @@
 				"PY": "Part Y"
 			},
 			"Comments": "Average is the Arithmetic Mean of 3 parts",
-			"slot names": "Average, Part W, Part X, Part Y"
 		},
 		{
 			"Name": "Avg4",
@@ -163,7 +150,6 @@
 				"PZ": "Part Z"
 			},
 			"Comments": "Average is the Arithmetic Mean of 4 parts",
-			"slot names": "Average, Part W, Part X, Part Y, Part Z"
 		}
 	]
 }

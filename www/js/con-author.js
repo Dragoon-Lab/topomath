@@ -456,10 +456,11 @@ define([
 			//entities can only be alphanumerics and are separated by semi colons
 			var validInput = true;
 			if(entity == ''){
-				entity = null;
+				return;
 			}
 			else{
-				var ourReg = /^([a-zA-Z0-9 ;]+)$/;
+				//first character cannot be a semicolon
+				var ourReg = /^[a-zA-Z0-9 ][a-zA-Z0-9 ;]+$/;
 				entity = ""+entity;
 				if(!entity.match(ourReg))
 					validInput = false;
@@ -467,7 +468,13 @@ define([
 			var returnObj = this.authorPM.process(this.currentID, "entity", entity, validInput);
 			console.log("return obj for entities", returnObj);
 			this.applyDirectives(returnObj);
-			this._model.authored.setEntities(this.currentID,entity);
+			if(validInput){
+				this._model.authored.setEntities(this.currentID,entity);
+			}
+			else{
+				//make the entity input box empty
+				registry.byId(this.controlMap.entity).set("value", "");
+			}
 			this.updateEquationDescription();
 		},
 		/*
@@ -659,19 +666,8 @@ define([
 		handleSchemaDisplay: function(){
 			console.log("handle schema display called");
 			var schemaDialog =  new popupDialog();
-			var schemaHtml = "<table id='schemaDisplayTable'><col style='width: 20%''><col style='width:20%'><col style='width:60%'><thead><tr><th>Name</th><th>Equation</th><th>Description</th></tr></thead><tbody>";
-			var schemaTabOb = JSON.parse(sessionStorage.getItem("schema_tab_topo"));
-				for(var parSchema in schemaTabOb){
-					schemaTabOb[parSchema].forEach(function(atomSchema){
-								var sname = atomSchema["Name"];
-								var seq = atomSchema["Equation"];
-								var scom = atomSchema["Comments"];
-								schemaHtml = schemaHtml + "<tr><td>"+ sname + "</td><td>" + seq + "</td><td>" + scom + "</td></tr>";
-					})
-				}
-				schemaHtml = schemaHtml + "</tbody></table>";
+			var schemaHtml = this.getSchemaHtml();
 			schemaDialog.showDialog("Schema Table", schemaHtml, [], "Close Table");
-
 		},
 
 		initialViewSettings: function(type){
@@ -862,9 +858,7 @@ define([
 				// populate inputs
 				//var inputsWidget = registry.byId(this.controlMap.inputs);
 				var eqWidget = registry.byId(this.controlMap.equation);
-				var schemaWidget = registry.byId(this.controlMap.schemas);
-			
-
+				
 				//Enable or disable the given to student checkbox
 				if(desc != null){
 					registry.byId(this.controlMap.setStudent).set('disabled', false);
@@ -890,16 +884,8 @@ define([
 					else
 						this.applyDirectives(this.authorPM.process(this.currentID, 'equation', this._model.authored.getEquation(this.currentID), true));
 				}
-				//sessionStorage contains the schema table, load options from schema table
-				var schemasList = [];
-				var schemaTabOb = JSON.parse(sessionStorage.getItem("schema_tab_topo"));
-				for(var parSchema in schemaTabOb){
-					schemaTabOb[parSchema].forEach(function(atomSchema){
-								var sname = atomSchema["Name"];
-								var obj = {value: sname, label: sname};
-								schemaWidget.addOption(obj);
-					})
-				}
+				//load schema options from session
+				this.loadSchemaOptions();
 				/*
 				console.log("schema list", schemasList);
 				var sm = new memory({data: schemasList});

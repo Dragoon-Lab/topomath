@@ -369,11 +369,6 @@ div.legend{
 	background-color: transparent;
 }
 
-#schemaTableDialog {
-  width: 600px;
-  background-color: orange; 
-}
-
 #schemaDisplayTable tr, td, th{
   outline: thin solid;
 }

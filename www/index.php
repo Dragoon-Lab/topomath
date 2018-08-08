@@ -238,10 +238,7 @@
 			<div class="fieldgroup">
 
 				<div id="descriptionInputboxContainer" class="fieldgroup" style="display: none;">
-					<span class="fixedwidth">
-						<div id="authorDescriptionQuestionMark" class="questionMark"></div>
-						<label for="descriptionInputbox">Description</label>
-					</span>
+					<label for="descriptionInputbox">Description</label>
 					<input id="descriptionInputbox" data-dojo-type="dijit/form/TextBox">						
 				</div>
 
@@ -406,10 +403,6 @@
 				<div id="popupDialogButtons">
 				</div>
 			</div>
-		</div>
-		<!-- popup dialog to display the schema table -->
-		<div data-dojo-type="dijit/Dialog" data-dojo-id="schemaTableDialog" id ="schemaTableDialog" title="Message" data-dojo-props="closable:false">
-			<h1> schema table comes here </h1>
 		</div>
 	</div>
 </body>
