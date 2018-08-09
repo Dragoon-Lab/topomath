@@ -266,7 +266,7 @@ input[type=radio]{
 }
 
 #popupDialog .dijitDialogPaneContentArea{
-    width: 300px !important;
+    width: auto;
 }
 #popupDialog .dijitDialogPaneContentArea #popupDialogContent{
   padding: 10px 20px;
@@ -368,3 +368,35 @@ div.legend{
 .dijitTextBoxDisabled .dijitInputField.dijitInputContainer {
 	background-color: transparent;
 }
+
+#schemaDisplayTable tr, td, th{
+  outline: thin solid;
+}
+
+#schemaDisplayTable th{
+  font-weight: bold;
+}
+#schemaDisplayTable{
+  border-collapse: collapse;
+}
+
+#schemaDisplayTable th,td{
+  padding: 5px;
+  text-align: left;
+}
+
+#schemaDescriptionQuestionMark{
+  width: 16px;
+  height: 16px;
+  background-image: url(../images/help-inactive.png);
+  background-size: contain;
+  background-color: white;
+  margin: -9px -6px 0px 6px;
+}
+.claro .sameedit #schemaSelectorContainer .dijitButton .dijitButtonNode {
+  background-color: white;
+  border: 0px;
+  border-radius: 0px;
+  box-shadow: 0px 0px;
+}
+

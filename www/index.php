@@ -54,6 +54,7 @@
 			document.write('<link href="css/global.css?'+ version+'" rel="stylesheet" />');
 			document.write('<scr'+'ipt src="dojo/dojo.js"></scr'+'ipt>');
 		};
+
 	</script>
 
 	<script type="text/javascript">
@@ -165,7 +166,7 @@
 	<div id="main" data-dojo-type="dijit/layout/BorderContainer" gutters="false">
 
 		<div data-dojo-type="dijit/MenuBar" id="menuBar" region="top" splitter="false">
-			<button type="button" data-dojo-type="dijit/form/Button" id="createQuantityNodeButton" disabled="true" style="visibility:hidden">Add Quantity</button>
+			<button type="button" data-dojo-type="dijit/form/Button" id="createQuantityNodeButton" disabled="true" style="display: none">Add Quantity</button>
 			<button type="button" data-dojo-type="dijit/form/Button" id="createEquationNodeButton" disabled="true" style="visibility: hidden">Add Equation</button>
 			<button type="button" data-dojo-type="dijit/form/Button" id="graphButton" disabled="true" style="visibility: hidden">Graph</button>
 			<button type="button" data-dojo-type="dijit/form/Button" id="tableButton" disabled="true" style="visibility: hidden">Table</button>
@@ -215,7 +216,32 @@
 				</select>
 			</div>
 
+			
+			<div id="schemaSelectorContainer" class="fieldgroup" style="display: none">
+				<span class="fixedwidth">
+					<button id="schemaDescriptionQuestionMark" type="button"data-dojo-type="dijit/form/Button"></button>
+					<label for="schemaSelector">Schema</label>
+				</span>
+				<select id="schemaSelector" data-dojo-type="dijit/form/Select">
+					<option value='defaultSelect'>Select a schema</option>
+				</select>
+			</div>
+			
+			<div id="entityInputboxContainer" class="fieldgroup" style="display: none;">
+				<span class="fixedwidth">
+					<div id="entityDescriptionQuestionMark" class="questionMark"></div>
+					<label for="entityInputbox">Entity</label>
+				</span>
+				<input id="entityInputbox" data-dojo-type="dijit/form/TextBox">
+			</div>
+
 			<div class="fieldgroup">
+
+				<div id="descriptionInputboxContainer" class="fieldgroup" style="display: none;">
+					<label for="descriptionInputbox">Description</label>
+					<input id="descriptionInputbox" data-dojo-type="dijit/form/TextBox">						
+				</div>
+
 				<div id="descriptionInputboxContainerStudent" class="fieldgroup" style="display: none;">
 					<span class="fixedwidth">
 						<div id="descriptionQuestionMark" class="questionMark"></div>
@@ -269,14 +295,6 @@
 				</span>
 			</div>
 
-			<div id="descriptionInputboxContainer" class="fieldgroup" style="display: none;">
-					<span class="fixedwidth">
-						<div id="authorDescriptionQuestionMark" class="questionMark"></div>
-						<label for="descriptionInputbox">Description</label>
-					</span>
-					<input id="descriptionInputbox" data-dojo-type="dijit/form/TextBox">
-			</div>
-
 			<div class="fieldgroup" id="valueUnitsContainer" style="display: block;">
 				<!-- adding a div for value field to control its display in UI -->
 				<div id="valueInputboxContainer" class="fieldgroup" style="display: none;">
@@ -309,7 +327,7 @@
 						<textarea id="equationInputbox" rows=4 cols=50 data-dojo-type="dijit/form/SimpleTextarea" style="min-height:60px;display: display: none;"></textarea>
 					</div>
 				</div>
-
+				<!-- the author mode design for new topomath has been updated, below elements are no longer in use
 				<div class="fieldgroup" id="algebraic">
 					<span class="fixedwidth">
 						<div id="inputsQuestionMark" class="questionMark"></div>
@@ -341,7 +359,7 @@
 						<button id="equalsButton"  title="Equals" type="button" data-dojo-type="dijit/form/Button" iconClass="dijitNoIcon"><strong >=</strong></button>
 						<div id="operationsQuestionMark" class="questionMark" style="margin: 0 0 -8px 0"></div>
 					</div>
-				</div>
+				</div>-->
 			</div>
 
 			<div class="fieldgroup" id="messageOutputboxContainer" style="">

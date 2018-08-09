@@ -684,6 +684,12 @@ define([
 			setRoot: function(/*string*/ id, /*bool*/ isRoot){
 				this.getNode(id).root = isRoot;
 			},
+			setSchema: function(/*string*/ id, /*string*/ schema){
+				this.getNode(id).schema = schema;
+			},
+			setEntities: function(/*string*/ id, /*string*/ entity){
+				this.getNode(id).entity = entity;
+			},
 			/**
 			* for now this function has been updated to handle new functionality
 			* this will set a node to be an accumulator that is the variableType to dynamic

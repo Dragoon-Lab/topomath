@@ -393,6 +393,25 @@ define([
 				_session.saveModel(_model.model);
 			});
 
+			//loading schema table into local storage
+			//send an asyn req to local json file
+			var schemaReqParams = {
+				url: "schema-table.json",
+				handleAs: "json",
+				load: function(data){
+					//console.log("data received in main", data, typeof data);						
+						if(!sessionStorage.getItem("schema_tab_topo")){
+							sessionStorage.setItem("schema_tab_topo", JSON.stringify(data));
+						}
+						//console.log(sessionStorage);
+					},
+					error: function(error){
+						//console.log("error occurred", error);
+					}
+				}
+
+			var retSchemaObj = dojo.xhrGet(schemaReqParams);		
+
 		});
 	});
 	

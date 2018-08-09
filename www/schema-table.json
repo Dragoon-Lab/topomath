@@ -94,7 +94,7 @@
 				"S": "Amount of Solution",
 				"P": "Proportion of I to S"
 			},
-			"Comments": " If a drink is composed of water and alcohol (or any substance is composed of a filler and an active ingredient, e.g., acid in a water solution, fat in sausage), then Amount of Ingredient is the amount of alcohol, measured by weight or volume, Amount of Solution is the total amount of the drink, measured by weight or volume, Proportion of I to S is the proportion (converted from a percentage or proof) of alcohol in the drink."
+			"Comments": "If a drink is composed of water and alcohol (or any substance is composed of a filler and an active ingredient, e.g., acid in a water solution, fat in sausage), then Amount of Ingredient is the amount of alcohol, measured by weight or volume, Amount of Solution is the total amount of the drink, measured by weight or volume, Proportion of I to S is the proportion (converted from a percentage or proof) of alcohol in the drink."
 		},
 		{
 			"Name": "Map scale",

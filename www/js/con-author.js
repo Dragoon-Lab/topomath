@@ -29,8 +29,9 @@ define([
 	'./controller',
 	"./equation",
 	"./typechecker",
+	"./popup-dialog",
 	"dojo/domReady!"
-], function(array, declare, lang, style, keys, ready, on, memory, aspect, dom, domClass, domStyle, registry, domList, controller, equation, typechecker){
+], function(array, declare, lang, style, keys, ready, on, memory, aspect, dom, domClass, domStyle, registry, domList, controller, equation, typechecker, popupDialog){
 
 	// Summary:
 	//			MVC for the node editor, for authors
@@ -115,6 +116,36 @@ define([
 						}
 						break;
 
+					case "schema":
+						var message = "Please enter a valid schema";
+						if(value){
+							returnObj.push({id:"schemas", attribute:"status", value:"entered"});
+							var message = "valid schema has been entered";
+						}else{
+							returnObj.push({id:"schemas", attribute:"status", value:""});
+						}
+						returnObj.push({id:"message", attribute:"append", value:message});
+						break;
+
+					case "entity":
+						var message = "a valid entity name has been entered";
+						if(!validInput.status){
+							returnObj.push({id:"entity", attribute:"status", value:"incorrect"});
+							if(validInput.entity.trim() == "")
+								message = "Please enter at least one valid entity name.";
+							else
+								message = "Entity names may not have special characters, other than the separating semicolon (;)."
+						}
+						else if(!value){
+							message = "Entity cannot be empty.";
+							returnObj.push({id:"entity", attribute:"status", value:""});
+						}
+						else{
+							returnObj.push({id:"entity", attribute:"status", value:"entered"});
+						}
+						returnObj.push({id:"message", attribute:"append", value:message});
+						break;
+
 					default:
 						throw new Error("Unknown type: "+ nodeType + ".");
 				}
@@ -134,11 +165,11 @@ define([
 
 		resettableControls: ["variable","description","value","units","equation"],
 		variableNodeControls: ["variable","value","units","kind","root"],
-		equationNodeControls: ["inputs","equation"],
+		equationNodeControls: ["inputs","equation","schemas"],
 		commonNodeControls: ["setStudent","modelType","description"],
 
 		controlMap: {
-			inputs: "inputSelector",
+			//inputs: "inputSelector",
 			variable: "variableInputbox",
 			equation: "equationInputbox",
 			description: "descriptionInputbox",
@@ -146,7 +177,10 @@ define([
 			units: "unitsSelector",
 			root: "rootNodeToggleCheckbox",
 			setStudent: "givenToStudentCheckbox",
-			modelType: "modelSelector"
+			modelType: "modelSelector",
+			schemas: "schemaSelector",
+			schemaDisplay: "schemaDescriptionQuestionMark",
+			entity: "entityInputbox"
 		},
 		authorControls: function(){
 			console.log("++++++++ Setting AUTHOR format in Node Editor.");
@@ -154,14 +188,17 @@ define([
 			//disabling the variable optionality container for now since new author mode variable editor does not necessiate this field
 			//TODO: further code clean up on discussion
 			//style.set('variableOptionalityContainer', 'display', 'block');
+			style.set('schemaSelectorContainer', 'display', 'block');
+			style.set('entityInputboxContainer', 'display', 'block');
 			style.set('descriptionInputboxContainer', 'display', 'inline-block');
 			style.set('variableInputboxContainer', 'display', 'inline-block');
-			style.set('valueInputboxContainer', 'display', 'block');
+			//style.set('valueInputboxContainer', 'display', 'block');
 			//style.set('unitDiv', 'display', 'none');
-			style.set('unitsSelectorContainer', 'display', 'block');
-			style.set('rootNodeToggleContainer', 'display', 'block');
+			//style.set('unitsSelectorContainer', 'display', 'block');
+			//style.set('rootNodeToggleContainer', 'display', 'block');
 			style.set('expressionDiv', 'display', 'block');
-			style.set('inputSelectorContainer', 'display', 'block');
+			//This has been removed in new author mode editor design
+			//style.set('inputSelectorContainer', 'display', 'block');
 			style.set('equationInputbox', 'display', 'block');
 
 		},
@@ -279,6 +316,7 @@ define([
 				value: kind
 			});
 		},
+		/* old version for a qty based node, keeping this for now as comments for future use
 		handleDescription: function(description){
 			// Summary: Checks to see if the given quantity node description exists; if the
 			//		description doesn't exist, it sets the description of the current node.
@@ -307,6 +345,12 @@ define([
 			}, logObj);
 			this.logSolutionStep(logObj);
 			this.enableDisableSetStudentNode();
+		}, */
+
+		handleEquationDescription: function(description){
+			//equation is auto generated
+			//so, no feedback coloring/messages is necessary here
+			this._model.authored.setDescription(this.currentID,description);		
 		},
 		
 		handleRoot: function(root){
@@ -396,6 +440,38 @@ define([
 				property: "units",
 				usage: valueFor
 			});
+		},
+
+		handleSchemas: function(schema){
+			if(schema == "defaultSelect")
+				schema = null;
+			var returnObj = this.authorPM.process(this.currentID, "schema", schema);
+			console.log("Returned from author PM schemas: ", returnObj);
+			this.applyDirectives(returnObj);
+			this._model.authored.setSchema(this.currentID,schema);
+			this.updateEquationDescription();
+		},
+
+		handleEntities: function(entity){
+			//entities can only be alphanumerics and are separated by semi colons
+			var validInput = {status: true};
+			var entityDesc = "";
+			if(entity == ''){
+				entity = null;
+			}
+			else{
+				var validEntityObj = this.processEntityString(entity);
+				if( !(validEntityObj.correctness && validEntityObj.validValue != ""))
+					validInput = {status: false, entity: validEntityObj.validValue};
+				entityDesc = validEntityObj.validValue;
+
+			}
+			var returnObj = this.authorPM.process(this.currentID, "entity", entity, validInput);
+			this.applyDirectives(returnObj);
+			if(validInput.status){
+				this._model.authored.setEntities(this.currentID,entity);
+			}
+			this.updateEquationDescription(entityDesc);
 		},
 		/*
 		 Handler for value input
@@ -583,6 +659,12 @@ define([
 			//Summary: Displays a message on opening node editor if expression was cleared
 		},
 
+		handleSchemaDisplay: function(){
+			var schemaDialog =  new popupDialog();
+			var schemaHtml = this.getSchemaHtml();
+			schemaDialog.showDialog("Schema Table", schemaHtml, [], "Close Table");
+		},
+
 		initialViewSettings: function(type){
 			//make display none for all fields initially
 			//removed optionality container from initial view settings
@@ -631,6 +713,7 @@ define([
 			var quantityDescriptions = [];
 			var equationDescriptions = [];
 			var units = [];	
+			var schemaList = [];
 
 			var desc = this._model.authored.getDescription(nodeid);
 			registry.byId(this.controlMap.description).set('value', desc || '', false);
@@ -701,7 +784,6 @@ define([
 				var varWidget = registry.byId(this.controlMap.variable);
 				var unitsWidget = registry.byId(this.controlMap.units);
 				var kind = registry.byId(this.controlMap.kind);
-			
 				var value = this._model.authored.getGenus(this.currentID);
 				if(!value)
 					value='required';
@@ -761,16 +843,12 @@ define([
 					if(typeof this._model.authored.getValue(this.currentID) === "number"){
 						this.applyDirectives(this.authorPM.process(this.currentID, 'value', this._model.authored.getValue(this.currentID), true));
 					}
-
 				}
-				
 			}
 			else if(nodeType == "equation"){
-				
 				// populate inputs
-				var inputsWidget = registry.byId(this.controlMap.inputs);
+				//var inputsWidget = registry.byId(this.controlMap.inputs);
 				var eqWidget = registry.byId(this.controlMap.equation);
-
 				//Enable or disable the given to student checkbox
 				if(desc != null){
 					registry.byId(this.controlMap.setStudent).set('disabled', false);
@@ -778,15 +856,12 @@ define([
 				else{
 					registry.byId(this.controlMap.setStudent).set('disabled', true);
 				}
-
-				m = new memory({data: inputs});
-				inputsWidget.set("store", m);
-				
-				descriptionWidget.set("store", new memory({data: equationDescriptions}));
-
+				//m = new memory({data: inputs});
+				//inputsWidget.set("store", m);
+				descriptionWidget.set('disabled', true);
+				this.updateEquationDescription();
 				//In case equation node is already present
 				//color Equation widget
-				
 				if(this._model.authored.getEquation(this.currentID)){
 					//console.log("equation returns",this._model.authored.getEquation(this.currentID));
 					//getAuthorStatus returns whether the equation is incorrect
@@ -795,6 +870,14 @@ define([
 					else
 						this.applyDirectives(this.authorPM.process(this.currentID, 'equation', this._model.authored.getEquation(this.currentID), true));
 				}
+				//load schema options from session
+				this.loadSchemaOptions();
+				/*
+				console.log("schema list", schemasList);
+				var sm = new memory({data: schemasList});
+				console.log(sm);
+				schemaWidget.set("store", sm);
+				*/
 			}
 			
 			//color description widget , common to both node types
@@ -1123,6 +1206,34 @@ define([
 					}
 				}				
 			}
+		},
+		updateEquationDescription: function(entity){
+			var schema = registry.byId(this.controlMap.schemas).get("value");
+			if(schema == 'defaultSelect')
+				schema = '';
+			//entity part of description is tricky to extract, so a seperate function processEntityString handles it
+			if(!entity)
+				entity = "";
+			registry.byId(this.controlMap.description).set("value", schema+": "+entity);
+		},
+
+		processEntityString : function(entity){
+			var entityStr = ""+ entity;
+			var entityAr = entityStr.split(';');
+			var ourReg = new RegExp(/[~`!#$%\^&*+=\-\[\]\\',/{}|\\":<>\?()]/);
+			var entityDesc = "";
+			//correctness evaluates the special characters of the whole string at once
+			//this variable is useful to give red feedback
+			var correctness = !ourReg.test(entityStr);
+			//Running through each entity helps to identify the exact entity which needs to go into description
+			//and also the case where strings like ";;" are entered where the string is legal but empty entities
+			for(var i=0;i<entityAr.length;i++){
+				if(entityAr[i] != '' && !ourReg.test(""+entityAr[i])){
+					entityDesc = entityAr[i];
+					break;
+				}
+			}
+			return {validValue: entityDesc, correctness: correctness};
 		}
 	});
 });
