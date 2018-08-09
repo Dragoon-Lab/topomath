@@ -132,12 +132,12 @@ define([
 						if(!validInput.status){
 							returnObj.push({id:"entity", attribute:"status", value:"incorrect"});
 							if(validInput.entity.trim() == "")
-								message = "Please enter at least one valid entity name";
+								message = "Please enter at least one valid entity name.";
 							else
-								message = "Please enter entity values that can only have alphanumerics separated by a semicolon (;)"
+								message = "Entity names may not have special characters, other than the separating semicolon (;)."
 						}
 						else if(!value){
-							message = "entity cannot be an empty value";
+							message = "Entity cannot be empty.";
 							returnObj.push({id:"entity", attribute:"status", value:""});
 						}
 						else{
