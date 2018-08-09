@@ -43,7 +43,6 @@ define([
 			try{
 				array.forEach(eqs, function(eq, count){
 					expressions[count] = Parser.parse(eq);
-					return;
 				}, this);
 			}catch(e){
 				throw e;

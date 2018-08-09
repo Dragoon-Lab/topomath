@@ -129,9 +129,12 @@ define([
 
 					case "entity":
 						var message = "a valid entity name has been entered";
-						if(!validInput){
+						if(!validInput.status){
 							returnObj.push({id:"entity", attribute:"status", value:"incorrect"});
-							message = "entity values can only have alphanumerics separated by a semicolon (;)"
+							if(validInput.entity.trim() == "")
+								message = "Please enter at least one valid entity name";
+							else
+								message = "Please enter entity values that can only have alphanumerics separated by a semicolon (;)"
 						}
 						else if(!value){
 							message = "entity cannot be an empty value";
@@ -345,10 +348,9 @@ define([
 		}, */
 
 		handleEquationDescription: function(description){
-			console.log("In handle equation description");
 			//equation is auto generated
 			//so, no feedback coloring/messages is necessary here
-			this._model.authored.setDescription(this.currentID,schema);		
+			this._model.authored.setDescription(this.currentID,description);		
 		},
 		
 		handleRoot: function(root){
@@ -441,7 +443,6 @@ define([
 		},
 
 		handleSchemas: function(schema){
-			console.log("handle schemas called", schema);
 			if(schema == "defaultSelect")
 				schema = null;
 			var returnObj = this.authorPM.process(this.currentID, "schema", schema);
@@ -452,30 +453,25 @@ define([
 		},
 
 		handleEntities: function(entity){
-			console.log("handle entities called", entity);
 			//entities can only be alphanumerics and are separated by semi colons
-			var validInput = true;
+			var validInput = {status: true};
+			var entityDesc = "";
 			if(entity == ''){
-				return;
+				entity = null;
 			}
 			else{
-				//first character cannot be a semicolon
-				var ourReg = /^[a-zA-Z0-9 ][a-zA-Z0-9 ;]+$/;
-				entity = ""+entity;
-				if(!entity.match(ourReg))
-					validInput = false;
+				var validEntityObj = this.processEntityString(entity);
+				if( !(validEntityObj.correctness && validEntityObj.validValue != ""))
+					validInput = {status: false, entity: validEntityObj.validValue};
+				entityDesc = validEntityObj.validValue;
+
 			}
 			var returnObj = this.authorPM.process(this.currentID, "entity", entity, validInput);
-			console.log("return obj for entities", returnObj);
 			this.applyDirectives(returnObj);
-			if(validInput){
+			if(validInput.status){
 				this._model.authored.setEntities(this.currentID,entity);
 			}
-			else{
-				//make the entity input box empty
-				registry.byId(this.controlMap.entity).set("value", "");
-			}
-			this.updateEquationDescription();
+			this.updateEquationDescription(entityDesc);
 		},
 		/*
 		 Handler for value input
@@ -664,7 +660,6 @@ define([
 		},
 
 		handleSchemaDisplay: function(){
-			console.log("handle schema display called");
 			var schemaDialog =  new popupDialog();
 			var schemaHtml = this.getSchemaHtml();
 			schemaDialog.showDialog("Schema Table", schemaHtml, [], "Close Table");
@@ -789,7 +784,6 @@ define([
 				var varWidget = registry.byId(this.controlMap.variable);
 				var unitsWidget = registry.byId(this.controlMap.units);
 				var kind = registry.byId(this.controlMap.kind);
-				
 				var value = this._model.authored.getGenus(this.currentID);
 				if(!value)
 					value='required';
@@ -849,16 +843,12 @@ define([
 					if(typeof this._model.authored.getValue(this.currentID) === "number"){
 						this.applyDirectives(this.authorPM.process(this.currentID, 'value', this._model.authored.getValue(this.currentID), true));
 					}
-
 				}
-				
 			}
 			else if(nodeType == "equation"){
-				
 				// populate inputs
 				//var inputsWidget = registry.byId(this.controlMap.inputs);
 				var eqWidget = registry.byId(this.controlMap.equation);
-				
 				//Enable or disable the given to student checkbox
 				if(desc != null){
 					registry.byId(this.controlMap.setStudent).set('disabled', false);
@@ -866,16 +856,12 @@ define([
 				else{
 					registry.byId(this.controlMap.setStudent).set('disabled', true);
 				}
-
 				//m = new memory({data: inputs});
 				//inputsWidget.set("store", m);
-				
 				descriptionWidget.set('disabled', true);
 				this.updateEquationDescription();
-
 				//In case equation node is already present
 				//color Equation widget
-				
 				if(this._model.authored.getEquation(this.currentID)){
 					//console.log("equation returns",this._model.authored.getEquation(this.currentID));
 					//getAuthorStatus returns whether the equation is incorrect
@@ -1221,83 +1207,33 @@ define([
 				}				
 			}
 		},
-		updateEquationDescription: function(){
-			console.log("updating equation description ...");
+		updateEquationDescription: function(entity){
 			var schema = registry.byId(this.controlMap.schemas).get("value");
 			if(schema == 'defaultSelect')
 				schema = '';
-			var entity_ar = registry.byId(this.controlMap.entity).get("value");
-			var entity = entity_ar.split(';');
-			registry.byId(this.controlMap.description).set("value", schema+": "+entity[0]);
+			//entity part of description is tricky to extract, so a seperate function processEntityString handles it
+			if(!entity)
+				entity = "";
+			registry.byId(this.controlMap.description).set("value", schema+": "+entity);
 		},
 
-		/* commenting these for this PR
-		updateEquationFromSchema: function(){
-			//equation from schema name
-			var schemaTabOb = JSON.parse(sessionStorage.getItem("schema_tab_topo"));
-			//var eqWidget = this.controlMap.equation;
-			var eqVarAr = [];
-			var rootEq = '';
-			//console.log("schema table obj", schemaTabOb);
-			
-			for(var parSchema in schemaTabOb){
-				var schema = registry.byId(this.controlMap.schemas).get("value");
-				var hasEq = schemaTabOb[parSchema].some(function(atomSchema){
-								if(schema == atomSchema["Name"]){
-									// For the matched schema, generate appropriate equation
-									rootEq = atomSchema["Equation"];
-									eqVarAr = Object.keys(atomSchema["Mapping"]);
-									return true;
-								}
-							});
-				//console.log("equation retrieved", hasEq, rootEq, eqVarAr);
-				if(hasEq)
+		processEntityString : function(entity){
+			var entityStr = ""+ entity;
+			var entityAr = entityStr.split(';');
+			var ourReg = new RegExp(/[~`!#$%\^&*+=\-\[\]\\',/{}|\\":<>\?()]/);
+			var entityDesc = "";
+			//correctness evaluates the special characters of the whole string at once
+			//this variable is useful to give red feedback
+			var correctness = !ourReg.test(entityStr);
+			//Running through each entity helps to identify the exact entity which needs to go into description
+			//and also the case where strings like ";;" are entered where the string is legal but empty entities
+			for(var i=0;i<entityAr.length;i++){
+				if(entityAr[i] != '' && !ourReg.test(""+entityAr[i])){
+					entityDesc = entityAr[i];
 					break;
+				}
 			}
-
-			var cur_num = this.generateNumber(eqVarAr);
-			//using this cur_num replace the equation with suffixed to that number	
-			console.log("generated num", cur_num);
-		},
-	
-		generateNumber: function(eqVarAr){
-			//this function has to generate the appropriate equation numbers to the current schema for the current session
-			//there has to be a session level data structure of numbers keeping track of the variables 
-			//need some more work, pausing for now
-			if(!sessionStorage.getItem("num_generator")){
-				//if the ds does not exists, create one and assign all 1's in the basic case. THis could generally occur when user is creating first equation
-				var numGenOb = {'1': eqVarAr};
-				sessionStorage.setItem("num_generator", JSON.stringify(numGenOb));
-				console.log("new num_generator created",sessionStorage);
-				return "1";
-			}
-			else{
-				var numGenOb = JSON.parse(sessionStorage.getItem("num_generator"));
-				var numList = Object.keys(numGenOb);
-				var isExisting = numList.some(function(num){
-					//check from eqAr
-					var i = 0;
-					var hit = 0;
-					while(!hit){
-						
-						var found = numGenOb[num].some(function(elem){
-							if( eqAr[i] == elem)
-								return true;
-						});
-						if(found)
-							break;
-						else
-							i++;
-						if(i == eqAr.length){
-							//none has been found
-							hit = 1;
-						}
-					}
-					if(hit)
-						return num;	
-				});
-			}
-
-		} */
+			return {validValue: entityDesc, correctness: correctness};
+		}
 	});
 });

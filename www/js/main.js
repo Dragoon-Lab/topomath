@@ -394,8 +394,6 @@ define([
 			});
 
 			//loading schema table into local storage
-
-			//load schema values into select schema dropdown
 			//send an asyn req to local json file
 			var schemaReqParams = {
 				url: "schema-table.json",
