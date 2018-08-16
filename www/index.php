@@ -253,6 +253,16 @@
 				</div>
 			</div>
 
+			<div class="fieldgroup">
+				<div id="variableSlotControlsContainer" class="fieldgroup" style="display: none;">
+					<span class="fixedwidth">
+						<div id="variableSlotNamesQuestionMark" class="questionMark"></div>
+						<label for="variableSlotControlsbox">Variables</label>
+					</span>
+					<div id="variableSlotControlsbox"></div>
+				</div>
+			</div>
+
 			<div id="variableOptionalityContainer" class="fieldgroup" style="display: none;">
 				<label for="optionalitySelector">Optionality</label>
 				<select id="optionalitySelector" data-dojo-type="dijit/form/Select">

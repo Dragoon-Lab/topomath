@@ -102,7 +102,8 @@ define([
 					//"operationsQuestionMark": "Click one of these to enter it in the expression above. <br> See the Help menu at the top of the screen for a list of other mathematical operators and functions that you can type in.",
 					"questionMarkRoot": "Mark this node as Sought node",
 					"descriptionQuestionMark": "Select a description for node",
-					"entityDescriptionQuestionMark": "Enter a list of valid entity names, separated by semicolons"
+					"entityDescriptionQuestionMark": "Enter a list of valid entity names, separated by semicolons",
+					"variableSlotNamesQuestionMark": "This section contains variable names to choose from or type in for the selected schema"
 		},
 		constructor: function(mode, model, config, fixPosition){
 			console.log("+++++++++ In generic controller constructor");
@@ -1193,6 +1194,24 @@ define([
 				})
 			}
 			sessionStorage.setItem("schema_options_loaded", true);
+		},
+
+		getSchemaProperties: function(property){
+			var schemaTabOb = JSON.parse(sessionStorage.getItem("schema_tab_topo"));
+			var propVal = '';
+			var schema = registry.byId(this.controlMap.schemas).get("value");	
+			for(var parSchema in schemaTabOb){
+				var hasEq = schemaTabOb[parSchema].some(function(atomSchema){
+								if(schema == atomSchema["Name"]){
+									//for the matched schema get appropriate property value
+									propVal = atomSchema[""+property];
+									return true;
+								}
+							});
+				if(hasEq)
+					break;
+			}
+			return propVal;
 		}
 	});
 });

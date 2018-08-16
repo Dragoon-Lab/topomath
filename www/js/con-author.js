@@ -25,13 +25,15 @@ define([
 	'dojo/dom-class',
 	"dojo/dom-style",
 	'dijit/registry',
+	'dijit/form/ComboBox',
 	'dojo/NodeList-dom',
+	'dojo/html',
 	'./controller',
 	"./equation",
 	"./typechecker",
 	"./popup-dialog",
 	"dojo/domReady!"
-], function(array, declare, lang, style, keys, ready, on, memory, aspect, dom, domClass, domStyle, registry, domList, controller, equation, typechecker, popupDialog){
+], function(array, declare, lang, style, keys, ready, on, memory, aspect, dom, domClass, domStyle, registry, comboBox, domList, html, controller, equation, typechecker, popupDialog){
 
 	// Summary:
 	//			MVC for the node editor, for authors
@@ -200,6 +202,7 @@ define([
 			//This has been removed in new author mode editor design
 			//style.set('inputSelectorContainer', 'display', 'block');
 			style.set('equationInputbox', 'display', 'block');
+			style.set('variableSlotControlsContainer', 'display', 'block');
 
 		},
 		initAuthorHandles: function(){
@@ -450,6 +453,7 @@ define([
 			this.applyDirectives(returnObj);
 			this._model.authored.setSchema(this.currentID,schema);
 			this.updateEquationDescription();
+			this.updateSlotVariables();
 		},
 
 		handleEntities: function(entity){
@@ -557,9 +561,9 @@ define([
 			this.variableTypeControls(this.currentID, _variableType);
 			this.updateNodeEditorView(_variableType);
 			this.logSolutionStep({
-                property: "variableType",
-                value: _variableType
-            });
+				property: "variableType",
+				value: _variableType
+			});
 		},
 
 		handleInputs: function(name){
@@ -1216,8 +1220,7 @@ define([
 				entity = "";
 			registry.byId(this.controlMap.description).set("value", schema+": "+entity);
 		},
-
-		processEntityString : function(entity){
+		processEntityString: function(entity){
 			var entityStr = ""+ entity;
 			var entityAr = entityStr.split(';');
 			var ourReg = new RegExp(/[~`!#$%\^&*+=\-\[\]\\',/{}|\\":<>\?()]/);
@@ -1234,6 +1237,111 @@ define([
 				}
 			}
 			return {validValue: entityDesc, correctness: correctness};
+		},
+		updateSlotVariables: function(){
+			var slotMap = this.getSchemaProperties("Mapping");
+			var schema = registry.byId(this.controlMap.schemas).get("value");
+			//for each of these combo boxes we have to generate the options	respectively
+			var token = this.generateVariablesForSlots(slotMap);
+			//labels and combo boxes have to be generated in the slots container
+			//destroy any previously generated comboboxes, html
+			var widgets = dijit.findWidgets(dom.byId("variableSlotControlsbox"));
+			dojo.forEach(widgets, function(w){
+				w.destroyRecursive(true);
+			});
+			var slotContHtml = "";
+			for(var p in slotMap){
+				slotContHtml = slotContHtml+'<div class="fieldgroup"><label for="holder'+schema+this.currentID+slotMap[p]+'">'+slotMap[p]+'</label><input id="holder'+schema+this.currentID+slotMap[p]+'" ></div>';
+			}
+			html.set(dom.byId("variableSlotControlsbox"), slotContHtml);
+			var varAr = this._model.getAllVariables();
+			for(var p in slotMap){
+				var curAr = [];
+				var defVar = [{id: ""+p+token, name: ""+p+token}];
+				//concatenate all variables and current default variable for the respective combo box
+				curAr = defVar.concat(varAr);
+				var stateStore = new memory({ data: curAr });
+				var curDiv = 'holder'+schema+this.currentID+slotMap[p];
+				var currentComboBox = new comboBox({
+										store: stateStore,
+										searchAttr: "name",
+										placeholder: "Select your variable Name"   
+										}, curDiv);
+				currentComboBox.startup();
+			}
+		},
+		generateVariablesForSlots: function(slotMap){
+			//This function generates a variable slot map in the session storage if not existing
+			// and returns the appropriate variable number token which will be used as suffix in the dynamic variable comboboxes
+			if(!sessionStorage.getItem("slot_number_map") || sessionStorage.getItem("slot_number_map")!= ""){
+				// Generate the map first time
+				var numberMap = {};
+				var varAr = this._model.getAllVariables();
+				//var varAr = ["D1", "R2", "T3", "D5", "R15", "T4"];
+				for(var i=0; i<varAr.length; i++){
+					//the variables are generally in mostcases of the form D1, id4 etc
+					var nump = varAr[i].match(/\d+$/);
+					var strp = varAr[i].replace(/\d+$/,"");
+					if(!numberMap[nump[0]]){
+						numberMap[nump[0]] = [strp];
+					}
+					else{
+						numberMap[nump[0]].push(strp);
+					}
+				}
+				sessionStorage.setItem("slot_number_map", JSON.stringify(numberMap));
+			}
+			//now we have slot number map, we need to check the map and return appropriate vars
+			var numGenOb = JSON.parse(sessionStorage.getItem("slot_number_map"));
+			var numList = Object.keys(numGenOb);
+			var slotVars = Object.keys(slotMap);
+			var nextNum;
+			if(numList.length < 1){
+				//in case there is no data in the slot number map return 1 as default token
+				nextNum = 1;
+				return nextNum;
+			}
+			var thisCopy = this;
+			var isExisting = numList.some(function(num){
+				//in case the numList starts from a number higher than 1, we can return 1 directly
+				if(num > 1 && numGenOb[1].length < 1){
+					nextNum = 1;
+					return true;
+				}
+				//check for lower unused numbers
+				var unUsedNum = thisCopy.getLowerUnusedNumber(num, numGenOb);
+				if(unUsedNum){
+					nextNum = unUsedNum;
+					return true;
+				}
+				var i = 0;
+				var hit = 0;
+				while(!hit){		
+					var found = numGenOb[num].includes(slotVars[i]);
+					console.log("checking" + slotVars[i] + " for " + num + " found:", found);
+					if(found)
+						break;
+					else
+						i++;
+					if(i == slotVars.length){
+						//none has been found
+						hit = 1;
+					}
+				}
+				if(hit){
+					nextNum = num;
+					return true;	
+				}
+			});
+			return nextNum;
+		},
+		getLowerUnusedNumber: function(num, numGenOb){
+			for(var i=1; i<num;i++){
+				if(!numGenOb[i]){
+					return i;
+				}
+			}
+			return false;
 		}
 	});
 });
