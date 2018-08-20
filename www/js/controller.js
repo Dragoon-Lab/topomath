@@ -1165,12 +1165,12 @@ define([
 			if(sessionStorage.getItem("schema_table"))
 				return sessionStorage.getItem("schema_table");
 			var schemaHtml = "<table id='schemaDisplayTable'><col style='width: 20%''><col style='width:20%'><col style='width:60%'><thead><tr><th>Name</th><th>Equation</th><th>Description</th></tr></thead><tbody>";
-			var schemaTabOb = JSON.parse(sessionStorage.getItem("schema_tab_topo"));
-			for(var parSchema in schemaTabOb){
-				schemaTabOb[parSchema].forEach(function(atomSchema){
-					var sname = atomSchema["Name"];
-					var seq = atomSchema["Equation"];
-					var scom = atomSchema["Comments"];
+			var schemaTable = JSON.parse(sessionStorage.getItem("schema_tab_topo"));
+			for(var schemaCategory in schemaTable){
+				schemaTable[schemaCategory].forEach(function(schema){
+					var sname = schema["Name"];
+					var seq = schema["Equation"];
+					var scom = schema["Comments"];
 					schemaHtml = schemaHtml + "<tr><td>"+ sname + "</td><td>" + seq + "</td><td>" + scom + "</td></tr>";
 				})
 			}
@@ -1184,11 +1184,11 @@ define([
 			if(sessionStorage.getItem("schema_options_loaded"))
 				return;
 			var schemasList = [];
-			var schemaTabOb = JSON.parse(sessionStorage.getItem("schema_tab_topo"));
+			var schemaTable = JSON.parse(sessionStorage.getItem("schema_tab_topo"));
 			var schemaWidget = registry.byId(this.controlMap.schemas);
-			for(var parSchema in schemaTabOb){
-				schemaTabOb[parSchema].forEach(function(atomSchema){
-					var sname = atomSchema["Name"];
+			for(var schemaCategory in schemaTable){
+				schemaTable[schemaCategory].forEach(function(schema){
+					var sname = schema["Name"];
 					var obj = {value: sname, label: sname};
 					schemaWidget.addOption(obj);
 				})
@@ -1196,19 +1196,18 @@ define([
 			sessionStorage.setItem("schema_options_loaded", true);
 		},
 
-		getSchemaProperties: function(property){
-			var schemaTabOb = JSON.parse(sessionStorage.getItem("schema_tab_topo"));
+		getSchemaProperty: function(property, selectedSchema){
+			var schemaTable = JSON.parse(sessionStorage.getItem("schema_tab_topo"));
 			var propVal = '';
-			var schema = registry.byId(this.controlMap.schemas).get("value");	
-			for(var parSchema in schemaTabOb){
-				var hasEq = schemaTabOb[parSchema].some(function(atomSchema){
-								if(schema == atomSchema["Name"]){
+			for(var schemaCategory in schemaTable){
+				var hasSchema = schemaTable[schemaCategory].some(function(schema){
+								if(selectedSchema == schema["Name"]){
 									//for the matched schema get appropriate property value
-									propVal = atomSchema[""+property];
+									propVal = schema[""+property];
 									return true;
 								}
 							});
-				if(hasEq)
+				if(hasSchema)
 					break;
 			}
 			return propVal;
