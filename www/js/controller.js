@@ -102,7 +102,8 @@ define([
 					//"operationsQuestionMark": "Click one of these to enter it in the expression above. <br> See the Help menu at the top of the screen for a list of other mathematical operators and functions that you can type in.",
 					"questionMarkRoot": "Mark this node as Sought node",
 					"descriptionQuestionMark": "Select a description for node",
-					"entityDescriptionQuestionMark": "Enter a list of valid entity names, separated by semicolons"
+					"entityDescriptionQuestionMark": "Enter a list of valid entity names, separated by semicolons",
+					"variableSlotNamesQuestionMark": "This section contains variable names to choose from or type in for the selected schema"
 		},
 		constructor: function(mode, model, config, fixPosition){
 			console.log("+++++++++ In generic controller constructor");
@@ -1164,12 +1165,12 @@ define([
 			if(sessionStorage.getItem("schema_table"))
 				return sessionStorage.getItem("schema_table");
 			var schemaHtml = "<table id='schemaDisplayTable'><col style='width: 20%''><col style='width:20%'><col style='width:60%'><thead><tr><th>Name</th><th>Equation</th><th>Description</th></tr></thead><tbody>";
-			var schemaTabOb = JSON.parse(sessionStorage.getItem("schema_tab_topo"));
-			for(var parSchema in schemaTabOb){
-				schemaTabOb[parSchema].forEach(function(atomSchema){
-					var sname = atomSchema["Name"];
-					var seq = atomSchema["Equation"];
-					var scom = atomSchema["Comments"];
+			var schemaTable = JSON.parse(sessionStorage.getItem("schema_tab_topo"));
+			for(var schemaCategory in schemaTable){
+				schemaTable[schemaCategory].forEach(function(schema){
+					var sname = schema["Name"];
+					var seq = schema["Equation"];
+					var scom = schema["Comments"];
 					schemaHtml = schemaHtml + "<tr><td>"+ sname + "</td><td>" + seq + "</td><td>" + scom + "</td></tr>";
 				})
 			}
@@ -1183,16 +1184,33 @@ define([
 			if(sessionStorage.getItem("schema_options_loaded"))
 				return;
 			var schemasList = [];
-			var schemaTabOb = JSON.parse(sessionStorage.getItem("schema_tab_topo"));
+			var schemaTable = JSON.parse(sessionStorage.getItem("schema_tab_topo"));
 			var schemaWidget = registry.byId(this.controlMap.schemas);
-			for(var parSchema in schemaTabOb){
-				schemaTabOb[parSchema].forEach(function(atomSchema){
-					var sname = atomSchema["Name"];
+			for(var schemaCategory in schemaTable){
+				schemaTable[schemaCategory].forEach(function(schema){
+					var sname = schema["Name"];
 					var obj = {value: sname, label: sname};
 					schemaWidget.addOption(obj);
 				})
 			}
 			sessionStorage.setItem("schema_options_loaded", true);
+		},
+
+		getSchemaProperty: function(property, selectedSchema){
+			var schemaTable = JSON.parse(sessionStorage.getItem("schema_tab_topo"));
+			var propVal = '';
+			for(var schemaCategory in schemaTable){
+				var hasSchema = schemaTable[schemaCategory].some(function(schema){
+								if(selectedSchema == schema["Name"]){
+									//for the matched schema get appropriate property value
+									propVal = schema[""+property];
+									return true;
+								}
+							});
+				if(hasSchema)
+					break;
+			}
+			return propVal;
 		}
 	});
 });

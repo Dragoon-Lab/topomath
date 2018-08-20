@@ -25,13 +25,15 @@ define([
 	'dojo/dom-class',
 	"dojo/dom-style",
 	'dijit/registry',
+	'dijit/form/ComboBox',
 	'dojo/NodeList-dom',
+	'dojo/html',
 	'./controller',
 	"./equation",
 	"./typechecker",
 	"./popup-dialog",
 	"dojo/domReady!"
-], function(array, declare, lang, style, keys, ready, on, memory, aspect, dom, domClass, domStyle, registry, domList, controller, equation, typechecker, popupDialog){
+], function(array, declare, lang, style, keys, ready, on, memory, aspect, dom, domClass, domStyle, registry, comboBox, domList, html, controller, equation, typechecker, popupDialog){
 
 	// Summary:
 	//			MVC for the node editor, for authors
@@ -200,6 +202,7 @@ define([
 			//This has been removed in new author mode editor design
 			//style.set('inputSelectorContainer', 'display', 'block');
 			style.set('equationInputbox', 'display', 'block');
+			style.set('variableSlotControlsContainer', 'display', 'block');
 
 		},
 		initAuthorHandles: function(){
@@ -450,6 +453,7 @@ define([
 			this.applyDirectives(returnObj);
 			this._model.authored.setSchema(this.currentID,schema);
 			this.updateEquationDescription();
+			this.updateSlotVariables();
 		},
 
 		handleEntities: function(entity){
@@ -557,9 +561,9 @@ define([
 			this.variableTypeControls(this.currentID, _variableType);
 			this.updateNodeEditorView(_variableType);
 			this.logSolutionStep({
-                property: "variableType",
-                value: _variableType
-            });
+				property: "variableType",
+				value: _variableType
+			});
 		},
 
 		handleInputs: function(name){
@@ -1216,8 +1220,7 @@ define([
 				entity = "";
 			registry.byId(this.controlMap.description).set("value", schema+": "+entity);
 		},
-
-		processEntityString : function(entity){
+		processEntityString: function(entity){
 			var entityStr = ""+ entity;
 			var entityAr = entityStr.split(';');
 			var ourReg = new RegExp(/[~`!#$%\^&*+=\-\[\]\\',/{}|\\":<>\?()]/);
@@ -1234,6 +1237,93 @@ define([
 				}
 			}
 			return {validValue: entityDesc, correctness: correctness};
+		},
+		updateSlotVariables: function(){
+			var schema = registry.byId(this.controlMap.schemas).get("value");
+			var slotMap = this.getSchemaProperty("Mapping", schema);
+			//for each of these combo boxes we have to generate the options	respectively
+			var subscript = this.generateVariablesForSlots(slotMap);
+			//labels and combo boxes have to be generated in the slots container
+			//destroy any previously generated comboboxes, html
+			var widgets = dijit.findWidgets(dom.byId("variableSlotControlsbox"));
+			dojo.forEach(widgets, function(w){
+				w.destroyRecursive(true);
+			});
+			var slotContHtml = "";
+			for(var varKey in slotMap){
+				slotContHtml = slotContHtml+'<div class="fieldgroup"><label for="holder'+schema+this.currentID+slotMap[varKey]+'">'+slotMap[varKey]+'</label><input id="holder'+schema+this.currentID+slotMap[varKey]+'" ></div>';
+			}
+			html.set(dom.byId("variableSlotControlsbox"), slotContHtml);
+			var varAr = this._model.getAllVariables();
+			for(var varKey in slotMap){
+				var choices = [{id: ""+varKey+subscript, name: ""+varKey+subscript}];
+				//concatenate all variables and current default variable for the respective combo box
+				choices = choices.concat(varAr);
+				var stateStore = new memory({ data: choices });
+				var curDiv = 'holder'+schema+this.currentID+slotMap[varKey];
+				var currentComboBox = new comboBox({
+										store: stateStore,
+										searchAttr: "name",
+										placeholder: "Select or type your variable name here."   
+										}, curDiv);
+				currentComboBox.startup();
+			}
+		},
+		generateVariablesForSlots: function(slotMap){
+			//This function generates a variable slot map in the session storage if not existing
+			// and returns the appropriate variable number subscript which will be used as suffix in the dynamic variable comboboxes
+			if(!sessionStorage.getItem("slot_number_map") || sessionStorage.getItem("slot_number_map")!= ""){
+				// Generate the map first time
+				var numberMap = {};
+				var varAr = this._model.getAllVariables();
+				for(var i=0; i<varAr.length; i++){
+					//the variables are generally in mostcases of the form D1, id4 etc
+					var nump = varAr[i].match(/\d+$/);
+					var strp = varAr[i].replace(/\d+$/,"");
+					if(!numberMap[nump[0]]){
+						numberMap[nump[0]] = [strp];
+					}
+					else{
+						numberMap[nump[0]].push(strp);
+					}
+				}
+				sessionStorage.setItem("slot_number_map", JSON.stringify(numberMap));
+			}
+			//now we have slot number map, we need to check the map and return appropriate vars
+			var numGenOb = JSON.parse(sessionStorage.getItem("slot_number_map"));
+			var numList = Object.keys(numGenOb);
+			var slotVars = Object.keys(slotMap);
+			var nextSubscript = 1;
+			var finished = false;
+			while(!finished){
+				if(nextSubscript in numGenOb){
+					// This subscript is in use by some variable, but maybe not one in the current schema
+					if(this.isSubscriptInUse(nextSubscript,slotVars,numGenOb)){
+						// This subscript is in use, increment and try again
+						nextSubscript++;
+						continue;
+					}else{
+						// The subscript was in the map, but not in use by any of this schema's variables
+						finished = true;
+						continue;
+					}
+				}else{
+						// The subscript isn't in the map yet
+						finished = true;
+				}
+			}
+			return nextSubscript;
+		},
+		/* 
+		isSubscriptInUse
+		Given a subscript, list of variables, and the numGenOb
+		Return true if the subscript is already in use by any of the variables
+		*/
+		isSubscriptInUse: function(subscript,slotVars,numGenOb){
+			var inUse = slotVars.some(function(v){
+				return numGenOb[subscript].includes(v);
+			});
+			return inUse;
 		}
 	});
 });

@@ -187,6 +187,15 @@ define([
 				}, this);
 				return unitList;
 			},
+			getAllVariables: function(){
+				// returns a list of all variables in the model
+				var varList = new Array();
+				array.forEach(this.authored.getNodes(), function(node){
+					if(node && node.type == "variable")
+						varList.push({id: node.ID, name: node.name});
+				});
+				return varList;
+			},
 			isParentNode: function(/*string*/ id){
 				// Summary: returns true if a node is the parent node in a tree structure;
 				return this.authored.getNode(id).root;
