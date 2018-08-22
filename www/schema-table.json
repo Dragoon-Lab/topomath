@@ -57,7 +57,7 @@
 		},
 		{
 			"Name": "Headwind",
-			"Equation": "GSpeed = AS – WS",
+			"Equation": "GS = AS – WS",
 			"Mapping": {
 				"GS": "Ground Speed",
 				"WS": "Wind Speed",
@@ -104,7 +104,7 @@
 				"MS": "MapScale",
 				"MD": "MapDistance"
 			},
-			"Comments": "If a problem mentions a certain distance in the world corresponds to a certain distance on a map (e.g., 250 miles per inch), then the slots are Distance is the distance in the real world, MapDistance is the distance on the map, MapScale is the map’s scale, when the map’s scale is expressed as “MapScale per Unit” where Unit is the unit used in measuring the distance on the map (e.g., inches, cm).  Thus, if the problem says “250 miles per quarter inch” then we need to convert that to “1000 miles per inch” and then use 1000 as MapScale."
+			"Comments": "If a problem mentions a certain distance in the world corresponds to a certain distance on a map (e.g., 250 miles per inch), then the slots are Distance is the distance in the real world, MapDistance is the distance on the map, MapScale is the map’s scale.  However, MapScale sometimes needs adjustment.  If the problem says “250 miles per quarter inch” then we need to convert that to “1000 miles per inch” and then use 1000 as MapScale because MapDistance is measured in inches, not quarter inches."
 		}
 	],
 	"Other schemas": [{
