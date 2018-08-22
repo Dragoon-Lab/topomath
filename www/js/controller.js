@@ -476,6 +476,7 @@ define([
 				return this.disableHandlers || this.handleEntities.apply(this, arguments);
 			}));
 
+			/* equation widget is disabled by default for now
 			var equationWidget = registry.byId(this.controlMap.equation);
 			equationWidget.on('Change', lang.hitch(this, function(){
 				return this.disableHandlers || this.handleEquation.apply(this, arguments);
@@ -493,12 +494,13 @@ define([
 				var end = this.textbox.selectionEnd;
 				this.set("cursorPosition", [start, end]);
 			});
-
+			*/
 			var schemaDisplayQmark = registry.byId(this.controlMap.schemaDisplay);
 			schemaDisplayQmark.on('Click', lang.hitch(this, function(){
 				return this.disableHandlers || this.handleSchemaDisplay.apply(this, arguments);
 			}));
 
+			/* 
 			// When the equation box is enabled/disabled, do the same for
 			// the inputs widgets.
 			array.forEach(["inputSelectorStudent"], function(input){
@@ -508,6 +510,7 @@ define([
 					widget.set("disabled", newValue);
 				});
 			});
+			*/
 
 			// For each button 'name', assume there is an associated widget in the HTML
 			// with id 'nameButton' and associated handler 'nameHandler' below.
