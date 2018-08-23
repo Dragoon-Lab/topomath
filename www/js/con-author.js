@@ -164,6 +164,11 @@ define([
 			//initialize error status array to track cleared expression for given model nodes
 			this.errorStatus =[];
 			ready(this, "initAuthorHandles");
+			this.schema = "";
+			this.slotMap = "";
+			this.entity = "";
+			this.description = "";
+			this.equation = "";
 		},
 
 		resettableControls: ["variable","description","value","units","equation"],
@@ -453,6 +458,7 @@ define([
 			console.log("Returned from author PM schemas: ", returnObj);
 			this.applyDirectives(returnObj);
 			this._model.authored.setSchema(this.currentID,schema);
+			this.schema = schema;
 			this.updateEquationDescription();
 			this.updateSlotVariables();
 			this.updateEquation();
@@ -477,7 +483,8 @@ define([
 			if(validInput.status){
 				this._model.authored.setEntities(this.currentID,entity);
 			}
-			this.updateEquationDescription(entityDesc);
+			this.entity = entityDesc;
+			this.updateEquationDescription();
 		},
 		/*
 		 Handler for value input
@@ -1212,14 +1219,13 @@ define([
 				}				
 			}
 		},
-		updateEquationDescription: function(entity){
-			var schema = registry.byId(this.controlMap.schemas).get("value");
-			if(schema == 'defaultSelect')
-				schema = '';
+		updateEquationDescription: function(){
+			//var schema = registry.byId(this.controlMap.schemas).get("value");
+			if(this.schema == 'defaultSelect' || this.schema == null)
+				this.schema = '';
 			//entity part of description is tricky to extract, so a seperate function processEntityString handles it
-			if(!entity)
-				entity = "";
-			registry.byId(this.controlMap.description).set("value", schema+": "+entity);
+			this.description = this.schema+": "+this.entity;
+			registry.byId(this.controlMap.description).set("value", this.description);
 		},
 		processEntityString: function(entity){
 			var entityStr = ""+ entity;
@@ -1240,10 +1246,10 @@ define([
 			return {validValue: entityDesc, correctness: correctness};
 		},
 		updateSlotVariables: function(){
-			var schema = registry.byId(this.controlMap.schemas).get("value");
-			var slotMap = this.getSchemaProperty("Mapping", schema);
+			//var schema = registry.byId(this.controlMap.schemas).get("value");
+			this.slotMap = this.getSchemaProperty("Mapping", this.schema);
 			//for each of these combo boxes we have to generate the options	respectively
-			var subscript = this.generateVariablesForSlots(slotMap);
+			var subscript = this.generateVariablesForSlots(this.slotMap);
 			//labels and combo boxes have to be generated in the slots container
 			//destroy any previously generated comboboxes, html
 			var widgets = dijit.findWidgets(dom.byId("variableSlotControlsbox"));
@@ -1251,17 +1257,17 @@ define([
 				w.destroyRecursive(true);
 			});
 			var slotContHtml = "";
-			for(var varKey in slotMap){
-				slotContHtml = slotContHtml+'<div class="fieldgroup"><label for="holder'+schema+this.currentID+slotMap[varKey]+'">'+slotMap[varKey]+'</label><input id="holder'+schema+this.currentID+slotMap[varKey]+'" ></div>';
+			for(var varKey in this.slotMap){
+				slotContHtml = slotContHtml+'<div class="fieldgroup"><label for="holder'+this.schema+this.currentID+this.slotMap[varKey]+'">'+this.slotMap[varKey]+'</label><input id="holder'+this.schema+this.currentID+this.slotMap[varKey]+'" ></div>';
 			}
 			html.set(dom.byId("variableSlotControlsbox"), slotContHtml);
 			var varAr = this._model.getAllVariables();
-			for(var varKey in slotMap){
+			for(var varKey in this.slotMap){
 				var choices = [{id: ""+varKey+subscript, name: ""+varKey+subscript}];
 				//concatenate all variables and current default variable for the respective combo box
 				choices = choices.concat(varAr);
 				var stateStore = new memory({ data: choices });
-				var curDiv = 'holder'+schema+this.currentID+slotMap[varKey];
+				var curDiv = 'holder'+this.schema+this.currentID+this.slotMap[varKey];
 				var currentComboBox = new comboBox({
 										store: stateStore,
 										searchAttr: "name",
@@ -1338,12 +1344,12 @@ define([
 		updates the equation based on selected schema and variables
 		*/
 		updateEquation: function(){
-			var schema = registry.byId(this.controlMap.schemas).get("value");
-			var equation = this.getSchemaProperty("Equation", schema);
-			var slotMap = this.getSchemaProperty("Mapping", schema);
-			for(var varKey in slotMap){
-				var updatedValue = dom.byId("holder"+schema+this.currentID+slotMap[varKey]).value;
-				console.log(varKey, updatedValue);
+			//var schema = registry.byId(this.controlMap.schemas).get("value");
+			//var equation = this.getSchemaProperty("Equation", this.schema);
+			//var slotMap = this.getSchemaProperty("Mapping", schema);
+			var equation = this.equation == "" ? this.getSchemaProperty("Equation", this.schema): this.equation;
+			for(var varKey in this.slotMap){
+				var updatedValue = dom.byId("holder"+this.schema+this.currentID+this.slotMap[varKey]).value;
 				equation = equation.replace(varKey, updatedValue);
 			}
 			registry.byId(this.controlMap.equation).set("value",equation);
