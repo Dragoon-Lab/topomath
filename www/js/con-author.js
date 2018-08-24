@@ -28,12 +28,13 @@ define([
 	'dijit/form/ComboBox',
 	'dojo/NodeList-dom',
 	'dojo/html',
+	'dojo/query',
 	'./controller',
 	"./equation",
 	"./typechecker",
 	"./popup-dialog",
 	"dojo/domReady!"
-], function(array, declare, lang, style, keys, ready, on, memory, aspect, dom, domClass, domStyle, registry, comboBox, domList, html, controller, equation, typechecker, popupDialog){
+], function(array, declare, lang, style, keys, ready, on, memory, aspect, dom, domClass, domStyle, registry, comboBox, domList, html, query, controller, equation, typechecker, popupDialog){
 
 	// Summary:
 	//			MVC for the node editor, for authors
@@ -163,6 +164,11 @@ define([
 			//initialize error status array to track cleared expression for given model nodes
 			this.errorStatus =[];
 			ready(this, "initAuthorHandles");
+			this.schema = "";
+			this.slotMap = "";
+			this.entity = "";
+			this.description = "";
+			this.equation = "";
 		},
 
 		resettableControls: ["variable","description","value","units","equation"],
@@ -452,8 +458,10 @@ define([
 			console.log("Returned from author PM schemas: ", returnObj);
 			this.applyDirectives(returnObj);
 			this._model.authored.setSchema(this.currentID,schema);
+			this.schema = schema;
 			this.updateEquationDescription();
 			this.updateSlotVariables();
+			this.updateEquation();
 		},
 
 		handleEntities: function(entity){
@@ -475,7 +483,8 @@ define([
 			if(validInput.status){
 				this._model.authored.setEntities(this.currentID,entity);
 			}
-			this.updateEquationDescription(entityDesc);
+			this.entity = entityDesc;
+			this.updateEquationDescription();
 		},
 		/*
 		 Handler for value input
@@ -852,7 +861,7 @@ define([
 			else if(nodeType == "equation"){
 				// populate inputs
 				//var inputsWidget = registry.byId(this.controlMap.inputs);
-				var eqWidget = registry.byId(this.controlMap.equation);
+				var equationWidget = registry.byId(this.controlMap.equation);
 				//Enable or disable the given to student checkbox
 				if(desc != null){
 					registry.byId(this.controlMap.setStudent).set('disabled', false);
@@ -864,6 +873,10 @@ define([
 				//inputsWidget.set("store", m);
 				descriptionWidget.set('disabled', true);
 				this.updateEquationDescription();
+				
+				//disable the equation box as it is auto generated
+				equationWidget.set('disabled', true);
+				/* This case will be handled in next card
 				//In case equation node is already present
 				//color Equation widget
 				if(this._model.authored.getEquation(this.currentID)){
@@ -874,14 +887,9 @@ define([
 					else
 						this.applyDirectives(this.authorPM.process(this.currentID, 'equation', this._model.authored.getEquation(this.currentID), true));
 				}
+				*/
 				//load schema options from session
 				this.loadSchemaOptions();
-				/*
-				console.log("schema list", schemasList);
-				var sm = new memory({data: schemasList});
-				console.log(sm);
-				schemaWidget.set("store", sm);
-				*/
 			}
 			
 			//color description widget , common to both node types
@@ -1211,14 +1219,13 @@ define([
 				}				
 			}
 		},
-		updateEquationDescription: function(entity){
-			var schema = registry.byId(this.controlMap.schemas).get("value");
-			if(schema == 'defaultSelect')
-				schema = '';
+		updateEquationDescription: function(){
+			//var schema = registry.byId(this.controlMap.schemas).get("value");
+			if(this.schema == 'defaultSelect' || this.schema == null)
+				this.schema = '';
 			//entity part of description is tricky to extract, so a seperate function processEntityString handles it
-			if(!entity)
-				entity = "";
-			registry.byId(this.controlMap.description).set("value", schema+": "+entity);
+			this.description = this.schema+": "+this.entity;
+			registry.byId(this.controlMap.description).set("value", this.description);
 		},
 		processEntityString: function(entity){
 			var entityStr = ""+ entity;
@@ -1239,10 +1246,10 @@ define([
 			return {validValue: entityDesc, correctness: correctness};
 		},
 		updateSlotVariables: function(){
-			var schema = registry.byId(this.controlMap.schemas).get("value");
-			var slotMap = this.getSchemaProperty("Mapping", schema);
+			//var schema = registry.byId(this.controlMap.schemas).get("value");
+			this.slotMap = this.getSchemaProperty("Mapping", this.schema);
 			//for each of these combo boxes we have to generate the options	respectively
-			var subscript = this.generateVariablesForSlots(slotMap);
+			var subscript = this.generateVariablesForSlots(this.slotMap);
 			//labels and combo boxes have to be generated in the slots container
 			//destroy any previously generated comboboxes, html
 			var widgets = dijit.findWidgets(dom.byId("variableSlotControlsbox"));
@@ -1250,24 +1257,32 @@ define([
 				w.destroyRecursive(true);
 			});
 			var slotContHtml = "";
-			for(var varKey in slotMap){
-				slotContHtml = slotContHtml+'<div class="fieldgroup"><label for="holder'+schema+this.currentID+slotMap[varKey]+'">'+slotMap[varKey]+'</label><input id="holder'+schema+this.currentID+slotMap[varKey]+'" ></div>';
+			for(var varKey in this.slotMap){
+				slotContHtml = slotContHtml+'<div class="fieldgroup"><label for="holder'+this.schema+this.currentID+this.slotMap[varKey]+'">'+this.slotMap[varKey]+'</label><input id="holder'+this.schema+this.currentID+this.slotMap[varKey]+'" ></div>';
 			}
 			html.set(dom.byId("variableSlotControlsbox"), slotContHtml);
 			var varAr = this._model.getAllVariables();
-			for(var varKey in slotMap){
+			for(var varKey in this.slotMap){
 				var choices = [{id: ""+varKey+subscript, name: ""+varKey+subscript}];
 				//concatenate all variables and current default variable for the respective combo box
 				choices = choices.concat(varAr);
 				var stateStore = new memory({ data: choices });
-				var curDiv = 'holder'+schema+this.currentID+slotMap[varKey];
+				var curDiv = 'holder'+this.schema+this.currentID+this.slotMap[varKey];
 				var currentComboBox = new comboBox({
 										store: stateStore,
 										searchAttr: "name",
+										class: "slotComboBox",
 										placeholder: "Select or type your variable name here."   
 										}, curDiv);
 				currentComboBox.startup();
 			}
+			var eachComboBox = dojo.query(".slotComboBox");
+				console.log("each combo", eachComboBox);
+				eachComboBox.forEach(function(childcomboBox){
+					registry.byNode(childcomboBox).on('change', lang.hitch(this, function(){
+						this.updateEquation();
+					}));
+				}, this);
 		},
 		generateVariablesForSlots: function(slotMap){
 			//This function generates a variable slot map in the session storage if not existing
@@ -1324,6 +1339,20 @@ define([
 				return numGenOb[subscript].includes(v);
 			});
 			return inUse;
+		},
+		/*updateEquation
+		updates the equation based on selected schema and variables
+		*/
+		updateEquation: function(){
+			//var schema = registry.byId(this.controlMap.schemas).get("value");
+			//var equation = this.getSchemaProperty("Equation", this.schema);
+			//var slotMap = this.getSchemaProperty("Mapping", schema);
+			var equation = this.equation == "" ? this.getSchemaProperty("Equation", this.schema): this.equation;
+			for(var varKey in this.slotMap){
+				var updatedValue = dom.byId("holder"+this.schema+this.currentID+this.slotMap[varKey]).value;
+				equation = equation.replace(varKey, updatedValue);
+			}
+			registry.byId(this.controlMap.equation).set("value",equation);
 		}
 	});
 });
