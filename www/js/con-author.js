@@ -173,7 +173,7 @@ define([
 
 		resettableControls: ["variable","description","value","units","equation"],
 		variableNodeControls: ["variable","value","units","kind","root"],
-		equationNodeControls: ["inputs","equation","schemas"],
+		equationNodeControls: ["equation","schemas","entity"],
 		commonNodeControls: ["setStudent","modelType","description"],
 
 		controlMap: {
@@ -598,7 +598,6 @@ define([
 						message: "parse error"
 					};
 				}
-				console.log("directives are", directives);
 				this.applyDirectives(directives);
 				this.createExpressionNodes(returnObj, true);
 				return directives; 
@@ -727,10 +726,6 @@ define([
 			var equationDescriptions = [];
 			var units = [];	
 			var schemaList = [];
-
-			var desc = this._model.authored.getDescription(nodeid);
-			registry.byId(this.controlMap.description).set('value', desc || '', false);
-
 			// Initialize student node checkbox
 			//this is common to both quantity and equation nodes in topomath
 				var givenNode = this._model.authored.getNode(nodeid);
@@ -890,6 +885,47 @@ define([
 				*/
 				//load schema options from session
 				this.loadSchemaOptions();
+				//set up schema control
+				var schema = this._model.authored.getSchema(nodeid);
+				registry.byId(this.controlMap.schemas).set('value', schema || '');
+				this.applyDirectives(this.authorPM.process(nodeid, "schema", schema));
+				this.schema = schema;
+				//set up entity control
+				var entity = this._model.authored.getEntities(nodeid);
+				registry.byId(this.controlMap.entity).set('value', entity || '');
+				//For the retrieved entity value, apply directives accordingly
+				var validInput = {status: true};
+				if(entity == ''){
+					entity = null;
+				}
+				else{
+					var validEntityObj = this.processEntityString(entity);
+					if( !(validEntityObj.correctness && validEntityObj.validValue != ""))
+						validInput = {status: false, entity: validEntityObj.validValue};
+				}
+				var returnObj = this.authorPM.process(this.currentID, "entity", entity, validInput);
+				this.applyDirectives(returnObj);
+				this.entity = entity ? entity : "";
+				//set up desc control
+				var desc = this._model.authored.getDescription(nodeid);
+				registry.byId(this.controlMap.description).set('value', desc || '');
+				this.description = desc;
+				//set up equation
+				var eqVal = this._model.authored.getEquation(nodeid);
+				if(eqVal){
+					var params = {
+					subModel: this._model.authored,
+					equation: eqVal
+					};
+					eqVal = equation.convert(params);
+					registry.byId(this.controlMap.equation).set('value', eqVal.equation || '');
+					this.equation = eqVal.equation;
+				}
+				//slots are not colored yet, feedback to be implemented
+				//the slots have to set up initially based on schema which can be done by updateSlotVariables function
+				this.updateSlotVariables();
+				//based on the equation, variable names have to be filled inside the dynamic comboboxes
+				this.fillVariableNames();
 			}
 			
 			//color description widget , common to both node types
@@ -902,7 +938,7 @@ define([
 						isDuplicateDescription = true;
 				}));
 
-				this.applyDirectives(this.authorPM.process(isDuplicateDescription, "description", this._model.authored.getDescription(this.currentID)));
+				//this.applyDirectives(this.authorPM.process(isDuplicateDescription, "description", this._model.authored.getDescription(this.currentID)));
 			}
 		},
 		/* discontinuing use of author status
@@ -1262,6 +1298,7 @@ define([
 			}
 			html.set(dom.byId("variableSlotControlsbox"), slotContHtml);
 			var varAr = this._model.getAllVariables();
+
 			for(var varKey in this.slotMap){
 				var choices = [{id: ""+varKey+subscript, name: ""+varKey+subscript}];
 				//concatenate all variables and current default variable for the respective combo box
@@ -1293,13 +1330,17 @@ define([
 				var varAr = this._model.getAllVariables();
 				for(var i=0; i<varAr.length; i++){
 					//the variables are generally in mostcases of the form D1, id4 etc
-					var nump = varAr[i].match(/\d+$/);
-					var strp = varAr[i].replace(/\d+$/,"");
-					if(!numberMap[nump[0]]){
-						numberMap[nump[0]] = [strp];
-					}
-					else{
-						numberMap[nump[0]].push(strp);
+					var curVar = ""+varAr[i].name;
+					var nump = curVar.match(/\d+$/);
+					//if only the variable has a number attached add it to numberMap
+					if(nump){
+						var strp = curVar.replace(/\d+$/,"");
+						if(!numberMap[nump[0]]){
+							numberMap[nump[0]] = [strp];
+						}
+						else{
+							numberMap[nump[0]].push(strp);
+						}
 					}
 				}
 				sessionStorage.setItem("slot_number_map", JSON.stringify(numberMap));
@@ -1347,12 +1388,30 @@ define([
 			//var schema = registry.byId(this.controlMap.schemas).get("value");
 			//var equation = this.getSchemaProperty("Equation", this.schema);
 			//var slotMap = this.getSchemaProperty("Mapping", schema);
-			var equation = this.equation == "" ? this.getSchemaProperty("Equation", this.schema): this.equation;
+			//retrieve the generic equation always when updating to replace the equation
+			var equation = this.getSchemaProperty("Equation", this.schema);
 			for(var varKey in this.slotMap){
 				var updatedValue = dom.byId("holder"+this.schema+this.currentID+this.slotMap[varKey]).value;
+				console.log("replacing", varKey, updatedValue);
 				equation = equation.replace(varKey, updatedValue);
 			}
 			registry.byId(this.controlMap.equation).set("value",equation);
+		},
+		/*fillVariableNames
+		reads the current equation string when the node is opened and loads the variable combo boxes
+		inside initialControlSettings
+		*/
+		fillVariableNames: function(){
+			var currentEquation = registry.byId(this.controlMap.equation).get("value");
+			if(currentEquation == "")
+				return;
+			var varList = equation.getVariableStrings(currentEquation);
+			var i = 0;
+			for(var varKey in this.slotMap){
+				var currentComboBox = 'holder'+this.schema+this.currentID+this.slotMap[varKey];
+				dom.byId(currentComboBox).value = varList[i];
+				i++;
+			}
 		}
 	});
 });

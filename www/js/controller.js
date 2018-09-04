@@ -76,8 +76,8 @@ define([
 			variableType: 'variableTypeContainer',
 			value: "valueInputboxContainer",
 			units: "unitsSelectorContainerStudent",
-			equation: "expressionDiv",
-			inputs: "inputSelectorContainerStudent"
+			equation: "expressionDiv"
+			//inputs: "inputSelectorContainerStudent"
 		},
 		// A list of all widgets.  (The constructor mixes this with controlMap)
 		widgetMap: {
@@ -476,12 +476,12 @@ define([
 				return this.disableHandlers || this.handleEntities.apply(this, arguments);
 			}));
 
-			/* equation widget is disabled by default for now
 			var equationWidget = registry.byId(this.controlMap.equation);
 			equationWidget.on('Change', lang.hitch(this, function(){
 				return this.disableHandlers || this.handleEquation.apply(this, arguments);
 			}));
 
+			/* equation widget is disabled and uneditable, so commenting the focus and blur functionalities
 			equationWidget.on("focus", function(){
 				var cursorPosition = this.get("cursorPosition");
 				if(cursorPosition){
@@ -602,7 +602,6 @@ define([
 			var allControls = (this.nodeType == "equation" ? this.equationNodeControls : this.variableNodeControls).concat(this.commonNodeControls);
 			console.log("all controls", allControls);
 			array.forEach(allControls,lang.hitch(this,function(control){
-				console.log("current control is", control);
 				var w = registry.byId(this.controlMap[control]);
 				w.set("disabled", false);  // enable everything
 				w.set("status", '');  // remove colors
