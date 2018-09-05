@@ -700,7 +700,7 @@ define([
 			//removed optionality container from initial view settings
 			//TODO: further clean up necessary after discussion
 			var qtyElements = ["qtyDescriptionInputboxContainer","variableTypeContainer","variableInputboxContainer","valueUnitsContainer"];
-			var eqElements = ["descriptionInputboxContainer","expressionDiv","schemaSelectorContainer","entityInputboxContainer","variableSlotControlsContainer"];
+			var eqElements = ["descriptionInputboxContainer","expressionDiv","schemaSelectorContainer","entityInputboxContainer","variableSlotControlsContainer","deleteButton"];
 		
 			if(type == "quantity"){
 				eqElements.forEach(function(elem){
@@ -711,6 +711,13 @@ define([
 					console.log("element",elem);
 					style.set(elem,"display","block");
 				});
+
+				//can the qty node have delete option
+				var canHaveDeleteNode = this.canHaveDeleteNode();
+				if(canHaveDeleteNode)
+					style.set("deleteButton","display","block");
+				else
+					style.set("deleteButton","display","none");
 			}else if(type == "equation"){
 				qtyElements.forEach(function(elem){
 					console.log("element",elem);
@@ -1433,6 +1440,22 @@ define([
 				var currentComboBox = 'holder'+this.schema+this.currentID+this.slotMap[varKey];
 				dom.byId(currentComboBox).value = varList[i];
 				i++;
+			}
+		},
+		/*canHaveDeleteNode
+		checks whether the current qty node is part of any equation and decides if it can be deleted accordingly
+		*/
+		canHaveDeleteNode: function(){
+			//only applicable to quantity nodes
+			var eqList = this._model.getAllEquations();
+			var currentID = "" + this.currentID;
+			if(eqList.length > 0){
+				var found = array.some(eqList,function(currentEq){
+					var currentVars = equation.getVariableStrings(currentEq.equation);
+					if(currentVars.includes(currentID))
+						return true;
+				});
+				return found;
 			}
 		}
 	});
