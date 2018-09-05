@@ -1455,7 +1455,7 @@ define([
 					if(currentVars.includes(currentID))
 						return true;
 				});
-				return found;
+				return !found;
 			}
 		}
 	});
