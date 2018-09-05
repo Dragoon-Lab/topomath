@@ -476,6 +476,11 @@ define([
 				return this.disableHandlers || this.handleEntities.apply(this, arguments);
 			}));
 
+			var qtyDescriptionWidget = registry.byId(this.controlMap.qtyDescription);
+			qtyDescriptionWidget.on('Change', lang.hitch(this, function(){
+				return this.disableHandlers || this.handleQtyDescription.apply(this, arguments);
+			}));
+
 			var equationWidget = registry.byId(this.controlMap.equation);
 			equationWidget.on('Change', lang.hitch(this, function(){
 				return this.disableHandlers || this.handleEquation.apply(this, arguments);

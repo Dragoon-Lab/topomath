@@ -119,6 +119,16 @@ define([
 						}
 						break;
 
+					case "qtyDescription":
+						var message = "A valid description has been entered";
+						if(value){
+							returnObj.push({id:"qtyDescription", attribute:"status", value:"entered"});
+							returnObj.push({id:"message", attribute:"append", value:message});
+						}else{
+							returnObj.push({id:"qtyDescription", attribute:"status", value:""});
+						}
+						break;
+
 					case "schema":
 						var message = "Please enter a valid schema";
 						if(value){
@@ -181,6 +191,7 @@ define([
 			variable: "variableInputbox",
 			equation: "equationInputbox",
 			description: "descriptionInputbox",
+			qtyDescription: "qtyDescriptionInputbox",
 			kind: "optionalitySelector",
 			units: "unitsSelector",
 			root: "rootNodeToggleCheckbox",
@@ -199,10 +210,11 @@ define([
 			style.set('schemaSelectorContainer', 'display', 'block');
 			style.set('entityInputboxContainer', 'display', 'block');
 			style.set('descriptionInputboxContainer', 'display', 'inline-block');
+			style.set('qtyDescriptionInputboxContainer', 'display', 'inline-block');
 			style.set('variableInputboxContainer', 'display', 'inline-block');
-			//style.set('valueInputboxContainer', 'display', 'block');
+			style.set('valueInputboxContainer', 'display', 'block');
 			//style.set('unitDiv', 'display', 'none');
-			//style.set('unitsSelectorContainer', 'display', 'block');
+			style.set('unitsSelectorContainer', 'display', 'block');
 			//style.set('rootNodeToggleContainer', 'display', 'block');
 			style.set('expressionDiv', 'display', 'block');
 			//This has been removed in new author mode editor design
@@ -451,6 +463,12 @@ define([
 			});
 		},
 
+		handleQtyDescription: function(description){
+			var returnObj = this.authorPM.process(this.currentID, "qtyDescription", description);
+			this.applyDirectives(returnObj);
+			this._model.authored.setDescription(this.currentID,description);
+		},
+
 		handleSchemas: function(schema){
 			if(schema == "defaultSelect")
 				schema = null;
@@ -681,8 +699,8 @@ define([
 			//make display none for all fields initially
 			//removed optionality container from initial view settings
 			//TODO: further clean up necessary after discussion
-			var qtyElements = ["descriptionInputboxContainer","variableTypeContainer","variableInputboxContainer","valueUnitsContainer","rootNodeToggleContainer"];
-			var eqElements = ["descriptionInputboxContainer","expressionDiv"];
+			var qtyElements = ["qtyDescriptionInputboxContainer","variableTypeContainer","variableInputboxContainer","valueUnitsContainer"];
+			var eqElements = ["descriptionInputboxContainer","expressionDiv","schemaSelectorContainer","entityInputboxContainer","variableSlotControlsContainer"];
 		
 			if(type == "quantity"){
 				eqElements.forEach(function(elem){
@@ -852,6 +870,10 @@ define([
 						this.applyDirectives(this.authorPM.process(this.currentID, 'value', this._model.authored.getValue(this.currentID), true));
 					}
 				}
+				//qty Description
+				var qtyDescVal = this._model.authored.getDescription(nodeid);
+				registry.byId(this.controlMap.qtyDescription).set('value', qtyDescVal || '');
+				this.applyDirectives(this.authorPM.process(this.currentID, 'qtyDescription', qtyDescVal));
 			}
 			else if(nodeType == "equation"){
 				// populate inputs

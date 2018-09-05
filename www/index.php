@@ -239,7 +239,7 @@
 
 				<div id="descriptionInputboxContainer" class="fieldgroup" style="display: none;">
 					<label for="descriptionInputbox">Description</label>
-					<input id="descriptionInputbox" data-dojo-type="dijit/form/TextBox">						
+					<input id="descriptionInputbox" data-dojo-type="dijit/form/TextBox">
 				</div>
 
 				<div id="descriptionInputboxContainerStudent" class="fieldgroup" style="display: none;">
@@ -279,11 +279,16 @@
 					<label for ="rootNodeToggleCheckbox" title ="Mark this node as Sought node.">Sought</label>
 				</span>
 				<input id ="rootNodeToggleCheckbox" name ="markRootNode" data-dojo-type="dijit/form/CheckBox" value="agreed" checked="false"/>
-			</div>
+			</div>	
 
 			<div id="variableInputboxContainer" class="fieldgroup" style="display: none;">
 				<label for="variableInputbox">Variable</label>
 				<input id="variableInputbox" data-dojo-type="dijit/form/TextBox">
+			</div>
+
+			<div id="qtyDescriptionInputboxContainer" class="fieldgroup" style="display: none;">
+				<label for="qtyDescriptionInputbox">Description</label>
+				<input id="qtyDescriptionInputbox" data-dojo-type="dijit/form/TextBox">
 			</div> 
 
 			<div id="variableInputboxContainerStudent" class="fieldgroup" style="display: none;">
