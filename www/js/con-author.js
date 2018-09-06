@@ -215,7 +215,7 @@ define([
 			style.set('valueInputboxContainer', 'display', 'block');
 			//style.set('unitDiv', 'display', 'none');
 			style.set('unitsSelectorContainer', 'display', 'block');
-			//style.set('rootNodeToggleContainer', 'display', 'block');
+			style.set('rootNodeToggleContainer', 'display', 'block');
 			style.set('expressionDiv', 'display', 'block');
 			//This has been removed in new author mode editor design
 			//style.set('inputSelectorContainer', 'display', 'block');
@@ -699,7 +699,7 @@ define([
 			//make display none for all fields initially
 			//removed optionality container from initial view settings
 			//TODO: further clean up necessary after discussion
-			var qtyElements = ["qtyDescriptionInputboxContainer","variableTypeContainer","variableInputboxContainer","valueUnitsContainer"];
+			var qtyElements = ["qtyDescriptionInputboxContainer","variableTypeContainer","variableInputboxContainer","valueUnitsContainer","rootNodeToggleContainer"];
 			var eqElements = ["descriptionInputboxContainer","expressionDiv","schemaSelectorContainer","entityInputboxContainer","variableSlotControlsContainer","deleteButton"];
 		
 			if(type == "quantity"){

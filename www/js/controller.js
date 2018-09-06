@@ -99,8 +99,11 @@ define([
 		questionMarkButtons : {
 					//"inputsQuestionMark": "Select a quantity to enter into the expression above.  Much faster than typing.",
 					"valueQuestionMark": "This is a number, typically given to you in the system description.",
+					"variableInputboxQuestionMark": "The name of the variable used in equations",
+					"qtyDescriptionQuestionMark": "Describes the quantity represented by the variable",
+					"variableTypeQuestionMark": "Parameters are quantities whose values are known (or given in the system description). Unknowns are not given, but can be solved for by TopoMath if there are enough equations",
 					//"operationsQuestionMark": "Click one of these to enter it in the expression above. <br> See the Help menu at the top of the screen for a list of other mathematical operators and functions that you can type in.",
-					"questionMarkRoot": "Mark this node as Sought node",
+					"questionMarkRoot": "Indicates that this variable is one the problem will ask the student to solve for",
 					"descriptionQuestionMark": "Select a description for node",
 					"entityDescriptionQuestionMark": "Enter a list of valid entity names, separated by semicolons",
 					"variableSlotNamesQuestionMark": "This section contains variable names to choose from or type in for the selected schema"
