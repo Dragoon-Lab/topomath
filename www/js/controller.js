@@ -235,6 +235,7 @@ define([
 							var isAlertShown = array.some(directives, function(directive){
 								// If Done is clicked and equation is incorrect, donot hide editor
 								if(directive.id === 'crisisAlert' || directive.value === "incorrect"){
+									myThis.equationEntered = false;
 									return true;
 								}
 							});
