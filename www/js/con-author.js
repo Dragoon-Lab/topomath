@@ -588,6 +588,14 @@ define([
 			var logObj = {};
 			if(model && model == "authored"){
 				var directives = [];
+				//before parsing the equation we need to check if all variables are present and none of the variable fields is left empty
+				var allVarsFilled = this.allVariablesFilled();
+				if(!allVarsFilled){
+					directives.push({id: 'message', attribute: 'append', value: 'Please fill all the variables'});
+					directives.push({id: 'equation', attribute: 'status', value: 'incorrect'});
+					this.applyDirectives(directives);
+					return directives;
+				}
 				//if parse is successful, equation analysis returns an object with parameters for creating expression nodes further
 				var returnObj = this.equationAnalysis(directives, true);
 				if(returnObj){
@@ -1396,6 +1404,7 @@ define([
 				equation = equation.replace(varKey, updatedValue);
 			}
 			registry.byId(this.controlMap.equation).set("value",equation);
+			this.equation = equation;
 		},
 		/*fillVariableNames
 		reads the current equation string when the node is opened and loads the variable combo boxes
@@ -1409,9 +1418,24 @@ define([
 			var i = 0;
 			for(var varKey in this.slotMap){
 				var currentComboBox = 'holder'+this.schema+this.currentID+this.slotMap[varKey];
-				dom.byId(currentComboBox).value = varList[i];
+				registry.byId(currentComboBox).set("value", varList[i]);
 				i++;
 			}
+		},
+		/*allVariablesFilled
+		reads the slots and confirms whether all variables have valid values
+		*/
+		allVariablesFilled: function(){
+			if(this.equation !== ""){
+				for(var varKey in this.slotMap){
+					var currentComboBox = 'holder'+this.schema+this.currentID+this.slotMap[varKey];
+					var currentVal = registry.byId(currentComboBox).get("value");
+					if(currentVal == ""){
+						return false;
+					}
+				}
+			}
+			return true;
 		}
 	});
 });
