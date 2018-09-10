@@ -349,6 +349,7 @@ define([
 			});
 
 			on(registry.byId("deleteButton"), "click", function(){
+				controllerObject.activateDeleteNode();
 				registry.byId("nodeEditor").hide();
 				dm.deleteNode(controllerObject.currentID);
 			});

@@ -169,6 +169,7 @@ define([
 			this.entity = "";
 			this.description = "";
 			this.equation = "";
+			this.deleteNodeActivated = false;
 		},
 
 		resettableControls: ["variable","description","value","units","equation"],
@@ -926,14 +927,17 @@ define([
 					equation: eqVal
 					};
 					eqVal = equation.convert(params);
-					registry.byId(this.controlMap.equation).set('value', eqVal.equation || '');
-					this.equation = eqVal.equation;
 				}
+				var convEq = eqVal ? eqVal.equation : "";
+				registry.byId(this.controlMap.equation).set('value', convEq);
+				this.equation = convEq;
 				//slots are not colored yet, feedback to be implemented
 				//the slots have to set up initially based on schema which can be done by updateSlotVariables function
 				this.updateSlotVariables();
 				//based on the equation, variable names have to be filled inside the dynamic comboboxes
 				this.fillVariableNames();
+				//initialize deleteNodeActivated flag to false/off
+				this.deleteNodeActivated = false;
 			}
 			
 			//color description widget , common to both node types
@@ -1436,6 +1440,13 @@ define([
 				}
 			}
 			return true;
+		},
+		/*activateDeleteNode
+		This function can be used for delete button specific checks
+		deleteNodeActivated flag prevents equation being evaluated when delete button is clicked
+		*/
+		activateDeleteNode: function(){
+			this.deleteNodeActivated = true;
 		}
 	});
 });

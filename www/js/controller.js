@@ -228,8 +228,8 @@ define([
 				return function(){
 					if(myThis.nodeType == "equation"){
 						var equation = registry.byId("equationInputbox");
-						//if the equation is in the box but has not been checked(or entered) or if equation is changed after validating in author mode
-						if((equation.value && !myThis.equationEntered )|| (equation.displayedValue !== equation.value)){
+						//if the equation is in the box but has not been checked(or entered) and deleteNode is not calling for this function or if equation is changed after validating in author mode
+						if((equation.value && !myThis.equationEntered && !myThis.deleteNodeActivated)|| (equation.displayedValue !== equation.value)){
 							//call equation done handler(equation done handlers in one of the modes will be called based on current mode)
 							var directives = myThis.equationDoneHandler();
 							var isAlertShown = array.some(directives, function(directive){
