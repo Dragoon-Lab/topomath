@@ -191,8 +191,8 @@ define([
 				// returns a list of all variables in the model
 				var varList = new Array();
 				array.forEach(this.authored.getNodes(), function(node){
-					if(node && node.type == "variable")
-						varList.push({id: node.ID, name: node.name});
+					if(node && node.type == "quantity")
+						varList.push({id: node.ID, name: node.variable});
 				});
 				return varList;
 			},
@@ -677,6 +677,12 @@ define([
 			isRoot: function(/* string */ id){
 				var node = this.getNode(id);
 				return node && node.root;
+			},
+			getSchema: function(/*string*/ id){
+				return this.getNode(id).schema;
+			},
+			getEntities: function(/*string*/ id){
+				return this.getNode(id).entity;
 			},
 			setParent: function(/*string*/ id, /*bool*/ parent){
 				this.getNode(id).parentNode = parent;

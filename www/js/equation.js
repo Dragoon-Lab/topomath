@@ -556,6 +556,28 @@ define([
 
 		setLogging: function(logger){
 			this._logger = logger;
+		},
+
+		/*getVariableStrings returns the constituent variables as strings in an array inside a user entered equation string
+		*/
+		getVariableStrings: function(/*String*/ equation){
+			var eqs = equation.split(this.equalto);
+			if(eqs.length != 2){
+				throw new Error("Wrong number of equal to symbols in the equation");
+			}
+			var expressions = [];
+			try{
+				array.forEach(eqs, function(eq, count){
+					expressions[count] = Parser.parse(eq);
+				}, this);
+			}catch(e){
+				throw e;
+			}
+			var variableList = [];
+			array.forEach(expressions, function(expr){
+					variableList = variableList.concat(expr.variables());
+				});
+			return variableList;
 		}
 	};
 });

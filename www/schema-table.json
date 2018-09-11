@@ -57,7 +57,7 @@
 		},
 		{
 			"Name": "Headwind",
-			"Equation": "GS = AS – WS",
+			"Equation": "GS = AS - WS",
 			"Mapping": {
 				"GS": "Ground Speed",
 				"WS": "Wind Speed",
