@@ -349,6 +349,7 @@ define([
 			});
 
 			on(registry.byId("deleteButton"), "click", function(){
+				controllerObject.activateDeleteNode();
 				registry.byId("nodeEditor").hide();
 				dm.deleteNode(controllerObject.currentID);
 			});
@@ -410,7 +411,10 @@ define([
 					}
 				}
 
-			var retSchemaObj = dojo.xhrGet(schemaReqParams);		
+			var retSchemaObj = dojo.xhrGet(schemaReqParams);
+
+			//refresh the schema_options_loaded param in the session storage which controls loading options into the editor
+			sessionStorage.removeItem("schema_options_loaded");
 
 		});
 	});
