@@ -238,8 +238,11 @@
 			<div class="fieldgroup">
 
 				<div id="descriptionInputboxContainer" class="fieldgroup" style="display: none;">
-					<label for="descriptionInputbox">Description</label>
-					<input id="descriptionInputbox" data-dojo-type="dijit/form/TextBox">						
+					<span class="fixedwidth">
+						<div id="descriptionQuestionMark" class="questionMark"></div>
+						<label for="descriptionInputbox">Description</label>
+					</span>
+					<input id="descriptionInputbox" data-dojo-type="dijit/form/TextBox">
 				</div>
 
 				<div id="descriptionInputboxContainerStudent" class="fieldgroup" style="display: none;">
@@ -279,22 +282,36 @@
 					<label for ="rootNodeToggleCheckbox" title ="Mark this node as Sought node.">Sought</label>
 				</span>
 				<input id ="rootNodeToggleCheckbox" name ="markRootNode" data-dojo-type="dijit/form/CheckBox" value="agreed" checked="false"/>
-			</div>
+			</div>	
 
 			<div id="variableInputboxContainer" class="fieldgroup" style="display: none;">
-				<label for="variableInputbox">Variable</label>
+				<span class="fixedwidth">
+					<div id="variableInputboxQuestionMark" class="questionMark"></div>
+					<label for="variableInputbox">Variable</label>
+				</span>
 				<input id="variableInputbox" data-dojo-type="dijit/form/TextBox">
+			</div>
+
+			<div id="qtyDescriptionInputboxContainer" class="fieldgroup" style="display: none;">
+				<span class="fixedwidth">
+					<div id="qtyDescriptionQuestionMark" class="questionMark"></div>
+					<label for="qtyDescriptionInputbox">Description</label>
+				</span>
+				<input id="qtyDescriptionInputbox" data-dojo-type="dijit/form/TextBox">
 			</div> 
 
 			<div id="variableInputboxContainerStudent" class="fieldgroup" style="display: none;">
-				<label for="variableInputboxStudent">Variable</label>
+				<label for="variableInputboxStudent">Variable Name</label>
 				<select id="variableInputboxStudent" data-dojo-type="dijit/form/Select">
 					<option value='defaultSelect'>--Select--</option>
 				</select>
 			</div>
 
 			<div id="variableTypeContainer" class="fieldgroup" style="display: none;">
-				<label> Variable Type</label>
+				<span class="fixedwidth">
+					<div id="variableTypeQuestionMark" class="questionMark"></div>
+					<label>Type</label>
+				</span>
 				<input data-dojo-type="dijit/form/RadioButton" name="variableType" class="handleVariable" id="unknownType" value="unknown"/>
 				<label for="unknownType">Unknown</label>
 				<input data-dojo-type="dijit/form/RadioButton" name="variableType" class="handleVariable" id="parameterType" value="parameter"/>

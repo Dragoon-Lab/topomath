@@ -38,10 +38,11 @@ define([
 	"dojo/dom-class",
 	"dijit/Tooltip",
 	"dojo/_base/event",
+	"dojo/mouse",
 	"./equation",
 	"./logging"
 ], function(array, declare, lang, dom, keys, on, ready, registry, domStyle, domConstruct, aspect, query, domClass, toolTip, event,
-	expression, clientLogging){
+	mouse, expression, clientLogging){
 
 	/* Summary:
 	 *			Controller for the node editor, common to all modes
@@ -99,8 +100,11 @@ define([
 		questionMarkButtons : {
 					//"inputsQuestionMark": "Select a quantity to enter into the expression above.  Much faster than typing.",
 					"valueQuestionMark": "This is a number, typically given to you in the system description.",
+					"variableInputboxQuestionMark": "The name of the variable used in equations",
+					"qtyDescriptionQuestionMark": "Describes the quantity represented by the variable",
+					"variableTypeQuestionMark": "Parameters are quantities whose values are known (or given in the system description). Unknowns are not given, but can be solved for by TopoMath if there are enough equations",
 					//"operationsQuestionMark": "Click one of these to enter it in the expression above. <br> See the Help menu at the top of the screen for a list of other mathematical operators and functions that you can type in.",
-					"questionMarkRoot": "Mark this node as Sought node",
+					"questionMarkRoot": "Indicates that this variable is one the problem will ask the student to solve for",
 					"descriptionQuestionMark": "Select a description for node",
 					"entityDescriptionQuestionMark": "Enter a list of valid entity names, separated by semicolons",
 					"variableSlotNamesQuestionMark": "This section contains variable names to choose from or type in for the selected schema"
@@ -477,6 +481,11 @@ define([
 				return this.disableHandlers || this.handleEntities.apply(this, arguments);
 			}));
 
+			var qtyDescriptionWidget = registry.byId(this.controlMap.qtyDescription);
+			qtyDescriptionWidget.on('Change', lang.hitch(this, function(){
+				return this.disableHandlers || this.handleQtyDescription.apply(this, arguments);
+			}));
+
 			var equationWidget = registry.byId(this.controlMap.equation);
 			equationWidget.on('Change', lang.hitch(this, function(){
 				return this.disableHandlers || this.handleEquation.apply(this, arguments);
@@ -543,6 +552,17 @@ define([
 				}));
 			}, this);
 
+			//add tooltips to a disabled delete button for quantity node on click and mouse leave
+			var delButton = dom.byId('deleteButton');
+			on(delButton, mouse.enter, function(){
+				if(registry.byId("deleteButton").get("disabled"))
+					toolTip.show("Note: Quantities can only be deleted when they are not part of any equation.", delButton);
+			});
+
+			on(delButton, mouse.leave, function(){
+				if(registry.byId("deleteButton").get("disabled"))
+					toolTip.hide(delButton);
+			});
 		},
 		//show node editor
 		showNodeEditor: function(/*string*/ id){
@@ -828,9 +848,9 @@ define([
 			this.equationInsert('/');
 		},
 		equalsHandler: function(){
- 			console.log("****** equals button");
- 			this.equationInsert('=');
- 		},
+			console.log("****** equals button");
+			this.equationInsert('=');
+		},
 		undoHandler: function(){
 			var equationWidget = registry.byId(this.controlMap.equation);
 			equationWidget.set("value", "");

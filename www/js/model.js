@@ -196,6 +196,14 @@ define([
 				});
 				return varList;
 			},
+			getAllEquations: function(){
+				var eqList = new Array();
+				array.forEach(this.authored.getNodes(), function(node){
+					if(node && node.type == "equation")
+						eqList.push({id: node.ID, equation: node.equation});
+				});
+				return eqList;
+			},
 			isParentNode: function(/*string*/ id){
 				// Summary: returns true if a node is the parent node in a tree structure;
 				return this.authored.getNode(id).root;

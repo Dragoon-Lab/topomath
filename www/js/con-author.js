@@ -119,6 +119,16 @@ define([
 						}
 						break;
 
+					case "qtyDescription":
+						var message = "A valid description has been entered";
+						if(value){
+							returnObj.push({id:"qtyDescription", attribute:"status", value:"entered"});
+							returnObj.push({id:"message", attribute:"append", value:message});
+						}else{
+							returnObj.push({id:"qtyDescription", attribute:"status", value:""});
+						}
+						break;
+
 					case "schema":
 						var message = "Please enter a valid schema";
 						if(value){
@@ -182,6 +192,7 @@ define([
 			variable: "variableInputbox",
 			equation: "equationInputbox",
 			description: "descriptionInputbox",
+			qtyDescription: "qtyDescriptionInputbox",
 			kind: "optionalitySelector",
 			units: "unitsSelector",
 			root: "rootNodeToggleCheckbox",
@@ -200,11 +211,12 @@ define([
 			style.set('schemaSelectorContainer', 'display', 'block');
 			style.set('entityInputboxContainer', 'display', 'block');
 			style.set('descriptionInputboxContainer', 'display', 'inline-block');
+			style.set('qtyDescriptionInputboxContainer', 'display', 'inline-block');
 			style.set('variableInputboxContainer', 'display', 'inline-block');
-			//style.set('valueInputboxContainer', 'display', 'block');
+			style.set('valueInputboxContainer', 'display', 'block');
 			//style.set('unitDiv', 'display', 'none');
-			//style.set('unitsSelectorContainer', 'display', 'block');
-			//style.set('rootNodeToggleContainer', 'display', 'block');
+			style.set('unitsSelectorContainer', 'display', 'block');
+			style.set('rootNodeToggleContainer', 'display', 'block');
 			style.set('expressionDiv', 'display', 'block');
 			//This has been removed in new author mode editor design
 			//style.set('inputSelectorContainer', 'display', 'block');
@@ -452,6 +464,12 @@ define([
 			});
 		},
 
+		handleQtyDescription: function(description){
+			var returnObj = this.authorPM.process(this.currentID, "qtyDescription", description);
+			this.applyDirectives(returnObj);
+			this._model.authored.setDescription(this.currentID,description);
+		},
+
 		handleSchemas: function(schema){
 			if(schema == "defaultSelect")
 				schema = null;
@@ -690,8 +708,8 @@ define([
 			//make display none for all fields initially
 			//removed optionality container from initial view settings
 			//TODO: further clean up necessary after discussion
-			var qtyElements = ["descriptionInputboxContainer","variableTypeContainer","variableInputboxContainer","valueUnitsContainer","rootNodeToggleContainer"];
-			var eqElements = ["descriptionInputboxContainer","expressionDiv"];
+			var qtyElements = ["qtyDescriptionInputboxContainer","variableTypeContainer","variableInputboxContainer","valueUnitsContainer","rootNodeToggleContainer"];
+			var eqElements = ["descriptionInputboxContainer","expressionDiv","schemaSelectorContainer","entityInputboxContainer","variableSlotControlsContainer"];
 		
 			if(type == "quantity"){
 				eqElements.forEach(function(elem){
@@ -702,6 +720,15 @@ define([
 					console.log("element",elem);
 					style.set(elem,"display","block");
 				});
+
+				//can the qty node have delete option
+				var canHaveDeleteNode = this.canHaveDeleteNode();
+				if(canHaveDeleteNode){
+					registry.byId("deleteButton").set("disabled",false);
+				}
+				else{
+					registry.byId("deleteButton").set("disabled",true);
+				}
 			}else if(type == "equation"){
 				qtyElements.forEach(function(elem){
 					console.log("element",elem);
@@ -711,7 +738,8 @@ define([
 					console.log("element",elem);
 					style.set(elem,"display","block");
 				});
-
+				//enable the deletebutton always
+				registry.byId("deleteButton").set("disabled",false);
 			}
 			//emptying message box when a node is open
 			console.log("emptying message");
@@ -861,6 +889,10 @@ define([
 						this.applyDirectives(this.authorPM.process(this.currentID, 'value', this._model.authored.getValue(this.currentID), true));
 					}
 				}
+				//qty Description
+				var qtyDescVal = this._model.authored.getDescription(nodeid);
+				registry.byId(this.controlMap.qtyDescription).set('value', qtyDescVal || '');
+				this.applyDirectives(this.authorPM.process(this.currentID, 'qtyDescription', qtyDescVal));
 			}
 			else if(nodeType == "equation"){
 				// populate inputs
@@ -1425,6 +1457,20 @@ define([
 				registry.byId(currentComboBox).set("value", varList[i]);
 				i++;
 			}
+		},
+		/*canHaveDeleteNode
+		checks whether the current qty node is part of any equation and decides if it can be deleted accordingly
+		*/
+		canHaveDeleteNode: function(){
+			//only applicable to quantity nodes
+			var eqList = this._model.getAllEquations();
+			var currentID = "" + this.currentID;
+			var found = array.some(eqList,function(currentEq){
+				var currentVars = equation.getVariableStrings(currentEq.equation);
+				if(currentVars.includes(currentID))
+					return true;
+			});
+			return !found;
 		},
 		/*allVariablesFilled
 		reads the slots and confirms whether all variables have valid values
