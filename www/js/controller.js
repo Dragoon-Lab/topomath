@@ -554,7 +554,7 @@ define([
 
 			//add tooltips to a disabled delete button for quantity node on click and mouse leave
 			var delButton = dom.byId('deleteButton');
-			on(delButton, 'click', function(){
+			on(delButton, mouse.enter, function(){
 				if(registry.byId("deleteButton").get("disabled"))
 					toolTip.show("Note: Quantities can only be deleted when they are not part of any equation.", delButton);
 			});
