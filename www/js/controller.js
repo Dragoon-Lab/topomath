@@ -38,10 +38,11 @@ define([
 	"dojo/dom-class",
 	"dijit/Tooltip",
 	"dojo/_base/event",
+	"dojo/mouse",
 	"./equation",
 	"./logging"
 ], function(array, declare, lang, dom, keys, on, ready, registry, domStyle, domConstruct, aspect, query, domClass, toolTip, event,
-	expression, clientLogging){
+	mouse, expression, clientLogging){
 
 	/* Summary:
 	 *			Controller for the node editor, common to all modes
@@ -551,6 +552,17 @@ define([
 				}));
 			}, this);
 
+			//add tooltips to a disabled delete button for quantity node on click and mouse leave
+			var delButton = dom.byId('deleteButton');
+			on(delButton, 'click', function(){
+				if(registry.byId("deleteButton").get("disabled"))
+					toolTip.show("Note: Quantities can only be deleted when they are not part of any equation.", delButton);
+			});
+
+			on(delButton, mouse.leave, function(){
+				if(registry.byId("deleteButton").get("disabled"))
+					toolTip.hide(delButton);
+			});
 		},
 		//show node editor
 		showNodeEditor: function(/*string*/ id){
@@ -836,9 +848,9 @@ define([
 			this.equationInsert('/');
 		},
 		equalsHandler: function(){
- 			console.log("****** equals button");
- 			this.equationInsert('=');
- 		},
+			console.log("****** equals button");
+			this.equationInsert('=');
+		},
 		undoHandler: function(){
 			var equationWidget = registry.byId(this.controlMap.equation);
 			equationWidget.set("value", "");
