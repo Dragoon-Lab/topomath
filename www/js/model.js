@@ -13,7 +13,7 @@ define([
 					authorModelNodes: [],
 					studentModelNodes: []
 				};
-				obj.active = mode === "AUTHOR" ? obj.authored : obj.student;
+				obj.active = (mode === "AUTHOR" || mode === "SEDITOR") ? obj.authored : obj.student;
 				obj._session = session;
 				this._unknownQuantityNodeCount = 0;
 				this._equationNodeCount = 0;
