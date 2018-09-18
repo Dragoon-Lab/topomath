@@ -1417,6 +1417,11 @@ define([
 			}
 			return nextSubscript;
 		},
+		/*
+		isSubscriptInUse
+		Given a subscript, list of variables, and the numGenOb
+		Return true if the subscript is already in use by any of the variables
+		*/
 		isSubscriptInUse: function(subscript,slotVars,numGenOb){
 			var inUse = slotVars.some(function(v){
 				return numGenOb[subscript].includes(v);
