@@ -33,9 +33,8 @@ define([
 	"./equation",
 	"./typechecker",
 	"./popup-dialog",
-	"./auth-edit-lib",
 	"dojo/domReady!"
-], function(array, declare, lang, style, keys, ready, on, memory, aspect, dom, domClass, domStyle, registry, comboBox, domList, html, query, controller, equation, typechecker, popupDialog, autheditLib){
+], function(array, declare, lang, style, keys, ready, on, memory, aspect, dom, domClass, domStyle, registry, comboBox, domList, html, query, controller, equation, typechecker, popupDialog){
 
 	// Summary:
 	//			MVC for the node editor, for authors
@@ -495,7 +494,7 @@ define([
 				entity = null;
 			}
 			else{
-				var validEntityObj = autheditLib.processEntityString(entity);
+				var validEntityObj = this.processEntityString(entity);
 				if( !(validEntityObj.correctness && validEntityObj.validValue != ""))
 					validInput = {status: false, entity: validEntityObj.validValue};
 				entityDesc = validEntityObj.validValue;
@@ -942,7 +941,7 @@ define([
 					entity = null;
 				}
 				else{
-					var validEntityObj = autheditLib.processEntityString(entity);
+					var validEntityObj = this.processEntityString(entity);
 					if( !(validEntityObj.correctness && validEntityObj.validValue != ""))
 						validInput = {status: false, entity: validEntityObj.validValue};
 				}
@@ -986,7 +985,7 @@ define([
 
 				//this.applyDirectives(this.authorPM.process(isDuplicateDescription, "description", this._model.authored.getDescription(this.currentID)));
 			}
-			
+
 			dojo.empty("messageOutputbox"); // clear out any messages produced while setting up
 		},
 		/* discontinuing use of author status
@@ -1311,6 +1310,24 @@ define([
 			this.description = this.schema+": "+this.entity;
 			registry.byId(this.controlMap.description).set("value", this.description);
 		},
+		processEntityString: function(entity){
+			var entityStr = ""+ entity;
+			var entityAr = entityStr.split(';');
+			var ourReg = new RegExp(/[~`!#$%\^&*+=\-\[\]\\',/{}|\\":<>\?()]/);
+			var entityDesc = "";
+			//correctness evaluates the special characters of the whole string at once
+			//this variable is useful to give red feedback
+			var correctness = !ourReg.test(entityStr);
+			//Running through each entity helps to identify the exact entity which needs to go into description
+			//and also the case where strings like ";;" are entered where the string is legal but empty entities
+			for(var i=0;i<entityAr.length;i++){
+				if(entityAr[i] != '' && !ourReg.test(""+entityAr[i])){
+					entityDesc = entityAr[i];
+					break;
+				}
+			}
+			return {validValue: entityDesc, correctness: correctness};
+		},
 		updateSlotVariables: function(){
 			//var schema = registry.byId(this.controlMap.schemas).get("value");
 			this.slotMap = this.getSchemaProperty("Mapping", this.schema);
@@ -1384,7 +1401,7 @@ define([
 			while(!finished){
 				if(nextSubscript in numGenOb){
 					// This subscript is in use by some variable, but maybe not one in the current schema
-					if(autheditLib.isSubscriptInUse(nextSubscript,slotVars,numGenOb)){
+					if(this.isSubscriptInUse(nextSubscript,slotVars,numGenOb)){
 						// This subscript is in use, increment and try again
 						nextSubscript++;
 						continue;
@@ -1399,6 +1416,12 @@ define([
 				}
 			}
 			return nextSubscript;
+		},
+		isSubscriptInUse: function(subscript,slotVars,numGenOb){
+			var inUse = slotVars.some(function(v){
+				return numGenOb[subscript].includes(v);
+			});
+			return inUse;
 		},
 		/*updateEquation
 		updates the equation based on selected schema and variables
