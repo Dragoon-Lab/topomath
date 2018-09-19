@@ -33,9 +33,8 @@ define([
 	"./equation",
 	"./typechecker",
 	"./popup-dialog",
-	"./auth-edit-lib",
 	"dojo/domReady!"
-], function(array, declare, lang, style, keys, ready, on, memory, aspect, dom, domClass, domStyle, registry, comboBox, domList, html, query, conAuthor, equation, typechecker, popupDialog, autheditLib){
+], function(array, declare, lang, style, keys, ready, on, memory, aspect, dom, domClass, domStyle, registry, comboBox, domList, html, query, conAuthor, equation, typechecker, popupDialog){
 
 	// Summary:
 	//			MVC for the node editor, for editor mode (schema editing)
