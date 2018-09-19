@@ -43,7 +43,7 @@ define([
 			this.counter = 0;
 
 			this.log("start-session", params);
-			this.isStudentMode = params.m != "AUTHOR";
+			this.isStudentMode = (params.m != "AUTHOR" && params.m != "SEDITOR");
 		},
 
 		getModel: function(params){

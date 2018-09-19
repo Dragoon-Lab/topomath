@@ -20,6 +20,7 @@ define([
 	'./draw-model',
 	'./con-author',
 	'./con-student',
+	'./con-editor',
 	'./logging',
 	'./popup-dialog',
 	'./event-logs',
@@ -27,7 +28,7 @@ define([
 	'./user-messages',
 	'./message-box'
 ], function(array, geometry, dom, style, aspect, ready, registry, event, ioQuery, on, Button, domConstruct, lang,
-			menu, tutorConfiguration, session, model, equation, drawModel, controlAuthor, controlStudent, logging, popupDialog, eventLogs, Solution, messages, messageBox){
+			menu, tutorConfiguration, session, model, equation, drawModel, controlAuthor, controlStudent, controlEditor, logging, popupDialog, eventLogs, Solution, messages, messageBox){
 
 	console.log("load main.js");
 	// Get session parameters
@@ -164,10 +165,16 @@ define([
 			var errDialog = new popupDialog();
 			//create a controller object
 			//For now using empty  ui_config
-			var controllerObject = (!_model.isStudentMode()) ?
+			var controllerObject;
+			if(query.m === "AUTHOR")
+				controllerObject = new controlAuthor(query.m, _model, _config);
+			else if(query.m === "SEDITOR")
+				controllerObject = new controlEditor(query.m, _model, _config);
+			/*
+			var controllerObject = (query.m === "AUTHOR") ?
 				new controlAuthor(query.m, _model, _config) :
 				new controlStudent(query.m, _model, _config, _fixPosition);
-
+			*/
 			aspect.after(dm, "addNode", function(){
 				controllerObject.computeNodeCount();
 				controllerObject.sortDescriptions();

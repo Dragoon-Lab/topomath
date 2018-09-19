@@ -186,6 +186,9 @@ define([
 		variableNodeControls: ["variable","value","units","kind","root"],
 		equationNodeControls: ["equation","schemas","entity"],
 		commonNodeControls: ["setStudent","modelType","description"],
+		qtyElements: ["qtyDescriptionInputboxContainer","variableTypeContainer","variableInputboxContainer","valueUnitsContainer","rootNodeToggleContainer"],
+		eqElements: ["descriptionInputboxContainer","expressionDiv","schemaSelectorContainer","entityInputboxContainer","variableSlotControlsContainer"],
+
 
 		controlMap: {
 			//inputs: "inputSelector",
@@ -708,15 +711,13 @@ define([
 			//make display none for all fields initially
 			//removed optionality container from initial view settings
 			//TODO: further clean up necessary after discussion
-			var qtyElements = ["qtyDescriptionInputboxContainer","variableTypeContainer","variableInputboxContainer","valueUnitsContainer","rootNodeToggleContainer"];
-			var eqElements = ["descriptionInputboxContainer","expressionDiv","schemaSelectorContainer","entityInputboxContainer","variableSlotControlsContainer"];
 		
 			if(type == "quantity"){
-				eqElements.forEach(function(elem){
+				this.eqElements.forEach(function(elem){
 					console.log("element",elem);
 					style.set(elem,"display","none");
 				});
-				qtyElements.forEach(function(elem){
+				this.qtyElements.forEach(function(elem){
 					console.log("element",elem);
 					style.set(elem,"display","block");
 				});
@@ -730,11 +731,11 @@ define([
 					registry.byId("deleteButton").set("disabled",true);
 				}
 			}else if(type == "equation"){
-				qtyElements.forEach(function(elem){
+				this.qtyElements.forEach(function(elem){
 					console.log("element",elem);
 					style.set(elem,"display","none");
 				});
-				eqElements.forEach(function(elem){
+				this.eqElements.forEach(function(elem){
 					console.log("element",elem);
 					style.set(elem,"display","block");
 				});
@@ -984,6 +985,8 @@ define([
 
 				//this.applyDirectives(this.authorPM.process(isDuplicateDescription, "description", this._model.authored.getDescription(this.currentID)));
 			}
+
+			dojo.empty("messageOutputbox"); // clear out any messages produced while setting up
 		},
 		/* discontinuing use of author status
 		updateModelStatus: function(desc, id){
@@ -1414,7 +1417,7 @@ define([
 			}
 			return nextSubscript;
 		},
-		/* 
+		/*
 		isSubscriptInUse
 		Given a subscript, list of variables, and the numGenOb
 		Return true if the subscript is already in use by any of the variables
