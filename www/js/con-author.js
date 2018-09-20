@@ -32,9 +32,8 @@ define([
 	'./controller',
 	"./equation",
 	"./typechecker",
-	"./popup-dialog",
 	"dojo/domReady!"
-], function(array, declare, lang, style, keys, ready, on, memory, aspect, dom, domClass, domStyle, registry, comboBox, domList, html, query, controller, equation, typechecker, popupDialog){
+], function(array, declare, lang, style, keys, ready, on, memory, aspect, dom, domClass, domStyle, registry, comboBox, domList, html, query, controller, equation, typechecker){
 
 	// Summary:
 	//			MVC for the node editor, for authors
@@ -699,12 +698,6 @@ define([
 		
 		handleErrorMessage: function(){
 			//Summary: Displays a message on opening node editor if expression was cleared
-		},
-
-		handleSchemaDisplay: function(){
-			var schemaDialog =  new popupDialog();
-			var schemaHtml = this.getSchemaHtml();
-			schemaDialog.showDialog("Schema Table", schemaHtml, [], "Close Table");
 		},
 
 		initialViewSettings: function(type){
@@ -1465,20 +1458,6 @@ define([
 				registry.byId(currentComboBox).set("value", varList[i]);
 				i++;
 			}
-		},
-		/*canHaveDeleteNode
-		checks whether the current qty node is part of any equation and decides if it can be deleted accordingly
-		*/
-		canHaveDeleteNode: function(){
-			//only applicable to quantity nodes
-			var eqList = this._model.getAllEquations();
-			var currentID = "" + this.currentID;
-			var found = array.some(eqList,function(currentEq){
-				var currentVars = equation.getVariableStrings(currentEq.equation);
-				if(currentVars.includes(currentID))
-					return true;
-			});
-			return !found;
 		},
 		/*allVariablesFilled
 		reads the slots and confirms whether all variables have valid values

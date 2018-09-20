@@ -187,6 +187,17 @@ define([
 				}, this);
 				return unitList;
 			},
+			getAllEntities: function(){
+				// Summary: returns a list of all distinct entities author has entered for the model
+				var entityList = new Array();
+				array.forEach(this.authored.getNodes(), function(node){
+					if(node.entity && array.indexOf(entityList, node.entity) == -1){
+						entityList.push(node.entity);
+					}
+				}, this);
+				console.log("entity list", entityList);
+				return entityList;
+			},
 			getAllVariables: function(){
 				// returns a list of all variables in the model
 				var varList = new Array();

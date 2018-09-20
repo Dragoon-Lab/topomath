@@ -12,6 +12,7 @@ define([
 	"dojo/dom",
 	"dojo/dom-class",
 	"dojo/dom-style",
+	'dojo/store/Memory',
 	"dojo/ready",
 	"dojo/on",
 	"dojo/dom-construct",
@@ -24,7 +25,7 @@ define([
 	"./pedagogical-module",
 	"./typechecker",
 	"./equation"
-], function(aspect, array, declare, lang, dom, domClass, style, ready,on,
+], function(aspect, array, declare, lang, dom, domClass, style, memory, ready,on,
  domConstruct, focusUtil, registry, tooltipDialog, popup, query, controller, PM, typechecker, expression) {
 	/* Summary:	// Summary:
 	 //			MVC for the node editor, for students
@@ -49,31 +50,54 @@ define([
 			// used in equation done handler to handle scenario of new nodes created
 			// from demo nodes
 			this.demoParse = null;
-			this.init();
+			this.studentControls();
 		},
 
 		// A list of control map specific to students
 		resettableControls: ["equation"],
 		variableNodeControls: ["variable","value","units"],
-		equationNodeControls: ["inputs","equation"],
+		equationNodeControls: ["equation","schemas","entity"],
 		commonNodeControls: ["modelType","description"],
+		qtyElements: ["qtyDescriptionInputboxContainer","variableTypeContainer","variableInputboxContainer","valueUnitsContainer"],
+		eqElements: ["descriptionInputboxContainer","expressionDiv","schemaSelectorContainer","entitySelectorStudentContainer","variableSlotControlsContainer"],
 
+		/*
 		init: function () {
 			// TODO : Check Model Completeness
 			// this.studentControls();
 		},
+		*/
+		studentControls: function(){
+			console.log("++++++++ Setting STUDENT format in Node Editor.");
+			style.set('schemaSelectorContainer', 'display', 'block');
+			style.set('entitySelectorStudentContainer', 'display', 'block');
+			style.set('descriptionInputboxContainer', 'display', 'inline-block');
+			style.set('qtyDescriptionInputboxContainer', 'display', 'inline-block');
+			style.set('variableInputboxContainer', 'display', 'inline-block');
+			style.set('valueInputboxContainer', 'display', 'block');
+			style.set('unitsSelectorContainer', 'display', 'block');
+			style.set('expressionDiv', 'display', 'block');
+			//This has been removed in new author mode editor design
+			//style.set('inputSelectorContainer', 'display', 'block');
+			style.set('equationInputbox', 'display', 'block');
+			style.set('variableSlotControlsContainer', 'display', 'block');
+		},
 
 		controlMap: {
-			inputs: "inputSelectorStudent",
+			//inputs: "inputSelectorStudent",
 			variable: "variableInputboxStudent",
 			equation: "equationInputbox",
-			description: "selectDescription",
+			qtyDescription: "selectDescription",
+			description: "descriptionInputbox",
 			units: "unitsSelectorStudent",
 			modelType: "modelSelector",
 			value: "valueInputbox",
 			unknown: "unknownType",
 			parameter: "parameterType",
-			dynamic: "dynamicType"
+			dynamic: "dynamicType",
+			schemas: "schemaSelector",
+			entity: "entitySelectorStudent",
+			schemaDisplay: "schemaDescriptionQuestionMark",
 		},
 		populateSelections: function () {
 			/*
@@ -85,7 +109,7 @@ define([
 			 */
 			// Add fields to Description box and inputs box
 			// populate input field
-			var t = registry.byId(this.controlMap.inputs);
+			//var t = registry.byId(this.controlMap.inputs);
 			var u = registry.byId(this.controlMap.units);
 
 			var variableName = registry.byId(this.controlMap.variable);
@@ -104,7 +128,7 @@ define([
 				if(descNameMap[obj1.value] && descNameMap[obj2.value])
 					return descNameMap[obj1.value].toLowerCase().localeCompare(descNameMap[obj2.value].toLowerCase());
 			}, this);
-
+			/*
 			array.forEach(descriptions, function (desc) {
 				if(desc.label !== undefined){
 					var name = this._model.authored.getName(desc.value);
@@ -115,7 +139,7 @@ define([
 						t.addOption(option);
 					}
 				}
-			}, this);
+			}, this); */
 
 			var units = this._model.getAllUnits();
 			units.sort();
@@ -266,7 +290,67 @@ define([
 				//this.applyDirectives(dd);
 			}
 		},
+		initialViewSettings: function(type){
+			//make display none for all fields initially
+			//removed optionality container from initial view settings
+			//TODO: further clean up necessary after discussion
+			if(type == "quantity"){
+				this.eqElements.forEach(function(elem){
+					console.log("element",elem);
+					style.set(elem,"display","none");
+				});
+				this.qtyElements.forEach(function(elem){
+					console.log("element",elem);
+					style.set(elem,"display","block");
+				});
+				/*
+				//can the qty node have delete option
+				var canHaveDeleteNode = this.canHaveDeleteNode();
+				if(canHaveDeleteNode){
+					registry.byId("deleteButton").set("disabled",false);
+				}
+				else{
+					registry.byId("deleteButton").set("disabled",true);
+				}
+				*/
+			}else if(type == "equation"){
+				this.qtyElements.forEach(function(elem){
+					console.log("element",elem);
+					style.set(elem,"display","none");
+				});
+				this.eqElements.forEach(function(elem){
+					console.log("element",elem);
+					style.set(elem,"display","block");
+				});
+				//enable the deletebutton always
+				registry.byId("deleteButton").set("disabled",false);
+			}
+			//emptying message box when a node is open
+			console.log("emptying message");
+			dojo.empty("messageOutputbox");
+		},
 		initialControlSettings: function (nodeid) {
+			var nodeType = this._model.student.getType(nodeid);
+			if(nodeType == "equation"){
+				var descriptionWidget = registry.byId(this.controlMap.description);
+				var equationWidget = registry.byId(this.controlMap.equation);
+				//for the schema select load schema options
+				this.loadSchemaOptions();
+				//for the entity select load entities
+				var entityWid = registry.byId(this.controlMap.entity);
+				var entityList = [];
+				var authorEntities = this._model.getAllEntities();
+				authorEntities.sort();
+				array.forEach(authorEntities, function(ent){
+					var obj = {value: ent, label: ent};
+					entityWid.addOption(obj);
+				}, this);
+
+				//disable the description and equation fields
+				descriptionWidget.set('disabled', true);
+				equationWidget.set('disabled', true);	
+			}
+			/*
 			// Apply settings from PM
 			console.log("Initial Control Settings for Student");
 			var directives = this._model.student.getStatusDirectives(nodeid);
@@ -333,6 +417,7 @@ define([
 
 			this.applyDirectives(nodeDirectives);
 			style.set(this.genericDivMap.inputs, "display", "block");
+			*/
 		},
 
 		// Need to save state of the node editor in the status section

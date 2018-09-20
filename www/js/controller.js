@@ -40,9 +40,10 @@ define([
 	"dojo/_base/event",
 	"dojo/mouse",
 	"./equation",
+	"./popup-dialog",
 	"./logging"
 ], function(array, declare, lang, dom, keys, on, ready, registry, domStyle, domConstruct, aspect, query, domClass, toolTip, event,
-	mouse, expression, clientLogging){
+	mouse, expression, popupDialog, clientLogging){
 
 	/* Summary:
 	 *			Controller for the node editor, common to all modes
@@ -1234,6 +1235,27 @@ define([
 					break;
 			}
 			return propVal;
-		}
+		},
+
+		/*canHaveDeleteNode
+		checks whether the current qty node is part of any equation and decides if it can be deleted accordingly
+		*/
+		canHaveDeleteNode: function(){
+			//only applicable to quantity nodes
+			var eqList = this._model.getAllEquations();
+			var currentID = "" + this.currentID;
+			var found = array.some(eqList,function(currentEq){
+				var currentVars = expression.getVariableStrings(currentEq.equation);
+				if(currentVars.includes(currentID))
+					return true;
+			});
+			return !found;
+		},
+
+		handleSchemaDisplay: function(){
+			var schemaDialog =  new popupDialog();
+			var schemaHtml = this.getSchemaHtml();
+			schemaDialog.showDialog("Schema Table", schemaHtml, [], "Close Table");
+		},
 	});
 });

@@ -235,6 +235,16 @@
 				<input id="entityInputbox" data-dojo-type="dijit/form/TextBox">
 			</div>
 
+			<div id="entitySelectorStudentContainer" class="fieldgroup" style="display: none;">
+				<span class="fixedwidth">
+					<div id="entityDescriptionQuestionMarkStudent" class="questionMark"></div>
+					<label for="entitySelectorStudent">Entity</label>
+				</span>
+				<select id="entitySelectorStudent" data-dojo-type="dijit/form/Select">
+					<option value='defaultSelect'>Select an entity</option>
+				</select>
+			</div>
+
 			<div class="fieldgroup">
 
 				<div id="descriptionInputboxContainer" class="fieldgroup" style="display: none;">
