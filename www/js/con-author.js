@@ -1437,10 +1437,15 @@ define([
 			//var slotMap = this.getSchemaProperty("Mapping", schema);
 			//retrieve the generic equation always when updating to replace the equation
 			var equation = this.getSchemaProperty("Equation", this.schema);
+
+			// add $ to all strings in the generic equation to keep replacement accurate
+			for(var varKey in this.slotMap){
+				equation = equation.replace(varKey,"$"+varKey)
+			}
 			for(var varKey in this.slotMap){
 				var updatedValue = dom.byId("holder"+this.schema+this.currentID+this.slotMap[varKey]).value;
-				console.log("replacing", varKey, updatedValue);
-				equation = equation.replace(varKey, updatedValue);
+				console.log("replacing", varKey, "\'"+updatedValue+"\'");
+				equation = equation.replace("$"+varKey, updatedValue);
 			}
 			registry.byId(this.controlMap.equation).set("value",equation);
 			this.equation = equation;
