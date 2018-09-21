@@ -52,6 +52,25 @@ define([
 			this.demoParse = null;
 			this.studentControls();
 		},
+		studentPM:{
+			process: function(nodeID, nodeType, value, validInput, message){
+				var returnObj=[];
+				switch(nodeType){
+					case "schema":
+						if(validInput){
+							returnObj.push({id:"schemas", attribute:"status", value:"entered"});
+						}else{
+							// This never happens
+							returnObj.push({id:"schemas", attribute:"status", value:"incorrect"});
+						}
+						returnObj.push({id:"message", attribute:"append", value:message});
+						break;
+					default:
+						throw new Error("Unknown type: "+ nodeType + ".");
+				}
+				return returnObj;
+			}
+		},
 
 		// A list of control map specific to students
 		resettableControls: ["equation"],
@@ -148,19 +167,6 @@ define([
 				u.addOption({label: unit, value: unit});
 			});
 		},
-		handleSchemas: function(schema){
-			if(schema == "defaultSelect")
-				schema = null;
-			// TODO921: uncomment these and implement PM
-			//var returnObj = this.PM.processAnswer(this.currentID, "schema", schema);
-			//console.log("Returned from student PM schemas: ", returnObj);
-			//this.applyDirectives(returnObj);
-			this._model.active.setSchema(this.currentID,schema);
-			this.schema = schema;
-			this.updateEquationDescription();
-			this.updateSlotVariables();
-			this.updateEquation();
-		},
 		handleDescription: function (selectDescription) {
 			console.log("****** in handleDescription ", this.currentID, selectDescription);
 			if (selectDescription == 'defaultSelect') {
@@ -228,6 +234,40 @@ define([
 			this._model.student.setUnits(this.currentID,unit);
 			this.applyDirectives(this._PM.processAnswer(this.currentID, 'units', unit));
 			// Logging
+		},
+		/* handle schema for student mode
+		*/
+		handleSchemas: function(schema){
+			var message;
+			var returnObj;
+			//case 1: if the student has equalled the number of schemas authored, throw an error in message box
+			if(!(this._model.authored.getTotalSchemaCount() >  this._model.student.getTotalSchemaCount())){
+				//console.log("error", "all schemas handled");
+				message = "You do not need any more schema applications";
+				returnObj = this.studentPM.process(this.currentID, "schema", schema, false, message);
+			}
+			else{
+				//case 2: if student tries to use schema other than the one authored
+				if(!this._model.authored.hasSchema(schema)){
+					//console.log("This schema has not been defined by author");
+					message = "This is an invalid schema for this problem";
+					returnObj = this.studentPM.process(this.currentID, "schema", schema, false, message);
+				}
+				else{
+					//case 3: if student tries to use a duplicate schema
+					if(!(this._model.authored.getGivenSchemaCount(schema) > this._model.student.getGivenSchemaCount(schema))){
+						message = "You have already used this schema";
+						returnObj = this.studentPM.process(this.currentID, "schema", schema, false, message);
+					}
+					else{
+						message = "You have entered a valid schema";
+						returnObj = this.studentPM.process(this.currentID, "schema", schema, true, message);
+					}
+				}
+			}
+			this.applyDirectives(returnObj);
+			this._model.student.setSchema(this.currentID,schema);
+			this.schema = schema;
 		},
 		/*
 		 *	 handle event on inputs box

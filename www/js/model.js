@@ -191,11 +191,12 @@ define([
 				// Summary: returns a list of all distinct entities author has entered for the model
 				var entityList = new Array();
 				array.forEach(this.authored.getNodes(), function(node){
-					if(node.entity && array.indexOf(entityList, node.entity) == -1){
-						entityList.push(node.entity);
+					//out of the list of entities, we pick the first one
+					var entityAr = node.entity ? node.entity.split(";",1) : null;
+					if(entityAr && array.indexOf(entityList, entityAr[0]) == -1){
+						entityList.push(entityAr[0]);
 					}
 				}, this);
-				console.log("entity list", entityList);
 				return entityList;
 			},
 			getAllVariables: function(){
@@ -604,6 +605,24 @@ define([
 						return obj1.name.toLowerCase().localeCompare(obj2.name.toLowerCase());
 				}, this);
 				return descNameMap;
+			},
+			getTotalSchemaCount: function(){
+				var schemaCount = 0;
+				array.forEach(this.getNodes(), function(node){
+					if(node && node.type === "equation" && node.schema){
+						schemaCount++;
+					}
+				}, this);
+				return schemaCount;
+			},
+			getGivenSchemaCount: function(schema){
+				var schemaCount = 0;
+				array.forEach(this.getNodes(), function(node){
+					if(node && node.type === "equation" && node.schema && node.schema === schema){
+						schemaCount++;
+					}
+				}, this);
+				return schemaCount;
 			}
 		};
 
@@ -835,6 +854,14 @@ define([
 						arr.push(node);
 				});
 				return arr;
+			},
+			hasSchema: function(schema){
+				var found = array.some(this.getNodes(), function(node){
+					if(node && node.type === "equation" && node.schema){
+						return node.schema === schema;
+					}
+				});
+				return found;
 			}
 		}, both);
 

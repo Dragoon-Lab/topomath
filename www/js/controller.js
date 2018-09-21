@@ -41,11 +41,12 @@ define([
 	"dojo/_base/event",
 	"dojo/mouse",
 	"dojo/html",
+	'dijit/form/ComboBox',
 	"./equation",
 	"./popup-dialog",
 	"./logging"
 ], function(array, declare, lang, dom, keys, on, memory, ready, registry, domStyle, domConstruct, aspect, query, domClass, toolTip, event,
-	mouse, html, expression, popupDialog, clientLogging){
+	mouse, html, comboBox, expression, popupDialog, clientLogging){
 
 	/* Summary:
 	 *			Controller for the node editor, common to all modes

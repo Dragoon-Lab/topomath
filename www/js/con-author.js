@@ -25,7 +25,6 @@ define([
 	'dojo/dom-class',
 	"dojo/dom-style",
 	'dijit/registry',
-	'dijit/form/ComboBox',
 	'dojo/NodeList-dom',
 	'dojo/html',
 	'dojo/query',
@@ -33,7 +32,7 @@ define([
 	"./equation",
 	"./typechecker",
 	"dojo/domReady!"
-], function(array, declare, lang, style, keys, ready, on, memory, aspect, dom, domClass, domStyle, registry, comboBox, domList, html, query, controller, equation, typechecker){
+], function(array, declare, lang, style, keys, ready, on, memory, aspect, dom, domClass, domStyle, registry, domList, html, query, controller, equation, typechecker){
 
 	// Summary:
 	//			MVC for the node editor, for authors
