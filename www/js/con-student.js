@@ -148,6 +148,19 @@ define([
 				u.addOption({label: unit, value: unit});
 			});
 		},
+		handleSchemas: function(schema){
+			if(schema == "defaultSelect")
+				schema = null;
+			// TODO921: uncomment these and implement PM
+			//var returnObj = this.PM.processAnswer(this.currentID, "schema", schema);
+			//console.log("Returned from student PM schemas: ", returnObj);
+			//this.applyDirectives(returnObj);
+			this._model.active.setSchema(this.currentID,schema);
+			this.schema = schema;
+			this.updateEquationDescription();
+			this.updateSlotVariables();
+			this.updateEquation();
+		},
 		handleDescription: function (selectDescription) {
 			console.log("****** in handleDescription ", this.currentID, selectDescription);
 			if (selectDescription == 'defaultSelect') {

@@ -503,6 +503,12 @@ define([
 			setName: function(/*string*/ id, /*string*/ name){
 				this.getNode(id).variable = name.trim();
 			},
+			getSchema: function(/*string*/ id){
+				return this.getNode(id).schema;
+			},
+			setSchema: function(/*string*/ id, /*string*/ schema){
+				this.getNode(id).schema = schema;
+			},
 			setVariable: function(/*string*/ id, /*string*/ name){
 				this.getNode(id).variable = name.trim();
 			},
@@ -697,9 +703,6 @@ define([
 				var node = this.getNode(id);
 				return node && node.root;
 			},
-			getSchema: function(/*string*/ id){
-				return this.getNode(id).schema;
-			},
 			getEntities: function(/*string*/ id){
 				return this.getNode(id).entity;
 			},
@@ -717,9 +720,6 @@ define([
 			},
 			setRoot: function(/*string*/ id, /*bool*/ isRoot){
 				this.getNode(id).root = isRoot;
-			},
-			setSchema: function(/*string*/ id, /*string*/ schema){
-				this.getNode(id).schema = schema;
 			},
 			setEntities: function(/*string*/ id, /*string*/ entity){
 				this.getNode(id).entity = entity;
