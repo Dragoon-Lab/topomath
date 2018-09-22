@@ -240,29 +240,20 @@ define([
 		handleSchemas: function(schema){
 			var message;
 			var returnObj;
-			//case 1: if the student has equalled the number of schemas authored, throw an error in message box
-			if(!(this._model.authored.getTotalSchemaCount() >  this._model.student.getTotalSchemaCount())){
-				//console.log("error", "all schemas handled");
-				message = "You do not need any more schema applications";
+			//case 1: if student tries to use schema other than the one authored
+			if(!this._model.authored.hasSchema(schema)){
+				message = "This is an invalid schema for this problem";
 				returnObj = this.studentPM.process(this.currentID, "schema", schema, false, message);
 			}
 			else{
-				//case 2: if student tries to use schema other than the one authored
-				if(!this._model.authored.hasSchema(schema)){
-					//console.log("This schema has not been defined by author");
-					message = "This is an invalid schema for this problem";
+				//case 2: if student tries to use a duplicate schema
+				if(!(this._model.authored.getGivenSchemaCount(schema) > this._model.student.getGivenSchemaCount(schema))){
+					message = "You have already used this schema";
 					returnObj = this.studentPM.process(this.currentID, "schema", schema, false, message);
 				}
 				else{
-					//case 3: if student tries to use a duplicate schema
-					if(!(this._model.authored.getGivenSchemaCount(schema) > this._model.student.getGivenSchemaCount(schema))){
-						message = "You have already used this schema";
-						returnObj = this.studentPM.process(this.currentID, "schema", schema, false, message);
-					}
-					else{
-						message = "You have entered a valid schema";
-						returnObj = this.studentPM.process(this.currentID, "schema", schema, true, message);
-					}
+					message = "You have entered a valid schema";
+					returnObj = this.studentPM.process(this.currentID, "schema", schema, true, message);
 				}
 			}
 			this.applyDirectives(returnObj);

@@ -1367,12 +1367,12 @@ define([
 
 			// add $ to all strings in the generic equation to keep replacement accurate
 			for(var varKey in this.slotMap){
-				equation = expression.replace(varKey,"$"+varKey)
+				equation = equation.replace(varKey,"$"+varKey)
 			}
 			for(var varKey in this.slotMap){
 				var updatedValue = dom.byId("holder"+this.schema+this.currentID+this.slotMap[varKey]).value;
 				console.log("replacing", varKey, "\'"+updatedValue+"\'");
-				equation = expression.replace("$"+varKey, updatedValue);
+				equation = equation.replace("$"+varKey, updatedValue);
 			}
 			registry.byId(this.controlMap.equation).set("value",equation);
 			this.equation = equation;
