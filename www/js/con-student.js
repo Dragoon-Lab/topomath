@@ -240,21 +240,18 @@ define([
 		handleSchemas: function(schema){
 			var message;
 			var returnObj;
-			//case 1: if student tries to use schema other than the one authored
+			//case 1: the student has entered a schema that isn’t use in the author’s model
 			if(!this._model.authored.hasSchema(schema)){
-				message = "This is an invalid schema for this problem";
+				message = "The author’s model doesn’t uses any "+schema+" schemas.";
 				returnObj = this.studentPM.process(this.currentID, "schema", schema, false, message);
-			}
-			else{
-				//case 2: if student tries to use a duplicate schema
-				if(!(this._model.authored.getGivenSchemaCount(schema) > this._model.student.getGivenSchemaCount(schema))){
-					message = "You have already used this schema";
-					returnObj = this.studentPM.process(this.currentID, "schema", schema, false, message);
-				}
-				else{
-					message = "You have entered a valid schema";
-					returnObj = this.studentPM.process(this.currentID, "schema", schema, true, message);
-				}
+			}else if(!(this._model.authored.getGivenSchemaCount(schema) > this._model.student.getGivenSchemaCount(schema))){
+			//case 2: the student has already entered a number of equations corresponding to all the 
+			//        equations in the author’s model that have this schema name
+				message = "You don’t need any more "+schema+" schema applications.";
+				returnObj = this.studentPM.process(this.currentID, "schema", schema, false, message);
+			}else{
+				message = "You have entered a valid schema.";
+				returnObj = this.studentPM.process(this.currentID, "schema", schema, true, message);
 			}
 			this.applyDirectives(returnObj);
 			this._model.student.setSchema(this.currentID,schema);
