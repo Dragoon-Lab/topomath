@@ -191,10 +191,14 @@ define([
 				// Summary: returns a list of all distinct entities author has entered for the model
 				var entityList = new Array();
 				array.forEach(this.authored.getNodes(), function(node){
-					//out of the list of entities, we pick the first one
-					var entityAr = node.entity ? node.entity.split(";",1) : null;
-					if(entityAr && array.indexOf(entityList, entityAr[0]) == -1){
-						entityList.push(entityAr[0]);
+					//out of the list of entities, add all the entities not added previously to the list
+					var entityAr = node.entity ? node.entity.split(";") : null;
+					if(entityAr){
+						for(var i=0; i<entityAr.length; i++){
+							var currentEntity = entityAr[i].trim();
+							if(array.indexOf(entityList, currentEntity) == -1)
+								entityList.push(currentEntity);
+						}
 					}
 				}, this);
 				return entityList;
