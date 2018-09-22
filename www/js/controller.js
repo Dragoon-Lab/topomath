@@ -1274,7 +1274,8 @@ define([
 			var varAr = this._model.getAllVariables();
 
 			for(var varKey in this.slotMap){
-				var choices = [{id: ""+varKey+subscript, name: ""+varKey+subscript}];
+				// Authors get some free options for new variable names, but other modes do not
+				var choices = (this._mode === "AUTHOR") ? [{id: ""+varKey+subscript, name: ""+varKey+subscript}] : []; 
 				//concatenate all variables and current default variable for the respective combo box
 				choices = choices.concat(varAr);
 				var stateStore = new memory({ data: choices });
