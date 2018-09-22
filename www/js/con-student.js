@@ -60,8 +60,21 @@ define([
 						if(validInput){
 							returnObj.push({id:"schemas", attribute:"status", value:"entered"});
 						}else{
-							// This never happens
-							returnObj.push({id:"schemas", attribute:"status", value:"incorrect"});
+							if(value == "")
+								returnObj.push({id:"schemas", attribute:"status", value:""});
+							else
+								returnObj.push({id:"schemas", attribute:"status", value:"incorrect"});
+						}
+						returnObj.push({id:"message", attribute:"append", value:message});
+						break;
+					case "entity":
+						if(validInput){
+							returnObj.push({id:"entity", attribute:"status", value:"entered"});
+						}else{
+							if(value == "")
+								returnObj.push({id:"entity", attribute:"status", value:""});
+							else
+								returnObj.push({id:"entity", attribute:"status", value:"incorrect"});
 						}
 						returnObj.push({id:"message", attribute:"append", value:message});
 						break;
@@ -240,8 +253,13 @@ define([
 		handleSchemas: function(schema){
 			var message;
 			var returnObj;
+			//case default
+			if(schema == "defaultSelect"){
+				message = "Please choose a valid schema";
+				returnObj = this.studentPM.process(this.currentID, "schema", "", false, message);
+			}
 			//case 1: the student has entered a schema that isn’t use in the author’s model
-			if(!this._model.authored.hasSchema(schema)){
+			else if(!this._model.authored.hasSchema(schema)){
 				message = "The author’s model doesn’t uses any "+schema+" schemas.";
 				returnObj = this.studentPM.process(this.currentID, "schema", schema, false, message);
 			}else if(!(this._model.authored.getGivenSchemaCount(schema) > this._model.student.getGivenSchemaCount(schema))){
@@ -256,6 +274,37 @@ define([
 			this.applyDirectives(returnObj);
 			this._model.student.setSchema(this.currentID,schema);
 			this.schema = schema;
+			//change entity to default or to choose again
+			registry.byId(this.controlMap.entity).set("value", "defaultSelect");
+		},
+		/*handle entities for student node
+		*/
+		handleEntities: function(entity){
+			var returnObj;
+			var message;
+			//case default
+			if(entity == "defaultSelect"){
+				message = "Please choose a valid entity";
+				returnObj = this.studentPM.process(this.currentID, "entity", "", false, message);
+			}
+			//case 1: entity should not be a duplicate entry for a given schema
+			else if(this._model.student.isDuplicateEntity(this.schema, entity)){
+				message = "This entity already exists for given schema";
+				returnObj = this.studentPM.process(this.currentID, "entity", entity, false, message);
+			}
+			//case 2: schema and entity combo has to match from authors nodes
+			else if(!this._model.authored.isStudentEntityValid(this.schema, entity)){
+				message = "incorrect entity for the chosen schema";
+				returnObj = this.studentPM.process(this.currentID, "entity", entity, false, message);
+			}
+			//case 3: success
+			else{
+				message = "You have chosen a valid entity";
+				returnObj = this.studentPM.process(this.currentID, "entity", entity, true, message);
+			}
+			this.applyDirectives(returnObj);
+			this._model.student.setEntities(this.currentID, entity);	
+			this.entity = entity;
 		},
 		/*
 		 *	 handle event on inputs box

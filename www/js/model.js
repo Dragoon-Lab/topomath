@@ -292,7 +292,7 @@ define([
 			},
 			saveSolution: function(solution){
 				obj.model.solution = solution;
-			}
+			},
 		};
 
 		var both = {
@@ -513,6 +513,9 @@ define([
 			},
 			setSchema: function(/*string*/ id, /*string*/ schema){
 				this.getNode(id).schema = schema;
+			},
+			setEntities: function(/*string*/ id, /*string*/ entity){
+				this.getNode(id).entity = entity;
 			},
 			setVariable: function(/*string*/ id, /*string*/ name){
 				this.getNode(id).variable = name.trim();
@@ -744,9 +747,6 @@ define([
 			setRoot: function(/*string*/ id, /*bool*/ isRoot){
 				this.getNode(id).root = isRoot;
 			},
-			setEntities: function(/*string*/ id, /*string*/ entity){
-				this.getNode(id).entity = entity;
-			},
 			/**
 			* for now this function has been updated to handle new functionality
 			* this will set a node to be an accumulator that is the variableType to dynamic
@@ -866,6 +866,20 @@ define([
 					}
 				});
 				return found;
+			},
+			isStudentEntityValid: function(schema, entity){
+				var valid = array.some(this.getNodes(), function(node){
+					if(node && node.type === "equation" && node.schema && node.entity){
+						if(node.schema === schema){
+							var entityAr = node.entity.split(";");
+							for(var i=0; i<entityAr.length; i++){
+								if(entity === entityAr[i])
+									return true;
+							}
+						}
+					}
+				});
+				return valid;
 			}
 		}, both);
 
@@ -1196,6 +1210,15 @@ define([
 						arr.push(node);
 				});
 				return arr;
+			},
+			isDuplicateEntity: function(schema, entity){
+				var nodes = this.getNodes();
+				var isDup = array.some(nodes, function(node){
+					if(node && node.type === "equation" && node.schema && node.entity && node.schema === schema){
+						return node.entity === entity;
+					}
+				});
+				return isDup;
 			}
 		}, both);
 
