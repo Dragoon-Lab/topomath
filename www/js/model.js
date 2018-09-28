@@ -1211,7 +1211,7 @@ define([
 				});
 				return arr;
 			},
-			isDuplicateEntity: function(schema, entity){
+			isDuplicateSchemaInstance: function(schema, entity){
 				var nodes = this.getNodes();
 				var isDup = array.some(nodes, function(node){
 					if(node && node.type === "equation" && node.schema && node.entity && node.schema === schema){

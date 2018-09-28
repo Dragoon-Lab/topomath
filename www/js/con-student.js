@@ -276,6 +276,7 @@ define([
 			this.schema = schema;
 			//change entity to default or to choose again
 			registry.byId(this.controlMap.entity).set("value", "defaultSelect");
+			this.updateEquationDescription();
 		},
 		/*handle entities for student node
 		*/
@@ -288,7 +289,7 @@ define([
 				returnObj = this.studentPM.process(this.currentID, "entity", "", false, message);
 			}
 			//case 1: entity should not be a duplicate entry for a given schema
-			else if(this._model.student.isDuplicateEntity(this.schema, entity)){
+			else if(this._model.student.isDuplicateSchemaInstance(this.schema, entity)){
 				message = "This entity already exists for given schema";
 				returnObj = this.studentPM.process(this.currentID, "entity", entity, false, message);
 			}
@@ -301,10 +302,11 @@ define([
 			else{
 				message = "You have chosen a valid entity";
 				returnObj = this.studentPM.process(this.currentID, "entity", entity, true, message);
+				this.entity = entity;
 			}
 			this.applyDirectives(returnObj);
 			this._model.student.setEntities(this.currentID, entity);	
-			this.entity = entity;
+			this.updateEquationDescription();
 		},
 		/*
 		 *	 handle event on inputs box
