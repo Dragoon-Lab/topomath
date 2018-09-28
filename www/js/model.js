@@ -8,7 +8,7 @@ define([
 				this.y = this.beginY;
 				this.model = {
 					taskName: name,
-					time: {start: 0, end: 10, step: 1.0, units: "seconds"},
+					time: {start: 0, end: 1, step: 1.0, units: "seconds"},
 					solution: {isStatic: false, variables: [], plotValues: {}},
 					authorModelNodes: [],
 					studentModelNodes: []

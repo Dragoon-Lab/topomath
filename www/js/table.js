@@ -47,8 +47,9 @@ define([
 		setTableHeader: function(){
 			var i, tableString = "";
 			tableString += "<tr style='overflow:visible'>";
+			// Time is irrelevant till we add dynamic nodes again
 			//setup xunit (unit of timesteps)
-			tableString += "<th style='overflow:visible'>" + this.labelString() + "</th>";
+			// tableString += "<th style='overflow:visible'>" + this.labelString() + "</th>";
 			array.forEach(this.activeSolution.plotVariables, function(id){
 				tableString += "<th>" + this.labelString(id) + "</th>";
 			}, this);
@@ -66,7 +67,8 @@ define([
 			var j = 0;
 			for(var i=0; i<solution.time.length; i++){
 				tableString += "<tr style='overflow:visible'>";
-				tableString += "<td align='center' style='overflow:visible' id ='row" + i + "col0'>" + solution.time[i].toPrecision(4) + "</td>";
+				// Time is irrelevant till we add dynamic nodes again
+				//tableString += "<td align='center' style='overflow:visible' id ='row" + i + "col0'>" + solution.time[i].toPrecision(4) + "</td>";
 				//set values in table according to their table-headers
 				j = 1;
 				array.forEach(solution.plotVariables, function(id){

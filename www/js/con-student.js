@@ -253,6 +253,7 @@ define([
 		handleSchemas: function(schema){
 			var message;
 			var returnObj;
+			this.schema = "";
 			//case default
 			if(schema == "defaultSelect"){
 				message = "Please choose a valid schema";
@@ -270,10 +271,10 @@ define([
 			}else{
 				message = "You have entered a valid schema.";
 				returnObj = this.studentPM.process(this.currentID, "schema", schema, true, message);
+				this.schema = schema;
 			}
 			this.applyDirectives(returnObj);
 			this._model.student.setSchema(this.currentID,schema);
-			this.schema = schema;
 			//change entity to default or to choose again
 			registry.byId(this.controlMap.entity).set("value", "defaultSelect");
 			this.updateEquationDescription();
@@ -283,6 +284,7 @@ define([
 		handleEntities: function(entity){
 			var returnObj;
 			var message;
+			this.entity = "";
 			//case default
 			if(entity == "defaultSelect"){
 				message = "Please choose a valid entity";
