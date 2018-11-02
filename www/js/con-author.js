@@ -15,6 +15,7 @@ define([
 	'dojo/_base/array',
 	'dojo/_base/declare',
 	'dojo/_base/lang',
+	'dojo/_base/event',
 	'dojo/dom-style',
 	'dojo/keys',
 	'dojo/ready',
@@ -34,7 +35,7 @@ define([
 	"./typechecker",
 	"./popup-dialog",
 	"dojo/domReady!"
-], function(array, declare, lang, style, keys, ready, on, memory, aspect, dom, domClass, domStyle, registry, comboBox, domList, html, query, controller, equation, typechecker, popupDialog){
+], function(array, declare, lang, event, style, keys, ready, on, memory, aspect, dom, domClass, domStyle, registry, comboBox, domList, html, query, controller, equation, typechecker, popupDialog){
 
 	// Summary:
 	//			MVC for the node editor, for authors
@@ -1365,6 +1366,13 @@ define([
 				eachComboBox.forEach(function(childcomboBox){
 					registry.byNode(childcomboBox).on('change', lang.hitch(this, function(){
 						this.updateEquation();
+					}));
+					// Allow only alphanumerics
+					registry.byNode(childcomboBox).on('keypress', lang.hitch(this, function(evt){
+						var charCode = evt.charCode;
+						if (charCode && null === String.fromCharCode(charCode).match("[a-zA-Z0-9]")) {
+							event.stop(evt);
+						}
 					}));
 				}, this);
 		},
