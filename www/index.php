@@ -101,32 +101,32 @@
 			"jsBezier",
 			// jsplumb geom functions
 			"jsplumb-geom",
-			// base DOM adapter 
+			// base DOM adapter
 			"jsPlumb/dom-adapter",
-			// main jsplumb engine 
+			// main jsplumb engine
 			"jsPlumb/jsPlumb",
-			// endpoint 
+			// endpoint
 			"jsPlumb/endpoint",
-			// connection 
+			// connection
 			"jsPlumb/connection",
-			// anchors 
+			// anchors
 			"jsPlumb/anchors",
-			// connectors, endpoint and overlays  
+			// connectors, endpoint and overlays
 			"jsPlumb/defaults",
-			// bezier connectors 
+			// bezier connectors
 			// "jsPlumb/connectors-bezier",
-			// state machine connectors 
+			// state machine connectors
 			"jsPlumb/connectors-statemachine",
-			// flowchart connectors 
+			// flowchart connectors
 			"jsPlumb/connectors-flowchart",
 			"jsPlumb/connector-editors",
-			// SVG renderer 
+			// SVG renderer
 			"jsPlumb/renderers-svg",
-			// canvas renderer 
+			// canvas renderer
 			"jsPlumb/renderers-canvas",
-			// vml renderer 
+			// vml renderer
 			"jsPlumb/renderers-vml",
-			// jquery jsPlumb adapter 
+			// jquery jsPlumb adapter
 			"jsPlumb/dojo-adapter",
 			// Dojo interface layer
 			"demo/demo-helper-dojo"
@@ -178,16 +178,16 @@
 			<!--<div id="tableGrid" data-dojo-type="dijit/layout/ContentPane" region="center"></div>-->
 			<!-- div for descriptions for each type -->
 			<div class = "quantity-description-wrapper" id="quantity-description">
-				
+
 				<div class="quantity-count">
-					<div>Unknowns : 
+					<div>Unknowns :
 						<span id="unknown-quantity-node-count"></span>
 					</div>
 				</div>
 			</div>
 			<div class = "equation-description-wrapper" id="equation-description">
 				<div class="equation-count">
-					<div>Equations : 
+					<div>Equations :
 						<span id="equation-node-count">
 					</div>
 				</div>
@@ -202,7 +202,7 @@
 
 		<!-- Putting Node-Editor -Dialog stuff for demo -->
 		<div class="claro sameedit" data-dojo-type="dijit/Dialog" id="nodeEditor">
-			
+
 			<div id="givenToStudentToggleContainer" class="fieldgroup" style="display: none;">
 				<label style="" for="givenToStudentCheckbox">Given to student</label>
 				<input id="givenToStudentCheckbox" name="markStudentNode" data-dojo-type="dijit/form/CheckBox" checked="false"/>
@@ -216,7 +216,7 @@
 				</select>
 			</div>
 
-			
+
 			<div id="schemaSelectorContainer" class="fieldgroup" style="display: none">
 				<span class="fixedwidth">
 					<button id="schemaDescriptionQuestionMark" type="button"data-dojo-type="dijit/form/Button"></button>
@@ -226,7 +226,7 @@
 					<option value='defaultSelect'>Select a schema</option>
 				</select>
 			</div>
-			
+
 			<div id="entityInputboxContainer" class="fieldgroup" style="display: none;">
 				<span class="fixedwidth">
 					<div id="entityDescriptionQuestionMark" class="questionMark"></div>
@@ -234,7 +234,6 @@
 				</span>
 				<input id="entityInputbox" data-dojo-type="dijit/form/TextBox">
 			</div>
-
 			<div class="fieldgroup">
 
 				<div id="descriptionInputboxContainer" class="fieldgroup" style="display: none;">
@@ -282,7 +281,7 @@
 					<label for ="rootNodeToggleCheckbox" title ="Mark this node as Sought node.">Sought</label>
 				</span>
 				<input id ="rootNodeToggleCheckbox" name ="markRootNode" data-dojo-type="dijit/form/CheckBox" value="agreed" checked="false"/>
-			</div>	
+			</div>
 
 			<div id="variableInputboxContainer" class="fieldgroup" style="display: none;">
 				<span class="fixedwidth">
@@ -298,7 +297,7 @@
 					<label for="qtyDescriptionInputbox">Description</label>
 				</span>
 				<input id="qtyDescriptionInputbox" data-dojo-type="dijit/form/TextBox">
-			</div> 
+			</div>
 
 			<div id="variableInputboxContainerStudent" class="fieldgroup" style="display: none;">
 				<label for="variableInputboxStudent">Variable Name</label>
@@ -331,20 +330,20 @@
 					</span>
 					<input id="valueInputbox" type="text" style="width:5em" data-dojo-type="dijit/form/TextBox">
 				</div>
-				
+
 				<div id = "unitsSelectorContainerStudent" class="fieldgroup" style="display: none">
 					<label for="unitsSelectorStudent">Units</label>
 					<select id="unitsSelectorStudent" data-dojo-type="dijit/form/Select">
 						<option value='defaultSelect'>No Units</option>
 					</select>
 				</div>
-				
+
 				<div id="unitsSelectorContainer" class="fieldgroup" style="display: none;">
 					<label for="unitsSelector">Units</label>
 					<input id="unitsSelector" data-dojo-type="dijit/form/ComboBox" style="width:6em">
 				</div>
 			</div>
-			
+
 			<div class="equationInputsContainer" id="expressionDiv" style="display: none;">
 				 <div class="vertical">
 					<div id="equationLabel">
@@ -406,7 +405,7 @@
 		<div class="claro crisisDialog" id="crisisAlertMessage" data-dojo-type="dijit.Dialog" title="Message">
 			<div id = "crisisMessage"> </div>
 			<button id="OkButton" type="button" data-dojo-type="dijit/form/Button">OK</button>
-		</div> 
+		</div>
 		<!-- Dialog showing plot or table of solution  -->
 		<div class="claro dijitLayoutContainer dijitDialog" id="solution" data-dojo-type="dijit.Dialog" style="min-width: 70%; min-height: 80%; background-color: #FFFFFF">
 			<div id= 'graphErrorMessage'></div>
