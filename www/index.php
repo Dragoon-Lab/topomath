@@ -236,8 +236,8 @@
 					<script type="dojo/on" data-dojo-event="keypress" data-dojo-args="evt">
 						// Allow only space, alphanumerics, and semicolon
 						require(["dojo/_base/event"], function(event){
-							var charOrCode = evt.charCode || evt.keyCode;
-							if (null === String.fromCharCode(charOrCode).match("[ a-zA-Z0-9;]")){
+							var charCode = evt.charCode;
+							if (charCode && null === String.fromCharCode(charCode).match("[ a-zA-Z0-9;]")){
 								event.stop(evt);
 							}
 						});
