@@ -232,17 +232,7 @@
 					<div id="entityDescriptionQuestionMark" class="questionMark"></div>
 					<label for="entityInputbox">Entity</label>
 				</span>
-				<div id="entityInputbox" data-dojo-type="dijit/form/TextBox">
-					<script type="dojo/on" data-dojo-event="keypress" data-dojo-args="evt">
-						// Allow only space, alphanumerics, and semicolon
-						require(["dojo/_base/event"], function(event){
-							var charCode = evt.charCode;
-							if (charCode && null === String.fromCharCode(charCode).match("[ a-zA-Z0-9;]")){
-								event.stop(evt);
-							}
-						});
-					</script>
-				</div>
+				<input id="entityInputbox" data-dojo-type="dijit/form/TextBox">
 			</div>
 			<div class="fieldgroup">
 
