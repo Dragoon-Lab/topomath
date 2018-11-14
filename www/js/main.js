@@ -182,7 +182,7 @@ define([
 
 			aspect.after(dm, "updateNode", function(){
 				controllerObject.computeNodeCount();
-				controllerObject.sortDescriptions();
+				//controllerObject.sortDescriptions();
 			}, true);
 
 			aspect.after(controllerObject, "sortDescriptions",
