@@ -41,7 +41,7 @@ $restartProb = ((isset($_REQUEST['rp']) && $_REQUEST['rp'] == 'on')) ? true: fal
 * where I think I found the use case of user precedence. I am not sure
 * so I am still leaving the TODO as well as the new comment there ~ Sachin
 */
-if($mode == "AUTHOR"){
+if($mode == "AUTHOR" || $mode == "SEDITOR"){
 	$query = "";
 	if($folder != ""){
 		// this is with the user precedence logic I think
