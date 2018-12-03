@@ -67,7 +67,7 @@
 		}
 	],
 	"Multiplication Schemas": [{
-			"Name": "Rate",
+			"Name": "DRT",
 			"Equation": "D = R * T",
 			"Mapping": {
 				"D": "Distance",
