@@ -1187,6 +1187,10 @@ define([
 			return this._model.active.getDescriptionsSortedByName();
 		},
 
+		descriptionsReady: function(){
+			//empty function for now, can be used in future to play with descriptions before view gets updated
+		},
+
 		getSchemaHtml: function(){
 			//store schema html once in sessionStorage if it does not exist and return from sessionStorage each time
 			if(sessionStorage.getItem("schema_table"))

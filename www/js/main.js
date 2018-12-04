@@ -185,7 +185,7 @@ define([
 				//controllerObject.sortDescriptions();
 			}, true);
 
-			aspect.after(controllerObject, "sortDescriptions",
+			aspect.after(controllerObject, "descriptionsReady",
 				lang.hitch(dm, dm.updateDescriptionView, true));
 
 			dm.init();
