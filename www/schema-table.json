@@ -67,14 +67,14 @@
 		}
 	],
 	"Multiplication Schemas": [{
-			"Name": "DRT",
-			"Equation": "D = R * T",
+			"Name": "Rate",
+			"Equation": "R = S / T",
 			"Mapping": {
-				"D": "Distance",
+				"S": "Distance or Stuff",
 				"R": "Rate",
 				"T": "Time"
 			},
-			"Comments": "This is used for any problem that talks about a rate per unit of time, such as miles per hour, feet per second, gallons per hour, jobs done per hour, pizzas eaten per minute, etc. The slots are: Rate:  The amount of X per unit of time, Distance:  The amount of X accumulated over the given time, Time:  The amount of time."
+			"Comments": "If a vehicle travels distance D during time T, then its rate R is D/T. If something consumes or produces S stuff during time T, then its rate R is S/T."
 		},
 		{
 			"Name": "Unit Cost",
