@@ -80,7 +80,7 @@ define([
 			}, this);
 			vertices = vertices[vertices.length - 1]; //hack for keeping it one dimension
 			console.log(vertices);
-			
+
 			/*var makeVertexSource = this.makeVertexSource;
 			instance.doWhileSuspended(function(){
 				array.forEach(vertices, function(vertex){
@@ -117,7 +117,7 @@ define([
 			console.log("Adding vertex to the canvas id = ", node.ID, " type = ", type);
 			console.log("Position for the vertex : ",node.ID, " position: x ", node.position[0].x, " y: " + node.position[0].y);
 			var properties = this.getNodeUIProperties(node);
-			var htmlStrings = graphObjects.getNodeHTML(this._model, node.ID); 
+			var htmlStrings = graphObjects.getNodeHTML(this._model, node.ID);
 
 			var vertices = [];
 			array.forEach(htmlStrings, function(html, count){
@@ -327,7 +327,7 @@ define([
                 }));
                 this.makeVertexSource(nodeDOM);
 			}*/
-			
+
 			// creating menu for each DOM element
 			pMenu = new Menu({
 				targetNodeIds: [idTag]
@@ -430,7 +430,7 @@ define([
 				onMoveStart: lang.hitch(this, this.onMoveStart),
 				onMove: lang.hitch(this, this.onMove),
 				onMoveStop: lang.hitch(this, this.onMoveStop)
-			});	
+			});
 			this.makeVertexSource(vertex);
 		},
 
@@ -554,7 +554,12 @@ define([
 		detachConnections: function(nodeID){
 			array.forEach(this._instance.getConnections(), function(connection){
 				if(connection.sourceId == nodeID || connection.targetId == nodeID){
-					this._instance.detach(connection);
+					try{
+						this._instance.detach(connection);
+					}
+					catch (err){
+						console.log("Error while detaching: " + err);
+					}
 				}
 			}, this);
 		},
