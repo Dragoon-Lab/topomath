@@ -278,6 +278,8 @@ define([
 			//change entity to default or to choose again
 			registry.byId(this.controlMap.entity).set("value", "defaultSelect");
 			this.updateEquationDescription();
+			this.updateSlotVariables();
+			this.updateEquation();
 		},
 		/*handle entities for student node
 		*/
@@ -430,11 +432,20 @@ define([
 				var equationWidget = registry.byId(this.controlMap.equation);
 				//for the schema select load schema options
 				this.loadSchemaOptions();
+				var schema = this._model.student.getSchema(nodeid);
+				if(!schema)
+					schema = "";
+				registry.byId(this.controlMap.schemas).set('value', schema);
+				this.applyDirectives(this.studentPM.process(nodeid, "schema", schema, schema, ""));
+				this.schema = schema;
+
 				//for the entity select load entities
 				var entityWid = registry.byId(this.controlMap.entity);
 				var entityList = [];
 				var authorEntities = this._model.getAllEntities();
 				authorEntities.sort();
+				entityWid.removeOption(entityWid.getOptions());
+				entityWid.addOption({value: 'defaultSelect',label: 'Select an entity'});
 				array.forEach(authorEntities, function(ent){
 					var obj = {value: ent, label: ent};
 					entityWid.addOption(obj);
@@ -618,6 +629,11 @@ define([
 				var selectedVariableType = query("input[name='variableType']:checked")[0].value;
 				registry.byId(selectedVariableType+"Type").set(attribute, value);
 			}
+		},
+		handleEquationDescription: function(description){
+			//equation description is auto generated
+			//so, no feedback coloring/messages is necessary here
+			this._model.student.setDescription(this.currentID,description);
 		}
 	});
 });
