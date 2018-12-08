@@ -116,12 +116,11 @@ define([
 		},
 
 		controlMap: {
-			//inputs: "inputSelectorStudent",
-			variable: "variableInputboxStudent",
+			variable: "variableInputbox",
 			equation: "equationInputbox",
-			qtyDescription: "selectDescription",
+			qtyDescription: "qtyDescriptionInputboxStudent",
 			description: "descriptionInputbox",
-			units: "unitsSelectorStudent",
+			units: "unitsSelector",
 			modelType: "modelSelector",
 			value: "valueInputbox",
 			unknown: "unknownType",
@@ -399,6 +398,8 @@ define([
 					console.log("element",elem);
 					style.set(elem,"display","block");
 				});
+				//initially disable the type value and units which will be later handled in control settings based on state
+				this.disableTypeValueUnits(true);
 				/*
 				//can the qty node have delete option
 				var canHaveDeleteNode = this.canHaveDeleteNode();
@@ -454,6 +455,14 @@ define([
 				//disable the description and equation fields
 				descriptionWidget.set('disabled', true);
 				equationWidget.set('disabled', true);	
+			}
+			else if(nodeType == "quantity"){
+				console.log("a quantity node has been opened");
+				var variable = this._model.student.getName(nodeid);
+				registry.byId(this.controlMap.variable).set('value', variable || '');
+				//for now commenting out this part, this commit comes after editors have been finalized
+				//var qtyDesc = this._model.getDescriptionForVariable(variable);
+			
 			}
 			/*
 			// Apply settings from PM
@@ -634,6 +643,25 @@ define([
 			//equation description is auto generated
 			//so, no feedback coloring/messages is necessary here
 			this._model.student.setDescription(this.currentID,description);
+		},
+		handleQtyDescription: function(description){
+			//quantity description is also auto generated but might have options
+			//console.log("selected description is", description);
+			if(description == "defaultSelect"){
+				//not a valid selection, hide type, value and units
+				this.disableTypeValueUnits(true);
+			}
+			else{
+				this.disableTypeValueUnits(false);
+			}
+			this._model.student.setDescription(this.currentID, description);
+		},
+		disableTypeValueUnits: function(disable){
+			registry.byId(this.controlMap.units).set("disabled", disable);
+			registry.byId(this.controlMap.value).set("disabled", disable);
+			registry.byId(this.controlMap.unknown).set("disabled", disable);
+			registry.byId(this.controlMap.parameter).set("disabled", disable);
+			registry.byId(this.controlMap.dynamic).set("disabled", disable);
 		}
 	});
 });
