@@ -307,6 +307,13 @@
 					<div id="qtyDescriptionQuestionMark" class="questionMark"></div>
 					<label for="qtyDescriptionInputbox">Description</label>
 				</span>
+				<input id="qtyDescriptionInputbox" data-dojo-type="dijit/form/TextBox">
+			</div> 
+			<div id="qtyDescriptionInputboxContainerStudent" class="fieldgroup" style="display: none;">
+				<span class="fixedwidth">
+					<div id="qtyDescriptionQuestionMark" class="questionMark"></div>
+					<label for="qtyDescriptionInputboxStudent">Description</label>
+				</span>
 				<select id="qtyDescriptionInputboxStudent" data-dojo-type="dijit/form/Select">
 					<option value='defaultSelect'>--Select--</option>
 					<option value='test1'>test1</option>

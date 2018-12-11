@@ -90,7 +90,7 @@ define([
 		variableNodeControls: ["variable","value","units"],
 		equationNodeControls: ["equation","schemas","entity"],
 		commonNodeControls: ["modelType","description"],
-		qtyElements: ["qtyDescriptionInputboxContainer","variableTypeContainer","variableInputboxContainer","valueUnitsContainer"],
+		qtyElements: ["qtyDescriptionInputboxContainerStudent","variableTypeContainer","variableInputboxContainer"],
 		eqElements: ["descriptionInputboxContainer","expressionDiv","schemaSelectorContainer","entitySelectorStudentContainer","variableSlotControlsContainer"],
 
 		/*
@@ -104,10 +104,10 @@ define([
 			style.set('schemaSelectorContainer', 'display', 'block');
 			style.set('entitySelectorStudentContainer', 'display', 'block');
 			style.set('descriptionInputboxContainer', 'display', 'inline-block');
-			style.set('qtyDescriptionInputboxContainer', 'display', 'inline-block');
+			style.set('qtyDescriptionInputboxContainerStudent', 'display', 'inline-block');
 			style.set('variableInputboxContainer', 'display', 'inline-block');
 			style.set('valueInputboxContainer', 'display', 'block');
-			style.set('unitsSelectorContainer', 'display', 'block');
+			//style.set('unitsSelectorContainer', 'display', 'block');
 			style.set('expressionDiv', 'display', 'block');
 			//This has been removed in new author mode editor design
 			//style.set('inputSelectorContainer', 'display', 'block');
@@ -657,7 +657,6 @@ define([
 			this._model.student.setDescription(this.currentID, description);
 		},
 		disableTypeValueUnits: function(disable){
-			registry.byId(this.controlMap.units).set("disabled", disable);
 			registry.byId(this.controlMap.value).set("disabled", disable);
 			registry.byId(this.controlMap.unknown).set("disabled", disable);
 			registry.byId(this.controlMap.parameter).set("disabled", disable);
