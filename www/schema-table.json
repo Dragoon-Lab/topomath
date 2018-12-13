@@ -64,6 +64,26 @@
 				"AS": "Air Speed"
 			},
 			"Comments": "If a vehicle travels through a moving medium (e.g., airplane in wind; boat on river current), and the vehicle is travelling in the opposite direction to the medium (i.e., with a headwind for the airplane; upstream for the boat), then slots are: GroundSpeed is the rate of the vehicle relative to the land, AirSpeed is the rate of the vehicle relative to the medium (i.e., how fast the plane or boat travels in still air or still water), WindSpeed is the rate of the medium (i.e., wind’s speed; river current’s speed)"
+		},
+		{
+			"Name": "Less than",
+			"Equation": "S = L - D",
+			"Mapping": {
+				"S": "Small",
+				"L": "Large",
+				"D": "Difference"
+			},
+			"Comments": "Use when S (small) is D (difference) less than L (large)"
+		},
+		{
+			"Name": "More than",
+			"Equation": "L = D + S",
+			"Mapping": {
+				"S": "Small",
+				"L": "Large",
+				"D": "Difference"
+			},
+			"Comments": "Use when L (large) is D (difference) more than S (small)"
 		}
 	],
 	"Multiplication Schemas": [{
