@@ -1271,7 +1271,7 @@ define([
 				slotContHtml = slotContHtml+'<div class="fieldgroup"><label for="holder'+this.schema+this.currentID+this.slotMap[varKey]+'">'+this.slotMap[varKey]+'</label><input id="holder'+this.schema+this.currentID+this.slotMap[varKey]+'" ></div>';
 			}
 			html.set(dom.byId("variableSlotControlsbox"), slotContHtml);
-			var varAr = this._model.getAllVariables();
+			var varAr = this.getSlotVariablesList();
 
 			for(var varKey in this.slotMap){
 				// Authors get some free options for new variable names, but other modes do not
@@ -1302,7 +1302,7 @@ define([
 			if(!sessionStorage.getItem("slot_number_map") || sessionStorage.getItem("slot_number_map")!= ""){
 				// Generate the map first time
 				var numberMap = {};
-				var varAr = this._model.getAllVariables();
+				var varAr = this.getSlotVariablesList();
 				for(var i=0; i<varAr.length; i++){
 					//the variables are generally in mostcases of the form D1, id4 etc
 					var curVar = ""+varAr[i].name;

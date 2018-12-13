@@ -90,7 +90,7 @@ define([
 		variableNodeControls: ["variable","value","units"],
 		equationNodeControls: ["equation","schemas","entity"],
 		commonNodeControls: ["modelType","description"],
-		qtyElements: ["qtyDescriptionInputboxContainerStudent","variableTypeContainer","variableInputboxContainer"],
+		qtyElements: ["qtyDescriptionInputboxContainerStudent","variableTypeContainer","variableInputboxContainer","valueInputboxContainer"],
 		eqElements: ["descriptionInputboxContainer","expressionDiv","schemaSelectorContainer","entitySelectorStudentContainer","variableSlotControlsContainer"],
 
 		/*
@@ -661,6 +661,9 @@ define([
 			registry.byId(this.controlMap.unknown).set("disabled", disable);
 			registry.byId(this.controlMap.parameter).set("disabled", disable);
 			registry.byId(this.controlMap.dynamic).set("disabled", disable);
+		},
+		getSlotVariablesList: function(){
+			return this._model.student.getAllVariables();
 		}
 	});
 });

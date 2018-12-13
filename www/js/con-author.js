@@ -1314,6 +1314,9 @@ define([
 		*/
 		activateDeleteNode: function(){
 			this.deleteNodeActivated = true;
+		},
+		getSlotVariablesList: function(){
+			return this._model.authored.getAllVariables();
 		}
 	});
 });

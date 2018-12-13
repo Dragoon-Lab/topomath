@@ -203,15 +203,6 @@ define([
 				}, this);
 				return entityList;
 			},
-			getAllVariables: function(){
-				// returns a list of all variables in the model
-				var varList = new Array();
-				array.forEach(this.authored.getNodes(), function(node){
-					if(node && node.type == "quantity")
-						varList.push({id: node.ID, name: node.variable});
-				});
-				return varList;
-			},
 			getAllEquations: function(){
 				var eqList = new Array();
 				array.forEach(this.authored.getNodes(), function(node){
@@ -630,7 +621,16 @@ define([
 					}
 				}, this);
 				return schemaCount;
-			}
+			},
+			getAllVariables: function(){
+				// returns a list of all variables in the model
+				var varList = new Array();
+				array.forEach(this.getNodes(), function(node){
+					if(node && node.type == "quantity")
+						varList.push({id: node.ID, name: node.variable});
+				});
+				return varList;
+			},
 		};
 
 		obj.authored = lang.mixin({
