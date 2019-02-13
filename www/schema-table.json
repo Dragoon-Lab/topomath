@@ -46,6 +46,16 @@
 			"Comments": "The whole is equal to the sum of five parts."
 		},
 		{
+			"Name": "Compare",
+			"Equation": "B = S + D",
+			"Mapping": {
+				"B": "Bigger",
+				"S": "Smaller",
+				"D": "Difference"
+			},
+			"Comments": "The whole is equal to the sum of five parts."
+		},
+		{
 			"Name": "Tailwind",
 			"Equation": "GS = AS + WS",
 			"Mapping": {
@@ -87,14 +97,23 @@
 			"Comments": "If the total cost (or other quantity) of a set of object is mentioned along with the cost per object, then use this.  Used for any problem talking about rate per object, e.g.,  Calories per candy, weight per car, nuts per tree.   The slots are: TotalCost is the total cost of the set of objects, NumberUnits is the number of objects, UnitCost is the cost per object."
 		},
 		{
-			"Name": "Wet solutions",
-			"Equation": "I = S * P",
+			"Name": "Mixture",
+			"Equation": "IA = IP * WA",
 			"Mapping": {
-				"I": "Amount of Ingredient",
-				"S": "Amount of Solution",
-				"P": "Proportion of I to S"
+				"IA": "Amount of Ingredient",
+				"WA": "Amount of Whole Mixture",
+				"IP": "Proportion of Ingredient to Whole"
 			},
 			"Comments": "If a drink is composed of water and alcohol (or any substance is composed of a filler and an active ingredient, e.g., acid in a water solution, fat in sausage), then Amount of Ingredient is the amount of alcohol, measured by weight or volume, Amount of Solution is the total amount of the drink, measured by weight or volume, Proportion of I to S is the proportion (converted from a percentage or proof) of alcohol in the drink."
+		},
+		{
+			"Name": "Invert",
+			"Equation": "1 = AperB * BperA",
+			"Mapping": {
+				"AperB": "Amount of A per B",
+				"BperA": "Amount of B per A"
+			},
+			"Comments": "Sometimes you need to invert a quantity in order to use it in a calculation."
 		},
 		{
 			"Name": "Map scale",
