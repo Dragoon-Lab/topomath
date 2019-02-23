@@ -116,6 +116,17 @@
 			"Comments": "Sometimes you need to invert a quantity in order to use it in a calculation."
 		},
 		{
+			"Name": "M3",
+			"Equation": "Prod = MulA * MulB * MulC",
+			"Mapping": {
+				"Prod": "Product"
+				"MulA": "Multiplicand 1",
+				"MulB": "Multiplicand 2",
+				"MulC": "Multiplicand 3"
+			},
+			"Comments": "The product of three multiplicands."
+		},
+		{
 			"Name": "Map scale",
 			"Equation": "D = MS * MD",
 			"Mapping": {
