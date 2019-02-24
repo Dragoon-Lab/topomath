@@ -119,7 +119,7 @@
 			"Name": "M3",
 			"Equation": "Prod = MulA * MulB * MulC",
 			"Mapping": {
-				"Prod": "Product"
+				"Prod": "Product",
 				"MulA": "Multiplicand 1",
 				"MulB": "Multiplicand 2",
 				"MulC": "Multiplicand 3"
