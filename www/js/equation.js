@@ -34,16 +34,32 @@ define([
 		convert: function(params){
 			var equation = params.equation;
 			var subModel = params.subModel;
+			var oequation = (subModel.isStudentMode())? params.originalEq: "";
+			var onodeid = (subModel.isStudentMode())? params.originalID: "";
+			if(onodeid){
+				//set the authored ID of the current equation node if it is not already set
+				if(!subModel.getAuthoredID(params.currentID))
+					subModel.setAuthoredID(params.currentID, onodeid);
+			}
+			var authStudNameMap = new Array();
 
 			var eqs = equation.split(this.equalto);
+			if(oequation)
+				var oeqs = oequation.split(this.equalto);
 			if(eqs.length != 2){
 				throw new Error("Wrong number of equal to symbols in the equation");
 			}
 			var expressions = [];
+			var oexpressions = [];
 			try{
 				array.forEach(eqs, function(eq, count){
 					expressions[count] = Parser.parse(eq);
 				}, this);
+				if(oequation){
+					array.forEach(oeqs, function(oeq, count){
+					oexpressions[count] = Parser.parse(oeq);
+				}, this);
+				}
 			}catch(e){
 				throw e;
 				/*this._logger.logClientEvent("error", {
@@ -51,6 +67,17 @@ define([
 					functionTag:'convert'
 				});
 				return equation;*/
+			}
+			if(oequation){
+				var exprVars = []; var oexprVars = [];
+				for(var i=0; i<expressions.length; i++){
+					exprVars = exprVars.concat(expressions[i].variables());
+					oexprVars = oexprVars.concat(oexpressions[i].variables());
+				}
+				for(var i= 0; i < exprVars.length; i++){
+					authStudNameMap[exprVars[i]] = oexprVars[i];
+				}
+				console.log("authStudNameMap", authStudNameMap);
 			}
 			if(params.nameToId){
 				var nodeList = []; //this holds new node ids and variable objects
@@ -98,12 +125,24 @@ define([
 								};
 								// check whether a correct node has been added by the student
 								var doReplace = true;
-								if(subModel.isStudentMode()){
-									doReplace = subModel.getAuthoredIDForName(variable) ? true : false;
-								}
+								//student mode does not exist any more ... reconstruction is the new mode
 								if(doReplace){
 									var newId = subModel.addNode(newNodeOptions);
 									nodeList.push({ "id": newId, "variable":variable});
+									if(oequation){
+										if(!subModel.getAuthoredID(newId))
+											subModel.setAuthoredID(newId, authStudNameMap[variable]);
+									}
+
+									if(subModel.isStudentMode()){
+										//doReplace = subModel.getAuthoredIDForName(variable) ? true : false;
+										//Students give their own variable names in the equation unlike old topomath
+										//In old topomath students used the same names as authors used 
+										//So, finding if the node is legit was simple
+										//In this section of code, if the student is using the name for first time we need to associate the author used name and student used name
+										//So that they can be further evaluated in the code
+
+									}
 									expr.substitute(variable, newId);
 									if(currentPriorList.length>0){
 										currentPriorList.some(function(eachPrior){
@@ -124,6 +163,7 @@ define([
 							}
 						}
 					}, this);
+					console.log("connections", expr, subModel)
 					var _c = this.createConnections(expr, subModel);
 					for(var i = 0; i < _c.length; i++){
 						if(!_c[i].ID){
@@ -132,7 +172,9 @@ define([
 						}
 					}
 					connections = connections.concat(_c);
+					console.log("connections 2", connections, _c);
 					connections = Array.from(new Set(connections.map(JSON.stringify))).map(JSON.parse);
+					console.log("connections 3", connections);
 				}, this);
 				if(subModel.isStudentMode() && unknownNodesList && unknownNodesList.length > 0){
 					var _returnObj = {"newNodeList": nodeList, "unknownNodesList" : unknownNodesList};
