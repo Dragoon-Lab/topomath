@@ -407,6 +407,23 @@ define([
 
 				return nodes;
 			},
+			getAuthorNameByNodeID: function(/*string*/ id){
+				// Summary: returns the id of a node matching the authored name from the
+				//          authored or extra nodes.  If none is found, return null.
+				var name;
+				var gotIt = array.some(obj.authored.getNodes(), function(node){
+					name = node.variable;
+					return node.ID === id;
+				});
+				return gotIt ? name : null;
+			},
+			setOriginalAuthorID: function(/*string*/ studId, authId){
+				this.getNode(studId).originalID = authId;
+				//console.log(this.getNode(studId));
+			},
+			getOriginalAuthoredID: function(id){
+				return this.getNode(id).originalID;
+			},
 			/**
 			* this function will also be removed after changing accumulator to
 			* variable type. Due to testing overhead this has been kept and will
@@ -535,6 +552,7 @@ define([
 				var id;
 				var regEx = new RegExp('^'+name+'$', 'i');
 				var gotIt = array.some(this.getNodes(), function(node){
+					console.log("node is", node);
 					id = node.ID;
 					return regEx.test(node.variable);
 				});
@@ -631,6 +649,14 @@ define([
 				});
 				return varList;
 			},
+			setAttemptCount: function(/*string*/ id, /*string*/ part, /*string*/ count){
+				this.getNode(id).attemptCount[part] = count;
+			},
+			getAttemptCount: function(/*string*/ id, /*string*/ part, /*boolean*/ ignoreExecution){
+					var node = this.getNode(id);
+					return node && node.attemptCount[part]? node.attemptCount[part]:0;
+			},
+
 		};
 
 		obj.authored = lang.mixin({
@@ -672,6 +698,24 @@ define([
 					return node.variable === name;
 				});
 				return gotIt ? id : null;
+			},
+			getEquationBySchemaEntity: function(schema, entity){
+				//Summary: returns the equation author has given to the node based on schema and entity which is unique combination
+				var eqnDet = [];
+				var gotIt = array.some(this.getNodes(), function(node){
+					if(node.type === "equation" && node.schema === schema){
+						eqnDet["equation"] = node.equation;
+						eqnDet["id"] = node.ID;
+						//there could be multiple entities
+						var entityList = node.entity.split(';');
+						for(var i=0; i<entityList.length; i++){
+							if(entityList[i] == entity)
+								return true;
+						}
+					}
+					
+				});
+				return gotIt ? eqnDet : null;
 			},
 			getNodeIDByDescription: function(/*string*/ description){
 				// Summary: returns the id of a node matching the authored description from the
@@ -834,13 +878,6 @@ define([
 				var givenNode = this.getNode(id);
 				return (givenNode && givenNode.genus == "irrelevant");
 			},
-			getAttemptCount: function(/*string*/ id, /*string*/ part, /*boolean*/ ignoreExecution){
-					var node = this.getNode(id);
-					return node && node.attemptCount[part]? node.attemptCount[part]:0;
-			},
-			setAttemptCount: function(/*string*/ id, /*string*/ part, /*string*/ count){
-				this.getNode(id).attemptCount[part] = count;
-			},
 			getRequiredNodeCount: function(){
 				var nodes = this.getNodes();
 				var count = 0;
@@ -893,6 +930,11 @@ define([
 						x: obj.x,
 						y: obj.y
 					}],
+					attemptCount: {
+						schema: 0,
+						entity: 0,
+						variables: 0,
+					},
 					status: {}
 				}, options || {});
 				obj.model.studentModelNodes.push(newNode);
@@ -941,8 +983,10 @@ define([
 			},
 			getAuthoredID: function(id){
 				// Summary: Return any matched given model id for student node.
+				console.log("input id", id);
 				id = this.getID(id);
 				var node = this.getNode(id);
+				console.log("node", node, id)
 				return node && node.authoredID;
 			},
 			getAuthoredIDForName: function(variable){
@@ -1145,6 +1189,10 @@ define([
 			getCorrectAnswer : function(/*string*/ studentID, /*string*/ part){
 				var id = this.getAuthoredID(studentID);
 				var node = obj.authored.getNode(id);
+				if(node == null){
+					//this could be the case where authored ID was not set for this current node
+					
+				}
 				return node[part];
 			},
 			incrementAssistanceScore: function(/*string*/ id){
@@ -1165,6 +1213,7 @@ define([
 			},
 			getCorrectness: function(/*string*/ studentID){
 				var node = this.getNode(studentID);
+				console.log("student id is", studentID, node);				
 				var rank = {
 					"incorrect": 3,
 					"demo": 2,
@@ -1219,7 +1268,10 @@ define([
 					}
 				});
 				return isDup;
-			}
+			},
+			getEntity: function(/*string*/ id){
+				return this.getNode(id).entity;
+			},
 		}, both);
 
 		obj.constructor.apply(obj, arguments);
