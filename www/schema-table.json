@@ -60,8 +60,8 @@
 			"Equation": "GS = AS + WS",
 			"Mapping": {
 				"GS": "Ground Speed",
-				"WS": "Wind Speed",
-				"AS": "Air Speed"
+				"WS": "Speed of Carrier",
+				"AS": "Speed Relative to Carrier"
 			},
 			"Comments": "If a vehicle travels through a moving medium (e.g., airplane in wind; boat on river current), and the vehicle is travelling the same direction as the medium (i.e., with a tailwind for the airplane; downstream for the boat), then slots are: GroundSpeed is the rate of the vehicle relative to land, AirSpeed is the rate of the vehicle relative to the medium, Windspeed is the rate of the medium (i.e., wind’s speed; river current’s speed)."
 		},
@@ -70,10 +70,43 @@
 			"Equation": "GS = AS - WS",
 			"Mapping": {
 				"GS": "Ground Speed",
-				"WS": "Wind Speed",
-				"AS": "Air Speed"
+				"WS": "Speed of Carrier",
+				"AS": "Speed Relative to Carrier"
 			},
 			"Comments": "If a vehicle travels through a moving medium (e.g., airplane in wind; boat on river current), and the vehicle is travelling in the opposite direction to the medium (i.e., with a headwind for the airplane; upstream for the boat), then slots are: GroundSpeed is the rate of the vehicle relative to the land, AirSpeed is the rate of the vehicle relative to the medium (i.e., how fast the plane or boat travels in still air or still water), WindSpeed is the rate of the medium (i.e., wind’s speed; river current’s speed)"
+		},
+		{
+			"Name": "A2",
+			"Equation": "Sum = AddA + AddB",
+			"Mapping": {
+				"Sum": "Sum",
+				"AddA": "Addend 1",
+				"AddB": "Addend 2"
+			},
+			"Comments": "The sum of two values."
+		},
+		{
+			"Name": "A3",
+			"Equation": "Sum = AddA + AddB + AddC",
+			"Mapping": {
+				"Sum": "Sum",
+				"AddA": "Addend 1",
+				"AddB": "Addend 2",
+				"AddC": "Addend 3"
+			},
+			"Comments": "The sum of three values."
+		}
+		{
+			"Name": "A4",
+			"Equation": "Sum = AddA + AddB + AddC + AddD",
+			"Mapping": {
+				"Sum": "Sum",
+				"AddA": "Addend 1",
+				"AddB": "Addend 2",
+				"AddC": "Addend 3",
+				"AddD": "Addend 4"
+			},
+			"Comments": "The sum of four values."
 		}
 	],
 	"Multiplication Schemas": [{
@@ -116,6 +149,26 @@
 			"Comments": "Sometimes you need to invert a quantity in order to use it in a calculation."
 		},
 		{
+			"Name": "Map scale",
+			"Equation": "D = MS * MD",
+			"Mapping": {
+				"D": "Distance",
+				"MS": "MapScale",
+				"MD": "MapDistance"
+			},
+			"Comments": "If a problem mentions a certain distance in the world corresponds to a certain distance on a map (e.g., 250 miles per inch), then the slots are Distance is the distance in the real world, MapDistance is the distance on the map, MapScale is the map’s scale.  However, MapScale sometimes needs adjustment.  If the problem says “250 miles per quarter inch” then we need to convert that to “1000 miles per inch” and then use 1000 as MapScale because MapDistance is measured in inches, not quarter inches."
+		},
+		{
+			"Name": "M2",
+			"Equation": "Prod = MulA * MulB",
+			"Mapping": {
+				"Prod": "Product",
+				"MulA": "Multiplicand 1",
+				"MulB": "Multiplicand 2"
+			},
+			"Comments": "The product of two multiplicands."
+		},
+		{
 			"Name": "M3",
 			"Equation": "Prod = MulA * MulB * MulC",
 			"Mapping": {
@@ -127,14 +180,16 @@
 			"Comments": "The product of three multiplicands."
 		},
 		{
-			"Name": "Map scale",
-			"Equation": "D = MS * MD",
+			"Name": "M4",
+			"Equation": "Prod = MulA * MulB * MulC * MulD",
 			"Mapping": {
-				"D": "Distance",
-				"MS": "MapScale",
-				"MD": "MapDistance"
+				"Prod": "Product",
+				"MulA": "Multiplicand 1",
+				"MulB": "Multiplicand 2",
+				"MulC": "Multiplicand 3",
+				"MulD": "Multiplicand 4"
 			},
-			"Comments": "If a problem mentions a certain distance in the world corresponds to a certain distance on a map (e.g., 250 miles per inch), then the slots are Distance is the distance in the real world, MapDistance is the distance on the map, MapScale is the map’s scale.  However, MapScale sometimes needs adjustment.  If the problem says “250 miles per quarter inch” then we need to convert that to “1000 miles per inch” and then use 1000 as MapScale because MapDistance is measured in inches, not quarter inches."
+			"Comments": "The product of four multiplicands."
 		}
 	],
 	"Other schemas": [{
