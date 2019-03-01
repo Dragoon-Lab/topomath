@@ -95,7 +95,7 @@
 				"AddC": "Addend 3"
 			},
 			"Comments": "The sum of three values."
-		}
+		},
 		{
 			"Name": "A4",
 			"Equation": "Sum = AddA + AddB + AddC + AddD",
