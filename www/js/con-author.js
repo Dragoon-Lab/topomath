@@ -15,6 +15,7 @@ define([
 	'dojo/_base/array',
 	'dojo/_base/declare',
 	'dojo/_base/lang',
+	'dojo/_base/event',
 	'dojo/dom-style',
 	'dojo/keys',
 	'dojo/ready',
@@ -32,7 +33,7 @@ define([
 	"./equation",
 	"./typechecker",
 	"dojo/domReady!"
-], function(array, declare, lang, style, keys, ready, on, memory, aspect, dom, domClass, domStyle, registry, domList, html, query, controller, equation, typechecker){
+], function(array, declare, lang, event, style, keys, ready, on, memory, aspect, dom, domClass, domStyle, registry, domList, html, query, controller, equation, typechecker){
 
 	// Summary:
 	//			MVC for the node editor, for authors
@@ -1308,6 +1309,7 @@ define([
 			}
 			return {validValue: entityDesc, correctness: correctness};
 		},
+    
 		/*activateDeleteNode
 		This function can be used for delete button specific checks
 		deleteNodeActivated flag prevents equation being evaluated when delete button is clicked

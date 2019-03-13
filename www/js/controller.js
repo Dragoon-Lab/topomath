@@ -489,6 +489,10 @@ define([
 				return this.disableHandlers || this.handleEntities.apply(this, arguments);
 			}));
 
+			entityWidget.on('keypress', lang.hitch(this, function(evt){
+				return this.disableHandlers || this.handleEntityKeypress.apply(this, arguments);
+			}));
+
 			var qtyDescriptionWidget = registry.byId(this.controlMap.qtyDescription);
 			qtyDescriptionWidget.on('Change', lang.hitch(this, function(){
 				return this.disableHandlers || this.handleQtyDescription.apply(this, arguments);
@@ -1191,6 +1195,10 @@ define([
 			return this._model.active.getDescriptionsSortedByName();
 		},
 
+		descriptionsReady: function(){
+			//empty function for now, can be used in future to play with descriptions before view gets updated
+		},
+
 		getSchemaHtml: function(){
 			//store schema html once in sessionStorage if it does not exist and return from sessionStorage each time
 			if(sessionStorage.getItem("schema_table"))
@@ -1244,7 +1252,6 @@ define([
 			}
 			return propVal;
 		},
-
 		updateEquationDescription: function(){
 			console.log("In updateEquationDescription")
 			//var schema = registry.byId(this.controlMap.schemas).get("value");
@@ -1429,5 +1436,13 @@ define([
 			var schemaHtml = this.getSchemaHtml();
 			schemaDialog.showDialog("Schema Table", schemaHtml, [], "Close Table");
 		},
+    
+		//entity values can only be alpha numerics separated by ';'
+		handleEntityKeypress: function(evt){
+			var charCode = evt.charCode;
+			if (charCode && null === String.fromCharCode(charCode).match("[ a-zA-Z0-9;]")){
+				event.stop(evt);
+			}
+		}
 	});
 });

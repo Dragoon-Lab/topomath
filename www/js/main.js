@@ -184,10 +184,10 @@ define([
 
 			aspect.after(dm, "updateNode", function(){
 				controllerObject.computeNodeCount();
-				controllerObject.sortDescriptions();
+				//controllerObject.sortDescriptions();
 			}, true);
 
-			aspect.after(controllerObject, "sortDescriptions",
+			aspect.after(controllerObject, "descriptionsReady",
 				lang.hitch(dm, dm.updateDescriptionView, true));
 
 			dm.init();

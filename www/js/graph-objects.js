@@ -114,7 +114,7 @@ define([
 						if(!initial) initial = "??";
 						if(value != this.defaultString)
 							value = "initial" + "(" + value + ") = " + initial;
-					} else if(initial && value != this.defaultString) {
+					} else if( !(initial === "") && value != this.defaultString) {
 						value += " = " + initial;
 					}
 					break;
