@@ -94,7 +94,8 @@
 				"D": "Difference"
 			},
 			"Comments": "Use when L (large) is D (difference) more than S (small)"
-    {
+		},
+    		{
 			"Name": "A2",
 			"Equation": "Sum = AddA + AddB",
 			"Mapping": {
