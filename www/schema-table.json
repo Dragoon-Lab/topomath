@@ -133,7 +133,7 @@
 			"Name": "DRT",
 			"Equation": "D = R * T",
 			"Mapping": {
-				"S": "Distance",
+				"D": "Distance",
 				"R": "Rate",
 				"T": "Time"
 			},
