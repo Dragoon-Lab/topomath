@@ -365,9 +365,14 @@ define([
 			// Anonymous function assigned to interpret--used by most parts of the switch below
 			var interpret = function(correctAnswer){
 				console.log("nodePart", nodePart);
+				if(nodePart == "variable"){
+					interpretation = "correct";
+					return;
+				}
 				//we create temporary answer and temporary correct answer both parsed as float to compare if the numbers are strings in case of execution
 				answer_temp1=parseFloat(answer);
 				correctAnswer_temp1=parseFloat(correctAnswer);
+				console.log(answer, correctAnswer);
 				if(answer === correctAnswer || correctAnswer === true || answer_temp1 == correctAnswer_temp1){
 					interpretation = "correct";
 				}else{
@@ -377,6 +382,7 @@ define([
 						interpretation = "firstFailure";
 					}
 				}
+				console.log("interpretation is", interpretation);
 			};
 
 			switch(nodePart){
@@ -438,6 +444,7 @@ define([
 			//
 			// Tags: Private
 			var actual_id = this.model.student.getAuthoredID(id);
+			console.log("actual id is", actual_id);
 			var equationEvaluation = ""; var interpretation = "";
 			console.log("actual id is",actual_id);
 			var givenAnswer = answer; //keeping a copy of answer for logging purposes.
@@ -503,8 +510,10 @@ define([
 							this.descriptionCounter = 0;
 							if(this.feedbackMode !== "nofeedback" && this.fixPosition)
 								this.model.active.setPosition(id, 0, this.model.authored.getPosition(givenID,0));
-						} else if(returnObj[i].value === "incorrect")
+						} else if(returnObj[i].value === "incorrect"){
+							console.log("incrementing assistance score","description",id);
 							this.model.student.incrementAssistanceScore(id);
+						}
 					}
 				}else{
 					givenID = this.model.student.getAuthoredID(id);
@@ -519,7 +528,8 @@ define([
 					}else{
 						this.model.authored.setAttemptCount(givenID, nodePart, this.model.authored.getAttemptCount(givenID, nodePart) + 1);
 						for (var i = 0; i < returnObj.length; i++){
-							if (returnObj[i].value === "incorrect") {
+							if (returnObj[i].value === "incorrect" && nodePart !== "variable") {
+								console.log("incrementing assistance score", nodePart,id);
 								this.model.student.incrementAssistanceScore(id);
 							}
 							if(returnObj[i].attribute === "status" &&

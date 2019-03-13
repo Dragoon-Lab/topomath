@@ -118,7 +118,7 @@ define([
 			console.log("Position for the vertex : ",node.ID, " position: x ", node.position[0].x, " y: " + node.position[0].y);
 			var properties = this.getNodeUIProperties(node);
 			var htmlStrings = graphObjects.getNodeHTML(this._model, node.ID); 
-
+			console.log("node props and html strings", node, properties, htmlStrings);
 			var vertices = [];
 			array.forEach(htmlStrings, function(html, count){
 				vertices[count] = this.createNodeDOM(node, html, count == 1);
@@ -232,6 +232,7 @@ define([
 			var hasClass = domClass.contains(domIDTags['parentDOM'], "incomplete");
 			var nodeStatus = this._model.getNodeStatus(node.ID);
 			var nodeStatusClass = nodeStatus ? this._statusClassMap[nodeStatus] : "";
+			console.log("node status details", nodeStatus, nodeStatusClass);
 			if(this._model.isStudentMode() && this._feedbackMode != "nofeedback"){
 				var _feedbackTags = ['fa-check','fa-star','fa-times','fa-minus'];
 				/*Updating tags each time model gets updated*/
@@ -313,6 +314,7 @@ define([
 				var nodeStatusClass = this._model.getNodeStatus(node.ID);
 				nodeDOM.querySelector(".topomath-feedback").className += this._statusClassMap[nodeStatusClass];
 			}
+
 			this.makeDraggable(nodeDOM);
 			/*
 			Nodes are always draggable

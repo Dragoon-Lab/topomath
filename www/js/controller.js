@@ -244,6 +244,7 @@ define([
 						if((equation.value && !myThis.equationEntered && !myThis.deleteNodeActivated)|| (equation.displayedValue !== equation.value)){
 							//call equation done handler(equation done handlers in one of the modes will be called based on current mode)
 							var directives = myThis.equationDoneHandler();
+							
 							var isAlertShown = array.some(directives, function(directive){
 								// If Done is clicked and equation is incorrect, donot hide editor
 								if(directive.id === 'crisisAlert' || directive.value === "incorrect"){
@@ -251,7 +252,10 @@ define([
 									return true;
 								}
 							});
+							console.log("equation done directives", directives, isAlertShown, myThis._model.active.isStudentMode());
 							//isAlertShown records if the crisis alert was shown, if not we have to close editor programatically
+							if(myThis._model.active.isStudentMode)
+								isAlertShown = false;
 							if(!isAlertShown) {
 								//TODO: discuss premature nodes deletion
 								//further hide editor and call closeEditor function
@@ -757,6 +761,11 @@ define([
 				
 				if(!noModelUpdate)
 					this.updateModelStatus(directive);
+				if(directive.id == "currentSlot"){
+					var w = registry.byId(this.controlMap[directive.id]);
+					console.log("current slot w is", w.set(directive.attribute, directive.value));
+					w.set(directive.attribute, directive.value);
+				}
 				if (directive.attribute != "display" && this.widgetMap[directive.id]
 					&& directive.id !== "variableType") {
 					var w = registry.byId(this.widgetMap[directive.id]);
@@ -991,8 +1000,15 @@ define([
 					equation: inputEquation,
 					autoCreateNodes: true, // where do we get this input from 
 					nameToId: true,
-					subModel: this._model.active
+					subModel: this._model.active,
 				};
+				if(this._model.isStudentMode()){
+					var authorAssignedEquation = this._model.authored.getEquationBySchemaEntity(this.schema, this.entity);
+					equationParams.originalEq = authorAssignedEquation["equation"];
+					equationParams.originalID = authorAssignedEquation["id"];
+					equationParams.currentID = this.currentID;
+					equationParams.originalSchema = this.schema;
+				}
 				returnObj = expression.convert(equationParams);
 			}catch(err){
 				console.log("Parser error: ", err);
@@ -1037,6 +1053,7 @@ define([
 				this.addNode(this._model.active.getNode(newNode.id));
 				// Auto-populate node description only in Student mode
 				// check added to make sure that the node is not an unknown node
+				console.log("node added",newNode);
 				if(newNode.variable){
 					this.createStudentNode(newNode);
 				}
@@ -1345,6 +1362,7 @@ define([
 			}
 			return nextSubscript;
 		},
+
 		/*
 		isSubscriptInUse
 		Given a subscript, list of variables, and the numGenOb

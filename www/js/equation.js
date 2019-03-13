@@ -121,7 +121,10 @@ define([
 								//name and type parameters attached
 								var newNodeOptions = {
 									variable: variable,
-									type: "quantity"
+									type: "quantity",
+									parentSchema: params.originalSchema,
+									parentEquation: params.originalEq,
+									selfEquation: params.equation
 								};
 								// check whether a correct node has been added by the student
 								var doReplace = true;
@@ -620,6 +623,22 @@ define([
 					variableList = variableList.concat(expr.variables());
 				});
 			return variableList;
+		},
+
+		getRightSideEquationStrings: function(/*String*/ equation){
+			var eqs = equation.split(this.equalto);
+			if(eqs.length != 2){
+				throw new Error("Wrong number of equal to symbols in the equation");
+			}
+			var expression;
+			try{
+				expression = Parser.parse(eqs[1]);
+			}catch(e){
+				throw e;
+			}
+			var variableList = [];
+			variableList = expression.variables();
+			return variableList;	
 		}
 	};
 });

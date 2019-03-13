@@ -53,31 +53,115 @@ define([
 			this.studentControls();
 		},
 		studentPM:{
-			process: function(nodeID, nodeType, value, validInput, message){
+			process: function(nodeID, nodeType, value, validInput, message, attemptCount, correctAnswer){
 				var returnObj=[];
 				switch(nodeType){
 					case "schema":
-						if(validInput){
-							returnObj.push({id:"schemas", attribute:"status", value:"entered"});
+						if(validInput && attemptCount <= 1){
+							returnObj.push({id:"schemas", attribute:"status", value:"correct"});
+							registry.byId("entitySelectorStudent").set("disabled", false);
+							registry.byId("schemaSelector").set("disabled", true);
 						}else{
-							if(value == "")
+							if(value == ""){
 								returnObj.push({id:"schemas", attribute:"status", value:""});
-							else
-								returnObj.push({id:"schemas", attribute:"status", value:"incorrect"});
+								registry.byId("entitySelectorStudent").set("disabled", true);
+							}
+							else{
+								if(attemptCount == 1){
+									returnObj.push({id:"schemas", attribute:"status", value:"incorrect"});
+									registry.byId("entitySelectorStudent").set("disabled", true);
+								}
+								else if(attemptCount > 1){
+									returnObj.push({id:"schemas", attribute:"status", value:"demo"});
+									registry.byId("schemaSelector").set("value", correctAnswer);
+									registry.byId("entitySelectorStudent").set("disabled", false);
+									registry.byId("schemaSelector").set("disabled", true);	
+								}
+							}
 						}
 						returnObj.push({id:"message", attribute:"append", value:message});
 						break;
 					case "entity":
-						if(validInput){
-							returnObj.push({id:"entity", attribute:"status", value:"entered"});
+						if(validInput && attemptCount <=1){
+							returnObj.push({id:"entity", attribute:"status", value:"correct"});
+							registry.byId("entitySelectorStudent").set("disabled", true);
 						}else{
-							if(value == "")
+							if(value == ""){
 								returnObj.push({id:"entity", attribute:"status", value:""});
-							else
-								returnObj.push({id:"entity", attribute:"status", value:"incorrect"});
+								registry.byId("entitySelectorStudent").set("disabled", true);
+							}
+							else{
+								if(attemptCount == 1){
+									returnObj.push({id:"entity", attribute:"status", value:"incorrect"});	
+								}
+								else if(attemptCount > 1){
+									returnObj.push({id:"entity", attribute:"status", value:"demo"});
+									registry.byId("entitySelectorStudent").set("value", correctAnswer);
+									registry.byId("entitySelectorStudent").set("disabled", true);
+								}
+								
+							}
 						}
 						returnObj.push({id:"message", attribute:"append", value:message});
 						break;
+					case "equation":
+						if(validInput){
+							returnObj.push({id:"equation", attribute:"status", value:"correct"});
+						}else{
+							if(value == "")
+								returnObj.push({id:"equation", attribute:"status", value:""});
+							else
+								returnObj.push({id:"equation", attribute:"status", value:"incorrect"});
+						}
+						returnObj.push({id:"message", attribute:"append", value:message});
+						break;
+					case "description":
+						if(validInput && attemptCount != "yellow"){
+							returnObj.push({id:"description", attribute:"status", value:"correct"});
+						}else{
+							if(value == "")
+								returnObj.push({id:"description", attribute:"status", value:""});
+							else if(attemptCount == "yellow")
+								returnObj.push({id:"description", attribute:"status", value:"demo"});
+						}
+						returnObj.push({id:"message", attribute:"append", value:message});
+						break;
+					case "qtyDescription":
+						console.log("in quantity description", value, validInput);
+						if(validInput){
+							if(value != "" && value != "defaultSelect"){
+								returnObj.push({id:"qtyDescription", attribute:"status", value:"correct"});
+								registry.byId("qtyDescriptionInputboxStudent").set("disabled", true);
+							}
+						}
+						returnObj.push({id:"message", attribute:"append", value:message});
+						break;
+					case "variable":
+						if(validInput){
+							if(value != ""){
+								returnObj.push({id:"variable", attribute:"status", value:"correct"});	
+							}
+							returnObj.push({id:"message", attribute:"append", value:message});
+						}
+					break;
+
+					/*
+					case "variableSlot":
+						var vsslotid = "holder"+extra.schema+nodeID+value;
+						console.log("vs slot", vsslotid)
+						extra.controlMap.currentSlot = vsslotid;
+						if(validInput){
+							returnObj.push({id:"currentSlot", attribute:"status", value:"correct"});
+						}else{
+							if(value == "")
+								returnObj.push({id:"currentSlot", attribute:"status", value:""});
+							else
+								returnObj.push({id:"currentSlot", attribute:"status", value:"incorrect"});
+						}
+						returnObj.push({id:"message", attribute:"append", value:message});
+						console.log("return obj for var slots", returnObj);
+						break;
+						*/
 					default:
 						throw new Error("Unknown type: "+ nodeType + ".");
 				}
@@ -120,7 +204,7 @@ define([
 			equation: "equationInputbox",
 			qtyDescription: "qtyDescriptionInputboxStudent",
 			description: "descriptionInputbox",
-			units: "unitsSelector",
+			units: "unitsSelectorStudent",
 			modelType: "modelSelector",
 			value: "valueInputbox",
 			unknown: "unknownType",
@@ -131,53 +215,8 @@ define([
 			schemaDisplay: "schemaDescriptionQuestionMark",
 		},
 		populateSelections: function () {
-			/*
-			 Initialize select options in the node editor that are
-			 common to all nodes in a problem.
-
-			 In AUTHOR mode, this needs to be done when the
-			 node editor is opened.
-			 */
-			// Add fields to Description box and inputs box
-			// populate input field
-			//var t = registry.byId(this.controlMap.inputs);
-			var u = registry.byId(this.controlMap.units);
-
-			var variableName = registry.byId(this.controlMap.variable);
-
-			//get descriptions to sort as alphabetic order
-
-			var descriptions = this._model.authored.getDescriptions();
-			//create map of names for sorting
-			var descNameMap = {};
-			array.forEach(descriptions, function (desc) {
-				var _name = this._model.authored.getName(desc.value);
-				descNameMap[desc.value] = _name;
-			}, this);
-			descriptions.sort(function (obj1, obj2) {
-				//return obj1.label > obj2.label;
-				if(descNameMap[obj1.value] && descNameMap[obj2.value])
-					return descNameMap[obj1.value].toLowerCase().localeCompare(descNameMap[obj2.value].toLowerCase());
-			}, this);
-			/*
-			array.forEach(descriptions, function (desc) {
-				if(desc.label !== undefined){
-					var name = this._model.authored.getName(desc.value);
-					var option = {label: name + " (" + desc.label + ")", value: desc.value};
-					
-					if(name !== undefined && name !== ""){
-						variableName.addOption({label: name , value: name});
-						t.addOption(option);
-					}
-				}
-			}, this); */
-
-			var units = this._model.getAllUnits();
-			units.sort();
-
-			array.forEach(units, function(unit){
-				u.addOption({label: unit, value: unit});
-			});
+			//check later if this can be used or is needed
+			//for now controlsettings is being used
 		},
 		handleDescription: function (selectDescription) {
 			console.log("****** in handleDescription ", this.currentID, selectDescription);
@@ -254,22 +293,31 @@ define([
 			var returnObj;
 			this.schema = "";
 			//case default
+			var currentAttemptCount = this._model.student.getAttemptCount(this.currentID,"schema");
+			//At this stage there is not correct answer as far as schema is considered, the correct answer would be any random legit schema
+			var correctAnswer = this._model.student.getLegitSchema();
+
 			if(schema == "defaultSelect"){
 				message = "Please choose a valid schema";
-				returnObj = this.studentPM.process(this.currentID, "schema", "", false, message);
+				this._model.student.setAttemptCount(this.currentID, "schema", currentAttemptCount+1);
+				returnObj = this.studentPM.process(this.currentID, "schema", "", false, message,this._model.student.getAttemptCount(this.currentID,"schema"), correctAnswer);
 			}
 			//case 1: the student has entered a schema that isn’t use in the author’s model
 			else if(!this._model.authored.hasSchema(schema)){
 				message = "The author’s model doesn’t uses any "+schema+" schemas.";
-				returnObj = this.studentPM.process(this.currentID, "schema", schema, false, message);
+				this._model.student.setAttemptCount(this.currentID, "schema", currentAttemptCount+1);
+				returnObj = this.studentPM.process(this.currentID, "schema", schema, false, message, this._model.student.getAttemptCount(this.currentID,"schema"), correctAnswer);
 			}else if(!(this._model.authored.getGivenSchemaCount(schema) > this._model.student.getGivenSchemaCount(schema))){
 			//case 2: the student has already entered a number of equations corresponding to all the 
 			//        equations in the author’s model that have this schema name
 				message = "You don’t need any more "+schema+" schema applications.";
-				returnObj = this.studentPM.process(this.currentID, "schema", schema, false, message);
+				this._model.student.setAttemptCount(this.currentID, "schema", currentAttemptCount+1);
+				returnObj = this.studentPM.process(this.currentID, "schema", schema, false, message, this._model.student.getAttemptCount(this.currentID,"schema"), correctAnswer);
+
 			}else{
 				message = "You have entered a valid schema.";
-				returnObj = this.studentPM.process(this.currentID, "schema", schema, true, message);
+				//this._model.student.setAttemptCount(this.currentID, "schema", currentAttemptCount+1);				
+				returnObj = this.studentPM.process(this.currentID, "schema", schema, true, message, this._model.student.getAttemptCount(this.currentID,"schema"));
 				this.schema = schema;
 			}
 			this.applyDirectives(returnObj);
@@ -277,8 +325,6 @@ define([
 			//change entity to default or to choose again
 			registry.byId(this.controlMap.entity).set("value", "defaultSelect");
 			this.updateEquationDescription();
-			this.updateSlotVariables();
-			this.updateEquation();
 		},
 		/*handle entities for student node
 		*/
@@ -286,30 +332,38 @@ define([
 			var returnObj;
 			var message;
 			this.entity = "";
+			var correctAnswer = this._model.student.getLegitEntity(this.schema);
 			//case default
+			var currentAttemptCount = this._model.student.getAttemptCount(this.currentID,"entity");
 			if(entity == "defaultSelect"){
 				message = "Please choose a valid entity";
-				returnObj = this.studentPM.process(this.currentID, "entity", "", false, message);
+				this._model.student.setAttemptCount(this.currentID, "entity", currentAttemptCount+1);
+				returnObj = this.studentPM.process(this.currentID, "entity", "", false, message, this._model.student.getAttemptCount(this.currentID,"entity"), correctAnswer);
 			}
 			//case 1: entity should not be a duplicate entry for a given schema
 			else if(this._model.student.isDuplicateSchemaInstance(this.schema, entity)){
 				message = "This entity already exists for given schema";
-				returnObj = this.studentPM.process(this.currentID, "entity", entity, false, message);
+				this._model.student.setAttemptCount(this.currentID, "entity", currentAttemptCount+1);
+				returnObj = this.studentPM.process(this.currentID, "entity", entity, false, message, this._model.student.getAttemptCount(this.currentID,"entity"), correctAnswer);
 			}
 			//case 2: schema and entity combo has to match from authors nodes
 			else if(!this._model.authored.isStudentEntityValid(this.schema, entity)){
 				message = "incorrect entity for the chosen schema";
-				returnObj = this.studentPM.process(this.currentID, "entity", entity, false, message);
+				this._model.student.setAttemptCount(this.currentID, "entity", currentAttemptCount+1);
+				returnObj = this.studentPM.process(this.currentID, "entity", entity, false, message, this._model.student.getAttemptCount(this.currentID,"entity"), correctAnswer);
 			}
 			//case 3: success
 			else{
 				message = "You have chosen a valid entity";
-				returnObj = this.studentPM.process(this.currentID, "entity", entity, true, message);
+				//this._model.student.setAttemptCount(this.currentID, "entity", currentAttemptCount+1);
+				returnObj = this.studentPM.process(this.currentID, "entity", entity, true, message,  this._model.student.getAttemptCount(this.currentID,"entity"));
 				this.entity = entity;
 			}
 			this.applyDirectives(returnObj);
 			this._model.student.setEntities(this.currentID, entity);	
 			this.updateEquationDescription();
+			this.updateSlotVariables();
+			this.updateEquation();
 		},
 		/*
 		 *	 handle event on inputs box
@@ -358,6 +412,7 @@ define([
 					directives = directives.concat(dd);
 				var context = this;
 			}
+			console.log("before applying equation directives", directives);
 			this.applyDirectives(directives);
 
 			return directives;
@@ -437,7 +492,8 @@ define([
 				if(!schema)
 					schema = "";
 				registry.byId(this.controlMap.schemas).set('value', schema);
-				this.applyDirectives(this.studentPM.process(nodeid, "schema", schema, schema, ""));
+				var count = 0;
+				this.applyDirectives(this.studentPM.process(nodeid, "schema", schema, schema, "", this._model.student.getAttemptCount(this.currentID, "schema")));
 				this.schema = schema;
 
 				//for the entity select load entities
@@ -451,18 +507,125 @@ define([
 					var obj = {value: ent, label: ent};
 					entityWid.addOption(obj);
 				}, this);
+				var entVal = this._model.student.getEntity(this.currentID);
+				if(!entVal)
+					entVal = "";
+				registry.byId(this.controlMap.entity).set('value', entVal);
+				this.applyDirectives(this.studentPM.process(nodeid, "entity", entVal, entVal, "", this._model.student.getAttemptCount(this.currentID, "entity")));
+				this.entity = entVal;
 
 				//disable the description and equation fields
 				descriptionWidget.set('disabled', true);
+				var description = this._model.student.getDescription(nodeid);
+				if(!description) description = '';
+				descriptionWidget.set('value',description);
+				var descAttempt = "";
+				var entityAttempt = this._model.student.getAttemptCount(this.currentID, "entity");
+				var schemaAttempt = this._model.student.getAttemptCount(this.currentID, "schema");
+				if(entityAttempt >=2 || schemaAttempt >=2)
+					descAttempt = "yellow";
+				this.applyDirectives(this.studentPM.process(nodeid, "description", description, description, "", descAttempt));
+				
+				//set up equation
+				var eqVal = this._model.student.getEquation(nodeid);
+				if(eqVal){
+					var params = {
+					subModel: this._model.student,
+					equation: eqVal
+					};
+					eqVal = expression.convert(params);
+				}
+				var convEq = eqVal ? eqVal.equation : "";
+				registry.byId(this.controlMap.equation).set('value', convEq);
+				this.equation = convEq;
+
+				this.updateSlotVariables();
+				this.fillVariableNames();
+				//give feedback on variables
+				this.verifyVariableSlots();
 				equationWidget.set('disabled', true);	
 			}
 			else if(nodeType == "quantity"){
 				console.log("a quantity node has been opened");
 				var variable = this._model.student.getName(nodeid);
 				registry.byId(this.controlMap.variable).set('value', variable || '');
+				this.applyDirectives(this.studentPM.process(nodeid, "variable", variable, variable, ""));
+				var parSchema = this._model.student.getParentSchema(nodeid);
+				var parEquation = this._model.student.getParentEquation(nodeid);
+				console.log("qty node details", this._model.student.getParentSchema(nodeid), this._model.student.getParentEquation(nodeid), this._model.student.getSelfEquation(nodeid));
+				var qtyDescWidget = registry.byId(this.controlMap.qtyDescription);
+				//qtyDescWidget.set("disabled", false)
+				qtyDescWidget.removeOption(qtyDescWidget.getOptions());
+				var authorModel = this._model.authored;
+				var studDesc = this._model.student.getDescription(this.currentID);
+				if(parSchema == "P2W" || parSchema == "P3W" || parSchema == "P4W" || parSchema == "P5W" || parSchema == "Avg2" || parSchema == "Avg3" || parSchema == "Avg4"){
+					var rightVarAr = expression.getRightSideEquationStrings(this._model.student.getParentEquation(nodeid));
+					var rightSelfAr = expression.getRightSideEquationStrings(this._model.student.getSelfEquation(nodeid));
+					
+					if(rightSelfAr.includes(variable)){
+						qtyDescWidget.set("disabled", false);
+						qtyDescWidget.addOption({value: 'defaultSelect',label: 'choose a description'});
+						array.forEach(rightVarAr, function(rightVar){
+							//console.log(this);
+							var curDesc = authorModel.getDescription(rightVar);
+							qtyDescWidget.addOption({value: curDesc,label: curDesc});
+						});
+						if(studDesc)
+							this.applyDirectives(this.studentPM.process(nodeid, "qtyDescription", studDesc, studDesc, "A valid description has been entered"));
+						else
+							this.applyDirectives(this.studentPM.process(nodeid, "qtyDescription", studDesc, studDesc, ""));
+					}
+					else{
+						var curDesc = authorModel.getDescription(this._model.student.getAuthoredID(nodeid));
+						qtyDescWidget.addOption({value: curDesc,label: curDesc});
+						this.applyDirectives(this.studentPM.process(nodeid, "qtyDescription", curDesc, curDesc, "A valid description has been entered",));	
+						this._model.student.setDescription(nodeid, curDesc);
+						this.disableTypeValueUnits(false);
+
+					}
+				}
+				else{
+					var curDesc = authorModel.getDescription(this._model.student.getAuthoredID(nodeid));
+					qtyDescWidget.addOption({value: curDesc,label: curDesc});
+					this.applyDirectives(this.studentPM.process(nodeid, "qtyDescription", curDesc, curDesc, "A valid description has been entered",));
+					this.disableTypeValueUnits(false);
+				}
+				var varType = this._model.student.getVariableType(this.currentID);
+				var curVal = this._model.student.getValue(this.currentID);
+				var curUnit =  this._model.student.getUnits(this.currentID);
+				console.log("other qty node details",this._model.student.getVariableType(this.currentID), this._model.student.getValue(this.currentID), this._model.student.getUnits(this.currentID));
 				//for now commenting out this part, this commit comes after editors have been finalized
 				//var qtyDesc = this._model.getDescriptionForVariable(variable);
-			
+
+				var u = registry.byId(this.controlMap.units);
+				u.removeOption(u.getOptions());
+				var units = this._model.getAllUnits();
+				units.sort();
+				var curUnit = this._model.student.getUnits(nodeid);
+				if(!curUnit){
+					u.addOption({label: "choose a unit", value: "default"});
+				}
+				array.forEach(units, function(unit){
+					u.addOption({label: unit, value: unit});
+				});
+				if(curUnit){
+					u.set('value', curUnit);
+					//this.applyDirectives(this.studentPM.process(nodeid, "units", curUnit, curUnit ));
+				}
+				var prevSelected = query("input[name='variableType']:checked")[0] ? query("input[name='variableType']:checked")[0].value : undefined;
+				if(prevSelected)
+					registry.byId(prevSelected+"Type").set('checked', false);
+				if(varType){
+					registry.byId(varType+"Type").set('checked', true);
+					this.variableTypeControls(this.currentID, varType);
+					this.applyDirectives(this._PM.processAnswer(this.currentID, 'variableType', varType));
+				}
+				if(curVal){
+					this.applyDirectives(this._PM.processAnswer(this.currentID, 'value', curVal));
+				}
+				if(curUnit)
+					this.handleUnits(curUnit);
+
 			}
 			/*
 			// Apply settings from PM
@@ -534,6 +697,40 @@ define([
 			*/
 		},
 
+		verifyVariableSlots: function(){
+			console.log("verify variable slots",this.slotMap, this.currentID);
+			if(registry.byId(this.controlMap.equation).value){
+			var original_id = this._model.student.getAuthoredID(this.currentID);
+			var original_eq = this._model.authored.getEquation(original_id);
+			var original_Ar = expression.getVariableStrings(original_eq);
+			console.log("original id, eq", original_id, original_eq, expression.getVariableStrings(original_eq));
+			var current_Ar = expression.getVariableStrings(this._model.student.getEquation(this.currentID));
+			console.log("current array", current_Ar);
+			var count = 1;
+			for(var i=0;i<original_Ar.length;i++){
+				var get_original = this._model.student.getAuthoredID(current_Ar[i]);
+				var get_original_name = this._model.authored.getName(original_Ar[i]);
+				var slot_id = Object.values(this.slotMap)[i];
+				if(get_original == original_Ar[i]){
+					console.log("applying directives on ", slot_id);
+					//if it is a match show a positive feedback on the variable slots
+					//this.applyDirectives(this.studentPM.process(this.currentID, "variableSlot", slot_id, get_original, "the variable is correct", this));
+					console.log("holder"+this.schema+this.currentID+slot_id);
+					style.set(dojo.byId("widget_holder"+this.schema+this.currentID+slot_id), 'backgroundColor', 'lightGreen');
+				}
+				else{
+					//this.applyDirectives(this.studentPM.process(this.currentID, "variableSlot", slot_id, false, "the variable is incorrect", this));
+					style.set(dojo.byId("widget_holder"+this.schema+this.currentID+slot_id), 'backgroundColor', 'red');
+					count--;
+				}
+			}
+			if(! (count < 1)){
+				//make equation green
+				this.applyDirectives(this.studentPM.process(this.currentID, "equation", original_eq, original_eq, "equation value is correct"));
+			}
+			}
+		},
+
 		// Need to save state of the node editor in the status section
 		// of the student model.  See documentation/json-format.md
 		updateModelStatus: function (desc, id) {
@@ -559,7 +756,8 @@ define([
 			//this._model.active.setName(id, variable);
 			// update Node labels upon exit
 			//this.updateNodeLabel(id);
-			var authoredID = this._model.authored.getNodeIDByName(variable);
+			var authoredID = this._model.student.getAuthoredID(id);
+			//console.log("update inp node auth id is", authoredID, this._model.student.getAuthoredID(id));
 			//console.log(id,descID,this._model.given.getName(descID));
 			var directives = this._PM.processAnswer(id, 'description', authoredID);
 			if(!this._model.authored.isNodeIrrelevant(authoredID))
@@ -567,6 +765,7 @@ define([
 						this._PM.processAnswer(id, 'variable', variable));
 			// Need to send to PM and update status, but don't actually
 			// apply directives since they are for a different node.
+			console.log("update input node directives are", directives);
 			array.forEach(directives, function (directive) {
 				this.updateModelStatus(directive, id);
 			}, this);
@@ -601,9 +800,14 @@ define([
 			return returnObj;
 		},
 		setNodeDescription: function(id, variable){
-			var authoredID = this._model.authored.getNodeIDByName(variable);
+			console.log("setting node description", variable);
+			//we need to get original ids 
+			var authoredID = this._model.student.getAuthoredID(id);
+			//var authoredID = this._model.authored.getNodeIDByName(variable);
+			console.log("authored id is", authoredID, id, variable);
 			if(authoredID){
 				this._model.active.setAuthoredID(id, authoredID);
+				console.log(this._model.active.getNode(id));
 				this._model.active.setDescription(id, this._model.authored.getDescription(authoredID));
 				// Fixing position is a part of feedback to student
 				if(this._config.get("feedbackMode") !== "nofeedback" && this._fixPosition){
@@ -646,13 +850,14 @@ define([
 		},
 		handleQtyDescription: function(description){
 			//quantity description is also auto generated but might have options
-			//console.log("selected description is", description);
+			console.log("selected description is", description);
 			if(description == "defaultSelect"){
 				//not a valid selection, hide type, value and units
 				this.disableTypeValueUnits(true);
 			}
 			else{
 				this.disableTypeValueUnits(false);
+				this.applyDirectives(this.studentPM.process(this.currentID, "qtyDescription", description, description, "A valid description has been entered",));
 			}
 			this._model.student.setDescription(this.currentID, description);
 		},

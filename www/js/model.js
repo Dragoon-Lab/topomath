@@ -284,6 +284,14 @@ define([
 			saveSolution: function(solution){
 				obj.model.solution = solution;
 			},
+			arrDifference: function(arr1, arr2){
+				for (var i = 0; i < arr2.length; i++){
+					var ind = arr1.indexOf(arr2[i]);
+					if(ind >=0)
+						arr1.splice(ind, 1);
+				}
+				return arr1;
+			}
 		};
 
 		var both = {
@@ -509,6 +517,26 @@ define([
 				var node = this.getNode(id);
 				return node && node.variable;
 			},
+			getParentSchema: function(/*string*/ id){
+				// Summary: returns the name of a node matching the student model.
+				//      If no match is found, then return null.
+				var node = this.getNode(id);
+				return node && node.parentSchema;
+			},
+			getParentEquation: function(/*string*/ id){
+				// Summary: returns the name of a node matching the student model.
+				//      If no match is found, then return null.
+				var node = this.getNode(id);
+				return node && node.parentEquation;
+			},
+
+			getSelfEquation: function(/*string*/ id){
+				// Summary: returns the name of a node matching the student model.
+				//      If no match is found, then return null.
+				var node = this.getNode(id);
+				return node && node.selfEquation;
+			},
+
 			getDescription: function(/*string*/ id){
 				var node = this.getNode(id);
 				return node.explanation || node.description;
@@ -656,6 +684,14 @@ define([
 					var node = this.getNode(id);
 					return node && node.attemptCount[part]? node.attemptCount[part]:0;
 			},
+			getAllSchemas: function(){
+				var schemaList = [];
+				array.forEach(this.getNodes(), function(node){
+					if(node && node.type == "equation")
+						schemaList.push(node.schema);
+				});
+				return schemaList;
+			}
 
 		};
 
@@ -917,7 +953,41 @@ define([
 					}
 				});
 				return valid;
-			}
+			},
+			getMultipleEntityNames: function(schema, entity){
+				var multipleEntityList = [];
+				var valid = array.some(this.getNodes(), function(node){
+				if(node && node.type === "equation" && node.schema && node.entity){
+					if(node.schema === schema){
+						var entityAr = node.entity.split(";");
+						for(var i=0; i<entityAr.length; i++){
+							if(entity === entityAr[i]){
+								multipleEntityList = entityAr;
+								return true;
+							}
+						}
+					}
+				}
+				});
+				return multipleEntityList;
+			},
+			getAllEntitiesFor: function(schema){
+				var entityList = new Array();
+				array.forEach(this.getNodes(), function(node){
+					if(node.schema === schema){
+						var entityAr = node.entity ? node.entity.split(";") : null;
+						if(entityAr){
+							for(var i=0; i<entityAr.length; i++){
+								var currentEntity = entityAr[i].trim();
+								if(array.indexOf(entityList, currentEntity) == -1)
+									entityList.push(currentEntity);
+								}
+						}						
+					}
+
+				}, this);
+				return entityList;
+			},
 		}, both);
 
 		obj.student = lang.mixin({
@@ -968,7 +1038,7 @@ define([
 				var nodeStatus = this.getCorrectness(id);
 				var score = this.getAssistanceScore(id);
 				var completeness = this.isComplete(id);
-				console.log("score complete status ", score, completeness, nodeStatus)
+				console.log("score complete status ", id, score, completeness, nodeStatus)
 				if(nodeStatus === "correct" && score === 0 && completeness)
 					nodeStatus = "perfect";
 				return nodeStatus;
@@ -1099,10 +1169,14 @@ define([
 				(node.value && node.variableType == "parameter") ;
 				
 				var equationEntered = node.type && node.type == "quantity" || node.equation;
+
+				var schemaEntered = node.type && node.type == "quantity" || node.schema;
+				var entityEntered = node.type && node.type == "quantity" || node.entity;
+
 				if(this.isNodeRequired(id) || this.isNodeAllowed(id)){
 					returnFlag = nameEntered && (node.description || node.explanation) &&
 						node.type && ( node.variableType == "unknown" || valueEntered || typeof valueEntered === "number" ) &&
-						(!hasUnits || node.units) && equationEntered;
+						(!hasUnits || node.units) && equationEntered && schemaEntered && entityEntered;
 				} else {
 					// if genus is irrelevant
 					returnFlag = nameEntered && (node.description || node.explanation);
@@ -1189,11 +1263,22 @@ define([
 			getCorrectAnswer : function(/*string*/ studentID, /*string*/ part){
 				var id = this.getAuthoredID(studentID);
 				var node = obj.authored.getNode(id);
-				if(node == null){
-					//this could be the case where authored ID was not set for this current node
-					
-				}
 				return node[part];
+			},
+			getLegitSchema: function(){
+				//In case part is schema, the authoredID might not have been set for the current student ID
+				var studSchemas = obj.student.getAllSchemas();
+				var authSchemas = obj.authored.getAllSchemas();
+				var remSchemas = obj.arrDifference(authSchemas,studSchemas);
+				console.log("schemas in play", studSchemas, authSchemas, remSchemas);
+				return remSchemas[0];
+			},
+			getLegitEntity: function(/*String*/ schema){
+				var authEntities = obj.authored.getAllEntitiesFor(schema);
+				var studEntities = obj.student.getAllEntitiesFor(schema);
+				var remEntities = obj.arrDifference(authEntities, studEntities);
+				console.log("entities in play", authEntities, studEntities, remEntities);
+				return remEntities[0];
 			},
 			incrementAssistanceScore: function(/*string*/ id){
 				// Summary: Incremements a score of the amount of errors/hints that
@@ -1224,6 +1309,7 @@ define([
 				var update = function(attr, sattr){
 					// node.status always exists
 					var nsa = node.status[attr];
+					console.log("nsa is", nsa)
 					if(node[sattr || attr] !== null && nsa && nsa.status &&
 						rank[nsa.status] > rank[bestStatus]){
 						bestStatus = nsa.status;
@@ -1237,6 +1323,8 @@ define([
 					update("value");
 					update("units");
 				}else if(type === "equation"){
+					update("schema");
+					update("entity");
 					update("equation");
 				}
 
@@ -1260,11 +1348,25 @@ define([
 				});
 				return arr;
 			},
+			getAllEntitiesFor: function(schema){
+				var entityList = new Array();
+				array.forEach(this.getNodes(), function(node){
+					if(node.schema === schema){
+						var mulEntities = obj.authored.getMultipleEntityNames(schema,node.entity);
+						entityList = entityList.concat(mulEntities);					
+					}
+
+				}, this);
+				return entityList;
+			},
 			isDuplicateSchemaInstance: function(schema, entity){
+				//checking for duplicate schema instance also involves checking multiple entity values
+				var checkList = obj.authored.getMultipleEntityNames(schema, entity);
+				console.log("check list", checkList);
 				var nodes = this.getNodes();
 				var isDup = array.some(nodes, function(node){
 					if(node && node.type === "equation" && node.schema && node.entity && node.schema === schema){
-						return node.entity === entity;
+						return checkList.includes(node.entity);
 					}
 				});
 				return isDup;
