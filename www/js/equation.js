@@ -38,8 +38,13 @@ define([
 			var onodeid = (subModel.isStudentMode())? params.originalID: "";
 			if(onodeid){
 				//set the authored ID of the current equation node if it is not already set
-				if(!subModel.getAuthoredID(params.currentID))
-					subModel.setAuthoredID(params.currentID, onodeid);
+				if(!subModel.getAuthoredID(params.currentID)){
+					//subModel.removePrevAuthoredID(onodeid);
+					if(subModel.isAuthoredIDNotAssigned(onodeid))
+						subModel.setAuthoredID(params.currentID, onodeid);
+					else
+						subModel.setAuthoredID(params.currentID, null);
+				}
 			}
 			var authStudNameMap = new Array();
 
@@ -133,8 +138,13 @@ define([
 									var newId = subModel.addNode(newNodeOptions);
 									nodeList.push({ "id": newId, "variable":variable});
 									if(oequation){
-										if(!subModel.getAuthoredID(newId))
-											subModel.setAuthoredID(newId, authStudNameMap[variable]);
+										if(!subModel.getAuthoredID(newId)){
+											//subModel.removePrevAuthoredID(authStudNameMap[variable]);
+											if(subModel.isAuthoredIDNotAssigned(authStudNameMap[variable]))
+												subModel.setAuthoredID(newId, authStudNameMap[variable]);
+											else
+												subModel.setAuthoredID(newId, null);
+										}
 									}
 
 									if(subModel.isStudentMode()){

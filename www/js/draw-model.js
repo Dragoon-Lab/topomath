@@ -264,6 +264,14 @@ define([
 				dojo.byId(domIDTags['parentDOM']).style.left = node.position[0].x+'px';
 			}
 
+			console.log("updating node, can delete", node.canDel, node.ID);
+			if(!node.canDel){
+				dijit.byId(node.ID+"delNodeTag").set("disabled", true);
+			}
+			else{
+				dijit.byId(node.ID+"delNodeTag").set("disabled", false);
+			}
+
 			//add to cache for next time
 			this._cache[node.ID] = lang.clone(node);
 			return isCloseAction;
@@ -336,6 +344,8 @@ define([
 			});
 			pMenu.addChild(new MenuItem({
 				label: "Delete Node",
+				disabled: true,
+				id: node.ID + "delNodeTag",
 				onClick: lang.hitch(this, function(){
 					this.deleteNode(node.ID);
 				})

@@ -203,14 +203,6 @@ define([
 				}, this);
 				return entityList;
 			},
-			getAllEquations: function(){
-				var eqList = new Array();
-				array.forEach(this.authored.getNodes(), function(node){
-					if(node && node.type == "equation")
-						eqList.push({id: node.ID, equation: node.equation});
-				});
-				return eqList;
-			},
 			isParentNode: function(/*string*/ id){
 				// Summary: returns true if a node is the parent node in a tree structure;
 				return this.authored.getNode(id).root;
@@ -393,6 +385,14 @@ define([
 			getColor: function(/*string*/ id){
 				var node = this.getNode(id);
 				return node && node.color;
+			},
+			getAllEquations: function(){
+				var eqList = new Array();
+				array.forEach(this.getNodes(), function(node){
+					if(node && node.type == "equation")
+						eqList.push({id: node.ID, equation: node.equation});
+				});
+				return eqList;
 			},
 			/**
 			* gets the nodes where node corresponding to the id is part of the links to any other node
@@ -691,7 +691,15 @@ define([
 						schemaList.push(node.schema);
 				});
 				return schemaList;
-			}
+			},
+			getAllDescriptions: function(){
+				var descList = [];
+				array.forEach(this.getNodes(), function(node){
+					if(node && node.type == "quantity")
+						descList.push(node.description);
+				});
+				return descList;
+			},
 
 		};
 
@@ -1051,6 +1059,7 @@ define([
 				this.getNode(id).status[control] = lang.mixin(attributes, options);
 				return attributes;
 			},
+
 			getAuthoredID: function(id){
 				// Summary: Return any matched given model id for student node.
 				console.log("input id", id);
@@ -1108,6 +1117,26 @@ define([
 				}
 				this.getNode(id).authoredID = authoredID;
 			},
+			setSlotStatus: function(id, slotId, status){
+				this.getNode(id).status["slot"+slotId] = status;
+			},
+			getSlotStatus: function(id, slotId){
+				return this.getNode(id).status["slot"+slotId];
+			},
+			isAuthoredIDNotAssigned: function(authoredID){
+				//remove authoredID if it is already set for anything else
+				var sNodes = obj.student.getNodes();
+				var sl = sNodes.length;
+				var isAssigned = false;
+				for(var i = 0; i < sl ; i++){
+					var sNode = sNodes[i];
+					if(sNode.authoredID == authoredID){
+						isAssigned = true;
+						break;
+					}
+				}
+				return !isAssigned;
+			},
 			setUnits: function(/*string*/ id, /*string*/ units){
 				this.getNode(id).units = units;
 			},
@@ -1143,6 +1172,9 @@ define([
 				}
 				return directives;
 			},
+			setCanDelete: function(id, canDel){
+				this.getNode(id).canDel = canDel;
+			},
 			setStatus: function(/*string*/ id, /*string*/ control, /*object*/ options){
 				//Summary: Update status for a particular control.
 				//		   options may have attributes "status" and "disabled".
@@ -1150,6 +1182,14 @@ define([
 				// When undefined, status[control] needs to be set explicitly.
 				this.getNode(id).status[control] = lang.mixin(attributes, options);
 				return attributes;
+			},
+			getStatus: function(/*string*/ id, /*string*/ part, /* boolean */ ignoreExecution){
+				if(ignoreExecution || part != "executionValue")
+					return this.getNode(id).status[part];
+				else{
+					return this.getNode(id).status[part]?
+					this.getNode(id).status[part][obj.student.getIteration()]:undefined;
+				}
 			},
 			isComplete: function(/*String*/ id){
 				if(!id) return false;
@@ -1323,7 +1363,7 @@ define([
 					update("value");
 					update("units");
 				}else if(type === "equation"){
-					update("schema");
+					update("schemas");
 					update("entity");
 					update("equation");
 				}
@@ -1374,6 +1414,7 @@ define([
 			getEntity: function(/*string*/ id){
 				return this.getNode(id).entity;
 			},
+
 		}, both);
 
 		obj.constructor.apply(obj, arguments);

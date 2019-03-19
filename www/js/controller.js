@@ -239,10 +239,12 @@ define([
 				var myThis = this;
 				return function(){
 					if(myThis.nodeType == "equation"){
+						console.log("starting hide", myThis.equationEntered);
 						var equation = registry.byId("equationInputbox");
 						//if the equation is in the box but has not been checked(or entered) and deleteNode is not calling for this function or if equation is changed after validating in author mode
 						if((equation.value && !myThis.equationEntered && !myThis.deleteNodeActivated)|| (equation.displayedValue !== equation.value)){
 							//call equation done handler(equation done handlers in one of the modes will be called based on current mode)
+							console.log("equation entered",myThis.equationEntered);
 							var directives = myThis.equationDoneHandler();
 							
 							var isAlertShown = array.some(directives, function(directive){
@@ -742,7 +744,9 @@ define([
 				registry.byId(this.controlMap.equation).set('value', mEquation.toString());
 				//This was used when structured was also there, once confirm with team before removing it, for now commenting it 
 				//dom.byId("equationText").innerHTML = mEquation;
+				
 				this.equationEntered = true;
+				if(this.variableUpdateBySystem) this.equationEntered = false;
 			}
 		},
 
@@ -1393,8 +1397,10 @@ define([
 				console.log("replacing", varKey, "\'"+updatedValue+"\'");
 				equation = equation.replace("$"+varKey, updatedValue);
 			}
+			console.log("before", registry.byId(this.controlMap.equation).value, "after", equation);
 			registry.byId(this.controlMap.equation).set("value",equation);
 			this.equation = equation;
+			//console.log("updated equation");
 		},
 		/*fillVariableNames
 		reads the current equation string when the node is opened and loads the variable combo boxes
@@ -1432,8 +1438,8 @@ define([
 		*/
 		canHaveDeleteNode: function(){
 			//only applicable to quantity nodes
-			var eqList = this._model.getAllEquations();
-			var currentID = "" + this.currentID;
+			var eqList = this._model.active.getAllEquations();
+			var currentID = this.currentID;
 			var found = array.some(eqList,function(currentEq){
 				var currentVars = expression.getVariableStrings(currentEq.equation);
 				if(currentVars.includes(currentID))

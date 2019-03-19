@@ -51,6 +51,7 @@ define([
 			// from demo nodes
 			this.demoParse = null;
 			this.studentControls();
+			this.variableUpdateBySystem = false;
 		},
 		studentPM:{
 			process: function(nodeID, nodeType, value, validInput, message, attemptCount, correctAnswer){
@@ -88,7 +89,7 @@ define([
 						}else{
 							if(value == ""){
 								returnObj.push({id:"entity", attribute:"status", value:""});
-								registry.byId("entitySelectorStudent").set("disabled", true);
+								//registry.byId("entitySelectorStudent").set("disabled", true);
 							}
 							else{
 								if(attemptCount == 1){
@@ -132,6 +133,12 @@ define([
 							if(value != "" && value != "defaultSelect"){
 								returnObj.push({id:"qtyDescription", attribute:"status", value:"correct"});
 								registry.byId("qtyDescriptionInputboxStudent").set("disabled", true);
+							}
+						}
+						else{
+							if(!value){
+								returnObj.push({id:"qtyDescription", attribute:"status", value:""});
+								registry.byId("qtyDescriptionInputboxStudent").set("disabled", false);
 							}
 						}
 						returnObj.push({id:"message", attribute:"append", value:message});
@@ -420,7 +427,8 @@ define([
 		equationSet: function (value) {
 			// applyDirectives updates equationBox, but not equationText:
 			// dom.byId("equationText").innerHTML = value;
-
+			console.log("in equation set");
+			/*
 			if(value != ""){
 				var directives = [];
 				// Parse and update model, connections, etc.
@@ -438,7 +446,7 @@ define([
 				var dd = this._PM.processAnswer(this.currentID, 'equation', parse, registry.byId(this.controlMap.equation).get("value"));
 				this.demoParse = null; // emptying it for next feedback
 				//this.applyDirectives(dd);
-			}
+			} */
 		},
 		initialViewSettings: function(type){
 			//make display none for all fields initially
@@ -455,16 +463,17 @@ define([
 				});
 				//initially disable the type value and units which will be later handled in control settings based on state
 				this.disableTypeValueUnits(true);
-				/*
+				
 				//can the qty node have delete option
 				var canHaveDeleteNode = this.canHaveDeleteNode();
+				console.log("can have delete node", canHaveDeleteNode);
 				if(canHaveDeleteNode){
 					registry.byId("deleteButton").set("disabled",false);
 				}
 				else{
 					registry.byId("deleteButton").set("disabled",true);
 				}
-				*/
+				
 			}else if(type == "equation"){
 				this.qtyElements.forEach(function(elem){
 					console.log("element",elem);
@@ -508,6 +517,7 @@ define([
 					entityWid.addOption(obj);
 				}, this);
 				var entVal = this._model.student.getEntity(this.currentID);
+				console.log("entity value is", entVal);
 				if(!entVal)
 					entVal = "";
 				registry.byId(this.controlMap.entity).set('value', entVal);
@@ -558,37 +568,50 @@ define([
 				qtyDescWidget.removeOption(qtyDescWidget.getOptions());
 				var authorModel = this._model.authored;
 				var studDesc = this._model.student.getDescription(this.currentID);
+				console.log("student desc is", studDesc);
 				if(parSchema == "P2W" || parSchema == "P3W" || parSchema == "P4W" || parSchema == "P5W" || parSchema == "Avg2" || parSchema == "Avg3" || parSchema == "Avg4"){
 					var rightVarAr = expression.getRightSideEquationStrings(this._model.student.getParentEquation(nodeid));
 					var rightSelfAr = expression.getRightSideEquationStrings(this._model.student.getSelfEquation(nodeid));
 					
 					if(rightSelfAr.includes(variable)){
-						qtyDescWidget.set("disabled", false);
-						qtyDescWidget.addOption({value: 'defaultSelect',label: 'choose a description'});
-						array.forEach(rightVarAr, function(rightVar){
-							//console.log(this);
-							var curDesc = authorModel.getDescription(rightVar);
-							qtyDescWidget.addOption({value: curDesc,label: curDesc});
-						});
-						if(studDesc)
+						if(studDesc){
 							this.applyDirectives(this.studentPM.process(nodeid, "qtyDescription", studDesc, studDesc, "A valid description has been entered"));
-						else
+							this.disableTypeValueUnits(false);
+						}
+						else{
+							qtyDescWidget.set("disabled", false);
+							qtyDescWidget.addOption({value: 'defaultSelect',label: 'choose a description'});
+							array.forEach(rightVarAr, function(rightVar){
+								//console.log(this);
+								var curDesc = authorModel.getDescription(rightVar);
+								qtyDescWidget.addOption({value: curDesc,label: curDesc});
+							});
+							var tillNowDescs = this._model.student.getAllDescriptions();
+							array.forEach(tillNowDescs, function(existingDesc){
+								if(existingDesc)
+									qtyDescWidget.removeOption({value: existingDesc, label: existingDesc});
+							});
+							console.log("till now descriptions", tillNowDescs);
 							this.applyDirectives(this.studentPM.process(nodeid, "qtyDescription", studDesc, studDesc, ""));
+						}
 					}
 					else{
-						var curDesc = authorModel.getDescription(this._model.student.getAuthoredID(nodeid));
-						qtyDescWidget.addOption({value: curDesc,label: curDesc});
-						this.applyDirectives(this.studentPM.process(nodeid, "qtyDescription", curDesc, curDesc, "A valid description has been entered",));	
-						this._model.student.setDescription(nodeid, curDesc);
-						this.disableTypeValueUnits(false);
-
+						if(this._model.student.getAuthoredID(nodeid)){
+							var curDesc = authorModel.getDescription(this._model.student.getAuthoredID(nodeid));
+							qtyDescWidget.addOption({value: curDesc,label: curDesc});
+							this.applyDirectives(this.studentPM.process(nodeid, "qtyDescription", curDesc, curDesc, "A valid description has been entered",));	
+							this._model.student.setDescription(nodeid, curDesc);
+							this.disableTypeValueUnits(false);
+						}
 					}
 				}
 				else{
-					var curDesc = authorModel.getDescription(this._model.student.getAuthoredID(nodeid));
-					qtyDescWidget.addOption({value: curDesc,label: curDesc});
-					this.applyDirectives(this.studentPM.process(nodeid, "qtyDescription", curDesc, curDesc, "A valid description has been entered",));
-					this.disableTypeValueUnits(false);
+					if(this._model.student.getAuthoredID(nodeid)){
+						var curDesc = authorModel.getDescription(this._model.student.getAuthoredID(nodeid));
+						qtyDescWidget.addOption({value: curDesc,label: curDesc});
+						this.applyDirectives(this.studentPM.process(nodeid, "qtyDescription", curDesc, curDesc, "A valid description has been entered",));
+						this.disableTypeValueUnits(false);
+					}
 				}
 				var varType = this._model.student.getVariableType(this.currentID);
 				var curVal = this._model.student.getValue(this.currentID);
@@ -698,36 +721,55 @@ define([
 		},
 
 		verifyVariableSlots: function(){
-			console.log("verify variable slots",this.slotMap, this.currentID);
+			//console.log("verify variable slots",this.slotMap, this.currentID);
 			if(registry.byId(this.controlMap.equation).value){
-			var original_id = this._model.student.getAuthoredID(this.currentID);
-			var original_eq = this._model.authored.getEquation(original_id);
-			var original_Ar = expression.getVariableStrings(original_eq);
-			console.log("original id, eq", original_id, original_eq, expression.getVariableStrings(original_eq));
-			var current_Ar = expression.getVariableStrings(this._model.student.getEquation(this.currentID));
-			console.log("current array", current_Ar);
-			var count = 1;
-			for(var i=0;i<original_Ar.length;i++){
-				var get_original = this._model.student.getAuthoredID(current_Ar[i]);
-				var get_original_name = this._model.authored.getName(original_Ar[i]);
-				var slot_id = Object.values(this.slotMap)[i];
-				if(get_original == original_Ar[i]){
-					console.log("applying directives on ", slot_id);
-					//if it is a match show a positive feedback on the variable slots
-					//this.applyDirectives(this.studentPM.process(this.currentID, "variableSlot", slot_id, get_original, "the variable is correct", this));
-					console.log("holder"+this.schema+this.currentID+slot_id);
-					style.set(dojo.byId("widget_holder"+this.schema+this.currentID+slot_id), 'backgroundColor', 'lightGreen');
+				var original_id = this._model.student.getAuthoredID(this.currentID);
+				var original_eq = this._model.authored.getEquation(original_id);
+				var original_Ar = expression.getVariableStrings(original_eq);
+				var current_Ar = expression.getVariableStrings(this._model.student.getEquation(this.currentID));
+				//console.log("current, original", original_Ar, current_Ar, this._model.student.getStatus(this.currentID, "equation"));
+				this.variableUpdateBySystem = false;
+				for(var i=0;i<original_Ar.length;i++){
+					var get_original = this._model.student.getAuthoredID(current_Ar[i]);
+					var get_original_name = this._model.authored.getName(original_Ar[i]);
+					var slot_id = Object.values(this.slotMap)[i];
+					console.log("opened", this.currentID, get_original, get_original_name, slot_id, original_Ar[i], current_Ar[i], i);
+					if(get_original == original_Ar[i]){
+						if(this._model.student.getSlotStatus(this.currentID, slot_id) == "correct"){
+							style.set(dojo.byId("widget_holder"+this.schema+this.currentID+slot_id), 'backgroundColor', 'lightGreen');
+							registry.byId("holder"+this.schema+this.currentID+slot_id).set("disabled", true);
+						}
+						else if(this._model.student.getSlotStatus(this.currentID, slot_id) == "demo"){
+							style.set(dojo.byId("widget_holder"+this.schema+this.currentID+slot_id), 'backgroundColor', 'yellow');
+							registry.byId("holder"+this.schema+this.currentID+slot_id).set("disabled", true);
+						}
+						else{
+							this._model.student.setSlotStatus(this.currentID, slot_id, "correct");
+							style.set(dojo.byId("widget_holder"+this.schema+this.currentID+slot_id), 'backgroundColor', 'lightGreen');
+							registry.byId("holder"+this.schema+this.currentID+slot_id).set("disabled", true);	
+						}
+					}
+					else{
+						//this.applyDirectives(this.studentPM.process(this.currentID, "variableSlot", slot_id, false, "the variable is incorrect", this));
+						if(this._model.student.getSlotStatus(this.currentID, slot_id) == "incorrect"){
+							this._model.student.setSlotStatus(this.currentID, slot_id, "demo");
+							style.set(dojo.byId("widget_holder"+this.schema+this.currentID+slot_id), 'backgroundColor', 'yellow');
+							var studID = this._model.student.getNodeIDFor(original_Ar[i]);
+							var studName = this._model.student.getName(studID);
+							registry.byId("holder"+this.schema+this.currentID+slot_id).set("value", studName);
+							registry.byId("holder"+this.schema+this.currentID+slot_id).set("disabled", true);
+							this.variableUpdateBySystem = true;
+						}
+						else{
+							this._model.student.setSlotStatus(this.currentID, slot_id, "incorrect");
+							style.set(dojo.byId("widget_holder"+this.schema+this.currentID+slot_id), 'backgroundColor', 'red');
+							registry.byId("holder"+this.schema+this.currentID+slot_id).set("disabled", false);
+						}
+					}
 				}
-				else{
-					//this.applyDirectives(this.studentPM.process(this.currentID, "variableSlot", slot_id, false, "the variable is incorrect", this));
-					style.set(dojo.byId("widget_holder"+this.schema+this.currentID+slot_id), 'backgroundColor', 'red');
-					count--;
-				}
-			}
-			if(! (count < 1)){
-				//make equation green
-				this.applyDirectives(this.studentPM.process(this.currentID, "equation", original_eq, original_eq, "equation value is correct"));
-			}
+
+				//this._model.student.setEquation(this.currentID,);
+				//this.applyDirectives(this.studentPM.process(this.currentID, "equation", original_eq, original_eq, "equation value is correct"));
 			}
 		},
 
@@ -808,7 +850,7 @@ define([
 			if(authoredID){
 				this._model.active.setAuthoredID(id, authoredID);
 				console.log(this._model.active.getNode(id));
-				this._model.active.setDescription(id, this._model.authored.getDescription(authoredID));
+				//this._model.active.setDescription(id, this._model.authored.getDescription(authoredID));
 				// Fixing position is a part of feedback to student
 				if(this._config.get("feedbackMode") !== "nofeedback" && this._fixPosition){
 					this._model.active.setPosition(id, 0, this._model.authored.getPosition(authoredID,0));
@@ -820,6 +862,8 @@ define([
 			var authoredID = this.setNodeDescription(node.id, node.variable);
 			if(authoredID){
 				this.updateInputNode(node.id, node.variable);
+				var canHaveDeleteNode = this.canHaveDeleteNode();
+				this._model.student.setCanDelete(this.currentID,canHaveDeleteNode);
 				this.updateNodeView(this._model.active.getNode(node.id));
 			}
 
@@ -869,7 +913,14 @@ define([
 		},
 		getSlotVariablesList: function(){
 			return this._model.student.getAllVariables();
-		}
+		},
+		/*activateDeleteNode
+		This function can be used for delete button specific checks
+		deleteNodeActivated flag prevents equation being evaluated when delete button is clicked
+		*/
+		activateDeleteNode: function(){
+			this.deleteNodeActivated = true;
+		},
 	});
 });
 
