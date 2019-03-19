@@ -15,6 +15,7 @@ define([
 	'dojo/_base/array',
 	'dojo/_base/declare',
 	'dojo/_base/lang',
+	'dojo/_base/event',
 	'dojo/dom-style',
 	'dojo/keys',
 	'dojo/ready',

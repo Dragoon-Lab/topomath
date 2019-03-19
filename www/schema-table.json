@@ -46,12 +46,22 @@
 			"Comments": "The whole is equal to the sum of five parts."
 		},
 		{
+			"Name": "Compare",
+			"Equation": "B = S + D",
+			"Mapping": {
+				"B": "Bigger",
+				"S": "Smaller",
+				"D": "Difference"
+			},
+			"Comments": "The whole is equal to the sum of five parts."
+		},
+		{
 			"Name": "Tailwind",
 			"Equation": "GS = AS + WS",
 			"Mapping": {
 				"GS": "Ground Speed",
-				"WS": "Wind Speed",
-				"AS": "Air Speed"
+				"WS": "Speed of Carrier",
+				"AS": "Speed Relative to Carrier"
 			},
 			"Comments": "If a vehicle travels through a moving medium (e.g., airplane in wind; boat on river current), and the vehicle is travelling the same direction as the medium (i.e., with a tailwind for the airplane; downstream for the boat), then slots are: GroundSpeed is the rate of the vehicle relative to land, AirSpeed is the rate of the vehicle relative to the medium, Windspeed is the rate of the medium (i.e., wind’s speed; river current’s speed)."
 		},
@@ -60,8 +70,8 @@
 			"Equation": "GS = AS - WS",
 			"Mapping": {
 				"GS": "Ground Speed",
-				"WS": "Wind Speed",
-				"AS": "Air Speed"
+				"WS": "Speed of Carrier",
+				"AS": "Speed Relative to Carrier"
 			},
 			"Comments": "If a vehicle travels through a moving medium (e.g., airplane in wind; boat on river current), and the vehicle is travelling in the opposite direction to the medium (i.e., with a headwind for the airplane; upstream for the boat), then slots are: GroundSpeed is the rate of the vehicle relative to the land, AirSpeed is the rate of the vehicle relative to the medium (i.e., how fast the plane or boat travels in still air or still water), WindSpeed is the rate of the medium (i.e., wind’s speed; river current’s speed)"
 		},
@@ -84,17 +94,50 @@
 				"D": "Difference"
 			},
 			"Comments": "Use when L (large) is D (difference) more than S (small)"
+		},
+		{
+			"Name": "A2",
+			"Equation": "Sum = AddA + AddB",
+			"Mapping": {
+				"Sum": "Sum",
+				"AddA": "Addend 1",
+				"AddB": "Addend 2"
+			},
+			"Comments": "The sum of two values."
+		},
+		{
+			"Name": "A3",
+			"Equation": "Sum = AddA + AddB + AddC",
+			"Mapping": {
+				"Sum": "Sum",
+				"AddA": "Addend 1",
+				"AddB": "Addend 2",
+				"AddC": "Addend 3"
+			},
+			"Comments": "The sum of three values."
+		},
+		{
+			"Name": "A4",
+			"Equation": "Sum = AddA + AddB + AddC + AddD",
+			"Mapping": {
+				"Sum": "Sum",
+				"AddA": "Addend 1",
+				"AddB": "Addend 2",
+				"AddC": "Addend 3",
+				"AddD": "Addend 4"
+			},
+			"Comments": "The sum of four values."
 		}
 	],
 	"Multiplication Schemas": [{
-			"Name": "DRT",
-			"Equation": "D = R * T",
+			"Name": "Rate",
+			"Equation": "R = S / T",
 			"Mapping": {
-				"D": "Distance",
+				"S": "Distance or Stuff",
 				"R": "Rate",
 				"T": "Time"
 			},
-			"Comments": "This is used for any problem that talks about a rate per unit of time, such as miles per hour, feet per second, gallons per hour, jobs done per hour, pizzas eaten per minute, etc. The slots are: Rate:  The amount of X per unit of time, Distance:  The amount of X accumulated over the given time, Time:  The amount of time."
+			"Comments": "If a vehicle travels distance D during time T, then its rate R is D/T. If something consumes or produces S stuff during time T, then its rate R is S/T."
 		},
 		{
 			"Name": "Unit Cost",
@@ -107,14 +150,23 @@
 			"Comments": "If the total cost (or other quantity) of a set of object is mentioned along with the cost per object, then use this.  Used for any problem talking about rate per object, e.g.,  Calories per candy, weight per car, nuts per tree.   The slots are: TotalCost is the total cost of the set of objects, NumberUnits is the number of objects, UnitCost is the cost per object."
 		},
 		{
-			"Name": "Wet solutions",
-			"Equation": "I = S * P",
+			"Name": "Mixture",
+			"Equation": "IA = IP * WA",
 			"Mapping": {
-				"I": "Amount of Ingredient",
-				"S": "Amount of Solution",
-				"P": "Proportion of I to S"
+				"IA": "Amount of Ingredient",
+				"WA": "Amount of Whole Mixture",
+				"IP": "Proportion of Ingredient to Whole"
 			},
 			"Comments": "If a drink is composed of water and alcohol (or any substance is composed of a filler and an active ingredient, e.g., acid in a water solution, fat in sausage), then Amount of Ingredient is the amount of alcohol, measured by weight or volume, Amount of Solution is the total amount of the drink, measured by weight or volume, Proportion of I to S is the proportion (converted from a percentage or proof) of alcohol in the drink."
+		},
+		{
+			"Name": "Invert",
+			"Equation": "1 = AperB * BperA",
+			"Mapping": {
+				"AperB": "Amount of A per B",
+				"BperA": "Amount of B per A"
+			},
+			"Comments": "Sometimes you need to invert a quantity in order to use it in a calculation."
 		},
 		{
 			"Name": "Map scale",
@@ -125,6 +177,39 @@
 				"MD": "MapDistance"
 			},
 			"Comments": "If a problem mentions a certain distance in the world corresponds to a certain distance on a map (e.g., 250 miles per inch), then the slots are Distance is the distance in the real world, MapDistance is the distance on the map, MapScale is the map’s scale.  However, MapScale sometimes needs adjustment.  If the problem says “250 miles per quarter inch” then we need to convert that to “1000 miles per inch” and then use 1000 as MapScale because MapDistance is measured in inches, not quarter inches."
+		},
+		{
+			"Name": "M2",
+			"Equation": "Prod = MulA * MulB",
+			"Mapping": {
+				"Prod": "Product",
+				"MulA": "Multiplicand 1",
+				"MulB": "Multiplicand 2"
+			},
+			"Comments": "The product of two multiplicands."
+		},
+		{
+			"Name": "M3",
+			"Equation": "Prod = MulA * MulB * MulC",
+			"Mapping": {
+				"Prod": "Product",
+				"MulA": "Multiplicand 1",
+				"MulB": "Multiplicand 2",
+				"MulC": "Multiplicand 3"
+			},
+			"Comments": "The product of three multiplicands."
+		},
+		{
+			"Name": "M4",
+			"Equation": "Prod = MulA * MulB * MulC * MulD",
+			"Mapping": {
+				"Prod": "Product",
+				"MulA": "Multiplicand 1",
+				"MulB": "Multiplicand 2",
+				"MulC": "Multiplicand 3",
+				"MulD": "Multiplicand 4"
+			},
+			"Comments": "The product of four multiplicands."
 		}
 	],
 	"Other schemas": [{
