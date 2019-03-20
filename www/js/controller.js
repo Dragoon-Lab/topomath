@@ -241,6 +241,16 @@ define([
 					if(myThis.nodeType == "equation"){
 						console.log("starting hide", myThis.equationEntered);
 						var equation = registry.byId("equationInputbox");
+					
+						if(equation.value && myThis.checkForSlotDuplicates(equation.value)){
+							myThis.applyDirectives([{
+								id: "crisisAlert",
+								attribute: "open",
+								value: "The same variable cannot be used in multiple slots. Please correct the duplicate variable."
+							}]);
+							return;
+						}
+
 						//if the equation is in the box but has not been checked(or entered) and deleteNode is not calling for this function or if equation is changed after validating in author mode
 						if((equation.value && !myThis.equationEntered && !myThis.deleteNodeActivated)|| (equation.displayedValue !== equation.value)){
 							//call equation done handler(equation done handlers in one of the modes will be called based on current mode)
@@ -1468,6 +1478,19 @@ define([
 			if (charCode && null === String.fromCharCode(charCode).match("[ a-zA-Z0-9;]")){
 				event.stop(evt);
 			}
+		},
+		checkForSlotDuplicates: function(eqn){
+			var varAr = expression.getVariableStrings(eqn);
+			var finalList = [];
+			array.forEach(varAr, function(variable){
+				if(!finalList.includes(variable))
+					finalList.push(variable);
+			});
+			var slotCount = Object.keys(this.slotMap).length;
+			if(finalList.length === slotCount)
+				return false;
+			else
+				return true;
 		}
 	});
 });
