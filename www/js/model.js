@@ -1358,7 +1358,7 @@ define([
 				var type = this.getType(studentID);
 				update("description", "authoredID");
 				if(type === "quantity"){
-					update("variable");
+					//update("variable");
 					update("variableType");
 					update("value");
 					update("units");

@@ -151,6 +151,20 @@ define([
 							returnObj.push({id:"message", attribute:"append", value:message});
 						}
 					break;
+					case "variableName":
+						console.log()
+						if(!nodeID && validInput){
+							returnObj.push({id:"message", attribute:"append", value:"node name is available for use"});
+							returnObj.push({id:"variable", attribute:"status", value:"correct"});
+						}else if(!validInput){
+							returnObj.push({id:"message", attribute:"append", value:"Please enter a valid name without using numbers"});
+							returnObj.push({id:"variable", attribute:"status", value:"incorrect"});
+						}else{
+							returnObj.push({id:"message", attribute:"append", value:"Node name is already in use"});
+							returnObj.push({id:"variable", attribute:"status", value:"incorrect"});
+						}
+						//console.log("return obj is",returnObj);
+						break;
 
 					/*
 					case "variableSlot":
@@ -242,13 +256,20 @@ define([
 		},
 		handleVariableName: function(name){
 			console.log("Handle variable Name ", name);
-			this._model.active.setVariable(this.currentID, name);
+			var nameID = this._model.student.getNodeIDByName(name);
+			this.applyDirectives(this.studentPM.process(nameID? !(nameID==this.currentID):null,'variableName',name, expression.isVariable(name)));
+			if(!this._model.student.getNodeIDByName(name) && expression.isVariable(name)){
+				// check all nodes in the model for equations containing name of this node
+				// replace name of this node in equation with its ID
+				this._model.active.setVariable(this.currentID, name);
+				this.updateNodes();
+			} else {
+				//logging the error case
+			}
+			/*
 			if(!this._model.student.getAuthoredID(this.currentID))
 				this._model.student.setAuthoredID(this.currentID);
-			if (name == 'defaultSelect') {
-				return; // don't do anything if they choose default
-			}
-			this.applyDirectives(this._PM.processAnswer(this.currentID, 'variable', name));
+			*/
 		},
 		handleValue: function(value){
 			console.log("Handle Value ", value);
