@@ -610,6 +610,7 @@ define([
 						var curDesc = authorModel.getDescription(this._model.student.getAuthoredID(nodeid));
 						qtyDescWidget.addOption({value: curDesc,label: curDesc});
 						this.applyDirectives(this.studentPM.process(nodeid, "qtyDescription", curDesc, curDesc, "A valid description has been entered",));
+						this._model.student.setDescription(nodeid, curDesc);
 						this.disableTypeValueUnits(false);
 					}
 				}
