@@ -242,7 +242,7 @@ define([
 						console.log("starting hide", myThis.equationEntered);
 						var equation = registry.byId("equationInputbox");
 					
-						if(equation.value && myThis.checkForSlotDuplicates(equation.value)){
+						if(equation.value && !myThis.deleteNodeActivated &&  myThis.checkForSlotDuplicates(equation.value)){
 							myThis.applyDirectives([{
 								id: "crisisAlert",
 								attribute: "open",
@@ -280,10 +280,11 @@ define([
 							//if not throw a crisis alert message
 							if(equation.value && !myThis.equationEntered){
 								//Crisis alert popup if equation not checked
+								/*
 								myThis.applyDirectives([{
 									id: "crisisAlert", attribute:
 										"open", value: "Initial Student Expression value is not checked!  Go back and check your expression to verify it is correct, or delete the expression, before closing the node editor."
-								}]);
+								}]); */
 							}
 							else{
 								// Else, do normal closeEditor routine and hide
@@ -1480,17 +1481,25 @@ define([
 			}
 		},
 		checkForSlotDuplicates: function(eqn){
-			var varAr = expression.getVariableStrings(eqn);
-			var finalList = [];
-			array.forEach(varAr, function(variable){
-				if(!finalList.includes(variable))
-					finalList.push(variable);
-			});
-			var slotCount = Object.keys(this.slotMap).length;
-			if(finalList.length === slotCount)
+			try{
+				var varAr = expression.getVariableStrings(eqn);
+				var finalList = [];
+				array.forEach(varAr, function(variable){
+					if(!finalList.includes(variable))
+						finalList.push(variable);
+				});
+				var slotCount = Object.keys(this.slotMap).length;
+				if(finalList.length === slotCount)
+					return false;
+				else
+					return true;
+			}
+			catch(err){
+				console.log("Parser error: ", err);
+				console.log(err.message);
+				console.log(err.Error);
 				return false;
-			else
-				return true;
+			}
 		}
 	});
 });

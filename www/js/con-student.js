@@ -52,6 +52,7 @@ define([
 			this.demoParse = null;
 			this.studentControls();
 			this.variableUpdateBySystem = false;
+			this.deleteNodeActivated = false;
 		},
 		studentPM:{
 			process: function(nodeID, nodeType, value, validInput, message, attemptCount, correctAnswer){
