@@ -76,13 +76,10 @@ define([
 		// list of parent divs for toggle display for directives.
 		// fields over written in con-student
 		genericDivMap: {
-			description: 'descriptionInputboxContainerStudent',
-			variable: 'variableInputboxContainerStudent',
 			variableType: 'variableTypeContainer',
 			value: "valueInputboxContainer",
 			units: "unitsSelectorContainerStudent",
 			equation: "expressionDiv"
-			//inputs: "inputSelectorContainerStudent"
 		},
 		// A list of all widgets.  (The constructor mixes this with controlMap)
 		widgetMap: {
@@ -111,7 +108,7 @@ define([
 					//"operationsQuestionMark": "Click one of these to enter it in the expression above. <br> See the Help menu at the top of the screen for a list of other mathematical operators and functions that you can type in.",
 					"questionMarkRoot": "Indicates that this variable is one the problem will ask the student to solve for",
 					"descriptionQuestionMark": "A description for this equation",
-					"descriptionQuestionMarkStudent": "A description for this equation",
+					//"descriptionQuestionMarkStudent": "A description for this equation",
 					"entityDescriptionQuestionMark": "Enter a list of valid entity names, separated by semicolons",
 					"entityDescriptionQuestionMarkStudent":"Select the entity this schema is about.",
 					"variableSlotNamesQuestionMark": "This section contains variable names to choose from or type in for the selected schema"

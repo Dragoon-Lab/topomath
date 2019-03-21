@@ -256,16 +256,6 @@
 					</span>
 					<input id="descriptionInputbox" data-dojo-type="dijit/form/TextBox">
 				</div>
-
-				<div id="descriptionInputboxContainerStudent" class="fieldgroup" style="display: none;">
-					<span class="fixedwidth">
-						<div id="descriptionQuestionMarkStudent" class="questionMark"></div>
-						<label for="selectDescription">Description</label>
-					</span>
-					<select id="selectDescription" data-dojo-type="dijit/form/Select">
-						<option value='defaultSelect'>--Select--</option>
-					</select>
-				</div>
 			</div>
 
 			<div class="fieldgroup">
@@ -322,13 +312,6 @@
 					<option value='test2'>test2</option>
 				</select>
 			</div> 
-
-			<div id="variableInputboxContainerStudent" class="fieldgroup" style="display: none;">
-				<label for="variableInputboxStudent">Variable Name</label>
-				<select id="variableInputboxStudent" data-dojo-type="dijit/form/Select">
-					<option value='defaultSelect'>--Select--</option>
-				</select>
-			</div>
 
 			<div id="variableTypeContainer" class="fieldgroup" style="display: none;">
 				<span class="fixedwidth">

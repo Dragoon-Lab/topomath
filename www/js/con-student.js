@@ -526,7 +526,7 @@ define([
 					schema = "";
 				registry.byId(this.controlMap.schemas).set('value', schema);
 				var count = 0;
-				this.applyDirectives(this.studentPM.process(nodeid, "schema", schema, schema, "", this._model.student.getAttemptCount(this.currentID, "schema")));
+				//this.applyDirectives(this.studentPM.process(nodeid, "schema", schema, schema, "", this._model.student.getAttemptCount(this.currentID, "schema")));
 				this.schema = schema;
 
 				//for the entity select load entities
@@ -545,7 +545,7 @@ define([
 				if(!entVal)
 					entVal = "";
 				registry.byId(this.controlMap.entity).set('value', entVal);
-				this.applyDirectives(this.studentPM.process(nodeid, "entity", entVal, entVal, "", this._model.student.getAttemptCount(this.currentID, "entity")));
+				//this.applyDirectives(this.studentPM.process(nodeid, "entity", entVal, entVal, "", this._model.student.getAttemptCount(this.currentID, "entity")));
 				this.entity = entVal;
 
 				//disable the description and equation fields
@@ -558,7 +558,7 @@ define([
 				var schemaAttempt = this._model.student.getAttemptCount(this.currentID, "schema");
 				if(entityAttempt >=2 || schemaAttempt >=2)
 					descAttempt = "yellow";
-				this.applyDirectives(this.studentPM.process(nodeid, "description", description, description, "", descAttempt));
+				//this.applyDirectives(this.studentPM.process(nodeid, "description", description, description, "", descAttempt));
 				
 				this.updateEqnDelete();
 				//set up equation
@@ -581,10 +581,21 @@ define([
 				equationWidget.set('disabled', true);	
 			}
 			else if(nodeType == "quantity"){
+				// Apply settings from PM
+				console.log("Initial Control Settings for Student Quantity Node");
+				var directives = this._model.student.getStatusDirectives(nodeid);
+				console.log("statusDirectives: ",directives)
+				var nodeDirectives = this._PM.getNodeDisplayStatus(nodeid);
+				console.log("nodeDirectives: ",nodeDirectives)
+				array.forEach(directives, function(directive){
+					if(directive.attribute == "status"){
+						nodeDirectives = nodeDirectives.concat(this._PM.getNodeDisplayStatus(nodeid, directive.id,directive.value));
+					}
+				}, this);
+				console.log("updated nodeDirectives: ",nodeDirectives)
 				console.log("a quantity node has been opened");
 				var variable = this._model.student.getName(nodeid);
 				registry.byId(this.controlMap.variable).set('value', variable || '');
-				this.applyDirectives(this.studentPM.process(nodeid, "variable", variable, variable, ""));
 				var parSchema = this._model.student.getParentSchema(nodeid);
 				var parEquation = this._model.student.getParentEquation(nodeid);
 				console.log("qty node details", this._model.student.getParentSchema(nodeid), this._model.student.getParentEquation(nodeid), this._model.student.getSelfEquation(nodeid));
@@ -600,7 +611,7 @@ define([
 					
 					if(rightSelfAr.includes(variable)){
 						if(studDesc){
-							this.applyDirectives(this.studentPM.process(nodeid, "qtyDescription", studDesc, studDesc, "A valid description has been entered"));
+							//this.applyDirectives(this.studentPM.process(nodeid, "qtyDescription", studDesc, studDesc, "A valid description has been entered"));
 							this.disableTypeValueUnits(false);
 						}
 						else{
@@ -617,7 +628,7 @@ define([
 									qtyDescWidget.removeOption({value: existingDesc, label: existingDesc});
 							});
 							console.log("till now descriptions", tillNowDescs);
-							this.applyDirectives(this.studentPM.process(nodeid, "qtyDescription", studDesc, studDesc, ""));
+							//this.applyDirectives(this.studentPM.process(nodeid, "qtyDescription", studDesc, studDesc, ""));
 						}
 					}
 					else{
@@ -659,7 +670,6 @@ define([
 				});
 				if(curUnit){
 					u.set('value', curUnit);
-					//this.applyDirectives(this.studentPM.process(nodeid, "units", curUnit, curUnit ));
 				}
 				var prevSelected = query("input[name='variableType']:checked")[0] ? query("input[name='variableType']:checked")[0].value : undefined;
 				if(prevSelected)
@@ -667,26 +677,11 @@ define([
 				if(varType){
 					registry.byId(varType+"Type").set('checked', true);
 					this.variableTypeControls(this.currentID, varType);
-					this.applyDirectives(this._PM.processAnswer(this.currentID, 'variableType', varType));
-				}
-				if(curVal){
-					this.applyDirectives(this._PM.processAnswer(this.currentID, 'value', curVal));
-				}
-				if(curUnit)
-					this.handleUnits(curUnit);
-
+				}			
+				this.applyDirectives(nodeDirectives);
 			}
-			/*
-			// Apply settings from PM
-			console.log("Initial Control Settings for Student");
-			var directives = this._model.student.getStatusDirectives(nodeid);
-			var nodeDirectives = this._PM.getNodeDisplayStatus(nodeid);
-			array.forEach(directives, function(directive){
-				if(directive.attribute == "status"){
-					nodeDirectives = nodeDirectives.concat(this._PM.getNodeDisplayStatus(nodeid, directive.id,directive.value));
-				}
-			}, this);
-
+			
+		        /*
 			var d = registry.byId(this.controlMap.description);
 			
 			console.log("description widget = ", d, this.controlMap.description);
@@ -740,10 +735,10 @@ define([
 			if(_variableType){
 				registry.byId(_variableType+"Type").set('checked', 'checked');
 			}
-
-			this.applyDirectives(nodeDirectives);
-			style.set(this.genericDivMap.inputs, "display", "block");
 			*/
+			
+			//style.set(this.genericDivMap.inputs, "display", "block");
+			
 		},
 
 		verifyVariableSlots: function(){
