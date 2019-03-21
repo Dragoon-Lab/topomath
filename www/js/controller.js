@@ -593,7 +593,7 @@ define([
 			var delButton = dom.byId('deleteButton');
 			on(delButton, mouse.enter, function(){
 				if(registry.byId("deleteButton").get("disabled"))
-					toolTip.show("Note: Quantities can only be deleted when they are not part of any equation.", delButton);
+					toolTip.show("Note: Quantities can only be deleted when they are not part of any equation.  Equations can only be deleted before their schema and entity are selected.", delButton);
 			});
 
 			on(delButton, mouse.leave, function(){
