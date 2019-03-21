@@ -1465,9 +1465,17 @@ define([
 			var eqList = this._model.active.getAllEquations();
 			var currentID = this.currentID;
 			var found = array.some(eqList,function(currentEq){
-				var currentVars = expression.getVariableStrings(currentEq.equation);
-				if(currentVars.includes(currentID))
-					return true;
+				try{
+					var currentVars = expression.getVariableStrings(currentEq.equation);
+					if(currentVars.includes(currentID))
+						return true;
+				}
+				catch(err){
+					//later we can log these
+					console.log("Parser error: ", err);
+					console.log(err.message);
+					console.log(err.Error);
+				}
 			});
 			return !found;
 		},
