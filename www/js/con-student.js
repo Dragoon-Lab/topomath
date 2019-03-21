@@ -526,7 +526,7 @@ define([
 					schema = "";
 				registry.byId(this.controlMap.schemas).set('value', schema);
 				var count = 0;
-				//this.applyDirectives(this.studentPM.process(nodeid, "schema", schema, schema, "", this._model.student.getAttemptCount(this.currentID, "schema")));
+				this.applyDirectives(this.studentPM.process(nodeid, "schema", schema, schema, "", this._model.student.getAttemptCount(this.currentID, "schema")));
 				this.schema = schema;
 
 				//for the entity select load entities
@@ -545,7 +545,7 @@ define([
 				if(!entVal)
 					entVal = "";
 				registry.byId(this.controlMap.entity).set('value', entVal);
-				//this.applyDirectives(this.studentPM.process(nodeid, "entity", entVal, entVal, "", this._model.student.getAttemptCount(this.currentID, "entity")));
+				this.applyDirectives(this.studentPM.process(nodeid, "entity", entVal, entVal, "", this._model.student.getAttemptCount(this.currentID, "entity")));
 				this.entity = entVal;
 
 				//disable the description and equation fields
@@ -558,7 +558,7 @@ define([
 				var schemaAttempt = this._model.student.getAttemptCount(this.currentID, "schema");
 				if(entityAttempt >=2 || schemaAttempt >=2)
 					descAttempt = "yellow";
-				//this.applyDirectives(this.studentPM.process(nodeid, "description", description, description, "", descAttempt));
+				this.applyDirectives(this.studentPM.process(nodeid, "description", description, description, "", descAttempt));
 				
 				this.updateEqnDelete();
 				//set up equation
