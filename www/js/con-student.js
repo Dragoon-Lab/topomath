@@ -474,6 +474,7 @@ define([
 			//make display none for all fields initially
 			//removed optionality container from initial view settings
 			//TODO: further clean up necessary after discussion
+			this.deleteNodeActivated = false;
 			if(type == "quantity"){
 				this.eqElements.forEach(function(elem){
 					console.log("element",elem);
