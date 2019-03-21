@@ -389,7 +389,8 @@ define([
 				this.entity = entity;
 			}
 			this.applyDirectives(returnObj);
-			this._model.student.setEntities(this.currentID, entity);	
+			this._model.student.setEntities(this.currentID, entity);
+			this.updateEqnDelete();
 			this.updateEquationDescription();
 			this.updateSlotVariables();
 			this.updateEquation();
@@ -559,6 +560,7 @@ define([
 					descAttempt = "yellow";
 				this.applyDirectives(this.studentPM.process(nodeid, "description", description, description, "", descAttempt));
 				
+				this.updateEqnDelete();
 				//set up equation
 				var eqVal = this._model.student.getEquation(nodeid);
 				if(eqVal){
@@ -945,6 +947,19 @@ define([
 		activateDeleteNode: function(){
 			this.deleteNodeActivated = true;
 		},
+		updateEqnDelete: function(){
+			if(this.schema != "" || this.entity != ""){
+				var getEntStatus = this._model.student.getStatus(this.currentID, "entity");
+				console.log("del status", getEntStatus);
+				if( getEntStatus.status == "correct" || getEntStatus.status == "demo"){
+					//disable delete
+					registry.byId("deleteButton").set("disabled",true);
+				}
+				else{
+					registry.byId("deleteButton").set("disabled", false);
+				}
+			}
+		}
 	});
 });
 
