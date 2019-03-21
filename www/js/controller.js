@@ -106,11 +106,14 @@ define([
 					"valueQuestionMark": "This is a number, typically given to you in the system description.",
 					"variableInputboxQuestionMark": "The name of the variable used in equations",
 					"qtyDescriptionQuestionMark": "Describes the quantity represented by the variable",
+					"qtyDescriptionQuestionMarkStudent": "Select a description for the quantity represented by the variable",
 					"variableTypeQuestionMark": "Parameters are quantities whose values are known (or given in the system description). Unknowns are not given, but can be solved for by TopoMath if there are enough equations",
 					//"operationsQuestionMark": "Click one of these to enter it in the expression above. <br> See the Help menu at the top of the screen for a list of other mathematical operators and functions that you can type in.",
 					"questionMarkRoot": "Indicates that this variable is one the problem will ask the student to solve for",
-					"descriptionQuestionMark": "Select a description for node",
+					"descriptionQuestionMark": "A description for this equation",
+					"descriptionQuestionMarkStudent": "A description for this equation",
 					"entityDescriptionQuestionMark": "Enter a list of valid entity names, separated by semicolons",
+					"entityDescriptionQuestionMarkStudent":"Select the entity this schema is about.",
 					"variableSlotNamesQuestionMark": "This section contains variable names to choose from or type in for the selected schema"
 		},
 		constructor: function(mode, model, config, fixPosition){
