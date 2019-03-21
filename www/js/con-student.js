@@ -954,9 +954,11 @@ define([
 				if( getEntStatus.status == "correct" || getEntStatus.status == "demo"){
 					//disable delete
 					registry.byId("deleteButton").set("disabled",true);
+					this._model.student.setCanDelete(this.currentID,false);
 				}
 				else{
 					registry.byId("deleteButton").set("disabled", false);
+					this._model.student.setCanDelete(this.currentID,true);
 				}
 			}
 		}
