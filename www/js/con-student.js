@@ -773,12 +773,26 @@ define([
 					else{
 						//this.applyDirectives(this.studentPM.process(this.currentID, "variableSlot", slot_id, false, "the variable is incorrect", this));
 						if(this._model.student.getSlotStatus(this.currentID, slot_id) == "incorrect"){
-							this._model.student.setSlotStatus(this.currentID, slot_id, "demo");
-							style.set(dojo.byId("widget_holder"+this.schema+this.currentID+slot_id), 'backgroundColor', 'yellow');
 							var studID = this._model.student.getNodeIDFor(original_Ar[i]);
 							var studName = this._model.student.getName(studID);
+							if(!studName){
+								var tempName =  this._model.authored.getName(original_Ar[i]);
+								var authNameValid = false;
+								while(!authNameValid){
+									var nameAlreadyExists = this._model.student.getNodeIDByName(tempName);
+									if(!nameAlreadyExists){
+										studName = tempName;
+										authNameValid = true;
+									}
+									else{
+										tempName = tempName + "1";
+									}
+								}
+							}
 							registry.byId("holder"+this.schema+this.currentID+slot_id).set("value", studName);
 							registry.byId("holder"+this.schema+this.currentID+slot_id).set("disabled", true);
+							this._model.student.setSlotStatus(this.currentID, slot_id, "demo");
+							style.set(dojo.byId("widget_holder"+this.schema+this.currentID+slot_id), 'backgroundColor', 'yellow');
 							this.variableUpdateBySystem = true;
 						}
 						else{

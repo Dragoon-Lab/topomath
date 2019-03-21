@@ -1341,6 +1341,7 @@ define([
 				console.log("student id is", studentID, node);				
 				var rank = {
 					"incorrect": 3,
+					"partial": 2.5,
 					"demo": 2,
 					"correct": 1,
 					"": 0
@@ -1367,7 +1368,9 @@ define([
 					update("entity");
 					update("equation");
 				}
-
+				if(bestStatus == "partial"){
+					bestStatus = "incorrect";
+				}
 				return bestStatus;
 			},
 			getRequiredNodeCount: function(){
