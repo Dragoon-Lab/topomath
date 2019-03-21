@@ -196,7 +196,7 @@ define([
 		variableNodeControls: ["variable","value","units"],
 		equationNodeControls: ["equation","schemas","entity"],
 		commonNodeControls: ["modelType","description"],
-		qtyElements: ["qtyDescriptionInputboxContainerStudent","variableTypeContainer","variableInputboxContainer","valueInputboxContainer"],
+		qtyElements: ["qtyDescriptionInputboxContainerStudent","variableTypeContainer","variableInputboxContainer", "unitsSelectorContainerStudent"],
 		eqElements: ["descriptionInputboxContainer","expressionDiv","schemaSelectorContainer","entitySelectorStudentContainer","variableSlotControlsContainer"],
 
 		/*
@@ -212,8 +212,8 @@ define([
 			style.set('descriptionInputboxContainer', 'display', 'inline-block');
 			style.set('qtyDescriptionInputboxContainerStudent', 'display', 'inline-block');
 			style.set('variableInputboxContainer', 'display', 'inline-block');
-			style.set('valueInputboxContainer', 'display', 'block');
-			//style.set('unitsSelectorContainer', 'display', 'block');
+			//style.set('valueInputboxContainer', 'display', 'block');
+			style.set('unitsSelectorContainerStudent', 'display', 'block');
 			style.set('expressionDiv', 'display', 'block');
 			//This has been removed in new author mode editor design
 			//style.set('inputSelectorContainer', 'display', 'block');
