@@ -275,21 +275,26 @@ define([
 							}
 						} // if the mode is author and user has selected to enter student values (" given ")
 						else if(myThis._model.active.isStudentMode() && registry.byId("modelSelector").value == "authored"){
-							equation = registry.byId(myThis.controlMap["equation"]);
+							//equation = registry.byId(myThis.controlMap["equation"]);
+							
 							//equation value in this case if from equationInputboxStudent and check if the value is entered/checked
 							//if not throw a crisis alert message
+							/*
 							if(equation.value && !myThis.equationEntered){
 								//Crisis alert popup if equation not checked
-								/*
+								
 								myThis.applyDirectives([{
 									id: "crisisAlert", attribute:
 										"open", value: "Initial Student Expression value is not checked!  Go back and check your expression to verify it is correct, or delete the expression, before closing the node editor."
-								}]); */
+								}]); 
 							}
 							else{
 								// Else, do normal closeEditor routine and hide
 								myThis.hideCloseNodeEditor(doHide);
 							}
+							*/
+							//there is no case of equation not checked for now in new reconstruction mode, so above case has been commented out and we directly hide the editor
+							myThis.hideCloseNodeEditor(doHide);
 						}else{ // this case implies either equation box is empty or value has already been checked/entered
 							// Else, do normal closeEditor routine and hide
 							myThis.hideCloseNodeEditor(doHide);
