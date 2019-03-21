@@ -259,7 +259,7 @@
 
 				<div id="descriptionInputboxContainerStudent" class="fieldgroup" style="display: none;">
 					<span class="fixedwidth">
-						<div id="descriptionQuestionMark" class="questionMark"></div>
+						<div id="descriptionQuestionMarkStudent" class="questionMark"></div>
 						<label for="selectDescription">Description</label>
 					</span>
 					<select id="selectDescription" data-dojo-type="dijit/form/Select">
@@ -313,7 +313,7 @@
 			</div> 
 			<div id="qtyDescriptionInputboxContainerStudent" class="fieldgroup" style="display: none;">
 				<span class="fixedwidth">
-					<div id="qtyDescriptionQuestionMark" class="questionMark"></div>
+					<div id="qtyDescriptionQuestionMarkStudent" class="questionMark"></div>
 					<label for="qtyDescriptionInputboxStudent">Description</label>
 				</span>
 				<select id="qtyDescriptionInputboxStudent" data-dojo-type="dijit/form/Select">
