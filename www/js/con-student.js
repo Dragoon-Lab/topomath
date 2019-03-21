@@ -679,6 +679,7 @@ define([
 					this.variableTypeControls(this.currentID, varType);
 				}			
 				this.applyDirectives(nodeDirectives);
+				registry.byId(this.controlMap.variable).set("disabled",false);
 			}
 			
 		        /*
