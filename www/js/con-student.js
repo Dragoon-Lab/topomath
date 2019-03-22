@@ -611,10 +611,13 @@ define([
 					
 					if(rightSelfAr.includes(variable)){
 						if(studDesc){
-							//this.applyDirectives(this.studentPM.process(nodeid, "qtyDescription", studDesc, studDesc, "A valid description has been entered"));
+							qtyDescWidget.addOption({value: studDesc,label: studDesc});
+							this.applyDirectives(this.studentPM.process(nodeid, "qtyDescription", studDesc, studDesc, "A valid description has been entered",));
+							this._model.student.setDescription(nodeid, studDesc);
 							this.disableTypeValueUnits(false);
 						}
 						else{
+							this.applyDirectives(this.studentPM.process(nodeid, "qtyDescription", "", "", ""));
 							qtyDescWidget.set("disabled", false);
 							qtyDescWidget.addOption({value: 'defaultSelect',label: 'choose a description'});
 							array.forEach(rightVarAr, function(rightVar){
@@ -628,7 +631,6 @@ define([
 									qtyDescWidget.removeOption({value: existingDesc, label: existingDesc});
 							});
 							console.log("till now descriptions", tillNowDescs);
-							//this.applyDirectives(this.studentPM.process(nodeid, "qtyDescription", studDesc, studDesc, ""));
 						}
 					}
 					else{
