@@ -60,8 +60,8 @@
 			"Equation": "GS = AS + WS",
 			"Mapping": {
 				"GS": "Ground Speed",
-				"WS": "Speed of Carrier",
-				"AS": "Speed Relative to Carrier"
+				"AS": "Speed Relative to Carrier",
+				"WS": "Speed of Carrier"
 			},
 			"Comments": "If a vehicle travels through a moving medium (e.g., airplane in wind; boat on river current), and the vehicle is travelling the same direction as the medium (i.e., with a tailwind for the airplane; downstream for the boat), then slots are: GroundSpeed is the rate of the vehicle relative to land, AirSpeed is the rate of the vehicle relative to the medium, Windspeed is the rate of the medium (i.e., wind’s speed; river current’s speed)."
 		},
@@ -70,8 +70,8 @@
 			"Equation": "GS = AS - WS",
 			"Mapping": {
 				"GS": "Ground Speed",
-				"WS": "Speed of Carrier",
-				"AS": "Speed Relative to Carrier"
+				"AS": "Speed Relative to Carrier",
+				"WS": "Speed of Carrier"
 			},
 			"Comments": "If a vehicle travels through a moving medium (e.g., airplane in wind; boat on river current), and the vehicle is travelling in the opposite direction to the medium (i.e., with a headwind for the airplane; upstream for the boat), then slots are: GroundSpeed is the rate of the vehicle relative to the land, AirSpeed is the rate of the vehicle relative to the medium (i.e., how fast the plane or boat travels in still air or still water), WindSpeed is the rate of the medium (i.e., wind’s speed; river current’s speed)"
 		},
