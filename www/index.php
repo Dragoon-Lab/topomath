@@ -6,7 +6,7 @@
 	<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 	<title>TopoMath</title>
 	<link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon"/>
-	<link rel="stylesheet" href="css/fontawesome.min.css">
+	<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
 	<link rel="stylesheet" href="./dijit/themes/claro/claro.css">
 
 	<script type="text/javascript">
@@ -234,6 +234,19 @@
 				</span>
 				<input id="entityInputbox" data-dojo-type="dijit/form/TextBox">
 			</div>
+
+
+			<div id="entitySelectorStudentContainer" class="fieldgroup" style="display: none;">
+				<span class="fixedwidth">
+					<div id="entityDescriptionQuestionMarkStudent" class="questionMark"></div>
+					<label for="entitySelectorStudent">Entity</label>
+				</span>
+				<select id="entitySelectorStudent" data-dojo-type="dijit/form/Select">
+					<option value='defaultSelect'>Select an entity</option>
+				</select>
+			</div>
+
+
 			<div class="fieldgroup">
 
 				<div id="descriptionInputboxContainer" class="fieldgroup" style="display: none;">
@@ -242,16 +255,6 @@
 						<label for="descriptionInputbox">Description</label>
 					</span>
 					<input id="descriptionInputbox" data-dojo-type="dijit/form/TextBox">
-				</div>
-
-				<div id="descriptionInputboxContainerStudent" class="fieldgroup" style="display: none;">
-					<span class="fixedwidth">
-						<div id="descriptionQuestionMark" class="questionMark"></div>
-						<label for="selectDescription">Description</label>
-					</span>
-					<select id="selectDescription" data-dojo-type="dijit/form/Select">
-						<option value='defaultSelect'>--Select--</option>
-					</select>
 				</div>
 			</div>
 
@@ -297,14 +300,18 @@
 					<label for="qtyDescriptionInputbox">Description</label>
 				</span>
 				<input id="qtyDescriptionInputbox" data-dojo-type="dijit/form/TextBox">
-			</div>
-
-			<div id="variableInputboxContainerStudent" class="fieldgroup" style="display: none;">
-				<label for="variableInputboxStudent">Variable Name</label>
-				<select id="variableInputboxStudent" data-dojo-type="dijit/form/Select">
+			</div> 
+			<div id="qtyDescriptionInputboxContainerStudent" class="fieldgroup" style="display: none;">
+				<span class="fixedwidth">
+					<div id="qtyDescriptionQuestionMarkStudent" class="questionMark"></div>
+					<label for="qtyDescriptionInputboxStudent">Description</label>
+				</span>
+				<select id="qtyDescriptionInputboxStudent" data-dojo-type="dijit/form/Select">
 					<option value='defaultSelect'>--Select--</option>
+					<option value='test1'>test1</option>
+					<option value='test2'>test2</option>
 				</select>
-			</div>
+			</div> 
 
 			<div id="variableTypeContainer" class="fieldgroup" style="display: none;">
 				<span class="fixedwidth">

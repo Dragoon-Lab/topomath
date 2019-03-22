@@ -118,7 +118,6 @@ define([
 			console.log("Position for the vertex : ",node.ID, " position: x ", node.position[0].x, " y: " + node.position[0].y);
 			var properties = this.getNodeUIProperties(node);
 			var htmlStrings = graphObjects.getNodeHTML(this._model, node.ID);
-
 			var vertices = [];
 			array.forEach(htmlStrings, function(html, count){
 				vertices[count] = this.createNodeDOM(node, html, count == 1);
@@ -232,6 +231,7 @@ define([
 			var hasClass = domClass.contains(domIDTags['parentDOM'], "incomplete");
 			var nodeStatus = this._model.getNodeStatus(node.ID);
 			var nodeStatusClass = nodeStatus ? this._statusClassMap[nodeStatus] : "";
+			console.log("node status details", nodeStatus, nodeStatusClass);
 			if(this._model.isStudentMode() && this._feedbackMode != "nofeedback"){
 				var _feedbackTags = ['fa-check','fa-star','fa-times','fa-minus'];
 				/*Updating tags each time model gets updated*/
@@ -261,6 +261,14 @@ define([
 			}else{
 				dojo.byId(domIDTags['parentDOM']).style.top = node.position[0].y+'px';
 				dojo.byId(domIDTags['parentDOM']).style.left = node.position[0].x+'px';
+			}
+
+			console.log("updating node, can delete", node.canDel, node.ID);
+			if(!node.canDel){
+				dijit.byId(node.ID+"delNodeTag").set("disabled", true);
+			}
+			else{
+				dijit.byId(node.ID+"delNodeTag").set("disabled", false);
 			}
 
 			//add to cache for next time
@@ -313,6 +321,7 @@ define([
 				var nodeStatusClass = this._model.getNodeStatus(node.ID);
 				nodeDOM.querySelector(".topomath-feedback").className += this._statusClassMap[nodeStatusClass];
 			}
+
 			this.makeDraggable(nodeDOM);
 			/*
 			Nodes are always draggable
@@ -334,6 +343,8 @@ define([
 			});
 			pMenu.addChild(new MenuItem({
 				label: "Delete Node",
+				disabled: true,
+				id: node.ID + "delNodeTag",
 				onClick: lang.hitch(this, function(){
 					this.deleteNode(node.ID);
 				})

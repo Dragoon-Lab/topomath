@@ -170,6 +170,8 @@ define([
 				controllerObject = new controlAuthor(query.m, _model, _config);
 			else if(query.m === "SEDITOR")
 				controllerObject = new controlEditor(query.m, _model, _config);
+			else if(query.m === "STUDENT")
+				controllerObject = new controlStudent(query.m, _model, _config);
 			/*
 			var controllerObject = (query.m === "AUTHOR") ?
 				new controlAuthor(query.m, _model, _config) :

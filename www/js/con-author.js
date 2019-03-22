@@ -15,7 +15,6 @@ define([
 	'dojo/_base/array',
 	'dojo/_base/declare',
 	'dojo/_base/lang',
-	'dojo/_base/event',
 	'dojo/dom-style',
 	'dojo/keys',
 	'dojo/ready',
@@ -26,16 +25,14 @@ define([
 	'dojo/dom-class',
 	"dojo/dom-style",
 	'dijit/registry',
-	'dijit/form/ComboBox',
 	'dojo/NodeList-dom',
 	'dojo/html',
 	'dojo/query',
 	'./controller',
 	"./equation",
 	"./typechecker",
-	"./popup-dialog",
 	"dojo/domReady!"
-], function(array, declare, lang, event, style, keys, ready, on, memory, aspect, dom, domClass, domStyle, registry, comboBox, domList, html, query, controller, equation, typechecker, popupDialog){
+], function(array, declare, lang, style, keys, ready, on, memory, aspect, dom, domClass, domStyle, registry, domList, html, query, controller, equation, typechecker){
 
 	// Summary:
 	//			MVC for the node editor, for authors
@@ -175,10 +172,6 @@ define([
 			//initialize error status array to track cleared expression for given model nodes
 			this.errorStatus =[];
 			ready(this, "initAuthorHandles");
-			this.schema = "";
-			this.slotMap = "";
-			this.entity = "";
-			this.description = "";
 			this.equation = "";
 			this.deleteNodeActivated = false;
 		},
@@ -700,12 +693,6 @@ define([
 		
 		handleErrorMessage: function(){
 			//Summary: Displays a message on opening node editor if expression was cleared
-		},
-
-		handleSchemaDisplay: function(){
-			var schemaDialog =  new popupDialog();
-			var schemaHtml = this.getSchemaHtml();
-			schemaDialog.showDialog("Schema Table", schemaHtml, [], "Close Table");
 		},
 
 		initialViewSettings: function(type){
@@ -1303,14 +1290,6 @@ define([
 				}				
 			}
 		},
-		updateEquationDescription: function(){
-			//var schema = registry.byId(this.controlMap.schemas).get("value");
-			if(this.schema == 'defaultSelect' || this.schema == null)
-				this.schema = '';
-			//entity part of description is tricky to extract, so a seperate function processEntityString handles it
-			this.description = this.schema+": "+this.entity;
-			registry.byId(this.controlMap.description).set("value", this.description);
-		},
 		processEntityString: function(entity){
 			var entityStr = ""+ entity;
 			var entityAr = entityStr.split(';');
@@ -1329,187 +1308,15 @@ define([
 			}
 			return {validValue: entityDesc, correctness: correctness};
 		},
-		updateSlotVariables: function(){
-			//var schema = registry.byId(this.controlMap.schemas).get("value");
-			this.slotMap = this.getSchemaProperty("Mapping", this.schema);
-			//for each of these combo boxes we have to generate the options	respectively
-			var subscript = this.generateVariablesForSlots(this.slotMap);
-			//labels and combo boxes have to be generated in the slots container
-			//destroy any previously generated comboboxes, html
-			var widgets = dijit.findWidgets(dom.byId("variableSlotControlsbox"));
-			dojo.forEach(widgets, function(w){
-				w.destroyRecursive(true);
-			});
-			var slotContHtml = "";
-			for(var varKey in this.slotMap){
-				slotContHtml = slotContHtml+'<div class="fieldgroup"><label for="holder'+this.schema+this.currentID+this.slotMap[varKey]+'">'+this.slotMap[varKey]+'</label><input id="holder'+this.schema+this.currentID+this.slotMap[varKey]+'" ></div>';
-			}
-			html.set(dom.byId("variableSlotControlsbox"), slotContHtml);
-			var varAr = this._model.getAllVariables();
-
-			for(var varKey in this.slotMap){
-				// Authors get some free options for new variable names, but other modes do not
-				var choices = (this._mode === "AUTHOR") ? [{id: ""+varKey+subscript, name: ""+varKey+subscript}] : [];
-				//concatenate all variables and current default variable for the respective combo box
-				choices = choices.concat(varAr);
-				var stateStore = new memory({ data: choices });
-				var curDiv = 'holder'+this.schema+this.currentID+this.slotMap[varKey];
-				var currentComboBox = new comboBox({
-										store: stateStore,
-										searchAttr: "name",
-										class: "slotComboBox",
-										placeholder: "Select or type your variable name here."   
-										}, curDiv);
-				currentComboBox.startup();
-			}
-			var eachComboBox = dojo.query(".slotComboBox");
-				console.log("each combo", eachComboBox);
-				eachComboBox.forEach(function(childcomboBox){
-					registry.byNode(childcomboBox).on('change', lang.hitch(this, function(){
-						this.updateEquation();
-					}));
-					// Allow only alphanumerics
-					registry.byNode(childcomboBox).on('keypress', lang.hitch(this, function(evt){
-						var charCode = evt.charCode;
-						if (charCode && null === String.fromCharCode(charCode).match("[a-zA-Z0-9]")) {
-							event.stop(evt);
-						}
-					}));
-				}, this);
-		},
-		generateVariablesForSlots: function(slotMap){
-			//This function generates a variable slot map in the session storage if not existing
-			// and returns the appropriate variable number subscript which will be used as suffix in the dynamic variable comboboxes
-			if(!sessionStorage.getItem("slot_number_map") || sessionStorage.getItem("slot_number_map")!= ""){
-				// Generate the map first time
-				var numberMap = {};
-				var varAr = this._model.getAllVariables();
-				for(var i=0; i<varAr.length; i++){
-					//the variables are generally in mostcases of the form D1, id4 etc
-					var curVar = ""+varAr[i].name;
-					var nump = curVar.match(/\d+$/);
-					//if only the variable has a number attached add it to numberMap
-					if(nump){
-						var strp = curVar.replace(/\d+$/,"");
-						if(!numberMap[nump[0]]){
-							numberMap[nump[0]] = [strp];
-						}
-						else{
-							numberMap[nump[0]].push(strp);
-						}
-					}
-				}
-				sessionStorage.setItem("slot_number_map", JSON.stringify(numberMap));
-			}
-			//now we have slot number map, we need to check the map and return appropriate vars
-			var numGenOb = JSON.parse(sessionStorage.getItem("slot_number_map"));
-			var numList = Object.keys(numGenOb);
-			var slotVars = Object.keys(slotMap);
-			var nextSubscript = 1;
-			var finished = false;
-			while(!finished){
-				if(nextSubscript in numGenOb){
-					// This subscript is in use by some variable, but maybe not one in the current schema
-					if(this.isSubscriptInUse(nextSubscript,slotVars,numGenOb)){
-						// This subscript is in use, increment and try again
-						nextSubscript++;
-						continue;
-					}else{
-						// The subscript was in the map, but not in use by any of this schema's variables
-						finished = true;
-						continue;
-					}
-				}else{
-						// The subscript isn't in the map yet
-						finished = true;
-				}
-			}
-			return nextSubscript;
-		},
-		/*
-		isSubscriptInUse
-		Given a subscript, list of variables, and the numGenOb
-		Return true if the subscript is already in use by any of the variables
-		*/
-		isSubscriptInUse: function(subscript,slotVars,numGenOb){
-			var inUse = slotVars.some(function(v){
-				return numGenOb[subscript].includes(v);
-			});
-			return inUse;
-		},
-		/*updateEquation
-		updates the equation based on selected schema and variables
-		*/
-		updateEquation: function(){
-			//var schema = registry.byId(this.controlMap.schemas).get("value");
-			//var equation = this.getSchemaProperty("Equation", this.schema);
-			//var slotMap = this.getSchemaProperty("Mapping", schema);
-			//retrieve the generic equation always when updating to replace the equation
-			var equation = this.getSchemaProperty("Equation", this.schema);
-
-			// add $ to all strings in the generic equation to keep replacement accurate
-			for(var varKey in this.slotMap){
-				equation = equation.replace(varKey,"$"+varKey)
-			}
-			for(var varKey in this.slotMap){
-				var updatedValue = dom.byId("holder"+this.schema+this.currentID+this.slotMap[varKey]).value;
-				console.log("replacing", varKey, "\'"+updatedValue+"\'");
-				equation = equation.replace("$"+varKey, updatedValue);
-			}
-			registry.byId(this.controlMap.equation).set("value",equation);
-			this.equation = equation;
-		},
-		/*fillVariableNames
-		reads the current equation string when the node is opened and loads the variable combo boxes
-		inside initialControlSettings
-		*/
-		fillVariableNames: function(){
-			var currentEquation = registry.byId(this.controlMap.equation).get("value");
-			if(currentEquation == "")
-				return;
-			var varList = equation.getVariableStrings(currentEquation);
-			var i = 0;
-			for(var varKey in this.slotMap){
-				var currentComboBox = 'holder'+this.schema+this.currentID+this.slotMap[varKey];
-				registry.byId(currentComboBox).set("value", varList[i]);
-				i++;
-			}
-		},
-		/*canHaveDeleteNode
-		checks whether the current qty node is part of any equation and decides if it can be deleted accordingly
-		*/
-		canHaveDeleteNode: function(){
-			//only applicable to quantity nodes
-			var eqList = this._model.getAllEquations();
-			var currentID = "" + this.currentID;
-			var found = array.some(eqList,function(currentEq){
-				var currentVars = equation.getVariableStrings(currentEq.equation);
-				if(currentVars.includes(currentID))
-					return true;
-			});
-			return !found;
-		},
-		/*allVariablesFilled
-		reads the slots and confirms whether all variables have valid values
-		*/
-		allVariablesFilled: function(){
-			if(this.equation !== ""){
-				for(var varKey in this.slotMap){
-					var currentComboBox = 'holder'+this.schema+this.currentID+this.slotMap[varKey];
-					var currentVal = registry.byId(currentComboBox).get("value");
-					if(currentVal == ""){
-						return false;
-					}
-				}
-			}
-			return true;
-		},
 		/*activateDeleteNode
 		This function can be used for delete button specific checks
 		deleteNodeActivated flag prevents equation being evaluated when delete button is clicked
 		*/
 		activateDeleteNode: function(){
 			this.deleteNodeActivated = true;
+		},
+		getSlotVariablesList: function(){
+			return this._model.authored.getAllVariables();
 		}
 	});
 });

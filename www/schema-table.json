@@ -110,14 +110,14 @@
 		}
 	],
 	"Multiplication Schemas": [{
-			"Name": "Rate",
-			"Equation": "R = S / T",
+			"Name": "DRT",
+			"Equation": "D = R * T",
 			"Mapping": {
-				"S": "Distance or Stuff",
+				"D": "Distance",
 				"R": "Rate",
 				"T": "Time"
 			},
-			"Comments": "If a vehicle travels distance D during time T, then its rate R is D/T. If something consumes or produces S stuff during time T, then its rate R is S/T."
+			"Comments": "This is used for any problem that talks about a rate per unit of time, such as miles per hour, feet per second, gallons per hour, jobs done per hour, pizzas eaten per minute, etc. The slots are: Rate:  The amount of X per unit of time, Distance:  The amount of X accumulated over the given time, Time:  The amount of time."
 		},
 		{
 			"Name": "Unit Cost",
@@ -147,16 +147,6 @@
 				"BperA": "Amount of B per A"
 			},
 			"Comments": "Sometimes you need to invert a quantity in order to use it in a calculation."
-		},
-		{
-			"Name": "Map scale",
-			"Equation": "D = MS * MD",
-			"Mapping": {
-				"D": "Distance",
-				"MS": "MapScale",
-				"MD": "MapDistance"
-			},
-			"Comments": "If a problem mentions a certain distance in the world corresponds to a certain distance on a map (e.g., 250 miles per inch), then the slots are Distance is the distance in the real world, MapDistance is the distance on the map, MapScale is the map’s scale.  However, MapScale sometimes needs adjustment.  If the problem says “250 miles per quarter inch” then we need to convert that to “1000 miles per inch” and then use 1000 as MapScale because MapDistance is measured in inches, not quarter inches."
 		},
 		{
 			"Name": "M2",
@@ -190,51 +180,6 @@
 				"MulD": "Multiplicand 4"
 			},
 			"Comments": "The product of four multiplicands."
-		}
-	],
-	"Other schemas": [{
-			"Name": "Expo Change",
-			"Equation": "E = B * (M ^ NM)",
-			"Mapping": {
-				"E": "End",
-				"B": "Beginning",
-				"M": "Multiplier",
-				"NM": "Number of Multiplications"
-			},
-			"Comments": "This is used when a starting quantity is multiplied several times by a multiplier.  For example, if John foolishly borrows $500 from a loan shark who charges 25% a month, then the multiplier is 1.25, the starting amount is $500, and the number of multiplications is the number of months.  The slots are: Final is the final amount after all the multiplications have occurred, Start is the amount before all the multiplications have occurred, Multiplier is the factor multiplied over and over, Multiplications is the number of multiplications done."
-		},
-		{
-			"Name": "Avg2",
-			"Equation": "A = ( PW + PX )/2",
-			"Mapping": {
-				"A": "Average",
-				"PW": "Part W",
-				"PY": "Part Y"
-			},
-			"Comments": "Average is the Arithmetic Mean of 2 parts"
-		},
-		{
-			"Name": "Avg3",
-			"Equation": "A = ( PW + PX + PY )/3",
-			"Mapping": {
-				"A": "Average",
-				"PW": "Part W",
-				"PX": "Part X",
-				"PY": "Part Y"
-			},
-			"Comments": "Average is the Arithmetic Mean of 3 parts"
-		},
-		{
-			"Name": "Avg4",
-			"Equation": "A = ( PW + PX + PY + PZ )/4",
-			"Mapping": {
-				"A": "Average",
-				"PW": "Part W",
-				"PX": "Part X",
-				"PY": "Part Y",
-				"PZ": "Part Z"
-			},
-			"Comments": "Average is the Arithmetic Mean of 4 parts"
 		}
 	]
 }

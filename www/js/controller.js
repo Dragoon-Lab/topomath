@@ -29,6 +29,7 @@ define([
 	"dojo/dom",
 	"dojo/keys",
 	"dojo/on",
+	'dojo/store/Memory',
 	"dojo/ready",
 	"dijit/registry",
 	"dojo/dom-style",
@@ -39,10 +40,13 @@ define([
 	"dijit/Tooltip",
 	"dojo/_base/event",
 	"dojo/mouse",
+	"dojo/html",
+	'dijit/form/ComboBox',
 	"./equation",
+	"./popup-dialog",
 	"./logging"
-], function(array, declare, lang, dom, keys, on, ready, registry, domStyle, domConstruct, aspect, query, domClass, toolTip, event,
-	mouse, expression, clientLogging){
+], function(array, declare, lang, dom, keys, on, memory, ready, registry, domStyle, domConstruct, aspect, query, domClass, toolTip, event,
+	mouse, html, comboBox, expression, popupDialog, clientLogging){
 
 	/* Summary:
 	 *			Controller for the node editor, common to all modes
@@ -72,13 +76,10 @@ define([
 		// list of parent divs for toggle display for directives.
 		// fields over written in con-student
 		genericDivMap: {
-			description: 'descriptionInputboxContainerStudent',
-			variable: 'variableInputboxContainerStudent',
 			variableType: 'variableTypeContainer',
 			value: "valueInputboxContainer",
 			units: "unitsSelectorContainerStudent",
 			equation: "expressionDiv"
-			//inputs: "inputSelectorContainerStudent"
 		},
 		// A list of all widgets.  (The constructor mixes this with controlMap)
 		widgetMap: {
@@ -102,11 +103,14 @@ define([
 					"valueQuestionMark": "This is a number, typically given to you in the system description.",
 					"variableInputboxQuestionMark": "The name of the variable used in equations",
 					"qtyDescriptionQuestionMark": "Describes the quantity represented by the variable",
+					"qtyDescriptionQuestionMarkStudent": "Select a description for the quantity represented by the variable",
 					"variableTypeQuestionMark": "Parameters are quantities whose values are known (or given in the system description). Unknowns are not given, but can be solved for by TopoMath if there are enough equations",
 					//"operationsQuestionMark": "Click one of these to enter it in the expression above. <br> See the Help menu at the top of the screen for a list of other mathematical operators and functions that you can type in.",
 					"questionMarkRoot": "Indicates that this variable is one the problem will ask the student to solve for",
-					"descriptionQuestionMark": "Select a description for node",
+					"descriptionQuestionMark": "A description for this equation",
+					//"descriptionQuestionMarkStudent": "A description for this equation",
 					"entityDescriptionQuestionMark": "Enter a list of valid entity names, separated by semicolons",
+					"entityDescriptionQuestionMarkStudent":"Select the entity this schema is about.",
 					"variableSlotNamesQuestionMark": "This section contains variable names to choose from or type in for the selected schema"
 		},
 		constructor: function(mode, model, config, fixPosition){
@@ -128,7 +132,11 @@ define([
 			ready(this, this._initHandles);
 			this.nodeConnections = [];
 			this._logger = clientLogging.getInstance();
-			ready(this, this._attachTooltips);			
+			ready(this, this._attachTooltips);
+			this.schema = "";
+			this.slotMap = "";
+			this.entity = "";
+			this.description = "";
 		},
 
 		// A stub for connecting routine to draw new node.
@@ -231,11 +239,24 @@ define([
 				var myThis = this;
 				return function(){
 					if(myThis.nodeType == "equation"){
+						console.log("starting hide", myThis.equationEntered);
 						var equation = registry.byId("equationInputbox");
+					
+						if(equation.value && !myThis.deleteNodeActivated &&  myThis.checkForSlotDuplicates(equation.value)){
+							myThis.applyDirectives([{
+								id: "crisisAlert",
+								attribute: "open",
+								value: "The same variable cannot be used in multiple slots. Please correct the duplicate variable."
+							}]);
+							return;
+						}
+
 						//if the equation is in the box but has not been checked(or entered) and deleteNode is not calling for this function or if equation is changed after validating in author mode
 						if((equation.value && !myThis.equationEntered && !myThis.deleteNodeActivated)|| (equation.displayedValue !== equation.value)){
 							//call equation done handler(equation done handlers in one of the modes will be called based on current mode)
+							console.log("equation entered",myThis.equationEntered);
 							var directives = myThis.equationDoneHandler();
+							
 							var isAlertShown = array.some(directives, function(directive){
 								// If Done is clicked and equation is incorrect, donot hide editor
 								if(directive.id === 'crisisAlert' || directive.value === "incorrect"){
@@ -243,7 +264,10 @@ define([
 									return true;
 								}
 							});
+							console.log("equation done directives", directives, isAlertShown, myThis._model.active.isStudentMode());
 							//isAlertShown records if the crisis alert was shown, if not we have to close editor programatically
+							if(myThis._model.active.isStudentMode)
+								isAlertShown = false;
 							if(!isAlertShown) {
 								//TODO: discuss premature nodes deletion
 								//further hide editor and call closeEditor function
@@ -251,20 +275,26 @@ define([
 							}
 						} // if the mode is author and user has selected to enter student values (" given ")
 						else if(myThis._model.active.isStudentMode() && registry.byId("modelSelector").value == "authored"){
-							equation = registry.byId(myThis.controlMap["equation"]);
+							//equation = registry.byId(myThis.controlMap["equation"]);
+							
 							//equation value in this case if from equationInputboxStudent and check if the value is entered/checked
 							//if not throw a crisis alert message
+							/*
 							if(equation.value && !myThis.equationEntered){
 								//Crisis alert popup if equation not checked
+								
 								myThis.applyDirectives([{
 									id: "crisisAlert", attribute:
 										"open", value: "Initial Student Expression value is not checked!  Go back and check your expression to verify it is correct, or delete the expression, before closing the node editor."
-								}]);
+								}]); 
 							}
 							else{
 								// Else, do normal closeEditor routine and hide
 								myThis.hideCloseNodeEditor(doHide);
 							}
+							*/
+							//there is no case of equation not checked for now in new reconstruction mode, so above case has been commented out and we directly hide the editor
+							myThis.hideCloseNodeEditor(doHide);
 						}else{ // this case implies either equation box is empty or value has already been checked/entered
 							// Else, do normal closeEditor routine and hide
 							myThis.hideCloseNodeEditor(doHide);
@@ -560,7 +590,7 @@ define([
 			var delButton = dom.byId('deleteButton');
 			on(delButton, mouse.enter, function(){
 				if(registry.byId("deleteButton").get("disabled"))
-					toolTip.show("Note: Quantities can only be deleted when they are not part of any equation.", delButton);
+					toolTip.show("Note: Quantities can only be deleted when they are not part of any equation.  Equations can only be deleted before their schema and entity are selected.", delButton);
 			});
 
 			on(delButton, mouse.leave, function(){
@@ -734,7 +764,9 @@ define([
 				registry.byId(this.controlMap.equation).set('value', mEquation.toString());
 				//This was used when structured was also there, once confirm with team before removing it, for now commenting it 
 				//dom.byId("equationText").innerHTML = mEquation;
+				
 				this.equationEntered = true;
+				if(this.variableUpdateBySystem) this.equationEntered = false;
 			}
 		},
 
@@ -753,6 +785,11 @@ define([
 				
 				if(!noModelUpdate)
 					this.updateModelStatus(directive);
+				if(directive.id == "currentSlot"){
+					var w = registry.byId(this.controlMap[directive.id]);
+					console.log("current slot w is", w.set(directive.attribute, directive.value));
+					w.set(directive.attribute, directive.value);
+				}
 				if (directive.attribute != "display" && this.widgetMap[directive.id]
 					&& directive.id !== "variableType") {
 					var w = registry.byId(this.widgetMap[directive.id]);
@@ -987,8 +1024,15 @@ define([
 					equation: inputEquation,
 					autoCreateNodes: true, // where do we get this input from 
 					nameToId: true,
-					subModel: this._model.active
+					subModel: this._model.active,
 				};
+				if(this._model.isStudentMode()){
+					var authorAssignedEquation = this._model.authored.getEquationBySchemaEntity(this.schema, this.entity);
+					equationParams.originalEq = authorAssignedEquation["equation"];
+					equationParams.originalID = authorAssignedEquation["id"];
+					equationParams.currentID = this.currentID;
+					equationParams.originalSchema = this.schema;
+				}
 				returnObj = expression.convert(equationParams);
 			}catch(err){
 				console.log("Parser error: ", err);
@@ -1033,6 +1077,7 @@ define([
 				this.addNode(this._model.active.getNode(newNode.id));
 				// Auto-populate node description only in Student mode
 				// check added to make sure that the node is not an unknown node
+				console.log("node added",newNode);
 				if(newNode.variable){
 					this.createStudentNode(newNode);
 				}
@@ -1211,6 +1256,7 @@ define([
 		},
 
 		loadSchemaOptions: function(){
+			console.log("In loadSchemaOptions")
 			//check if schema options have been loaded and if not, load them to schemaWidget
 			if(sessionStorage.getItem("schema_options_loaded"))
 				return;
@@ -1243,11 +1289,229 @@ define([
 			}
 			return propVal;
 		},
+
+		updateEquationDescription: function(){
+			console.log("In updateEquationDescription")
+			//var schema = registry.byId(this.controlMap.schemas).get("value");
+			if(this.schema == 'defaultSelect' || this.schema == null)
+				this.schema = '';
+			//entity part of description is tricky to extract, so a seperate function processEntityString handles it
+			this.description = this.schema+": "+this.entity;
+			registry.byId(this.controlMap.description).set("value", this.description);
+		},
+
+		updateSlotVariables: function(){
+			console.log("In updateSlotVariables")
+			this.slotMap = this.getSchemaProperty("Mapping", this.schema);
+			//for each of these combo boxes we have to generate the options	respectively
+			var subscript = this.generateVariablesForSlots(this.slotMap);
+			//labels and combo boxes have to be generated in the slots container
+			//destroy any previously generated comboboxes, html
+			var widgets = dijit.findWidgets(dom.byId("variableSlotControlsbox"));
+			dojo.forEach(widgets, function(w){
+				w.destroyRecursive(true);
+			});
+			var slotContHtml = "";
+			for(var varKey in this.slotMap){
+				slotContHtml = slotContHtml+'<div class="fieldgroup"><label for="holder'+this.schema+this.currentID+this.slotMap[varKey]+'">'+this.slotMap[varKey]+'</label><input id="holder'+this.schema+this.currentID+this.slotMap[varKey]+'" ></div>';
+			}
+			html.set(dom.byId("variableSlotControlsbox"), slotContHtml);
+			var varAr = this.getSlotVariablesList();
+
+			for(var varKey in this.slotMap){
+				// Authors get some free options for new variable names, but other modes do not
+				var choices = (this._mode === "AUTHOR") ? [{id: ""+varKey+subscript, name: ""+varKey+subscript}] : []; 
+				//concatenate all variables and current default variable for the respective combo box
+				choices = choices.concat(varAr);
+				var stateStore = new memory({ data: choices });
+				var curDiv = 'holder'+this.schema+this.currentID+this.slotMap[varKey];
+				var currentComboBox = new comboBox({
+										store: stateStore,
+										searchAttr: "name",
+										class: "slotComboBox",
+										placeholder: "Select or type your variable name here."   
+										}, curDiv);
+				currentComboBox.startup();
+			}
+			var eachComboBox = dojo.query(".slotComboBox");
+				console.log("each combo", eachComboBox);
+				eachComboBox.forEach(function(childcomboBox){
+					registry.byNode(childcomboBox).on('change', lang.hitch(this, function(){
+						this.updateEquation();
+					}));
+				}, this);
+		},
+		generateVariablesForSlots: function(slotMap){
+			//This function generates a variable slot map in the session storage if not existing
+			// and returns the appropriate variable number subscript which will be used as suffix in the dynamic variable comboboxes
+			if(!sessionStorage.getItem("slot_number_map") || sessionStorage.getItem("slot_number_map")!= ""){
+				// Generate the map first time
+				var numberMap = {};
+				var varAr = this.getSlotVariablesList();
+				for(var i=0; i<varAr.length; i++){
+					//the variables are generally in mostcases of the form D1, id4 etc
+					var curVar = ""+varAr[i].name;
+					var nump = curVar.match(/\d+$/);
+					//if only the variable has a number attached add it to numberMap
+					if(nump){
+						var strp = curVar.replace(/\d+$/,"");
+						if(!numberMap[nump[0]]){
+							numberMap[nump[0]] = [strp];
+						}
+						else{
+							numberMap[nump[0]].push(strp);
+						}
+					}
+				}
+				sessionStorage.setItem("slot_number_map", JSON.stringify(numberMap));
+			}
+			//now we have slot number map, we need to check the map and return appropriate vars
+			var numGenOb = JSON.parse(sessionStorage.getItem("slot_number_map"));
+			var numList = Object.keys(numGenOb);
+			var slotVars = Object.keys(slotMap);
+			var nextSubscript = 1;
+			var finished = false;
+			while(!finished){
+				if(nextSubscript in numGenOb){
+					// This subscript is in use by some variable, but maybe not one in the current schema
+					if(this.isSubscriptInUse(nextSubscript,slotVars,numGenOb)){
+						// This subscript is in use, increment and try again
+						nextSubscript++;
+						continue;
+					}else{
+						// The subscript was in the map, but not in use by any of this schema's variables
+						finished = true;
+						continue;
+					}
+				}else{
+						// The subscript isn't in the map yet
+						finished = true;
+				}
+			}
+			return nextSubscript;
+		},
+
+		/*
+		isSubscriptInUse
+		Given a subscript, list of variables, and the numGenOb
+		Return true if the subscript is already in use by any of the variables
+		*/
+		isSubscriptInUse: function(subscript,slotVars,numGenOb){
+			var inUse = slotVars.some(function(v){
+				return numGenOb[subscript].includes(v);
+			});
+			return inUse;
+		},
+		/*updateEquation
+		updates the equation based on selected schema and variables
+		*/
+		updateEquation: function(){
+			//var schema = registry.byId(this.controlMap.schemas).get("value");
+			//var equation = this.getSchemaProperty("Equation", this.schema);
+			//var slotMap = this.getSchemaProperty("Mapping", schema);
+			//retrieve the generic equation always when updating to replace the equation
+			var equation = this.getSchemaProperty("Equation", this.schema);
+
+			// add $ to all strings in the generic equation to keep replacement accurate
+			for(var varKey in this.slotMap){
+				equation = equation.replace(varKey,"$"+varKey)
+			}
+			for(var varKey in this.slotMap){
+				var updatedValue = dom.byId("holder"+this.schema+this.currentID+this.slotMap[varKey]).value;
+				console.log("replacing", varKey, "\'"+updatedValue+"\'");
+				equation = equation.replace("$"+varKey, updatedValue);
+			}
+			console.log("before", registry.byId(this.controlMap.equation).value, "after", equation);
+			registry.byId(this.controlMap.equation).set("value",equation);
+			this.equation = equation;
+			//console.log("updated equation");
+		},
+		/*fillVariableNames
+		reads the current equation string when the node is opened and loads the variable combo boxes
+		inside initialControlSettings
+		*/
+		fillVariableNames: function(){
+			var currentEquation = registry.byId(this.controlMap.equation).get("value");
+			if(currentEquation == "")
+				return;
+			var varList = expression.getVariableStrings(currentEquation);
+			var i = 0;
+			for(var varKey in this.slotMap){
+				var currentComboBox = 'holder'+this.schema+this.currentID+this.slotMap[varKey];
+				registry.byId(currentComboBox).set("value", varList[i]);
+				i++;
+			}
+		},
+		/*allVariablesFilled
+		reads the slots and confirms whether all variables have valid values
+		*/
+		allVariablesFilled: function(){
+			if(this.equation !== ""){
+				for(var varKey in this.slotMap){
+					var currentComboBox = 'holder'+this.schema+this.currentID+this.slotMap[varKey];
+					var currentVal = registry.byId(currentComboBox).get("value");
+					if(currentVal == ""){
+						return false;
+					}
+				}
+			}
+			return true;
+		},
+		/*canHaveDeleteNode
+		checks whether the current qty node is part of any equation and decides if it can be deleted accordingly
+		*/
+		canHaveDeleteNode: function(){
+			//only applicable to quantity nodes
+			var eqList = this._model.active.getAllEquations();
+			var currentID = this.currentID;
+			var found = array.some(eqList,function(currentEq){
+				try{
+					var currentVars = expression.getVariableStrings(currentEq.equation);
+					if(currentVars.includes(currentID))
+						return true;
+				}
+				catch(err){
+					//later we can log these
+					console.log("Parser error: ", err);
+					console.log(err.message);
+					console.log(err.Error);
+				}
+			});
+			return !found;
+		},
+
+		handleSchemaDisplay: function(){
+			var schemaDialog =  new popupDialog();
+			var schemaHtml = this.getSchemaHtml();
+			schemaDialog.showDialog("Schema Table", schemaHtml, [], "Close Table");
+		},
+		
 		//entity values can only be alpha numerics separated by ';'
 		handleEntityKeypress: function(evt){
 			var charCode = evt.charCode;
 			if (charCode && null === String.fromCharCode(charCode).match("[ a-zA-Z0-9;]")){
 				event.stop(evt);
+			}
+		},
+		checkForSlotDuplicates: function(eqn){
+			try{
+				var varAr = expression.getVariableStrings(eqn);
+				var finalList = [];
+				array.forEach(varAr, function(variable){
+					if(!finalList.includes(variable))
+						finalList.push(variable);
+				});
+				var slotCount = Object.keys(this.slotMap).length;
+				if(finalList.length === slotCount)
+					return false;
+				else
+					return true;
+			}
+			catch(err){
+				console.log("Parser error: ", err);
+				console.log(err.message);
+				console.log(err.Error);
+				return false;
 			}
 		}
 	});
