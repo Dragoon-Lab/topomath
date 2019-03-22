@@ -53,6 +53,7 @@ define([
 			this.studentControls();
 			this.variableUpdateBySystem = false;
 			this.deleteNodeActivated = false;
+			this.ambigiousSchemas = ["P2W","P3W","P4W","P5W","A2","A3","A4"];
 		},
 		studentPM:{
 			process: function(nodeID, nodeType, value, validInput, message, attemptCount, correctAnswer){
@@ -757,8 +758,8 @@ define([
 					var get_original = this._model.student.getAuthoredID(current_Ar[i]);
 					var get_original_name = this._model.authored.getName(original_Ar[i]);
 					var slot_id = Object.values(this.slotMap)[i];
-					console.log("opened", this.currentID, get_original, get_original_name, slot_id, original_Ar[i], current_Ar[i], i);
-					if(get_original == original_Ar[i]){
+					console.log("ambigiousSchemas",this.ambigiousSchemas.includes(this.schema),original_Ar.includes(get_original));
+					if(get_original == original_Ar[i] || (this.ambigiousSchemas.includes(this.schema) && original_Ar.includes(get_original))){
 						if(this._model.student.getSlotStatus(this.currentID, slot_id) == "correct"){
 							style.set(dojo.byId("widget_holder"+this.schema+this.currentID+slot_id), 'backgroundColor', 'lightGreen');
 							registry.byId("holder"+this.schema+this.currentID+slot_id).set("disabled", true);
@@ -939,6 +940,20 @@ define([
 			}
 			else{
 				this.disableTypeValueUnits(false);
+				//incase of valid description change, we need to update the authoredID incase description does not match ( we already assign authoredID's based on serial order, but users can always switch)
+				var curAuthID = this._model.student.getAuthoredID(this.currentID);
+				var authDesc = this._model.authored.getDescription(curAuthID);
+				var isSameAuthNode =  authDesc == description ? true: false;
+				if(!isSameAuthNode){
+					// In this case, we need to get author ID to which the input description matches and set that authoredID to the current node but at the same time, we need to update the node whose author ID is being assigned here
+					var newAuthID = this._model.authored.getNodeIDByDescription(description);
+					var existingStudID = this._model.student.getNodeIDFor(newAuthID);
+
+					if(existingStudID)
+						this._model.student.setAuthoredID(existingStudID, curAuthID);
+					//set new authored id to the current student node
+					this._model.student.setAuthoredID(this.currentID, newAuthID);
+				}
 				this.applyDirectives(this.studentPM.process(this.currentID, "qtyDescription", description, description, "A valid description has been entered",));
 			}
 			this._model.student.setDescription(this.currentID, description);
