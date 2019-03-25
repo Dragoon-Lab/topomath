@@ -53,7 +53,7 @@ define([
 			this.studentControls();
 			this.variableUpdateBySystem = false;
 			this.deleteNodeActivated = false;
-			this.ambigiousSchemas = ["P2W","P3W","P4W","P5W","A2","A3","A4"];
+			this.ambigiousSchemas = ["P2W","P3W","P4W","P5W","A2","A3","A4","M2","M3","M4"];
 		},
 		studentPM:{
 			process: function(nodeID, nodeType, value, validInput, message, attemptCount, correctAnswer){
@@ -606,7 +606,7 @@ define([
 				var authorModel = this._model.authored;
 				var studDesc = this._model.student.getDescription(this.currentID);
 				console.log("student desc is", studDesc);
-				if(parSchema == "P2W" || parSchema == "P3W" || parSchema == "P4W" || parSchema == "P5W" || parSchema == "Avg2" || parSchema == "Avg3" || parSchema == "Avg4"){
+				if(this.ambigiousSchemas.includes(parSchema)){
 					var rightVarAr = expression.getRightSideEquationStrings(this._model.student.getParentEquation(nodeid));
 					var rightSelfAr = expression.getRightSideEquationStrings(this._model.student.getSelfEquation(nodeid));
 					
@@ -960,6 +960,7 @@ define([
 		},
 		disableTypeValueUnits: function(disable){
 			registry.byId(this.controlMap.value).set("disabled", disable);
+			registry.byId(this.controlMap.units).set("disabled", disable);
 			registry.byId(this.controlMap.unknown).set("disabled", disable);
 			registry.byId(this.controlMap.parameter).set("disabled", disable);
 			registry.byId(this.controlMap.dynamic).set("disabled", disable);
