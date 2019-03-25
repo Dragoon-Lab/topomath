@@ -70,15 +70,15 @@ define([
 								registry.byId("entitySelectorStudent").set("disabled", true);
 							}
 							else{
-								if(attemptCount == 1){
-									returnObj.push({id:"schemas", attribute:"status", value:"incorrect"});
-									registry.byId("entitySelectorStudent").set("disabled", true);
-								}
-								else if(attemptCount > 1){
+								if(attemptCount > 1 && correctAnswer){
 									returnObj.push({id:"schemas", attribute:"status", value:"demo"});
 									registry.byId("schemaSelector").set("value", correctAnswer);
 									registry.byId("entitySelectorStudent").set("disabled", false);
 									registry.byId("schemaSelector").set("disabled", true);	
+								}
+								else if(attemptCount != 2){
+									returnObj.push({id:"schemas", attribute:"status", value:"incorrect"});
+									registry.byId("entitySelectorStudent").set("disabled", true);
 								}
 							}
 						}
@@ -119,13 +119,15 @@ define([
 						returnObj.push({id:"message", attribute:"append", value:message});
 						break;
 					case "description":
-						if(validInput && attemptCount != "yellow"){
+						if(validInput && (attemptCount == "green")){
 							returnObj.push({id:"description", attribute:"status", value:"correct"});
 						}else{
 							if(value == "")
 								returnObj.push({id:"description", attribute:"status", value:""});
 							else if(attemptCount == "yellow")
 								returnObj.push({id:"description", attribute:"status", value:"demo"});
+							else if(attemptCount == "red")
+								returnObj.push({id:"description", attribute:"status", value:"incorrect"})
 						}
 						returnObj.push({id:"message", attribute:"append", value:message});
 						break;
@@ -326,7 +328,6 @@ define([
 			var currentAttemptCount = this._model.student.getAttemptCount(this.currentID,"schema");
 			//At this stage there is not correct answer as far as schema is considered, the correct answer would be any random legit schema
 			var correctAnswer = this._model.student.getLegitSchema();
-
 			if(schema == "defaultSelect"){
 				message = "Please choose a valid schema";
 				this._model.student.setAttemptCount(this.currentID, "schema", currentAttemptCount+1);
@@ -520,6 +521,9 @@ define([
 			if(nodeType == "equation"){
 				var descriptionWidget = registry.byId(this.controlMap.description);
 				var equationWidget = registry.byId(this.controlMap.equation);
+				var validSchemaInput;
+				var validEntityInput;
+				var correctSchemaAnswer;
 				//for the schema select load schema options
 				this.loadSchemaOptions();
 				var schema = this._model.student.getSchema(nodeid);
@@ -527,7 +531,16 @@ define([
 					schema = "";
 				registry.byId(this.controlMap.schemas).set('value', schema);
 				var count = 0;
-				this.applyDirectives(this.studentPM.process(nodeid, "schema", schema, schema, "", this._model.student.getAttemptCount(this.currentID, "schema")));
+				var schemaStatus =  this._model.student.getStatus(this.currentID,"schemas");
+				if((schemaStatus && schemaStatus.status == "incorrect" ) || schemaStatus == undefined){
+					validSchemaInput = false;
+					correctSchemaAnswer = this._model.student.getLegitSchema();
+				}
+				else{
+					validSchemaInput = true;
+					correctSchemaAnswer = schema;
+				}
+				this.applyDirectives(this.studentPM.process(nodeid, "schema", schema, validSchemaInput, "", this._model.student.getAttemptCount(this.currentID, "schema"), correctSchemaAnswer));
 				this.schema = schema;
 
 				//for the entity select load entities
@@ -542,25 +555,17 @@ define([
 					entityWid.addOption(obj);
 				}, this);
 				var entVal = this._model.student.getEntity(this.currentID);
-				console.log("entity value is", entVal);
 				if(!entVal)
 					entVal = "";
 				registry.byId(this.controlMap.entity).set('value', entVal);
-				this.applyDirectives(this.studentPM.process(nodeid, "entity", entVal, entVal, "", this._model.student.getAttemptCount(this.currentID, "entity")));
+				var entityStatus =  this._model.student.getStatus(this.currentID,"entity");
+				if( (entityStatus && entityStatus.status == "incorrect" ) || entityStatus == undefined || entityStatus.status == "")
+					validEntityInput = false;
+				else
+					validEntityInput = true;
+				this.applyDirectives(this.studentPM.process(nodeid, "entity", entVal, validEntityInput, "", this._model.student.getAttemptCount(this.currentID, "entity"), this._model.student.getLegitEntity(this.schema) ));
 				this.entity = entVal;
-
-				//disable the description and equation fields
-				descriptionWidget.set('disabled', true);
-				var description = this._model.student.getDescription(nodeid);
-				if(!description) description = '';
-				descriptionWidget.set('value',description);
-				var descAttempt = "";
-				var entityAttempt = this._model.student.getAttemptCount(this.currentID, "entity");
-				var schemaAttempt = this._model.student.getAttemptCount(this.currentID, "schema");
-				if(entityAttempt >=2 || schemaAttempt >=2)
-					descAttempt = "yellow";
-				this.applyDirectives(this.studentPM.process(nodeid, "description", description, description, "", descAttempt));
-				
+				this.updateEquationDescription();	
 				this.updateEqnDelete();
 				//set up equation
 				var eqVal = this._model.student.getEquation(nodeid);
@@ -989,7 +994,45 @@ define([
 					this._model.student.setCanDelete(this.currentID,true);
 				}
 			}
-		}
+		},
+		updateEquationDescription: function(){
+			if(this.schema == 'defaultSelect' || this.schema == null)
+				this.schema = '';
+			//entity part of description is tricky to extract, so a seperate function processEntityString handles it
+			//disable the description and equation fields
+			var descriptionWidget = registry.byId(this.controlMap.description);
+			descriptionWidget.set('disabled', true);
+			var description = this.description = this.schema+": "+this.entity;
+			descriptionWidget.set("value", this.description);
+			descriptionWidget.set('value',description);
+			var descAttempt = "";
+			var entityAttempt = this._model.student.getAttemptCount(this.currentID, "entity");
+			var schemaAttempt = this._model.student.getAttemptCount(this.currentID, "schema");
+			var validSchemaInput; var validEntityInput;
+			var schemaStatus =  this._model.student.getStatus(this.currentID,"schemas");
+				if( (schemaStatus && schemaStatus.status == "incorrect" ) || schemaStatus == undefined)
+					validSchemaInput = false;
+				else
+					validSchemaInput = true;
+			var entityStatus =  this._model.student.getStatus(this.currentID,"entity");
+				if( (entityStatus && entityStatus.status == "incorrect" ) || entityStatus == undefined || entityStatus.status == "")
+					validEntityInput = false;
+				else
+					validEntityInput = true;
+			var descAttempt = "";
+			if(description != ": " && this.schema && this.entity){
+				if(!validSchemaInput || !validEntityInput){
+					descAttempt = "red";
+				}
+				else if(entityAttempt >=2 || schemaAttempt >=2){
+					descAttempt = "yellow";
+				}
+				else{
+					descAttempt = "green";
+				}
+			}
+			this.applyDirectives(this.studentPM.process(this.currentID, "description", description, description, "", descAttempt));
+		},
 	});
 });
 
