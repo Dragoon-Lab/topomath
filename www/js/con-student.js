@@ -492,7 +492,7 @@ define([
 				this.disableTypeValueUnits(true);
 				
 				//can the qty node have delete option
-				var canHaveDeleteNode = this.canHaveDeleteNode();
+				var canHaveDeleteNode = this.canHaveDeleteNode(this.currentID);
 				console.log("can have delete node", canHaveDeleteNode);
 				if(canHaveDeleteNode){
 					registry.byId("deleteButton").set("disabled",false);
@@ -907,8 +907,8 @@ define([
 			var authoredID = this.setNodeDescription(node.id, node.variable);
 			if(authoredID){
 				this.updateInputNode(node.id, node.variable);
-				var canHaveDeleteNode = this.canHaveDeleteNode();
-				this._model.student.setCanDelete(this.currentID,canHaveDeleteNode);
+				var canHaveDeleteNode = this.canHaveDeleteNode(node.id);
+				this._model.student.setCanDelete(node.id,canHaveDeleteNode);
 				this.updateNodeView(this._model.active.getNode(node.id));
 			}
 
