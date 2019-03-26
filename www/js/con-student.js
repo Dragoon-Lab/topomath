@@ -356,6 +356,7 @@ define([
 			//change entity to default or to choose again
 			registry.byId(this.controlMap.entity).set("value", "defaultSelect");
 			this.updateEquationDescription();
+			this.updateEqnDelete();
 		},
 		/*handle entities for student node
 		*/
@@ -981,18 +982,16 @@ define([
 			this.deleteNodeActivated = true;
 		},
 		updateEqnDelete: function(){
-			if(this.schema != "" || this.entity != ""){
-				var getEntStatus = this._model.student.getStatus(this.currentID, "entity");
-				console.log("del status", getEntStatus);
-				if( getEntStatus.status == "correct" || getEntStatus.status == "demo"){
-					//disable delete
-					registry.byId("deleteButton").set("disabled",true);
-					this._model.student.setCanDelete(this.currentID,false);
-				}
-				else{
-					registry.byId("deleteButton").set("disabled", false);
-					this._model.student.setCanDelete(this.currentID,true);
-				}
+			var getEntStatus = this._model.student.getStatus(this.currentID, "entity");
+			console.log("del status", getEntStatus);
+			if( getEntStatus.status == "correct" || getEntStatus.status == "demo"){
+				//disable delete
+				registry.byId("deleteButton").set("disabled",true);
+				this._model.student.setCanDelete(this.currentID,false);
+			}
+			else{
+				registry.byId("deleteButton").set("disabled", false);
+				this._model.student.setCanDelete(this.currentID,true);
 			}
 		},
 		updateEquationDescription: function(){
