@@ -1033,6 +1033,16 @@ define([
 			}
 			this.applyDirectives(this.studentPM.process(this.currentID, "description", description, description, "", descAttempt));
 		},
+		//Incase slot gets a red feedback, when user tries to further change it, update background color to white
+		adjustSlotColors: function(currentCombo){
+			var curWidgetHolderID = currentCombo.id;
+			var curWidgetID = currentCombo.widgetid;
+			if(style.get(dojo.byId(curWidgetHolderID),"backgroundColor") == 'rgb(255, 0, 0)'){
+					registry.byNode(currentCombo).on('change', lang.hitch(this, function(){
+						style.set(dojo.byId(curWidgetHolderID), "backgroundColor", "white");
+					}));
+			}
+		}
 	});
 });
 

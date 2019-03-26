@@ -1328,6 +1328,7 @@ define([
 				eachComboBox.forEach(function(childcomboBox){
 					registry.byNode(childcomboBox).on('change', lang.hitch(this, function(){
 						this.updateEquation();
+						this.adjustSlotColors(childcomboBox);
 					}));
 				}, this);
 		},
