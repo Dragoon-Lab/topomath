@@ -1317,6 +1317,15 @@ define([
 		},
 		getSlotVariablesList: function(){
 			return this._model.authored.getAllVariables();
-		}
+		},
+		updateEquationDescription: function(){
+			console.log("In updateEquationDescription")
+			//var schema = registry.byId(this.controlMap.schemas).get("value");
+			if(this.schema == 'defaultSelect' || this.schema == null)
+				this.schema = '';
+			//entity part of description is tricky to extract, so a seperate function processEntityString handles it
+			this.description = this.schema+": "+this.entity;
+			registry.byId(this.controlMap.description).set("value", this.description);
+		},
 	});
 });
