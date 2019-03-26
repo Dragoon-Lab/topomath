@@ -153,12 +153,12 @@ define([
 				//this.findSolution(true);
 				var activeSolution = this.findSolution(true, null, true);
 				this.graph.renderDialog(activeSolution);
+				this.table.init(activeSolution);
 				this.fireLogEvent(["slider-change", paramID, textBox.value]);
 				if(this.isStatic && paramID != this.staticVar){
 					activeSolution = this.findSolution(true, this.staticVar, true);
 					this.graph.renderStaticDialog(activeSolution, this.authorStaticSolution, false);
 				}
-				this.table.init(activeSolution);
 				this._rendering = false;
 				console.log("new plot completed");
 			}));

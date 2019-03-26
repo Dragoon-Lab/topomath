@@ -46,12 +46,22 @@
 			"Comments": "The whole is equal to the sum of five parts."
 		},
 		{
+			"Name": "Compare",
+			"Equation": "B = S + D",
+			"Mapping": {
+				"B": "Bigger",
+				"S": "Smaller",
+				"D": "Difference"
+			},
+			"Comments": "The whole is equal to the sum of five parts."
+		},
+		{
 			"Name": "Tailwind",
 			"Equation": "GS = AS + WS",
 			"Mapping": {
 				"GS": "Ground Speed",
-				"WS": "Wind Speed",
-				"AS": "Air Speed"
+				"AS": "Speed Relative to Carrier",
+				"WS": "Speed of Carrier"
 			},
 			"Comments": "If a vehicle travels through a moving medium (e.g., airplane in wind; boat on river current), and the vehicle is travelling the same direction as the medium (i.e., with a tailwind for the airplane; downstream for the boat), then slots are: GroundSpeed is the rate of the vehicle relative to land, AirSpeed is the rate of the vehicle relative to the medium, Windspeed is the rate of the medium (i.e., wind’s speed; river current’s speed)."
 		},
@@ -60,30 +70,43 @@
 			"Equation": "GS = AS - WS",
 			"Mapping": {
 				"GS": "Ground Speed",
-				"WS": "Wind Speed",
-				"AS": "Air Speed"
+				"AS": "Speed Relative to Carrier",
+				"WS": "Speed of Carrier"
 			},
 			"Comments": "If a vehicle travels through a moving medium (e.g., airplane in wind; boat on river current), and the vehicle is travelling in the opposite direction to the medium (i.e., with a headwind for the airplane; upstream for the boat), then slots are: GroundSpeed is the rate of the vehicle relative to the land, AirSpeed is the rate of the vehicle relative to the medium (i.e., how fast the plane or boat travels in still air or still water), WindSpeed is the rate of the medium (i.e., wind’s speed; river current’s speed)"
 		},
 		{
-			"Name": "Less than",
-			"Equation": "S = L - D",
+			"Name": "A2",
+			"Equation": "Sum = AddA + AddB",
 			"Mapping": {
-				"S": "Small",
-				"L": "Large",
-				"D": "Difference"
+				"Sum": "Sum",
+				"AddA": "Addend 1",
+				"AddB": "Addend 2"
 			},
-			"Comments": "Use when S (small) is D (difference) less than L (large)"
+			"Comments": "The sum of two values."
 		},
 		{
-			"Name": "More than",
-			"Equation": "L = D + S",
+			"Name": "A3",
+			"Equation": "Sum = AddA + AddB + AddC",
 			"Mapping": {
-				"S": "Small",
-				"L": "Large",
-				"D": "Difference"
+				"Sum": "Sum",
+				"AddA": "Addend 1",
+				"AddB": "Addend 2",
+				"AddC": "Addend 3"
 			},
-			"Comments": "Use when L (large) is D (difference) more than S (small)"
+			"Comments": "The sum of three values."
+		},
+		{
+			"Name": "A4",
+			"Equation": "Sum = AddA + AddB + AddC + AddD",
+			"Mapping": {
+				"Sum": "Sum",
+				"AddA": "Addend 1",
+				"AddB": "Addend 2",
+				"AddC": "Addend 3",
+				"AddD": "Addend 4"
+			},
+			"Comments": "The sum of four values."
 		}
 	],
 	"Multiplication Schemas": [{
@@ -107,69 +130,56 @@
 			"Comments": "If the total cost (or other quantity) of a set of object is mentioned along with the cost per object, then use this.  Used for any problem talking about rate per object, e.g.,  Calories per candy, weight per car, nuts per tree.   The slots are: TotalCost is the total cost of the set of objects, NumberUnits is the number of objects, UnitCost is the cost per object."
 		},
 		{
-			"Name": "Wet solutions",
-			"Equation": "I = S * P",
+			"Name": "Mixture",
+			"Equation": "IA = IP * WA",
 			"Mapping": {
-				"I": "Amount of Ingredient",
-				"S": "Amount of Solution",
-				"P": "Proportion of I to S"
+				"IA": "Amount of Ingredient",
+				"WA": "Amount of Whole Mixture",
+				"IP": "Proportion of Ingredient to Whole"
 			},
 			"Comments": "If a drink is composed of water and alcohol (or any substance is composed of a filler and an active ingredient, e.g., acid in a water solution, fat in sausage), then Amount of Ingredient is the amount of alcohol, measured by weight or volume, Amount of Solution is the total amount of the drink, measured by weight or volume, Proportion of I to S is the proportion (converted from a percentage or proof) of alcohol in the drink."
 		},
 		{
-			"Name": "Map scale",
-			"Equation": "D = MS * MD",
+			"Name": "Invert",
+			"Equation": "1 = AperB * BperA",
 			"Mapping": {
-				"D": "Distance",
-				"MS": "MapScale",
-				"MD": "MapDistance"
+				"AperB": "Amount of A per B",
+				"BperA": "Amount of B per A"
 			},
-			"Comments": "If a problem mentions a certain distance in the world corresponds to a certain distance on a map (e.g., 250 miles per inch), then the slots are Distance is the distance in the real world, MapDistance is the distance on the map, MapScale is the map’s scale.  However, MapScale sometimes needs adjustment.  If the problem says “250 miles per quarter inch” then we need to convert that to “1000 miles per inch” and then use 1000 as MapScale because MapDistance is measured in inches, not quarter inches."
-		}
-	],
-	"Other schemas": [{
-			"Name": "Expo Change",
-			"Equation": "E = B * (M ^ NM)",
-			"Mapping": {
-				"E": "End",
-				"B": "Beginning",
-				"M": "Multiplier",
-				"NM": "Number of Multiplications"
-			},
-			"Comments": "This is used when a starting quantity is multiplied several times by a multiplier.  For example, if John foolishly borrows $500 from a loan shark who charges 25% a month, then the multiplier is 1.25, the starting amount is $500, and the number of multiplications is the number of months.  The slots are: Final is the final amount after all the multiplications have occurred, Start is the amount before all the multiplications have occurred, Multiplier is the factor multiplied over and over, Multiplications is the number of multiplications done."
+			"Comments": "Sometimes you need to invert a quantity in order to use it in a calculation."
 		},
 		{
-			"Name": "Avg2",
-			"Equation": "A = ( PW + PX )/2",
+			"Name": "M2",
+			"Equation": "Prod = MulA * MulB",
 			"Mapping": {
-				"A": "Average",
-				"PW": "Part W",
-				"PY": "Part Y"
+				"Prod": "Product",
+				"MulA": "Multiplicand 1",
+				"MulB": "Multiplicand 2"
 			},
-			"Comments": "Average is the Arithmetic Mean of 2 parts"
+			"Comments": "The product of two multiplicands."
 		},
 		{
-			"Name": "Avg3",
-			"Equation": "A = ( PW + PX + PY )/3",
+			"Name": "M3",
+			"Equation": "Prod = MulA * MulB * MulC",
 			"Mapping": {
-				"A": "Average",
-				"PW": "Part W",
-				"PX": "Part X",
-				"PY": "Part Y"
+				"Prod": "Product",
+				"MulA": "Multiplicand 1",
+				"MulB": "Multiplicand 2",
+				"MulC": "Multiplicand 3"
 			},
-			"Comments": "Average is the Arithmetic Mean of 3 parts"
+			"Comments": "The product of three multiplicands."
 		},
 		{
-			"Name": "Avg4",
-			"Equation": "A = ( PW + PX + PY + PZ )/4",
+			"Name": "M4",
+			"Equation": "Prod = MulA * MulB * MulC * MulD",
 			"Mapping": {
-				"A": "Average",
-				"PW": "Part W",
-				"PX": "Part X",
-				"PY": "Part Y",
-				"PZ": "Part Z"
+				"Prod": "Product",
+				"MulA": "Multiplicand 1",
+				"MulB": "Multiplicand 2",
+				"MulC": "Multiplicand 3",
+				"MulD": "Multiplicand 4"
 			},
-			"Comments": "Average is the Arithmetic Mean of 4 parts"
+			"Comments": "The product of four multiplicands."
 		}
 	]
 }

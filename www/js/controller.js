@@ -76,13 +76,10 @@ define([
 		// list of parent divs for toggle display for directives.
 		// fields over written in con-student
 		genericDivMap: {
-			description: 'descriptionInputboxContainerStudent',
-			variable: 'variableInputboxContainerStudent',
 			variableType: 'variableTypeContainer',
 			value: "valueInputboxContainer",
 			units: "unitsSelectorContainerStudent",
 			equation: "expressionDiv"
-			//inputs: "inputSelectorContainerStudent"
 		},
 		// A list of all widgets.  (The constructor mixes this with controlMap)
 		widgetMap: {
@@ -106,11 +103,14 @@ define([
 					"valueQuestionMark": "This is a number, typically given to you in the system description.",
 					"variableInputboxQuestionMark": "The name of the variable used in equations",
 					"qtyDescriptionQuestionMark": "Describes the quantity represented by the variable",
+					"qtyDescriptionQuestionMarkStudent": "Select a description for the quantity represented by the variable",
 					"variableTypeQuestionMark": "Parameters are quantities whose values are known (or given in the system description). Unknowns are not given, but can be solved for by TopoMath if there are enough equations",
 					//"operationsQuestionMark": "Click one of these to enter it in the expression above. <br> See the Help menu at the top of the screen for a list of other mathematical operators and functions that you can type in.",
 					"questionMarkRoot": "Indicates that this variable is one the problem will ask the student to solve for",
-					"descriptionQuestionMark": "Select a description for node",
+					"descriptionQuestionMark": "A description for this equation",
+					//"descriptionQuestionMarkStudent": "A description for this equation",
 					"entityDescriptionQuestionMark": "Enter a list of valid entity names, separated by semicolons",
+					"entityDescriptionQuestionMarkStudent":"Select the entity this schema is about.",
 					"variableSlotNamesQuestionMark": "This section contains variable names to choose from or type in for the selected schema"
 		},
 		constructor: function(mode, model, config, fixPosition){
@@ -239,10 +239,22 @@ define([
 				var myThis = this;
 				return function(){
 					if(myThis.nodeType == "equation"){
+						console.log("starting hide", myThis.equationEntered);
 						var equation = registry.byId("equationInputbox");
+					
+						if(equation.value && !myThis.deleteNodeActivated &&  myThis.checkForSlotDuplicates(equation.value)){
+							myThis.applyDirectives([{
+								id: "crisisAlert",
+								attribute: "open",
+								value: "The same variable cannot be used in multiple slots. Please correct the duplicate variable."
+							}]);
+							return;
+						}
+
 						//if the equation is in the box but has not been checked(or entered) and deleteNode is not calling for this function or if equation is changed after validating in author mode
 						if((equation.value && !myThis.equationEntered && !myThis.deleteNodeActivated)|| (equation.displayedValue !== equation.value)){
 							//call equation done handler(equation done handlers in one of the modes will be called based on current mode)
+							console.log("equation entered",myThis.equationEntered);
 							var directives = myThis.equationDoneHandler();
 							
 							var isAlertShown = array.some(directives, function(directive){
@@ -263,20 +275,26 @@ define([
 							}
 						} // if the mode is author and user has selected to enter student values (" given ")
 						else if(myThis._model.active.isStudentMode() && registry.byId("modelSelector").value == "authored"){
-							equation = registry.byId(myThis.controlMap["equation"]);
+							//equation = registry.byId(myThis.controlMap["equation"]);
+							
 							//equation value in this case if from equationInputboxStudent and check if the value is entered/checked
 							//if not throw a crisis alert message
+							/*
 							if(equation.value && !myThis.equationEntered){
 								//Crisis alert popup if equation not checked
+								
 								myThis.applyDirectives([{
 									id: "crisisAlert", attribute:
 										"open", value: "Initial Student Expression value is not checked!  Go back and check your expression to verify it is correct, or delete the expression, before closing the node editor."
-								}]);
+								}]); 
 							}
 							else{
 								// Else, do normal closeEditor routine and hide
 								myThis.hideCloseNodeEditor(doHide);
 							}
+							*/
+							//there is no case of equation not checked for now in new reconstruction mode, so above case has been commented out and we directly hide the editor
+							myThis.hideCloseNodeEditor(doHide);
 						}else{ // this case implies either equation box is empty or value has already been checked/entered
 							// Else, do normal closeEditor routine and hide
 							myThis.hideCloseNodeEditor(doHide);
@@ -493,6 +511,10 @@ define([
 				return this.disableHandlers || this.handleEntities.apply(this, arguments);
 			}));
 
+			entityWidget.on('keypress', lang.hitch(this, function(evt){
+				return this.disableHandlers || this.handleEntityKeypress.apply(this, arguments);
+			}));
+
 			var qtyDescriptionWidget = registry.byId(this.controlMap.qtyDescription);
 			qtyDescriptionWidget.on('Change', lang.hitch(this, function(){
 				return this.disableHandlers || this.handleQtyDescription.apply(this, arguments);
@@ -568,7 +590,7 @@ define([
 			var delButton = dom.byId('deleteButton');
 			on(delButton, mouse.enter, function(){
 				if(registry.byId("deleteButton").get("disabled"))
-					toolTip.show("Note: Quantities can only be deleted when they are not part of any equation.", delButton);
+					toolTip.show("Note: Quantities can only be deleted when they are not part of any equation.  Equations can only be deleted before their schema and entity are selected.", delButton);
 			});
 
 			on(delButton, mouse.leave, function(){
@@ -742,7 +764,9 @@ define([
 				registry.byId(this.controlMap.equation).set('value', mEquation.toString());
 				//This was used when structured was also there, once confirm with team before removing it, for now commenting it 
 				//dom.byId("equationText").innerHTML = mEquation;
+				
 				this.equationEntered = true;
+				if(this.variableUpdateBySystem) this.equationEntered = false;
 			}
 		},
 
@@ -1208,6 +1232,10 @@ define([
 			return this._model.active.getDescriptionsSortedByName();
 		},
 
+		descriptionsReady: function(){
+			//empty function for now, can be used in future to play with descriptions before view gets updated
+		},
+
 		getSchemaHtml: function(){
 			//store schema html once in sessionStorage if it does not exist and return from sessionStorage each time
 			if(sessionStorage.getItem("schema_table"))
@@ -1260,16 +1288,6 @@ define([
 					break;
 			}
 			return propVal;
-		},
-
-		updateEquationDescription: function(){
-			console.log("In updateEquationDescription")
-			//var schema = registry.byId(this.controlMap.schemas).get("value");
-			if(this.schema == 'defaultSelect' || this.schema == null)
-				this.schema = '';
-			//entity part of description is tricky to extract, so a seperate function processEntityString handles it
-			this.description = this.schema+": "+this.entity;
-			registry.byId(this.controlMap.description).set("value", this.description);
 		},
 
 		updateSlotVariables: function(){
@@ -1393,8 +1411,10 @@ define([
 				console.log("replacing", varKey, "\'"+updatedValue+"\'");
 				equation = equation.replace("$"+varKey, updatedValue);
 			}
+			console.log("before", registry.byId(this.controlMap.equation).value, "after", equation);
 			registry.byId(this.controlMap.equation).set("value",equation);
 			this.equation = equation;
+			//console.log("updated equation");
 		},
 		/*fillVariableNames
 		reads the current equation string when the node is opened and loads the variable combo boxes
@@ -1432,12 +1452,20 @@ define([
 		*/
 		canHaveDeleteNode: function(){
 			//only applicable to quantity nodes
-			var eqList = this._model.getAllEquations();
-			var currentID = "" + this.currentID;
+			var eqList = this._model.active.getAllEquations();
+			var currentID = this.currentID;
 			var found = array.some(eqList,function(currentEq){
-				var currentVars = expression.getVariableStrings(currentEq.equation);
-				if(currentVars.includes(currentID))
-					return true;
+				try{
+					var currentVars = expression.getVariableStrings(currentEq.equation);
+					if(currentVars.includes(currentID))
+						return true;
+				}
+				catch(err){
+					//later we can log these
+					console.log("Parser error: ", err);
+					console.log(err.message);
+					console.log(err.Error);
+				}
 			});
 			return !found;
 		},
@@ -1447,5 +1475,34 @@ define([
 			var schemaHtml = this.getSchemaHtml();
 			schemaDialog.showDialog("Schema Table", schemaHtml, [], "Close Table");
 		},
+		
+		//entity values can only be alpha numerics separated by ';'
+		handleEntityKeypress: function(evt){
+			var charCode = evt.charCode;
+			if (charCode && null === String.fromCharCode(charCode).match("[ a-zA-Z0-9;]")){
+				event.stop(evt);
+			}
+		},
+		checkForSlotDuplicates: function(eqn){
+			try{
+				var varAr = expression.getVariableStrings(eqn);
+				var finalList = [];
+				array.forEach(varAr, function(variable){
+					if(!finalList.includes(variable))
+						finalList.push(variable);
+				});
+				var slotCount = Object.keys(this.slotMap).length;
+				if(finalList.length === slotCount)
+					return false;
+				else
+					return true;
+			}
+			catch(err){
+				console.log("Parser error: ", err);
+				console.log(err.message);
+				console.log(err.Error);
+				return false;
+			}
+		}
 	});
 });
