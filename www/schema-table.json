@@ -59,7 +59,7 @@
 			"Name": "Tailwind",
 			"Equation": "GS = AS + WS",
 			"Mapping": {
-				"GS": "Ground Speed",
+				"GS": "Speed Relative to Ground",
 				"AS": "Speed Relative to Carrier",
 				"WS": "Speed of Carrier"
 			},
@@ -69,7 +69,7 @@
 			"Name": "Headwind",
 			"Equation": "GS = AS - WS",
 			"Mapping": {
-				"GS": "Ground Speed",
+				"GS": "Speed Relative to Ground",
 				"AS": "Speed Relative to Carrier",
 				"WS": "Speed of Carrier"
 			},

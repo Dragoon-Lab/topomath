@@ -109,8 +109,8 @@ define([
 					"questionMarkRoot": "Indicates that this variable is one the problem will ask the student to solve for",
 					"descriptionQuestionMark": "A description for this equation",
 					//"descriptionQuestionMarkStudent": "A description for this equation",
-					"entityDescriptionQuestionMark": "Enter a list of valid entity names, separated by semicolons",
-					"entityDescriptionQuestionMarkStudent":"Select the entity this schema is about.",
+					"entityDescriptionQuestionMark": "Enter a list of entity names or descriptions of relationships, separated by semicolons",
+					"entityDescriptionQuestionMarkStudent":"Select the relationship/entity this schema is about.",
 					"variableSlotNamesQuestionMark": "This section contains variable names to choose from or type in for the selected schema"
 		},
 		constructor: function(mode, model, config, fixPosition){

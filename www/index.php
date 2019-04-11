@@ -230,7 +230,7 @@
 			<div id="entityInputboxContainer" class="fieldgroup" style="display: none;">
 				<span class="fixedwidth">
 					<div id="entityDescriptionQuestionMark" class="questionMark"></div>
-					<label for="entityInputbox">Entity</label>
+					<label for="entityInputbox">Relationship</label>
 				</span>
 				<input id="entityInputbox" data-dojo-type="dijit/form/TextBox">
 			</div>
@@ -239,10 +239,10 @@
 			<div id="entitySelectorStudentContainer" class="fieldgroup" style="display: none;">
 				<span class="fixedwidth">
 					<div id="entityDescriptionQuestionMarkStudent" class="questionMark"></div>
-					<label for="entitySelectorStudent">Entity</label>
+					<label for="entitySelectorStudent">Relationship</label>
 				</span>
 				<select id="entitySelectorStudent" data-dojo-type="dijit/form/Select">
-					<option value='defaultSelect'>Select an entity</option>
+					<option value='defaultSelect'>Select a relationship</option>
 				</select>
 			</div>
 
