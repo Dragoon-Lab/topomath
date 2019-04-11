@@ -356,6 +356,7 @@ define([
 			//change entity to default or to choose again
 			registry.byId(this.controlMap.entity).set("value", "defaultSelect");
 			this.updateEquationDescription();
+			this.updateEqnDelete();
 		},
 		/*handle entities for student node
 		*/
@@ -428,10 +429,13 @@ define([
 						registry.byId(this.controlMap.equation).get("value"));
 				// work around to remove disable and status in case the demo
 				// equation has prior node error
+				console.log("equation processed directives", dd);
+				/*
 				for(var i = 0; i < dd.length; i++){
 					if(dd[i].attribute === "value")
 						this.demoParse = this.equationAnalysis([], false, dd[i].value);
 				}
+				
 				if(this.demoParse && this.demoParse.error){
 					for(i = 0; i < dd.length; i++){
 						if(dd[i].attribute === "status" || dd[i].attribute === "disabled" || dd[i].id === "message"){
@@ -439,7 +443,7 @@ define([
 							i--;
 						}
 					}
-				}
+				} */
 				if(!parse.error)
 					directives = directives.concat(dd);
 				var context = this;
@@ -491,7 +495,7 @@ define([
 				this.disableTypeValueUnits(true);
 				
 				//can the qty node have delete option
-				var canHaveDeleteNode = this.canHaveDeleteNode();
+				var canHaveDeleteNode = this.canHaveDeleteNode(this.currentID);
 				console.log("can have delete node", canHaveDeleteNode);
 				if(canHaveDeleteNode){
 					registry.byId("deleteButton").set("disabled",false);
@@ -756,15 +760,36 @@ define([
 				var original_id = this._model.student.getAuthoredID(this.currentID);
 				var original_eq = this._model.authored.getEquation(original_id);
 				var original_Ar = expression.getVariableStrings(original_eq);
+				var original_RightAr = expression.getRightSideEquationStrings(original_eq);
 				var current_Ar = expression.getVariableStrings(this._model.student.getEquation(this.currentID));
-				//console.log("current, original", original_Ar, current_Ar, this._model.student.getStatus(this.currentID, "equation"));
+
+				console.log("current, original", original_Ar, current_Ar, this._model.student.getStatus(this.currentID, "equation"));
 				this.variableUpdateBySystem = false;
 				for(var i=0;i<original_Ar.length;i++){
 					var get_original = this._model.student.getAuthoredID(current_Ar[i]);
 					var get_original_name = this._model.authored.getName(original_Ar[i]);
 					var slot_id = Object.values(this.slotMap)[i];
-					console.log("ambigiousSchemas",this.ambigiousSchemas.includes(this.schema),original_Ar.includes(get_original));
-					if(get_original == original_Ar[i] || (this.ambigiousSchemas.includes(this.schema) && original_Ar.includes(get_original))){
+					var isLeftHandSideVal = false;
+					if(i == 0)
+						isLeftHandSideVal = true;
+					else
+						isLeftHandSideVal = false;
+					console.log("original right ar", original_RightAr, get_original, get_original_name);
+					
+					/* this case has been handle while nodes are created
+					if(!get_original && !isLeftHandSideVal && this.ambigiousSchemas.includes(this.schema)){
+						//we need to assign an authoredID to the current slot id
+						for(var p = 0; p < original_RightAr.length; p++){
+							if(!this._model.student.isAuthoredIDNotAssigned(original_RightAr[p])){
+								console.log("assigning authored id", original_RightAr[p], current_Ar[i]);
+								this._model.student.setAuthoredID(current_Ar[i], original_RightAr[p]);
+								get_original = original_RightAr[p];
+								break;
+							}
+						}
+					} */
+
+					if(get_original == original_Ar[i] || (!isLeftHandSideVal && this.ambigiousSchemas.includes(this.schema)  && original_RightAr.includes(get_original))){
 						if(this._model.student.getSlotStatus(this.currentID, slot_id) == "correct"){
 							style.set(dojo.byId("widget_holder"+this.schema+this.currentID+slot_id), 'backgroundColor', 'lightGreen');
 							registry.byId("holder"+this.schema+this.currentID+slot_id).set("disabled", true);
@@ -784,11 +809,28 @@ define([
 						if(this._model.student.getSlotStatus(this.currentID, slot_id) == "incorrect"){
 							var studID = this._model.student.getNodeIDFor(original_Ar[i]);
 							var studName = this._model.student.getName(studID);
+							var slotAr = expression.getVariableStrings(registry.byId(this.controlMap.equation).value);
+							var slotRightAr = expression.getRightSideEquationStrings(registry.byId(this.controlMap.equation).value);
+							var deriveNameFrom = original_Ar[i];
+							if(slotRightAr.includes(slotAr[i]) && slotRightAr.includes(studName)){
+								//if the existing slots for equation on the right side already have the variable, topomath needs to avoid duplicates and throw in alternate "correct" variable that could be used
+								var curID = original_Ar[i];
+								console.log(original_RightAr, curID)
+								for(var j=0; j<original_RightAr.length;j++){
+									if(curID != original_RightAr[j] && !slotRightAr.includes(original_RightAr[j])){
+										studID = this._model.student.getNodeIDFor(original_RightAr[j]);
+										studName = this._model.student.getName(studID);
+										deriveNameFrom = original_RightAr[j];
+										break;
+									}
+								}
+							}
 							if(!studName){
-								var tempName =  this._model.authored.getName(original_Ar[i]);
+								var tempName =  this._model.authored.getName(deriveNameFrom);
 								var authNameValid = false;
 								while(!authNameValid){
 									var nameAlreadyExists = this._model.student.getNodeIDByName(tempName);
+									console.log("name already exists", tempName, nameAlreadyExists)
 									if(!nameAlreadyExists){
 										studName = tempName;
 										authNameValid = true;
@@ -906,8 +948,8 @@ define([
 			var authoredID = this.setNodeDescription(node.id, node.variable);
 			if(authoredID){
 				this.updateInputNode(node.id, node.variable);
-				var canHaveDeleteNode = this.canHaveDeleteNode();
-				this._model.student.setCanDelete(this.currentID,canHaveDeleteNode);
+				var canHaveDeleteNode = this.canHaveDeleteNode(node.id);
+				this._model.student.setCanDelete(node.id,canHaveDeleteNode);
 				this.updateNodeView(this._model.active.getNode(node.id));
 			}
 
@@ -981,18 +1023,16 @@ define([
 			this.deleteNodeActivated = true;
 		},
 		updateEqnDelete: function(){
-			if(this.schema != "" || this.entity != ""){
-				var getEntStatus = this._model.student.getStatus(this.currentID, "entity");
-				console.log("del status", getEntStatus);
-				if( getEntStatus.status == "correct" || getEntStatus.status == "demo"){
-					//disable delete
-					registry.byId("deleteButton").set("disabled",true);
-					this._model.student.setCanDelete(this.currentID,false);
-				}
-				else{
-					registry.byId("deleteButton").set("disabled", false);
-					this._model.student.setCanDelete(this.currentID,true);
-				}
+			var getEntStatus = this._model.student.getStatus(this.currentID, "entity");
+			console.log("del status", getEntStatus);
+			if( getEntStatus.status == "correct" || getEntStatus.status == "demo"){
+				//disable delete
+				registry.byId("deleteButton").set("disabled",true);
+				this._model.student.setCanDelete(this.currentID,false);
+			}
+			else{
+				registry.byId("deleteButton").set("disabled", false);
+				this._model.student.setCanDelete(this.currentID,true);
 			}
 		},
 		updateEquationDescription: function(){
@@ -1033,6 +1073,16 @@ define([
 			}
 			this.applyDirectives(this.studentPM.process(this.currentID, "description", description, description, "", descAttempt));
 		},
+		//Incase slot gets a red feedback, when user tries to further change it, update background color to white
+		adjustSlotColors: function(currentCombo){
+			var curWidgetHolderID = currentCombo.id;
+			var curWidgetID = currentCombo.widgetid;
+			if(style.get(dojo.byId(curWidgetHolderID),"backgroundColor") == 'rgb(255, 0, 0)'){
+					registry.byNode(currentCombo).on('change', lang.hitch(this, function(){
+						style.set(dojo.byId(curWidgetHolderID), "backgroundColor", "white");
+					}));
+			}
+		}
 	});
 });
 

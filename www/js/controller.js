@@ -1328,6 +1328,7 @@ define([
 				eachComboBox.forEach(function(childcomboBox){
 					registry.byNode(childcomboBox).on('change', lang.hitch(this, function(){
 						this.updateEquation();
+						this.adjustSlotColors(childcomboBox);
 					}));
 				}, this);
 		},
@@ -1450,14 +1451,13 @@ define([
 		/*canHaveDeleteNode
 		checks whether the current qty node is part of any equation and decides if it can be deleted accordingly
 		*/
-		canHaveDeleteNode: function(){
+		canHaveDeleteNode: function(nodeid){
 			//only applicable to quantity nodes
 			var eqList = this._model.active.getAllEquations();
-			var currentID = this.currentID;
 			var found = array.some(eqList,function(currentEq){
 				try{
 					var currentVars = expression.getVariableStrings(currentEq.equation);
-					if(currentVars.includes(currentID))
+					if(currentVars.includes(nodeid))
 						return true;
 				}
 				catch(err){
