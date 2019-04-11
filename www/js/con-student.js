@@ -429,10 +429,13 @@ define([
 						registry.byId(this.controlMap.equation).get("value"));
 				// work around to remove disable and status in case the demo
 				// equation has prior node error
+				console.log("equation processed directives", dd);
+				/*
 				for(var i = 0; i < dd.length; i++){
 					if(dd[i].attribute === "value")
 						this.demoParse = this.equationAnalysis([], false, dd[i].value);
 				}
+				
 				if(this.demoParse && this.demoParse.error){
 					for(i = 0; i < dd.length; i++){
 						if(dd[i].attribute === "status" || dd[i].attribute === "disabled" || dd[i].id === "message"){
@@ -440,7 +443,7 @@ define([
 							i--;
 						}
 					}
-				}
+				} */
 				if(!parse.error)
 					directives = directives.concat(dd);
 				var context = this;
@@ -760,7 +763,7 @@ define([
 				var original_RightAr = expression.getRightSideEquationStrings(original_eq);
 				var current_Ar = expression.getVariableStrings(this._model.student.getEquation(this.currentID));
 
-				//console.log("current, original", original_Ar, current_Ar, this._model.student.getStatus(this.currentID, "equation"));
+				console.log("current, original", original_Ar, current_Ar, this._model.student.getStatus(this.currentID, "equation"));
 				this.variableUpdateBySystem = false;
 				for(var i=0;i<original_Ar.length;i++){
 					var get_original = this._model.student.getAuthoredID(current_Ar[i]);
@@ -771,8 +774,22 @@ define([
 						isLeftHandSideVal = true;
 					else
 						isLeftHandSideVal = false;
+					console.log("original right ar", original_RightAr, get_original, get_original_name);
+					
+					/* this case has been handle while nodes are created
+					if(!get_original && !isLeftHandSideVal && this.ambigiousSchemas.includes(this.schema)){
+						//we need to assign an authoredID to the current slot id
+						for(var p = 0; p < original_RightAr.length; p++){
+							if(!this._model.student.isAuthoredIDNotAssigned(original_RightAr[p])){
+								console.log("assigning authored id", original_RightAr[p], current_Ar[i]);
+								this._model.student.setAuthoredID(current_Ar[i], original_RightAr[p]);
+								get_original = original_RightAr[p];
+								break;
+							}
+						}
+					} */
 
-					if(get_original == original_Ar[i] || (!isLeftHandSideVal && this.ambigiousSchemas.includes(this.schema) && original_RightAr.includes(get_original))){
+					if(get_original == original_Ar[i] || (!isLeftHandSideVal && this.ambigiousSchemas.includes(this.schema)  && original_RightAr.includes(get_original))){
 						if(this._model.student.getSlotStatus(this.currentID, slot_id) == "correct"){
 							style.set(dojo.byId("widget_holder"+this.schema+this.currentID+slot_id), 'backgroundColor', 'lightGreen');
 							registry.byId("holder"+this.schema+this.currentID+slot_id).set("disabled", true);

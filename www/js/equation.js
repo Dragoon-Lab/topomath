@@ -18,6 +18,8 @@ define([
 			incorrect: "incorrect",
 			partial: "partial"
 		},
+		ambigiousSchemas: ["P2W","P3W","P4W","P5W","A2","A3","A4","M2","M3","M4"],
+
 		/*
 		* Converts an equation with ids to corresponding variable names
 		* It splits the equation at = and then replaces the variables in
@@ -142,6 +144,15 @@ define([
 											//subModel.removePrevAuthoredID(authStudNameMap[variable]);
 											if(subModel.isAuthoredIDNotAssigned(authStudNameMap[variable]))
 												subModel.setAuthoredID(newId, authStudNameMap[variable]);
+											else if(this.ambigiousSchemas.includes(params.originalSchema)){
+												//the schema is ambigious, so we can try assigning author nodes of other params in order
+												for(var p=1;p<oexprVars.length;p++){
+													if(subModel.isAuthoredIDNotAssigned(oexprVars[p])){
+														subModel.setAuthoredID(newId, oexprVars[p]);
+														break;
+													}
+												}
+											}
 											else
 												subModel.setAuthoredID(newId, null);
 										}
@@ -379,7 +390,7 @@ define([
 			var sEquation = model.student.getEquation(id);
 			var aEquation = model.authored.getEquation(model.student.getAuthoredID(id));
 			var str = model.active.getInitialNodeIDString();
-
+			console.log("sEquation, aEquation, str", sEquation, aEquation, str)
 			if(!aEquation || !sEquation)
 				return false;
 
@@ -390,18 +401,21 @@ define([
 			} catch(e){
 				console.log(e);
 			}
-
+			console.log("aParse, sParse", aParse, sParse);
 			var numberOfEvaluations = model.student.isSolutionStatic() ? 1 : 10;
 			var variables = {};
 			var authorValue = [];
 			var studentValue = [];
 			var flag;
+			console.log("number of evaluations", numberOfEvaluations)
 			for(var i = 0; i < numberOfEvaluations; i++){
 				variables = this.createEvaluationPoint(model);
+				console.log("variables", variables)
 				for(var j = 0; j < 2; j++){
 					flag = array.every(sParse[j].variables(), function(id){
 						return (id in variables);
 					});
+					console.log(sParse[j].variables(), flag)
 					if(!flag)
 						return this._status["incorrect"];
 					authorValue[j] = aParse[j].evaluate(variables);
@@ -409,6 +423,7 @@ define([
 				}
 				var aValue = authorValue[0] - authorValue[1];
 				var sValue = studentValue[0] - studentValue[1];
+				console.log("aValue, sValue",aValue, sValue);
 				// this check will only have sValue check
 				if(Math.abs(sValue) > this.epsilon &&
 					Math.abs(Math.abs(aValue) - Math.abs(sValue)) > this.epsilon)
