@@ -54,9 +54,17 @@ define([
 				handleAs: "json"
 			}).then(lang.hitch(this, function(model_object){
 				console.log("model object received", model_object);
-				if(params.lk == "on"){
+				if(params.sp == "on"){
 					//check for student 
-					tweakModel.copyParams();
+					console.log("params tweak switch on");
+					var TM = new tweakModel(model_object);
+					var new_obj = TM.copyParams();
+					//console.log("new obj is", new_obj);
+				}
+				if(params.ss == "on"){
+					console.log("show drts(general schema) switch on");
+					var TM = new tweakModel(model_object);
+					var new_obj = TM.showSchemas("DRT");
 				}
 				return model_object;
 			}), lang.hitch(this, function(err){
