@@ -248,7 +248,7 @@ define([
 							}
 						}
 						
-						if(myThis._model.active.isStudentMode() && myThis._fixPosition){
+						if(myThis._model.active.isStudentMode() && myThis._fixPosition && myThis._model.student.getAuthoredID(myThis.currentID) ){
 							myThis._model.active.setPosition(myThis.currentID, 0, myThis._model.authored.getPosition(myThis._model.student.getAuthoredID(myThis.currentID),0));
 							console.log("updating node view for currentID")
 							myThis.updateNodeView(myThis._model.active.getNode(myThis.currentID));

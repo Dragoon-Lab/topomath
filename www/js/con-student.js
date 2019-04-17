@@ -537,7 +537,7 @@ define([
 				registry.byId(this.controlMap.schemas).set('value', schema);
 				var count = 0;
 				var schemaStatus =  this._model.student.getStatus(this.currentID,"schemas");
-				if((schemaStatus && schemaStatus.status == "incorrect" ) || schemaStatus == undefined){
+				if((schemaStatus && (schemaStatus.status == "incorrect" || schemaStatus.status == "")) || schemaStatus == undefined){
 					validSchemaInput = false;
 					correctSchemaAnswer = this._model.student.getLegitSchema();
 				}
