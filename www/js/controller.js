@@ -109,8 +109,8 @@ define([
 					"questionMarkRoot": "Indicates that this variable is one the problem will ask the student to solve for",
 					"descriptionQuestionMark": "A description for this equation",
 					//"descriptionQuestionMarkStudent": "A description for this equation",
-					"entityDescriptionQuestionMark": "Enter a list of valid entity names, separated by semicolons",
-					"entityDescriptionQuestionMarkStudent":"Select the entity this schema is about.",
+					"entityDescriptionQuestionMark": "Enter a list of entity names or descriptions of relationships, separated by semicolons",
+					"entityDescriptionQuestionMarkStudent":"Select the relationship/entity this schema is about.",
 					"variableSlotNamesQuestionMark": "This section contains variable names to choose from or type in for the selected schema"
 		},
 		constructor: function(mode, model, config, fixPosition){
@@ -241,6 +241,18 @@ define([
 					if(myThis.nodeType == "equation"){
 						console.log("starting hide", myThis.equationEntered);
 						var equation = registry.byId("equationInputbox");
+						if(myThis._model.active.isStudentMode() && myThis.schema != "" && myThis.entity!= "" ){
+							var authorAssignedEquation = myThis._model.authored.getEquationBySchemaEntity(myThis.schema, myThis.entity);
+							if(!myThis._model.student.getAuthoredID(myThis.currentID)){
+								myThis._model.student.setAuthoredID(myThis.currentID, authorAssignedEquation["id"]);
+							}
+						}
+						
+						if(myThis._model.active.isStudentMode() && myThis._fixPosition){
+							myThis._model.active.setPosition(myThis.currentID, 0, myThis._model.authored.getPosition(myThis._model.student.getAuthoredID(myThis.currentID),0));
+							console.log("updating node view for currentID")
+							myThis.updateNodeView(myThis._model.active.getNode(myThis.currentID));
+						}
 					
 						if(equation.value && !myThis.deleteNodeActivated &&  myThis.checkForSlotDuplicates(equation.value)){
 							myThis.applyDirectives([{

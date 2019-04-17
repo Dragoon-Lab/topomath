@@ -147,7 +147,7 @@ define([
 			* this has to be the first to be instantiated
 			* so that session object is not to be passed again and again. ~ Sachin
 			*/
-			var _fixPosition = query.fp == "on"? true : false;
+			var _fixPosition = (query.m == "STUDENT")? true:  (query.fp == "on"? true : false);
 			var _logger = logging.getInstance(_session);
 			_logger.log('open-problem', {problem: _logger._session.params.p});
 			/**
@@ -171,7 +171,7 @@ define([
 			else if(query.m === "SEDITOR")
 				controllerObject = new controlEditor(query.m, _model, _config);
 			else if(query.m === "STUDENT")
-				controllerObject = new controlStudent(query.m, _model, _config);
+				controllerObject = new controlStudent(query.m, _model, _config, _fixPosition);
 			/*
 			var controllerObject = (query.m === "AUTHOR") ?
 				new controlAuthor(query.m, _model, _config) :

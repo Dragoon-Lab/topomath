@@ -251,6 +251,7 @@ define([
 			var _description = this._model.authored.getDescription(selectDescription);
 			this._model.active.setAuthoredID(this.currentID, selectDescription);
 			this._model.active.setDescription(this.currentID, _description);
+
 			// This is only needed if the type has already been set,
 			// something that is generally only possible in TEST mode.
 			//this.updateEquationLabels();
@@ -996,10 +997,19 @@ define([
 					var newAuthID = this._model.authored.getNodeIDByDescription(description);
 					var existingStudID = this._model.student.getNodeIDFor(newAuthID);
 
-					if(existingStudID)
+					if(existingStudID){
 						this._model.student.setAuthoredID(existingStudID, curAuthID);
+						if(this._config.get("feedbackMode") !== "nofeedback" && this._fixPosition){
+							this._model.active.setPosition(existingStudID, 0, this._model.authored.getPosition(curAuthID,0));
+							this.updateNodeView(this._model.active.getNode(existingStudID));
+						}
+					}
 					//set new authored id to the current student node
 					this._model.student.setAuthoredID(this.currentID, newAuthID);
+					if(this._config.get("feedbackMode") !== "nofeedback" && this._fixPosition){
+						this._model.active.setPosition(this.currentID, 0, this._model.authored.getPosition(newAuthID,0));
+						this.updateNodeView(this._model.active.getNode(this.currentID));
+					}
 				}
 				this.applyDirectives(this.studentPM.process(this.currentID, "qtyDescription", description, description, "A valid description has been entered",));
 			}
