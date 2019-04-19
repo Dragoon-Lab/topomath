@@ -449,9 +449,15 @@ define([
 					directives = directives.concat(dd);
 				var context = this;
 			}
-			console.log("before applying equation directives", directives);
 			this.applyDirectives(directives);
-
+			if(!parse){
+				//in case parse fails, get valid variable count. If the valid variable count is zero, the equation status should be empty rather than incorrect
+				var validVars = this.validVariableCount();
+				if(validVars == 0){
+					console.log("valid var count", validVars, this.currentID);
+					this._model.student.setStatus(this.currentID, "equation" , {disabled: true, status: ""});
+				}
+			}
 			return directives;
 		},
 		equationSet: function (value) {

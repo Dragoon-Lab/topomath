@@ -1460,6 +1460,21 @@ define([
 			}
 			return true;
 		},
+		/*valid variable count in the slots
+		*/
+		validVariableCount: function(){
+			var count = 0;
+			if(this.equation !== ""){
+				for(var varKey in this.slotMap){
+					var currentComboBox = 'holder'+this.schema+this.currentID+this.slotMap[varKey];
+					var currentVal = registry.byId(currentComboBox).get("value");
+					if(currentVal != ""){
+						count++;
+					}
+				}
+			}
+			return count;
+		},
 		/*canHaveDeleteNode
 		checks whether the current qty node is part of any equation and decides if it can be deleted accordingly
 		*/
