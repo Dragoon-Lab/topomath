@@ -45,7 +45,8 @@ define([
 					var curAuthID = this.authObj[prop].ID;
 					var parentDet = this.findParentDetails(curAuthID);
 					var schemaCheck = (giveSchema == "on" && giveParams != "on") ? ( parentDet.schema == schema ) : (giveParams == "on"? true: false);
-					if(schemaCheck && !authStudIDMap[curAuthID]){
+					var paramCheck = (giveParams == "on" && giveSchema != "on")? (this.authObj[prop].variableType == "parameter") : true;
+					if(schemaCheck && paramCheck && !authStudIDMap[curAuthID]){
 							this.studObj[snodesCount++] = {
 							ID: "id" + getNewID,
 							attemptCount: {
