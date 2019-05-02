@@ -241,6 +241,18 @@ define([
 					if(myThis.nodeType == "equation"){
 						console.log("starting hide", myThis.equationEntered);
 						var equation = registry.byId("equationInputbox");
+						if(myThis._model.active.isStudentMode() && myThis.schema != "" && myThis.entity!= "" ){
+							var authorAssignedEquation = myThis._model.authored.getEquationBySchemaEntity(myThis.schema, myThis.entity);
+							if(!myThis._model.student.getAuthoredID(myThis.currentID)){
+								myThis._model.student.setAuthoredID(myThis.currentID, authorAssignedEquation["id"]);
+							}
+						}
+						
+						if(myThis._model.active.isStudentMode() && myThis._fixPosition && myThis._model.student.getAuthoredID(myThis.currentID) ){
+							myThis._model.active.setPosition(myThis.currentID, 0, myThis._model.authored.getPosition(myThis._model.student.getAuthoredID(myThis.currentID),0));
+							console.log("updating node view for currentID")
+							myThis.updateNodeView(myThis._model.active.getNode(myThis.currentID));
+						}
 					
 						if(equation.value && !myThis.deleteNodeActivated &&  myThis.checkForSlotDuplicates(equation.value)){
 							myThis.applyDirectives([{
@@ -1447,6 +1459,21 @@ define([
 				}
 			}
 			return true;
+		},
+		/*valid variable count in the slots
+		*/
+		validVariableCount: function(){
+			var count = 0;
+			if(this.equation !== ""){
+				for(var varKey in this.slotMap){
+					var currentComboBox = 'holder'+this.schema+this.currentID+this.slotMap[varKey];
+					var currentVal = registry.byId(currentComboBox).get("value");
+					if(currentVal != ""){
+						count++;
+					}
+				}
+			}
+			return count;
 		},
 		/*canHaveDeleteNode
 		checks whether the current qty node is part of any equation and decides if it can be deleted accordingly

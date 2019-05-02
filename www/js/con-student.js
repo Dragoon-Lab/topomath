@@ -251,6 +251,7 @@ define([
 			var _description = this._model.authored.getDescription(selectDescription);
 			this._model.active.setAuthoredID(this.currentID, selectDescription);
 			this._model.active.setDescription(this.currentID, _description);
+
 			// This is only needed if the type has already been set,
 			// something that is generally only possible in TEST mode.
 			//this.updateEquationLabels();
@@ -448,9 +449,15 @@ define([
 					directives = directives.concat(dd);
 				var context = this;
 			}
-			console.log("before applying equation directives", directives);
 			this.applyDirectives(directives);
-
+			if(!parse){
+				//in case parse fails, get valid variable count. If the valid variable count is zero, the equation status should be empty rather than incorrect
+				var validVars = this.validVariableCount();
+				if(validVars == 0){
+					console.log("valid var count", validVars, this.currentID);
+					this._model.student.setStatus(this.currentID, "equation" , {disabled: true, status: ""});
+				}
+			}
 			return directives;
 		},
 		equationSet: function (value) {
@@ -536,7 +543,7 @@ define([
 				registry.byId(this.controlMap.schemas).set('value', schema);
 				var count = 0;
 				var schemaStatus =  this._model.student.getStatus(this.currentID,"schemas");
-				if((schemaStatus && schemaStatus.status == "incorrect" ) || schemaStatus == undefined){
+				if((schemaStatus && (schemaStatus.status == "incorrect" || schemaStatus.status == "")) || schemaStatus == undefined){
 					validSchemaInput = false;
 					correctSchemaAnswer = this._model.student.getLegitSchema();
 				}
@@ -996,10 +1003,19 @@ define([
 					var newAuthID = this._model.authored.getNodeIDByDescription(description);
 					var existingStudID = this._model.student.getNodeIDFor(newAuthID);
 
-					if(existingStudID)
+					if(existingStudID){
 						this._model.student.setAuthoredID(existingStudID, curAuthID);
+						if(this._config.get("feedbackMode") !== "nofeedback" && this._fixPosition){
+							this._model.active.setPosition(existingStudID, 0, this._model.authored.getPosition(curAuthID,0));
+							this.updateNodeView(this._model.active.getNode(existingStudID));
+						}
+					}
 					//set new authored id to the current student node
 					this._model.student.setAuthoredID(this.currentID, newAuthID);
+					if(this._config.get("feedbackMode") !== "nofeedback" && this._fixPosition){
+						this._model.active.setPosition(this.currentID, 0, this._model.authored.getPosition(newAuthID,0));
+						this.updateNodeView(this._model.active.getNode(this.currentID));
+					}
 				}
 				this.applyDirectives(this.studentPM.process(this.currentID, "qtyDescription", description, description, "A valid description has been entered",));
 			}
