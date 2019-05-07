@@ -2,8 +2,9 @@ define([
 	"dojo/_base/declare", 
 	"dojo/request/xhr",
 	"dojo/_base/json",
-	"dojo/_base/lang"
-], function(declare, xhr, json, lang){
+	"dojo/_base/lang",
+	"./tweakModel"
+], function(declare, xhr, json, lang, tweakModel){
 	// Summary:
 	//          Loads and saves sessions and sets up logging
 	// Description:
@@ -53,6 +54,11 @@ define([
 				handleAs: "json"
 			}).then(lang.hitch(this, function(model_object){
 				console.log("model object received", model_object);
+				if(params.gp == "on" || params.gs == "on"){
+					//check for student 
+					var TM = new tweakModel(model_object);
+					var new_obj = TM.updateModel(params.gp, params.gs);
+				}
 				return model_object;
 			}), lang.hitch(this, function(err){
 				console.log("no model found", err);
