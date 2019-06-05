@@ -173,7 +173,7 @@ define([
 				if(m == "model.incomplete"){
 					switch(counter){
 						case 0:
-							str += solution.status.node || "uninitialized";
+							str += solution.status.node || "model incomplete";
 							break;
 						case 1:
 							str += solution.status.field || "";
