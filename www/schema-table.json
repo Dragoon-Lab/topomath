@@ -131,7 +131,7 @@
 		},
 		{
 			"Name": "Mixture",
-			"Equation": "IA = IP * WA",
+			"Equation": "IA = WA * IP",
 			"Mapping": {
 				"IA": "Amount of Ingredient",
 				"WA": "Amount of Whole Mixture",
