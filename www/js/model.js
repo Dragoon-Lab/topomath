@@ -1101,6 +1101,10 @@ define([
 			},
 			setAuthoredID: function(/*string*/ id, /*string*/ authoredID){
 				id = this.getID(id);
+				//The below piece of code handles when authoredID is not present which I don't find relevance in current usage, apart from that if authoredID does not exist or is already corresponding to another node, for the current node it has to be null/empty 
+				//Because, alien nodes can be generated in current topomath version because of student errors which is an important part of slot feedback
+				//Will remove the code below after review  
+				/* 
 				if(!authoredID){
 					var node = this.getNode(id);
 					var aNodes = obj.authored.getNodes();
@@ -1114,7 +1118,7 @@ define([
 							break;
 						}
 					}
-				}
+				} */
 				this.getNode(id).authoredID = authoredID;
 			},
 			setSlotStatus: function(id, slotId, status){
