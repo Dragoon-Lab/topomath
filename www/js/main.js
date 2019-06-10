@@ -67,7 +67,8 @@ define([
 	}
 
 	var _session = session(query);
-	var _model = new model(_session, query.m, query.p);
+	var extraParams = {"giveParameters": query.gp, "skipUnits": query.su};
+	var _model = new model(_session, query.m, query.p, extraParams);
 	var _config = tutorConfiguration.getInstance(query.m);
 	var _feedback = _config.get("feedbackMode");
 	console.log(_model);
@@ -171,7 +172,7 @@ define([
 			else if(query.m === "SEDITOR")
 				controllerObject = new controlEditor(query.m, _model, _config);
 			else if(query.m === "STUDENT")
-				controllerObject = new controlStudent(query.m, _model, _config, _fixPosition);
+				controllerObject = new controlStudent(query.m, _model, _config, _fixPosition, extraParams);
 			/*
 			var controllerObject = (query.m === "AUTHOR") ?
 				new controlAuthor(query.m, _model, _config) :

@@ -113,7 +113,7 @@ define([
 					"entityDescriptionQuestionMarkStudent":"Select the relationship/entity this schema is about.",
 					"variableSlotNamesQuestionMark": "This section contains variable names to choose from or type in for the selected schema"
 		},
-		constructor: function(mode, model, config, fixPosition){
+		constructor: function(mode, model, config, fixPosition, extraParams){
 			console.log("+++++++++ In generic controller constructor");
 			lang.mixin(this.controlMap, this.genericControlMap);
 
@@ -137,6 +137,8 @@ define([
 			this.slotMap = "";
 			this.entity = "";
 			this.description = "";
+			this._giveParams = extraParams.giveParameters;
+			this._skipUnits = extraParams.skipUnits;
 		},
 
 		// A stub for connecting routine to draw new node.

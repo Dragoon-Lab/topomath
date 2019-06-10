@@ -3,7 +3,7 @@ define([
 ], function(array, lang){
 	return function(){
 		var obj = {
-			constructor: function(/* object */ session, /* string */ mode, /* string */ name){
+			constructor: function(/* object */ session, /* string */ mode, /* string */ name, /*object*/ extraParams){
 				this.x = this.beginX;
 				this.y = this.beginY;
 				this.model = {
@@ -17,6 +17,8 @@ define([
 				obj._session = session;
 				this._unknownQuantityNodeCount = 0;
 				this._equationNodeCount = 0;
+				this._giveParams = extraParams.giveParameters;
+				this._skipUnits = extraParams.skipUnits;
 			},
 			_ID: 1,
 			beginX: 450,
@@ -1200,6 +1202,9 @@ define([
 				var node = this.getNode(id);
 				var returnFlag = '';
 				var hasUnits = node.authoredID && obj.authored.getUnits(node.authoredID);
+				if(obj._skipUnits == "on"){
+					hasUnits = false;
+				}
 				var nameEntered = node.type && node.type == "equation" || node.variable;
 				// as seen in Dragoon.
 				// variableType and value combined defines node completion
@@ -1366,7 +1371,8 @@ define([
 					//update("variable");
 					update("variableType");
 					update("value");
-					update("units");
+					if(obj._skipUnits != "on")
+						update("units");
 				}else if(type === "equation"){
 					update("schemas");
 					update("entity");

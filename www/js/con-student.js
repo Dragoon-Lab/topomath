@@ -216,7 +216,10 @@ define([
 			style.set('qtyDescriptionInputboxContainerStudent', 'display', 'inline-block');
 			style.set('variableInputboxContainer', 'display', 'inline-block');
 			//style.set('valueInputboxContainer', 'display', 'block');
-			style.set('unitsSelectorContainerStudent', 'display', 'block');
+			if(this._skipUnits != "on")
+				style.set('unitsSelectorContainerStudent', 'display', 'block');
+			else
+				style.set('unitsSelectorStudent', 'display', 'none');
 			style.set('expressionDiv', 'display', 'block');
 			//This has been removed in new author mode editor design
 			//style.set('inputSelectorContainer', 'display', 'block');
@@ -943,7 +946,9 @@ define([
 			if(authoredID){
 				this._model.active.setAuthoredID(id, authoredID);
 				console.log(this._model.active.getNode(id));
-				//this._model.active.setDescription(id, this._model.authored.getDescription(authoredID));
+				if(this._giveParams == "on"){
+					this._model.active.setDescription(id, this._model.authored.getDescription(authoredID));
+				}
 				// Fixing position is a part of feedback to student
 				if(this._config.get("feedbackMode") !== "nofeedback" && this._fixPosition){
 					this._model.active.setPosition(id, 0, this._model.authored.getPosition(authoredID,0));
@@ -956,7 +961,7 @@ define([
 			if(authoredID){
 				this.updateInputNode(node.id, node.variable);
 				//if the give parameters switch is on, according to the latest design update refer card #473, all the unknown nodes should be automatically set along with the status
-				if(sessionStorage.getItem("draggp") == "on"){
+				if(this._giveParams == "on"){
 					this._model.student.setVariableType(node.id, "unknown");
 					this._model.student.setStatus(node.id, "variableType" , {"disabled":true,"status":"correct"});
 				}
