@@ -955,6 +955,11 @@ define([
 			var authoredID = this.setNodeDescription(node.id, node.variable);
 			if(authoredID){
 				this.updateInputNode(node.id, node.variable);
+				//if the give parameters switch is on, according to the latest design update refer card #473, all the unknown nodes should be automatically set along with the status
+				if(sessionStorage.getItem("draggp") == "on"){
+					this._model.student.setVariableType(node.id, "unknown");
+					this._model.student.setStatus(node.id, "variableType" , {"disabled":true,"status":"correct"});
+				}
 				var canHaveDeleteNode = this.canHaveDeleteNode(node.id);
 				this._model.student.setCanDelete(node.id,canHaveDeleteNode);
 				this.updateNodeView(this._model.active.getNode(node.id));
