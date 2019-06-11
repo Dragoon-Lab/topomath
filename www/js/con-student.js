@@ -396,13 +396,13 @@ define([
 				//this._model.student.setAttemptCount(this.currentID, "entity", currentAttemptCount+1);
 				returnObj = this.studentPM.process(this.currentID, "entity", entity, true, message,  this._model.student.getAttemptCount(this.currentID,"entity"));
 				this.entity = entity;
+				this.updateSlotVariables();
+				this.updateEquation();
 			}
 			this.applyDirectives(returnObj);
 			this._model.student.setEntities(this.currentID, entity);
 			this.updateEqnDelete();
 			this.updateEquationDescription();
-			this.updateSlotVariables();
-			this.updateEquation();
 		},
 		/*
 		 *	 handle event on inputs box

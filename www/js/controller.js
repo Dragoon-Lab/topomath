@@ -1322,6 +1322,10 @@ define([
 			html.set(dom.byId("variableSlotControlsbox"), slotContHtml);
 			var varAr = this.getSlotVariablesList();
 
+			//slots by default should have variables of the format schemaname and first word of relationship (entity)
+			//extract relationship first word
+			var relFW = this.entity.split(" ")[0];
+
 			for(var varKey in this.slotMap){
 				// Authors get some free options for new variable names, but other modes do not
 				var choices = (this._mode === "AUTHOR") ? [{id: ""+varKey+subscript, name: ""+varKey+subscript}] : []; 
@@ -1333,8 +1337,11 @@ define([
 										store: stateStore,
 										searchAttr: "name",
 										class: "slotComboBox",
-										placeholder: "Select or type your variable name here."   
+										placeholder: "Select or type your variable name here."
 										}, curDiv);
+				//if the user is in feedback mode, autogenerate variable names to fill schema slots
+				if(this._model.active.isStudentMode())
+					currentComboBox.set("value", varKey+relFW);
 				currentComboBox.startup();
 			}
 			var eachComboBox = dojo.query(".slotComboBox");
