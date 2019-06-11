@@ -218,8 +218,10 @@ define([
 			//style.set('valueInputboxContainer', 'display', 'block');
 			if(this._skipUnits != "on")
 				style.set('unitsSelectorContainerStudent', 'display', 'block');
-			else
+			else{
+				style.set('unitsSelectorStudentLabel', 'display', 'none');
 				style.set('unitsSelectorStudent', 'display', 'none');
+			}
 			style.set('expressionDiv', 'display', 'block');
 			//This has been removed in new author mode editor design
 			//style.set('inputSelectorContainer', 'display', 'block');
