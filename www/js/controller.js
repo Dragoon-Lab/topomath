@@ -137,8 +137,8 @@ define([
 			this.slotMap = "";
 			this.entity = "";
 			this.description = "";
-			this._giveParams = extraParams.giveParameters;
-			this._skipUnits = extraParams.skipUnits;
+			this._giveParams = extraParams ? extraParams.giveParameters : false;
+			this._skipUnits = extraParams ? extraParams.skipUnits : false;
 		},
 
 		// A stub for connecting routine to draw new node.
