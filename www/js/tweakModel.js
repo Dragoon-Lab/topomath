@@ -15,7 +15,6 @@ define([
 		},
 
 		updateModel: function(giveParams, giveSchema){
-			console.log("giving", giveParams, giveSchema);
 			var schema = "DRT";
 			var getNewID = this.getLargestID()+1;
 			var snodesCount = 0;
@@ -40,10 +39,15 @@ define([
 				schemas: {status: "correct"},
 			};
 			var authStudIDMap = [];
+			var studNameMap = [];
 			//Initially fill in authStudIDMap with existing student node's authorId=studentID. Using this later what nodes have to be added or ignored can be decided
 			for(var prop in this.studObj){
 				if(this.studObj.hasOwnProperty(prop) && this.studObj[prop].hasOwnProperty("ID")){
-					authStudIDMap[this.studObj[prop].authoredID] = this.studObj[prop].ID;
+					if(this.studObj[prop].authoredID)
+						authStudIDMap[this.studObj[prop].authoredID] = this.studObj[prop].ID;
+					if(this.studObj[prop].hasOwnProperty("variable")){
+						studNameMap.push(this.studObj[prop].variable);
+					}
 				}
 			}
 			//traverse through authObj, looking for quantities to give first
@@ -55,7 +59,6 @@ define([
 					//consider all param nodes from the author model
 					if(this.authObj.hasOwnProperty(prop) && this.authObj[prop].hasOwnProperty("type") && this.authObj[prop].type == "quantity" && this.authObj[prop].variableType == "parameter"){
 						var curAuthID = this.authObj[prop].ID;
-						console.log("cur auth id in", curAuthID, this.authObj[prop]);
 						var parentDet = this.findParentDetails(curAuthID);
 						//if the authored ID is not already existing in studObj then we can add the node
 						if(!authStudIDMap[curAuthID]){
@@ -88,8 +91,6 @@ define([
 					}
 				}
 			}
-			console.log("after leaving studObj", this.studObj);
-
 			/*
 			for(var prop in this.authObj){
 				//console.log("current prop is", prop, this.authObj.hasOwnProperty(prop));
@@ -144,14 +145,13 @@ define([
 					var authEqAr = equation.getVariableStrings(this.authObj[prop].equation);
 					var hasAlien = false;
 					var studLinkMap = [];
+					var localEqNodeIDCorresponder = [];
 					//after the current node equation has been auto generated
 					//create the constituent nodes with auto generated variable names
 					for(var k = 0; k < authEqAr.length; k++){
-						console.log("authEqAr", authEqAr);
 						var getCurProps = this.findAuthProp(authEqAr[k]);
-						console.log("getCurProps", getCurProps);
 						var parentDet = this.findParentDetails(authEqAr[k]);
-						if(getCurProps["variableType"] == "parameter" || (getCurProps["variableType"] == "unknown") && authStudIDMap[authEqAr[k]] ){
+						if( (getCurProps["variableType"] == "parameter" || (getCurProps["variableType"] == "unknown")) && authStudIDMap[authEqAr[k]] && !studNameMap.includes(curNodeEqAr[k])){
 							hasAlien = true;
 							//parameters already are given as default, so the associated parameter has to be alien
 							//if node is unknown but already existing
@@ -173,10 +173,11 @@ define([
 								variable: curNodeEqAr[k]
 							}
 							studLinkMap[authEqAr[k]] = "id"+getNewID;
+							localEqNodeIDCorresponder[curNodeEqAr[k]] = "id"+getNewID;
 							getNewID = getNewID + 1;
 
 						}
-						else if(getCurProps["variableType"] == "unknown" && !authStudIDMap[authEqAr[k]]){
+						else if(getCurProps["variableType"] == "unknown" && !authStudIDMap[authEqAr[k]] && !studNameMap.includes(curNodeEqAr[k])){
 							//unknown node but does not exist so can be created
 							this.studObj[snodesCount++] = {
 							ID: "id" + getNewID,
@@ -202,13 +203,13 @@ define([
 							}	
 							authStudIDMap[authEqAr[k]] = "id" + getNewID;
 							studLinkMap[authEqAr[k]] = "id" + getNewID;
+							localEqNodeIDCorresponder[curNodeEqAr[k]] = "id"+getNewID;
 							getNewID = getNewID + 1;
 							this.updateAssistanceScore(authEqAr[k]);
 						}
 					}
 					
 					if(this.authObj[prop].schema == schema && !authStudIDMap[curAuthID]){
-						console.log("adding", getNewID, this.authObj[prop]);
 						this.studObj[snodesCount++] = {
 							ID: "id" + getNewID,
 							attemptCount: {
@@ -223,9 +224,9 @@ define([
 							position: this.authObj[prop].position,
 							schema: this.authObj[prop].schema,
 							type: "equation",
-							equation: curNodeEq,
+							equation: this.getStudentEquation(curNodeEq, curNodeEqAr,localEqNodeIDCorresponder),
 							links: this.getUpdatedStudentLinks(this.authObj[prop].links, studLinkMap),
-							status: rightAuthStatus
+							status: hasAlien ? wrongAuthStatus : rightAuthStatus
 						}
 						authStudIDMap[curAuthID] = "id" + getNewID;
 						getNewID = getNewID + 1;
@@ -269,7 +270,6 @@ define([
 				if(this.authObj.hasOwnProperty(prop) && this.authObj[prop].hasOwnProperty("type") && this.authObj[prop].type == "equation"){
 					var curEq = this.authObj[prop].equation;
 					var varAr = equation.getVariableStrings(curEq);
-					console.log("pdet",nodeID, curEq, varAr)
 					if(varAr.includes(nodeID)){
 						parentDet["schema"] = this.authObj[prop].schema;
 						parentDet["equation"] = this.authObj[prop].equation;
@@ -308,7 +308,6 @@ define([
 		getGeneratedStudentEquation: function(entity, schemaEq){
 			var entityFW = entity.split(" ")[0];
 			var schemaEqAr = equation.getVariableStrings(schemaEq);
-			//console.log(entity, entityFW, schemaEq, schemaEqAr);
 			for(var i=0; i<schemaEqAr.length;i++){
 				schemaEq = schemaEq.replace(schemaEqAr[i], "$"+schemaEqAr[i]);
 			}
@@ -319,7 +318,6 @@ define([
 		},
 
 		getUpdatedStudentLinks: function(authLinks, authStudIDMap){
-			console.log("auth links are", authLinks);
 			for(var i=0;i<authLinks.length;i++){
 				var curLink = authLinks[i].ID;
 				authLinks[i].ID = authStudIDMap[curLink];
@@ -340,7 +338,6 @@ define([
 			}
 		},
 		getAutoGenVariableName: function(currentEqAr, variableName, schema){
-			console.log("getAutoGendet", currentEqAr, variableName, schema, currentEqAr.length);
 			var varNamePos;
 			if(currentEqAr.length > 0){
 				for(var i = 0; i < currentEqAr.length; i++){
@@ -349,21 +346,17 @@ define([
 						break;
 					}
 				}
-				console.log(varNamePos, this.schemaEqAr)
 				return this.schemaEqAr[schema][varNamePos];
 			}
 		},
 		getSchemaEq: function(selectedSchema){
-			console.log("selectedSchema", selectedSchema);
 			var schemaTable = JSON.parse(sessionStorage.getItem("schema_tab_topo"));
 			var property = "Equation";
 			var propVal = '';
 			for(var schemaCategory in schemaTable){
 				var hasSchema = schemaTable[schemaCategory].some(function(schema){
-					console.log(selectedSchema, schema["Name"]);
 								if(selectedSchema == schema["Name"]){
 									//for the matched schema get appropriate property value
-									console.log("match found at", selectedSchema, schema, property)
 									propVal = schema[""+property];
 									return true;
 								}
@@ -374,10 +367,8 @@ define([
 			return propVal;
 		},
 		updateAlienPosition: function(masterPosition, masterId){
-			console.log("master position", masterPosition);
 			var newSlavePos = {};
 			var posMultiplier = 1;
-			console.log("has tracker", this.posTracker[masterId]);
 			if(this.posTracker[masterId]){
 				this.posTracker[masterId] = this.posTracker[masterId] + 1;
 				posMultiplier = this.posTracker[masterId];
@@ -385,12 +376,20 @@ define([
 			else{
 				this.posTracker[masterId] = 1;
 			}
-			console.log("new pos posMultiplier", posMultiplier);
 			newSlavePos[0] = {'x': '', 'y': ''}
 			newSlavePos[0].x = masterPosition[0].x;
 			newSlavePos[0].y = masterPosition[0].y + posMultiplier*30;
-			console.log("slave position", newSlavePos, this.posTracker);
 			return newSlavePos;
+		},
+		getStudentEquation: function(equation, curNodeEqAr, eqIDLinker){
+			//this function converts a human readable word equation to corresponding ids
+			for(var i=0; i<curNodeEqAr.length; i++){
+				equation = equation.replace(curNodeEqAr[i], "$"+curNodeEqAr[i]);
+			}
+			for(var i=0; i<curNodeEqAr.length; i++){
+				equation = equation.replace("$"+curNodeEqAr[i], eqIDLinker[curNodeEqAr[i]]);
+			}
+			return equation;
 		}
 
 	});
