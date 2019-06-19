@@ -68,7 +68,8 @@ define([
 
 	var _session = session(query);
 	//This code is temporary, prof wants give parameters and skip units flags to be on by default for summer experiment 2019
-	query.gp = "on"; query.su = "on";
+	if(_session.isStudentMode)
+		query.gp = "on"; query.su = "on";
 	var extraParams = {"giveParameters": query.gp, "skipUnits": query.su};
 	var _model = new model(_session, query.m, query.p, extraParams);
 	var _config = tutorConfiguration.getInstance(query.m);
