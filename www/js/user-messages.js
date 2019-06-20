@@ -13,7 +13,8 @@ define([], function(){
 		"no.variables": ["System of equations has no unknown or dynamic variables to solve."],
 		"inconsistent.system": ["The number of equations is greater than the number of variables, and the solver can not decide which equations to remove for calculating the solution"],
 		"under.determined.system": ["The number of equations is less than the number of variables, so the system is not solvable."],
-		"overdetermined.no.solution": ["The number of equations is greater than the number of variables, and no single solution solves all of them."]
+		"overdetermined.no.solution": ["The number of equations is greater than the number of variables, and no single solution solves all of them."],
+		"model.uninitialized": ["You have an unfinished equation node.  Please complete it or delete it."]
 	};
 
 	var pedagogical = {

@@ -577,9 +577,21 @@ define([
 				}
 				if(!subModel.isComplete(node.ID)){
 					status.error = true;
-					status.node = subModel.getVariable(node.ID);
-					status.field = "";
 					status.message = "model.incomplete";
+					if(node.type == "equation"){
+						status.node = subModel.getDescription(node.ID);
+						//if there is no description, then the node is total uninitialized
+						if(!status.node)
+							status.message = "model.uninitialized"
+					}
+					else if(node.type == "quantity"){
+						status.node = subModel.getVariable(node.ID);
+					}
+					else{
+						//if node does not belong to any type, this case is not ideally possible but in case, defaulting to uninitialized
+						status.message = "model.uninitialized";
+					}
+					status.field = "";
 				}
 			}, this);
 			equations.plotVariables = equations.xvars.concat(equations.func);
