@@ -67,10 +67,11 @@ define([
 	}
 
 	var _session = session(query);
-	var extraParams = {"giveParameters": query.gp, "skipUnits": query.su};
-	var _model = new model(_session, query.m, query.p, extraParams);
 	var _config = tutorConfiguration.getInstance(query.m);
 	var _feedback = _config.get("feedbackMode");
+	_config.set("giveParameters", query.gp);
+	_config.set("skipUnits", query.su);
+	var _model = new model(_session, query.m, query.p, _config);
 	console.log(_model);
 
 	_session.getModel(query).then(function(solutionGraph){
@@ -172,7 +173,7 @@ define([
 			else if(query.m === "SEDITOR")
 				controllerObject = new controlEditor(query.m, _model, _config);
 			else if(query.m === "STUDENT")
-				controllerObject = new controlStudent(query.m, _model, _config, _fixPosition, extraParams);
+				controllerObject = new controlStudent(query.m, _model, _config, _fixPosition);
 			/*
 			var controllerObject = (query.m === "AUTHOR") ?
 				new controlAuthor(query.m, _model, _config) :

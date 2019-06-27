@@ -3,7 +3,7 @@ define([
 ], function(array, lang){
 	return function(){
 		var obj = {
-			constructor: function(/* object */ session, /* string */ mode, /* string */ name, /*object*/ extraParams){
+			constructor: function(/* object */ session, /* string */ mode, /* string */ name, /*object*/ config){
 				this.x = this.beginX;
 				this.y = this.beginY;
 				this.model = {
@@ -17,8 +17,8 @@ define([
 				obj._session = session;
 				this._unknownQuantityNodeCount = 0;
 				this._equationNodeCount = 0;
-				this._giveParams = extraParams.giveParameters;
-				this._skipUnits = extraParams.skipUnits;
+				this._giveParams = config.get("giveParameters");
+				this._skipUnits = config.get("skipUnits");
 			},
 			_ID: 1,
 			beginX: 450,
