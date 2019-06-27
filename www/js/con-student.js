@@ -627,6 +627,11 @@ define([
 				var authorModel = this._model.authored;
 				var studDesc = this._model.student.getDescription(this.currentID);
 				console.log("student desc is", studDesc);
+				if(!studDesc){
+					this.applyDirectives(this.studentPM.process(nodeid, "qtyDescription", "", "", ""));
+					qtyDescWidget.set("disabled", false);
+					qtyDescWidget.addOption({value: 'defaultSelect',label: 'choose a description'});
+				}
 				if(this.ambigiousSchemas.includes(parSchema)){
 					var rightVarAr = expression.getRightSideEquationStrings(this._model.student.getParentEquation(nodeid));
 					var rightSelfAr = expression.getRightSideEquationStrings(this._model.student.getSelfEquation(nodeid));
@@ -639,9 +644,6 @@ define([
 							this.disableTypeValueUnits(false);
 						}
 						else{
-							this.applyDirectives(this.studentPM.process(nodeid, "qtyDescription", "", "", ""));
-							qtyDescWidget.set("disabled", false);
-							qtyDescWidget.addOption({value: 'defaultSelect',label: 'choose a description'});
 							array.forEach(rightVarAr, function(rightVar){
 								//console.log(this);
 								var curDesc = authorModel.getDescription(rightVar);
