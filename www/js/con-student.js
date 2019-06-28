@@ -683,20 +683,31 @@ define([
 				//for now commenting out this part, this commit comes after editors have been finalized
 				//var qtyDesc = this._model.getDescriptionForVariable(variable);
 
-				var u = registry.byId(this.controlMap.units);
-				u.removeOption(u.getOptions());
-				var units = this._model.getAllUnits();
-				units.sort();
-				var curUnit = this._model.student.getUnits(nodeid);
-				if(!curUnit){
-					u.addOption({label: "choose a unit", value: "default"});
+				//Before units are set, verify if the author has set units to the qty
+				var curAuthID = this._model.student.getAuthoredID(nodeid);
+				if(curAuthID && this._model.authored.getUnits(curAuthID)){
+					var u = registry.byId(this.controlMap.units);
+					u.removeOption(u.getOptions());
+					var units = this._model.getAllUnits();
+					units.sort();
+					var curUnit = this._model.student.getUnits(nodeid);
+					if(!curUnit){
+						u.addOption({label: "choose a unit", value: "default"});
+					}
+					array.forEach(units, function(unit){
+						u.addOption({label: unit, value: unit});
+					});
+					if(curUnit){
+						u.set('value', curUnit);
+					}
 				}
-				array.forEach(units, function(unit){
-					u.addOption({label: unit, value: unit});
-				});
-				if(curUnit){
-					u.set('value', curUnit);
+				else{
+					//Either the node does not have authoredId assigned ( Alien) or author has not given units
+					//In either case hide units field
+					console.log("hiding the units field");
+					style.set("unitsSelectorContainerStudent","display","none");
 				}
+
 				var prevSelected = query("input[name='variableType']:checked")[0] ? query("input[name='variableType']:checked")[0].value : undefined;
 				if(prevSelected)
 					registry.byId(prevSelected+"Type").set('checked', false);
