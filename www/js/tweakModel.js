@@ -54,7 +54,7 @@ define([
 			
 			//separating the give parameters flag and give SChema flag because when give schema is set the associated constituent params or unknowns have to bear autogen names as per new design
 
-			if(giveParams == "on"){ //giveParams is a new default setting
+			if(giveParams == "on"){ //giveParams is a new default setting (from LMS)
 				for(var prop in this.authObj){
 					//consider all param nodes from the author model
 					if(this.authObj.hasOwnProperty(prop) && this.authObj[prop].hasOwnProperty("type") && this.authObj[prop].type == "quantity" && this.authObj[prop].variableType == "parameter"){
@@ -177,7 +177,7 @@ define([
 							getNewID = getNewID + 1;
 
 						}
-						else if(getCurProps["variableType"] == "unknown" && !authStudIDMap[authEqAr[k]] && !studNameMap.includes(curNodeEqAr[k])){
+						else if( (getCurProps["variableType"] == "unknown" || getCurProps["variableType"] == "parameter") && !authStudIDMap[authEqAr[k]] && !studNameMap.includes(curNodeEqAr[k])){
 							//unknown node but does not exist so can be created
 							this.studObj[snodesCount++] = {
 							ID: "id" + getNewID,
@@ -197,9 +197,9 @@ define([
 							status: rightQtyStatus,
 							type: "quantity",
 							units: getCurProps["units"],
-							value: "",
+							value: getCurProps["value"],
 							variable: curNodeEqAr[k],
-							variableType: "unknown"
+							variableType: getCurProps["variableType"]
 							}	
 							authStudIDMap[authEqAr[k]] = "id" + getNewID;
 							studLinkMap[authEqAr[k]] = "id" + getNewID;
@@ -207,6 +207,7 @@ define([
 							getNewID = getNewID + 1;
 							this.updateAssistanceScore(authEqAr[k]);
 						}
+
 					}
 					
 					if(this.authObj[prop].schema == schema && !authStudIDMap[curAuthID]){
