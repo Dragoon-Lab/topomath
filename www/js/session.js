@@ -54,7 +54,7 @@ define([
 				handleAs: "json"
 			}).then(lang.hitch(this, function(model_object){
 				console.log("model object received", model_object);
-				if(params.gp == "on" || params.gs == "on"){
+				if(this.isStudentMode && (params.gp == "on" || params.gs == "on")){
 					//check for student 
 					var TM = new tweakModel(model_object);
 					var new_obj = TM.updateModel(params.gp, params.gs);

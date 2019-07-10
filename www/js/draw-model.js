@@ -551,6 +551,7 @@ define([
 			// updateNodes are the nodes for which the equations and links were updated.
 			console.log(updateNodes);
 			this.removeDescription(nodeID);
+			this.updateNodeCount();
 			this.deleteEquationLinks(updateNodes);
 		},
 

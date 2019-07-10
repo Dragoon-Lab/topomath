@@ -53,27 +53,27 @@
 				"S": "Smaller",
 				"D": "Difference"
 			},
-			"Comments": "The whole is equal to the sum of five parts."
+			"Comments": "Big (B) is Difference (D) larger than Small (S) (e.g., \"James is 5 years older than Harry\") or S is D smaller then B (e.g., \"Mary weighs 10 pounds less than her mother.\")"
 		},
 		{
 			"Name": "Tailwind",
-			"Equation": "GS = AS + WS",
+			"Equation": "G = R + M",
 			"Mapping": {
-				"GS": "Speed Relative to Ground",
-				"AS": "Speed Relative to Carrier",
-				"WS": "Speed of Carrier"
+				"G": "Speed Relative to Ground",
+				"R": "Speed Relative to Carrier",
+				"M": "Speed of Carrier"
 			},
-			"Comments": "If a vehicle travels through a moving medium (e.g., airplane in wind; boat on river current), and the vehicle is travelling the same direction as the medium (i.e., with a tailwind for the airplane; downstream for the boat), then slots are: GroundSpeed is the rate of the vehicle relative to land, AirSpeed is the rate of the vehicle relative to the medium, Windspeed is the rate of the medium (i.e., wind’s speed; river current’s speed)."
+			"Comments": "When a vehicle is in a moving medium, and they are moving in the SAME direction, then the vehicle’s Ground speed (G) is its speed Relative to the medium (R) plus the Medium’s speed (M). (e.g., \"If a plane that can fly 600 mph in still air (R=600) has 500 mph tailwind (M=500), what is the plane’s speed relative to the ground (G=R+M=500+600=1100)?\")"
 		},
 		{
 			"Name": "Headwind",
-			"Equation": "GS = AS - WS",
+			"Equation": "G = R - M",
 			"Mapping": {
-				"GS": "Speed Relative to Ground",
-				"AS": "Speed Relative to Carrier",
-				"WS": "Speed of Carrier"
+				"G": "Speed Relative to Ground",
+				"R": "Speed Relative to Carrier",
+				"M": "Speed of Carrier"
 			},
-			"Comments": "If a vehicle travels through a moving medium (e.g., airplane in wind; boat on river current), and the vehicle is travelling in the opposite direction to the medium (i.e., with a headwind for the airplane; upstream for the boat), then slots are: GroundSpeed is the rate of the vehicle relative to the land, AirSpeed is the rate of the vehicle relative to the medium (i.e., how fast the plane or boat travels in still air or still water), WindSpeed is the rate of the medium (i.e., wind’s speed; river current’s speed)"
+			"Comments": "When a vehicle is in a moving medium, and they are moving in the OPPOSITE directions, then the vehicle’s Ground speed (G) is its speed Relative to the medium (R) minus the Medium’s speed (M). (e.g., \"If a boat that can travel 35 mph in still water (R=35) is traveling upstream on a river moving at 10 mph (M=10), then what is the boat’s speed relative to the ground (G=R-M=35-10=25)?\")"
 		},
 		{
 			"Name": "A2",
@@ -117,7 +117,7 @@
 				"R": "Rate",
 				"T": "Time"
 			},
-			"Comments": "This is used for any problem that talks about a rate per unit of time, such as miles per hour, feet per second, gallons per hour, jobs done per hour, pizzas eaten per minute, etc. The slots are: Rate:  The amount of X per unit of time, Distance:  The amount of X accumulated over the given time, Time:  The amount of time."
+			"Comments": "When a vehicle travels at an average or constant Rate (R) for a certain amount of Time (T), then it travels D=R*T distance. More generally, when any amount accumulates at an average Rate (R) for a certain period of Time (T), then the total amount accumulated (D) is R*T. (e.g., \"If a robot cleans 2 square feet of floor per second (R=2), and it works for 360 seconds (T=360), then how many square feet of floor does it clean (D=R*T=2*360=720)?\")"
 		},
 		{
 			"Name": "Unit Cost",
@@ -127,17 +127,17 @@
 				"U": "Unit Cost",
 				"N": "Number of Units"
 			},
-			"Comments": "If the total cost (or other quantity) of a set of object is mentioned along with the cost per object, then use this.  Used for any problem talking about rate per object, e.g.,  Calories per candy, weight per car, nuts per tree.   The slots are: TotalCost is the total cost of the set of objects, NumberUnits is the number of objects, UnitCost is the cost per object."
+			"Comments": "When a set of N objects costs U per object, then the set’s total cost (T) is U*N. More generally, when the amount of a quantity per object is U and the number of objects is N, then total amount of the quantity is U*N. (e.g., \"If each candy has 150 calories (U=150) and you eat 5 candies (N=5), then how many calories have you consumed (T=U*N=150*5=750)?\")"
 		},
 		{
 			"Name": "Mixture",
-			"Equation": "IA = IP * WA",
+			"Equation": "I = W * P",
 			"Mapping": {
-				"IA": "Amount of Ingredient",
-				"WA": "Amount of Whole Mixture",
-				"IP": "Proportion of Ingredient to Whole"
+				"I": "Amount of Ingredient",
+				"W": "Amount of Whole Mixture",
+				"P": "Proportion of Ingredient to Whole"
 			},
-			"Comments": "If a drink is composed of water and alcohol (or any substance is composed of a filler and an active ingredient, e.g., acid in a water solution, fat in sausage), then Amount of Ingredient is the amount of alcohol, measured by weight or volume, Amount of Solution is the total amount of the drink, measured by weight or volume, Proportion of I to S is the proportion (converted from a percentage or proof) of alcohol in the drink."
+			"Comments": "When a Whole mixture (W) is composed of an Ingredient (I) and we know the Proportion (P) of the whole mixture that comprises the ingredient, then I = W*P. (e.g., \"If a 16 ounce beer (W=16) contains 4.5% alcohol (P=0.045), then how many ounces of alcohol does it contain (I=W*P=0.045*16=0.72)?\")"
 		},
 		{
 			"Name": "Invert",
@@ -180,6 +180,16 @@
 				"MulD": "Multiplicand 4"
 			},
 			"Comments": "The product of four multiplicands."
+		},
+		{
+			"Name": "$ per $",
+			"Equation": "C = R * O",
+			"Mapping": {
+				"C": "Change",
+				"R": "Rate",
+				"O": "Original"
+			},
+			"Comments": "Finance has a particular confusing kind of rate, which is \"dollar per dollar.\" It is so confusing, they you hardly ever see \"dollar per dollar\" as a unit. Instead, special names are used, such as tax, profit, loss, discount, interest, and so on. When you see such a term, use this schema. Example1: \"You made a 5% profit on $1200, so you got $60\" translates to Original=1200, Rate=0.1, Change=60. Example2: You got a $700 sweater at 20% discount, so you saved $140.\" Translates to Original=700, Rate=0.2, Change=140."
 		}
 	]
 }

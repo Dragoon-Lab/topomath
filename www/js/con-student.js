@@ -216,7 +216,12 @@ define([
 			style.set('qtyDescriptionInputboxContainerStudent', 'display', 'inline-block');
 			style.set('variableInputboxContainer', 'display', 'inline-block');
 			//style.set('valueInputboxContainer', 'display', 'block');
-			style.set('unitsSelectorContainerStudent', 'display', 'block');
+			if(this._skipUnits != "on")
+				style.set('unitsSelectorContainerStudent', 'display', 'block');
+			else{
+				style.set('unitsSelectorStudentLabel', 'display', 'none');
+				style.set('unitsSelectorStudent', 'display', 'none');
+			}
 			style.set('expressionDiv', 'display', 'block');
 			//This has been removed in new author mode editor design
 			//style.set('inputSelectorContainer', 'display', 'block');
@@ -391,13 +396,13 @@ define([
 				//this._model.student.setAttemptCount(this.currentID, "entity", currentAttemptCount+1);
 				returnObj = this.studentPM.process(this.currentID, "entity", entity, true, message,  this._model.student.getAttemptCount(this.currentID,"entity"));
 				this.entity = entity;
+				this.updateSlotVariables();
+				this.updateEquation();
 			}
 			this.applyDirectives(returnObj);
 			this._model.student.setEntities(this.currentID, entity);
 			this.updateEqnDelete();
 			this.updateEquationDescription();
-			this.updateSlotVariables();
-			this.updateEquation();
 		},
 		/*
 		 *	 handle event on inputs box
@@ -622,6 +627,11 @@ define([
 				var authorModel = this._model.authored;
 				var studDesc = this._model.student.getDescription(this.currentID);
 				console.log("student desc is", studDesc);
+				if(!studDesc){
+					this.applyDirectives(this.studentPM.process(nodeid, "qtyDescription", "", "", ""));
+					qtyDescWidget.set("disabled", false);
+					qtyDescWidget.addOption({value: 'defaultSelect',label: 'choose a description'});
+				}
 				if(this.ambigiousSchemas.includes(parSchema)){
 					var rightVarAr = expression.getRightSideEquationStrings(this._model.student.getParentEquation(nodeid));
 					var rightSelfAr = expression.getRightSideEquationStrings(this._model.student.getSelfEquation(nodeid));
@@ -634,9 +644,6 @@ define([
 							this.disableTypeValueUnits(false);
 						}
 						else{
-							this.applyDirectives(this.studentPM.process(nodeid, "qtyDescription", "", "", ""));
-							qtyDescWidget.set("disabled", false);
-							qtyDescWidget.addOption({value: 'defaultSelect',label: 'choose a description'});
 							array.forEach(rightVarAr, function(rightVar){
 								//console.log(this);
 								var curDesc = authorModel.getDescription(rightVar);
@@ -653,8 +660,9 @@ define([
 					else{
 						if(this._model.student.getAuthoredID(nodeid)){
 							var curDesc = authorModel.getDescription(this._model.student.getAuthoredID(nodeid));
+							qtyDescWidget.removeOption(qtyDescWidget.getOptions());
 							qtyDescWidget.addOption({value: curDesc,label: curDesc});
-							this.applyDirectives(this.studentPM.process(nodeid, "qtyDescription", curDesc, curDesc, "A valid description has been entered",));	
+							this.applyDirectives(this.studentPM.process(nodeid, "qtyDescription", curDesc, curDesc, "A valid description has been entered",));
 							this._model.student.setDescription(nodeid, curDesc);
 							this.disableTypeValueUnits(false);
 						}
@@ -663,6 +671,7 @@ define([
 				else{
 					if(this._model.student.getAuthoredID(nodeid)){
 						var curDesc = authorModel.getDescription(this._model.student.getAuthoredID(nodeid));
+						qtyDescWidget.removeOption(qtyDescWidget.getOptions());
 						qtyDescWidget.addOption({value: curDesc,label: curDesc});
 						this.applyDirectives(this.studentPM.process(nodeid, "qtyDescription", curDesc, curDesc, "A valid description has been entered",));
 						this._model.student.setDescription(nodeid, curDesc);
@@ -676,20 +685,31 @@ define([
 				//for now commenting out this part, this commit comes after editors have been finalized
 				//var qtyDesc = this._model.getDescriptionForVariable(variable);
 
-				var u = registry.byId(this.controlMap.units);
-				u.removeOption(u.getOptions());
-				var units = this._model.getAllUnits();
-				units.sort();
-				var curUnit = this._model.student.getUnits(nodeid);
-				if(!curUnit){
-					u.addOption({label: "choose a unit", value: "default"});
+				//Before units are set, verify if the author has set units to the qty
+				var curAuthID = this._model.student.getAuthoredID(nodeid);
+				if(curAuthID && this._model.authored.getUnits(curAuthID)){
+					var u = registry.byId(this.controlMap.units);
+					u.removeOption(u.getOptions());
+					var units = this._model.getAllUnits();
+					units.sort();
+					var curUnit = this._model.student.getUnits(nodeid);
+					if(!curUnit){
+						u.addOption({label: "choose a unit", value: "default"});
+					}
+					array.forEach(units, function(unit){
+						u.addOption({label: unit, value: unit});
+					});
+					if(curUnit){
+						u.set('value', curUnit);
+					}
 				}
-				array.forEach(units, function(unit){
-					u.addOption({label: unit, value: unit});
-				});
-				if(curUnit){
-					u.set('value', curUnit);
+				else{
+					//Either the node does not have authoredId assigned ( Alien) or author has not given units
+					//In either case hide units field
+					console.log("hiding the units field");
+					style.set("unitsSelectorContainerStudent","display","none");
 				}
+
 				var prevSelected = query("input[name='variableType']:checked")[0] ? query("input[name='variableType']:checked")[0].value : undefined;
 				if(prevSelected)
 					registry.byId(prevSelected+"Type").set('checked', false);
@@ -943,7 +963,9 @@ define([
 			if(authoredID){
 				this._model.active.setAuthoredID(id, authoredID);
 				console.log(this._model.active.getNode(id));
-				//this._model.active.setDescription(id, this._model.authored.getDescription(authoredID));
+				if(this._giveParams == "on"){
+					this._model.active.setDescription(id, this._model.authored.getDescription(authoredID));
+				}
 				// Fixing position is a part of feedback to student
 				if(this._config.get("feedbackMode") !== "nofeedback" && this._fixPosition){
 					this._model.active.setPosition(id, 0, this._model.authored.getPosition(authoredID,0));
@@ -955,6 +977,11 @@ define([
 			var authoredID = this.setNodeDescription(node.id, node.variable);
 			if(authoredID){
 				this.updateInputNode(node.id, node.variable);
+				//if the give parameters switch is on, according to the latest design update refer card #473, all the unknown nodes should be automatically set along with the status
+				if(this._giveParams == "on"){
+					this._model.student.setVariableType(node.id, "unknown");
+					this._model.student.setStatus(node.id, "variableType" , {"disabled":true,"status":"correct"});
+				}
 				var canHaveDeleteNode = this.canHaveDeleteNode(node.id);
 				this._model.student.setCanDelete(node.id,canHaveDeleteNode);
 				this.updateNodeView(this._model.active.getNode(node.id));
