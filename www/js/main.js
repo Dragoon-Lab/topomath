@@ -65,11 +65,31 @@ define([
 			throw Error("please retry, insufficient information");
 		}
 	}
+	//loading schema table into local storage (before tweak model makes any changes to model)
+	//send an asyn req to local json file
+	var schemaReqParams = {
+		url: "schema-table.json",
+		handleAs: "json",
+		load: function(data){
+			//console.log("data received in main", data, typeof data);						
+			if(!sessionStorage.getItem("schema_tab_topo")){
+				sessionStorage.setItem("schema_tab_topo", JSON.stringify(data));
+			}
+		},
+		error: function(error){
+			console.error("error occurred", error);
+		}
+	}
+	var retSchemaObj = dojo.xhrGet(schemaReqParams);
+	//refresh the schema_options_loaded param in the session storage which controls loading options into the editor
+	sessionStorage.removeItem("schema_options_loaded");
 
 	var _session = session(query);
-	var _model = new model(_session, query.m, query.p);
 	var _config = tutorConfiguration.getInstance(query.m);
 	var _feedback = _config.get("feedbackMode");
+	_config.set("giveParameters", query.gp);
+	_config.set("skipUnits", query.su);
+	var _model = new model(_session, query.m, query.p, _config);
 	console.log(_model);
 
 	_session.getModel(query).then(function(solutionGraph){
@@ -402,28 +422,6 @@ define([
 				sol.hide();
 				_session.saveModel(_model.model);
 			});
-
-			//loading schema table into local storage
-			//send an asyn req to local json file
-			var schemaReqParams = {
-				url: "schema-table.json",
-				handleAs: "json",
-				load: function(data){
-					//console.log("data received in main", data, typeof data);						
-						if(!sessionStorage.getItem("schema_tab_topo")){
-							sessionStorage.setItem("schema_tab_topo", JSON.stringify(data));
-						}
-						//console.log(sessionStorage);
-					},
-					error: function(error){
-						//console.log("error occurred", error);
-					}
-				}
-
-			var retSchemaObj = dojo.xhrGet(schemaReqParams);
-
-			//refresh the schema_options_loaded param in the session storage which controls loading options into the editor
-			sessionStorage.removeItem("schema_options_loaded");
 
 		});
 	});

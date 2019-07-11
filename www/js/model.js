@@ -3,7 +3,7 @@ define([
 ], function(array, lang){
 	return function(){
 		var obj = {
-			constructor: function(/* object */ session, /* string */ mode, /* string */ name){
+			constructor: function(/* object */ session, /* string */ mode, /* string */ name, /*object*/ config){
 				this.x = this.beginX;
 				this.y = this.beginY;
 				this.model = {
@@ -17,6 +17,8 @@ define([
 				obj._session = session;
 				this._unknownQuantityNodeCount = 0;
 				this._equationNodeCount = 0;
+				this._giveParams = config.get("giveParameters");
+				this._skipUnits = config.get("skipUnits");
 			},
 			_ID: 1,
 			beginX: 450,
@@ -1101,20 +1103,6 @@ define([
 			},
 			setAuthoredID: function(/*string*/ id, /*string*/ authoredID){
 				id = this.getID(id);
-				if(!authoredID){
-					var node = this.getNode(id);
-					var aNodes = obj.authored.getNodes();
-					var l = aNodes.length;
-					for(var i = 0; i < l; i++){
-						var aNode = aNodes[i];
-						if((aNode.variable && aNode.variable === node.variable) ||
-							(aNode.description && aNode.description === node.description) ||
-							(aNode.explanation && aNode.explanation === node.explanation)){
-							authoredID = aNode.ID;
-							break;
-						}
-					}
-				}
 				this.getNode(id).authoredID = authoredID;
 			},
 			setSlotStatus: function(id, slotId, status){
@@ -1196,6 +1184,9 @@ define([
 				var node = this.getNode(id);
 				var returnFlag = '';
 				var hasUnits = node.authoredID && obj.authored.getUnits(node.authoredID);
+				if(obj._skipUnits == "on"){
+					hasUnits = false;
+				}
 				var nameEntered = node.type && node.type == "equation" || node.variable;
 				// as seen in Dragoon.
 				// variableType and value combined defines node completion
@@ -1362,7 +1353,8 @@ define([
 					//update("variable");
 					update("variableType");
 					update("value");
-					update("units");
+					if(obj._skipUnits != "on")
+						update("units");
 				}else if(type === "equation"){
 					update("schemas");
 					update("entity");
