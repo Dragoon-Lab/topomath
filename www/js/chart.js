@@ -169,6 +169,14 @@ define([
 			return series;
 		},
 
+        formatDashedSeries: function(stroke){
+            array.forEach(stroke, function(s){
+                s["style"] = "ShortDash";
+            });
+
+            return stroke;
+        },
+
 		//checks if the difference between min and max values for plot is not less than 10^-15
 		checkEpsilon: function(solution, id){
 			var obj = this.getMinMaxFromArray(solution.plotValues[id]);
