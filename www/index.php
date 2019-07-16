@@ -168,8 +168,8 @@
 		<div data-dojo-type="dijit/MenuBar" id="menuBar" region="top" splitter="false">
 			<button type="button" data-dojo-type="dijit/form/Button" id="createQuantityNodeButton" disabled="true" style="display: none">Add Quantity</button>
 			<button type="button" data-dojo-type="dijit/form/Button" id="createEquationNodeButton" disabled="true" style="visibility: hidden">Add Equation</button>
-			<button type="button" data-dojo-type="dijit/form/Button" id="graphButton" disabled="true" style="visibility: hidden">Graph</button>
-			<button type="button" data-dojo-type="dijit/form/Button" id="tableButton" disabled="true" style="visibility: hidden">Table</button>
+			<button type="button" data-dojo-type="dijit/form/Button" id="graphButton" disabled="true" style="display: none">Graph</button>
+			<button type="button" data-dojo-type="dijit/form/Button" id="tableButton" disabled="true" style="visibility: hidden">Solve</button>
 			<button type="button" data-dojo-type="dijit/form/Button" id="doneButton" disabled="true" style="visibility: hidden">Done</button>
 		</div>
 
