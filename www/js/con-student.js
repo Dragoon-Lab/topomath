@@ -954,6 +954,13 @@ define([
 			
 			return returnObj;
 		},
+		checkEquationNodesDone: function(){
+			/*pre check before add equation button is clicked
+			*/
+			var returnObj = {};
+			var isComplete = this._model.equationNodesMatchesGivenSolution();
+			return isComplete;
+		},
 		setNodeDescription: function(id, variable){
 			console.log("setting node description", variable);
 			//we need to get original ids 

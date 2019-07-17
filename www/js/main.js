@@ -314,6 +314,18 @@ define([
 			//next step is to add action to add equation
 			menu.add("createEquationNodeButton", function(e){
 				event.stop(e);
+				//before a node is created, check if the model has enough equation nodes
+				//applies only to student mode
+				if(_model.isStudentMode()){
+					var allEquationNodesDone = controllerObject.checkEquationNodesDone();
+					if(allEquationNodesDone){
+						var buttons = [];
+						var title = 'Equation Nodes Complete!';
+						errDialog.showDialog(title, "All equation nodes have been filled", buttons, /*optional argument*/"OK");
+						return;
+					}
+				}
+
 				var options = {
 					type: "equation"
 				};

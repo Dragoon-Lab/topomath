@@ -706,7 +706,12 @@ define([
 		checkDone: function () {
 			console.log("checkDone should be overwritten.");
 		},
-		
+
+		// Stub to be overwritten by student or author mode-specific method.
+		checkEquationNodesDone: function () {
+			console.log("checkEquationNodesDone should be overwritten.");
+		},
+
 		// Stub to be overwritten by student or author mode-specific method.
 		initialControlSettings: function(id){
 			console.error("initialControlSettings should be overwritten.");
