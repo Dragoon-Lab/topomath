@@ -349,9 +349,9 @@ define([
 		* 0 solution -- then we show no line and that id is removed from the graph
 		**/
 		extrapolateNaN: function(solution){
-			array.forEach(solution.vars, function(id){
-				counter = 0;
-				indices = [];
+			array.forEach(solution.plotVariables, function(id){
+				var counter = 0;
+				var indices = [];
 				array.forEach(solution.plotValues[id], function(value, index){
 					if(!isNaN(value)){
 						counter++;
@@ -375,17 +375,31 @@ define([
 						var slope = 0;
 						//var slope = (solution.plotValues[id][index2] - solution.plotValues[id][index1])/(solution.time[index2] - solution.time[index1]);
 						for(var i = 0; i < indices.length - 1; i++){
-							slope = (solution.plotValues[id][i+1] - solutions.plotValues[id][i])/(solution.time[i+1] - solution.time[i]);
-							for(var j = indices[i]+1; j < indices[i+1]; j++){
+							var index1 = indices[i];
+							var index2 = indices[i+1];
+							slope = (solution.plotValues[id][index2] -
+									solution.plotValues[id][index1])/
+									(solution.time[index2] - solution.time[index1]);
+							for(var j = index1+1; j < index2; j++){
 								solution.plotValues[id][j] = slope *
-											(solution.time[j] - solution.time[i]) +
-											solution.plotValues[id][i];
+											(solution.time[j] - solution.time[index1]) +
+											solution.plotValues[id][index1];
 							}
 							if(i == indices.length - 2){
 								for(j; j < solution.plotValues[id].length; j++){
 									solution.plotValues[id][j] = slope * 
-												(solution.time[j] - solution.time[i]) +
-												solution.plotValues[id][i];
+												(solution.time[j] - solution.time[index1]) +
+												solution.plotValues[id][index1];
+								}
+							}
+
+							if(i == 0 && indices[0] > 0){
+								// case where first few numbers of the list are 0
+								// here slope is the first slope calculated
+								for(j = 0; j < indices[1]; j++){
+									solution.plotValues[id][j] = slope *
+												(solution.time[j] - solution.time[index1]) +
+												solution.plotValues[id][index1];
 								}
 							}
 						}
