@@ -939,6 +939,10 @@ define([
 			var l = nodes.length;
 
 			if(!isComplete){
+				//There is one case where all the incomplete nodes are alien, where the error notes have to be different (note: "all")
+				if(this._model.student.areIncompleteNodesAlien())
+					_errorNotes.push("Some alien nodes need to be deleted.");
+				else
 				_errorNotes.push("Nodes in the model are not complete");
 			}
 			if((this._model.authored.getRequiredNodeCount() - this._model.active.getRequiredNodeCount()) > 0){
