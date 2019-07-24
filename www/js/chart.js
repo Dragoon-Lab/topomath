@@ -144,9 +144,11 @@ define([
 			temp.title = "Your Solution";
 			temp.data = this.formatSeriesForChart(solution, id);
 			if(this.isCorrect || !this.isStudentMode){
-				temp.stroke = {stroke: this._colors.correctGraph, width: 2};
+				//temp.stroke = {stroke: this._colors.correctGraph, width: 2};
+                temp.stroke = {stroke:{color: this._colors.correctGraph, style: "ShortDash"}, width: 2};
 			} else {
-				temp.stroke = {stroke: this._colors.incorrectGraph, width: 2};
+                temp.stroke = {stroke: {color: this._colors.incorrectGraph, style: "ShortDash"}, width: 2};
+				//temp.stroke = {stroke: this._colors.incorrectGraph, width: 2};
 			}
 
 			series.push(temp);
