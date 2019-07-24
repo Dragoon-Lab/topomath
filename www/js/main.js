@@ -320,8 +320,8 @@ define([
 					var allEquationNodesDone = controllerObject.checkEquationNodesDone();
 					if(allEquationNodesDone){
 						var buttons = [];
-						var title = 'Equation Nodes Complete!';
-						errDialog.showDialog(title, "All equation nodes have been filled", buttons, /*optional argument*/"OK");
+						var title = 'Add Equation';
+						errDialog.showDialog(title, "You don't need any more equations.", buttons, /*optional argument*/"OK");
 						return;
 					}
 				}

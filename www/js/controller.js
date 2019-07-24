@@ -74,7 +74,7 @@ define([
 			value: "valueInputbox"
 		},
 		// list of parent divs for toggle display for directives.
-		// fields over written in con-student
+		// fields overridden in con-student
 		genericDivMap: {
 			variableType: 'variableTypeContainer',
 			value: "valueInputboxContainer",
@@ -637,7 +637,7 @@ define([
 		},
 
 		initialViewSettings: function(type){
-			//over written by student or author specific method
+			//overridden by student or author specific method
 		},
 
 		closeEditor: function(){ 
@@ -702,19 +702,19 @@ define([
 			this.disableHandlers = true;
 		},
 
-		// Stub to be overwritten by student or author mode-specific method.
+		// Stub to be overridden by student or author mode-specific method.
 		checkDone: function () {
-			console.log("checkDone should be overwritten.");
+			console.log("checkDone should be overridden.");
 		},
 
-		// Stub to be overwritten by student or author mode-specific method.
+		// Stub to be overridden by student or author mode-specific method.
 		checkEquationNodesDone: function () {
-			console.log("checkEquationNodesDone should be overwritten.");
+			console.log("checkEquationNodesDone should be overridden.");
 		},
 
-		// Stub to be overwritten by student or author mode-specific method.
+		// Stub to be overridden by student or author mode-specific method.
 		initialControlSettings: function(id){
-			console.error("initialControlSettings should be overwritten.");
+			console.error("initialControlSettings should be overridden.");
 			//log message added through aspect.
 		},
 
