@@ -170,6 +170,7 @@
 			<button type="button" data-dojo-type="dijit/form/Button" id="createEquationNodeButton" disabled="true" style="visibility: hidden">Add Equation</button>
 			<button type="button" data-dojo-type="dijit/form/Button" id="graphButton" disabled="true" style="display: none">Graph</button>
 			<button type="button" data-dojo-type="dijit/form/Button" id="tableButton" disabled="true" style="visibility: hidden">Solve</button>
+			<button type="button" data-dojo-type="dijit/form/Button" id="printButton" disabled="true" style="visibility: hidden">Copy Equations to Clipboard</button>
 			<button type="button" data-dojo-type="dijit/form/Button" id="doneButton" disabled="true" style="visibility: hidden">Done</button>
 		</div>
 

@@ -274,7 +274,6 @@ define([
 	
 			//create a menuButtons array and push the list of button Ids which go to the main menu bar
 			var menuButtons= _config.get("buttons");
-
 			array.forEach(menuButtons, function(button){
 				//setting display for each menu button
 				var button = registry.byId(button);
@@ -352,6 +351,49 @@ define([
 				console.log("Table button clicked");
 				initSolution("table");
 			});
+			if(_model.isStudentMode()){
+				menu.add("printButton", function(e){
+					event.stop(e);
+					//clear error message box
+					var errBox = dom.byId("errorMessageBox");
+					dojo.empty("errorMessageBox");
+					var html = "";
+					//printButton copies equations to clipboard and gives an indication
+					var listEquations = _model.student.getStudentSolutionEquations();
+					array.forEach(listEquations, function(eq){
+						var params = {
+							subModel: _model.student,
+							equation: eq
+						};
+						var curEq = equation.convert(params);
+						if(curEq){
+							html = html+ curEq.equation +"\n";
+							var varNodes = equation.getVariableStrings(eq);
+							array.forEach(varNodes, function(varID){
+								if(_model.student.getVariableType(varID) == "parameter"){
+									var varName = _model.student.getName(varID);
+									var varVal = _model.student.getValue(varID);
+									if(varName && varVal){
+										html = html + varName + " = " + varVal + "\n";
+									}
+								}
+							});
+						}
+					});
+					var textArea = document.createElement("textarea");
+					textArea.value = html;
+					document.body.appendChild(textArea);
+					textArea.select();
+					document.execCommand("Copy");
+					textArea.remove();
+					var errorMessage = new messageBox("errorMessageBox", "warn", "Equations Copied to Clipboard", true);
+					errorMessage.show();
+				});
+			}
+			else{
+				dom.byId("printButton").style.display = "none";
+			}
+
 
 			aspect.after(controllerObject, "addNode",
 				lang.hitch(dm, dm.addNode), true);

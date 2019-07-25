@@ -1450,6 +1450,15 @@ define([
 									return true;
 							}, this);
 				return (flag && incompleteNodeCount > 0) ? true: false;
+			},
+			getStudentSolutionEquations: function(){
+				//In this function, return all equations which have been
+				var equationList = [];
+				array.forEach(this.getNodes(), function(sNode){
+					if(sNode.type === "equation" && obj.student.isComplete(sNode.ID))
+						equationList.push(sNode.equation);
+				});
+				return equationList;
 			}
 
 		}, both);
