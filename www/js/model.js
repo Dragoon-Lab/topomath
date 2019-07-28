@@ -1455,10 +1455,18 @@ define([
 				//In this function, return all equations which have been
 				var equationList = [];
 				array.forEach(this.getNodes(), function(sNode){
-					if(sNode.type === "equation" && obj.student.isComplete(sNode.ID))
+					//Node type has to be equation and schema-entity have to be valid
+					if(sNode.type === "equation" && obj.student.isSchemaEntityValid(sNode.ID))
 						equationList.push(sNode.equation);
 				});
 				return equationList;
+			},
+			isSchemaEntityValid: function(sNodeID){
+				var schemaStatusObj = this.getStatus(sNodeID, "schemas");
+				var entityStatusObj = this.getStatus(sNodeID, "entity");
+				var schemaValid = schemaStatusObj.status == "correct" || schemaStatusObj.status == "demo";
+				var entityValid = entityStatusObj.status == "correct" || entityStatusObj.status == "demo";
+				return schemaValid && entityValid;
 			}
 
 		}, both);
