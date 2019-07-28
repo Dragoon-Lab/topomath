@@ -5,6 +5,13 @@ define([], function(){
 			userType: "student",
 			showActiveGraphOnly: false,
 			dottedNodesUI: false,
+			buttons: [
+				"createEquationNodeButton",
+				"graphButton",
+				"tableButton",
+				"printButton",
+				"doneButton"
+			],
 			feedbacks: [
 				"correct",
 				"firstFailure",
