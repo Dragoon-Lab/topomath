@@ -958,12 +958,13 @@ define([
 			
 			return returnObj;
 		},
-		checkEquationNodesDone: function(){
+		hasEnoughEquationNodes: function(){
 			/*pre check before add equation button is clicked
 			*/
-			var returnObj = {};
-			var isComplete = this._model.equationNodesMatchesGivenSolution();
-			return isComplete;
+			if(this._model.student.getEquationCount() >= this._model.authored.getEquationCount()){
+				return true;
+			}
+			return false;
 		},
 		setNodeDescription: function(id, variable){
 			console.log("setting node description", variable);

@@ -316,7 +316,7 @@ define([
 				//before a node is created, check if the model has enough equation nodes
 				//applies only to student mode
 				if(_model.isStudentMode()){
-					var allEquationNodesDone = controllerObject.checkEquationNodesDone();
+					var allEquationNodesDone = controllerObject.hasEnoughEquationNodes();
 					if(allEquationNodesDone){
 						var buttons = [];
 						var title = 'Add Equation';

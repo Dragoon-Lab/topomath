@@ -243,25 +243,6 @@ define([
 						}, this);
 				return flag ? true : false;
 			},
-			equationNodesMatchesGivenSolution: function(){
-				var flag = this.areRequiredEquationNodesVisible() &&
-						array.every(this.student.getNodes(), function(sNode){
-							if(sNode.type == "equation")
-								return this.student.isComplete(sNode.ID);
-							else
-								return true;
-						}, this);
-				return flag ? true : false;
-			},
-			areRequiredEquationNodesVisible: function(){
-				var solutionNodes = this.authored.getRequiredEquationNodes();
-				var l = solutionNodes.length;
-				var flag = array.every(solutionNodes, function(solutionNode){
-					return this.doesStudentNodeExist(solutionNode.ID);
-				}, this);
-
-				return flag ? true : false;
-			},
 			areRequiredNodesVisible: function(){
 				var solutionNodes = this.authored.getRequiredNodes();
 				var studentNodes = this.student.getNodes();
@@ -957,15 +938,6 @@ define([
 				var arr = [];
 				array.forEach(nodes, function(node){
 					if(node.genus == "required" || node.genus == "allowed")
-						arr.push(node);
-				});
-				return arr;
-			},
-			getRequiredEquationNodes:function(){
-				var nodes = this.getNodes();
-				var arr = [];
-				array.forEach(nodes, function(node){
-					if(node.type == "equation" && (node.genus == "required" || node.genus == "allowed"))
 						arr.push(node);
 				});
 				return arr;
