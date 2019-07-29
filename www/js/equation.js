@@ -226,7 +226,7 @@ define([
 							var nodeName = " " + subModel.getName(variable) + " ";
 							// console.log("=========== substituting ", variable, " -> ", nodeName);
 							expr.substitute(variable, nodeName);
-							// console.log("            result: ", expr);
+							// console.log("			result: ", expr);
 						} else if(initialNodeID && subModel.isNode(initialNodeID)) {
 							// this is the case when there is an _initial in the node name
 							var nodeName = " " + subModel.getInitialNodeDisplayString() + "(" +
@@ -347,19 +347,34 @@ define([
 				} catch(e){
 					solution.status.error = true;
 					solution.status.message = e.type;
-					break;
+					// when solving for static solution their is a situation where 
+					// error can occur for which we need to continue getting the solution
+					// and remove those values from the solution where their was an error
+					// so for now these values have been set to NaN
+					if(staticID){
+						array.forEach(Object.keys(solution.plotValues), function(id){
+							solution.plotValues[id].push(Number.NaN)
+						});
+					}else{
+						break;
+					}
 				}
+				if(timeStepSolution)
 				array.forEach(timeStepSolution.vars, function(id, counter){
 					solution.plotValues[id].push(timeStepSolution.point.get(counter, 0));
 				});
 			}
-			if(!solution.status.error){
-				if(timeStepSolution && timeStepSolution.hasOwnProperty('vars'))
-					solution.plotVariables = timeStepSolution.vars;
-				else
-					solution.plotVariables = solution.xvars.concat(solution.func);
-				console.log("solution for the system of equations ", solution);
-			}
+			// removing the first condition because now static graph can also have error
+			// and in that case graphs have to be manipulated and shown.
+			// earlier the assumption was that if solution has error then no graph will
+			// be shown.
+//			if(!solution.status.error){
+			if(timeStepSolution && timeStepSolution.hasOwnProperty('vars'))
+				solution.plotVariables = timeStepSolution.vars;
+			else
+				solution.plotVariables = solution.xvars.concat(solution.func);
+			console.log("solution for the system of equations ", solution);
+//			}
 
 			return solution;
 		},

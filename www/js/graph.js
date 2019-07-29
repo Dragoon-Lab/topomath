@@ -39,6 +39,12 @@ define([
 			this.isStudentMode = !this._config.get("showActiveGraphOnly");
 			this.isAuthorMode = !this._model.isStudentMode();
 			this.isCorrect = this._model.matchesGivenSolutionAndCorrect() ? true : false;
+			this.solutionError = {
+				"active": false,
+				"author": false,
+				"activeStatic": false,
+				"authorStatic": false
+			};
 		},
 
 		init: function(staticVar){
@@ -61,6 +67,9 @@ define([
 					break;
 				case "authorStatic":
 					this.authorStaticSolution = solution;
+					break;
+				default:
+					console.warn("no such type of solution used -- " + type)
 			}
 		},
 

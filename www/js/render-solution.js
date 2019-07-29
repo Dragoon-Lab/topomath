@@ -97,10 +97,20 @@ define([
 						//this.createComboBox(this.activeSolution.params);
 						this.staticVar = this.checkStaticVar(true);
 						this.activeSolution = this.findSolution(true, this.staticVar);
+						if(this.activeSolution.status.error){
+							this.extrapolateNaN(this.activeSolution);
+							this.activeSolution.status.message = "static.singular.matrix";
+							this.showMessage(this.activeSolution, "StaticTab", "error", false);
+						}
 						if(this.isStudentMode){
 							var authorStaticVar =  this._model.student.getAuthoredID(this.staticVar);
 							this.authorStaticSolution = this.initializeSystem(this._model.authored, authorStaticVar);
 							this.authorStaticSolution = this.authorStaticSolution.plotVariables ? this.findSolution(false, authorStaticVar) : "";
+							if(this.authorStaticSolution.status.error){
+								this.extrapolateNaN(this.authorStaticSolution);
+								this.authorStaticSolution.status.message = "static.singular.matrix";
+								this.showMessage(this.authorStaticSolution, "StaticTab", "error", false);
+							}
 							this.graph.setSolution("authorStatic", this.authorStaticSolution);
 						}
 						this.graph.setSolution("active", this.activeSolution);
@@ -326,6 +336,78 @@ define([
 			this.dialogWindow.set("title", name + type);
 
 			this.dialogWindow.show();
+		},
+
+		/**
+		* This function is called for static solution when some of the values of
+		* static variable return no solution. It extrapolates the value to a straight
+		* line using non-NaN values to replace NaN values.
+		* Cases are --
+		* two or more solutions found -- then use first two available values to calculate
+		* rest of the valuesi with the assumption of a straight line.
+		* 1 solution -- then that value gets copied on all the values
+		* 0 solution -- then we show no line and that id is removed from the graph
+		**/
+		extrapolateNaN: function(solution){
+			array.forEach(solution.plotVariables, function(id){
+				var counter = 0;
+				var indices = [];
+				array.forEach(solution.plotValues[id], function(value, index){
+					if(!isNaN(value)){
+						counter++;
+						indices.push(index);
+					}
+				});
+				switch(counter){
+					case 0:
+						solutions.plotValues[id] = []
+						console.warn("none of the solutions could be calculated for id -- " + id);
+						break;
+					case 1:
+						var index = indices[0];
+						array.forEach(solutions.plotValues[id], function(value, i){
+							if(isNaN(value))
+								solution.plotValues[id][i] = solution.plotValues[id][index];
+						});
+						break;
+					default:
+						// this is the case of two or greater
+						var slope = 0;
+						//var slope = (solution.plotValues[id][index2] - solution.plotValues[id][index1])/(solution.time[index2] - solution.time[index1]);
+						for(var i = 0; i < indices.length - 1; i++){
+							var index1 = indices[i];
+							var index2 = indices[i+1];
+							slope = (solution.plotValues[id][index2] -
+									solution.plotValues[id][index1])/
+									(solution.time[index2] - solution.time[index1]);
+							for(var j = index1+1; j < index2; j++){
+								solution.plotValues[id][j] = slope *
+											(solution.time[j] - solution.time[index1]) +
+											solution.plotValues[id][index1];
+							}
+							if(i == indices.length - 2){
+								for(j; j < solution.plotValues[id].length; j++){
+									solution.plotValues[id][j] = slope * 
+												(solution.time[j] - solution.time[index1]) +
+												solution.plotValues[id][index1];
+								}
+							}
+
+							if(i == 0 && indices[0] > 0){
+								// case where first few numbers of the list are 0
+								// here slope is the first slope calculated
+								for(j = 0; j < indices[1]; j++){
+									solution.plotValues[id][j] = slope *
+												(solution.time[j] - solution.time[index1]) +
+												solution.plotValues[id][index1];
+								}
+							}
+						}
+						break;
+				}
+			});
+
+			return solution;
 		},
 
 		hide: function(){

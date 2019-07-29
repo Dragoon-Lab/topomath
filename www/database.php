@@ -278,6 +278,7 @@
 			$u = $this->db_connection->real_escape_string($parameters['u']);
 			$s = $this->db_connection->real_escape_string($parameters['s']);
 			$p = $this->db_connection->real_escape_string($parameters['p']);
+			$newName = $this->db_connection->real_escape_string($parameters['nn']);
 
 			$flag = false;
 			if($parameters['g'] == ""){
@@ -307,8 +308,12 @@
 			}
 
 			$query = $this->getQuery('insertSession');
+			$probName = $p;
+			if($newName != ""){
+				$probName = $newName;
+			}
 			if($query != ''){
-				$query = sprintf($query, $session, $parameters['m'], $u, $s, $p, $row['folder']);
+				$query = sprintf($query, $session, $parameters['m'], $u, $s, $probName, $row['folder']);
 			} else {
 				return null;
 			}
