@@ -568,6 +568,9 @@ define([
 				if(connection.sourceId == nodeID || connection.targetId == nodeID){
 					try{
 						this._instance.detach(connection);
+						var lostNode = connection.sourceId === nodeID ? connection.targetId : connection.sourceId;
+						//if the updated connection points to an alien node (no authoredID), then update the candelete field and delNodeTag which facilitates right click delete
+						this.updateDeleteLabel(lostNode);
 					}
 					catch (err){
 						console.log("Error while detaching: " + err);
@@ -592,6 +595,14 @@ define([
 				array.forEach(arguments[1], lang.hitch(this, function(node){
 					if(node.name && node.description) this.addNodeDescription(node.id);
 				}));
+			}
+		},
+
+		updateDeleteLabel: function(lostNode){
+			//if the updated connection points to an alien node (no authoredID), then update the candelete field and delNodeTag which facilitates right click delete
+			if(!this._model.getAuthoredID(lostNode)){
+				this._model.setCanDelete(lostNode, true);
+				dijit.byId(lostNode+"delNodeTag").set("disabled", false);
 			}
 		}
 	});

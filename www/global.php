@@ -67,6 +67,8 @@ switch($type){
 		$parameters['g'] = array_key_exists('g', $_REQUEST) ? $_REQUEST['g'] : "";
 		$parameters['m'] = "AUTHOR";
 		$parameters['a'] = "construction";
+		//incase new name is sent, assignments use this
+		$parameters['nn'] = isset($_REQUEST['aname']) ? $_REQUEST['aname']: "";
 		$result = $db->copy_nc_model_section($parameters);
 		if($result == null)
 			echo '{"error" : "No models"}';

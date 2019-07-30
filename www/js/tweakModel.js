@@ -151,7 +151,8 @@ define([
 					for(var k = 0; k < authEqAr.length; k++){
 						var getCurProps = this.findAuthProp(authEqAr[k]);
 						var parentDet = this.findParentDetails(authEqAr[k]);
-						if( (getCurProps["variableType"] == "parameter" || (getCurProps["variableType"] == "unknown")) && authStudIDMap[authEqAr[k]] && !studNameMap.includes(curNodeEqAr[k])){
+						var nodeNameAlreadyExists = this.findNodeNameDup(curNodeEqAr[k]);
+						if( (getCurProps["variableType"] == "parameter" || (getCurProps["variableType"] == "unknown")) && authStudIDMap[authEqAr[k]] && !studNameMap.includes(curNodeEqAr[k]) && !nodeNameAlreadyExists.status){
 							hasAlien = true;
 							//parameters already are given as default, so the associated parameter has to be alien
 							//if node is unknown but already existing
@@ -177,7 +178,7 @@ define([
 							getNewID = getNewID + 1;
 
 						}
-						else if( (getCurProps["variableType"] == "unknown" || getCurProps["variableType"] == "parameter") && !authStudIDMap[authEqAr[k]] && !studNameMap.includes(curNodeEqAr[k])){
+						else if( (getCurProps["variableType"] == "unknown" || getCurProps["variableType"] == "parameter") && !authStudIDMap[authEqAr[k]] && !studNameMap.includes(curNodeEqAr[k]) && !nodeNameAlreadyExists.status){
 							//unknown node but does not exist so can be created
 							this.studObj[snodesCount++] = {
 							ID: "id" + getNewID,
@@ -207,7 +208,10 @@ define([
 							getNewID = getNewID + 1;
 							this.updateAssistanceScore(authEqAr[k]);
 						}
-
+						else if(nodeNameAlreadyExists.status){
+							localEqNodeIDCorresponder[curNodeEqAr[k]] = nodeNameAlreadyExists.authID;
+							studLinkMap[authEqAr[k]] = nodeNameAlreadyExists.authID;
+						}
 					}
 					
 					if(this.authObj[prop].schema == schema && !authStudIDMap[curAuthID]){
@@ -391,6 +395,14 @@ define([
 				equation = equation.replace("$"+curNodeEqAr[i], eqIDLinker[curNodeEqAr[i]]);
 			}
 			return equation;
+		},
+		findNodeNameDup: function(nodeName){
+			for(var prop in this.studObj){
+				if(this.studObj.hasOwnProperty(prop) && this.studObj[prop].hasOwnProperty("ID") && this.studObj[prop].variable == nodeName){
+					return {"status": true, "authID": this.studObj[prop].ID};
+				}
+			}
+			return {"status": false};
 		}
 
 	});
