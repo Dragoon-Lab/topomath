@@ -13,13 +13,17 @@ define([
 		chartsStatic: {},
 		legendStatic: {},
 		_colors: {
-            majorHLine: "#CACACA",
-            majorVLine: "#CACACA",
-            incorrectGraph: "red",
-            correctGraph: "#5cd65c",
-            authorGraph: "black"
-        },
+			majorHLine: "#CACACA",
+			majorVLine: "#CACACA",
+			incorrectGraph: "red",
+			correctGraph: "#228B22",
+			authorGraph: "black"
+		},
 		constructor: function(){
+			this.isLineDashed = {
+				"author": false,
+				"active": false
+			};
 		},
 
 		createChart: function(domNode, id, xAxis, yAxis, solution, authorSolution){
@@ -81,7 +85,7 @@ define([
 			chart.render();
 			//}
 			//else {
-			//    dom.byId("solutionMessage").innerHTML = "Unable to graph, please increase the number of timesteps";
+			//	dom.byId("solutionMessage").innerHTML = "Unable to graph, please increase the number of timesteps";
 			//}
 			return chart;
 		},
@@ -140,24 +144,31 @@ define([
 
 		formatChartSeries: function(solution, authorSolution, id, isStatic){
 			var series = [];
-			var temp = {};
-			temp.title = "Your Solution";
-			temp.data = this.formatSeriesForChart(solution, id);
+			var activeSeries = {};
+			activeSeries.title = "Your Solution";
+			activeSeries.data = this.formatSeriesForChart(solution, id);
 			if(this.isCorrect || !this.isStudentMode){
-				//temp.stroke = {stroke: this._colors.correctGraph, width: 2};
-                temp.stroke = {stroke:{color: this._colors.correctGraph, style: "ShortDash"}, width: 2};
+				activeSeries.stroke = {stroke:{color: this._colors.correctGraph}, width: 2};
+				//temp.stroke = {stroke:{color: this._colors.correctGraph, style: "ShortDash"}, width: 2};
 			} else {
-                temp.stroke = {stroke: {color: this._colors.incorrectGraph, style: "ShortDash"}, width: 2};
-				//temp.stroke = {stroke: this._colors.incorrectGraph, width: 2};
+				//temp.stroke = {stroke: {color: this._colors.incorrectGraph, style: "ShortDash"}, width: 2};
+				activeSeries.stroke = {stroke: {color: this._colors.incorrectGraph}, width: 2};
 			}
 
-			series.push(temp);
+			if(this.isLineDashed["active"]){
+				activeSeries["stroke"] = this.showDashedSeries(activeSeries["stroke"]);
+			}
+			series.push(activeSeries);
 			if(this.isStudentMode){
-				series.push({
+				var authorSeries = {
 					title: "Author's solution",
 					data: this.formatSeriesForChart(authorSolution, this._model.student.getAuthoredID(id)),
-					stroke: {stroke: this._colors.authorGraph, width: 2}
-				});
+					stroke: {stroke: {color: this._colors.authorGraph}, width: 2}
+				};
+				if(this.isLineDashed["author"]){
+					authorSeries["stroke"] = this.showDashedSeries(authorSeries["stroke"]);
+				}
+				series.push(authorSeries);
 			}
 
 			return series;
@@ -171,13 +182,11 @@ define([
 			return series;
 		},
 
-        formatDashedSeries: function(stroke){
-            array.forEach(stroke, function(s){
-                s["style"] = "ShortDash";
-            });
+		showDashedSeries: function(stroke){
+			stroke["stroke"]["style"] = "ShortDash";
 
-            return stroke;
-        },
+			return stroke;
+		},
 
 		//checks if the difference between min and max values for plot is not less than 10^-15
 		checkEpsilon: function(solution, id){
