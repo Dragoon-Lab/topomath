@@ -755,11 +755,11 @@ define([
 						//there could be multiple entities
 						var entityList = node.entity.split(';');
 						for(var i=0; i<entityList.length; i++){
+							entityList[i] = entityList[i].trim();
 							if(entityList[i] == entity)
 								return true;
 						}
 					}
-					
 				});
 				return gotIt ? eqnDet : null;
 			},
@@ -956,7 +956,7 @@ define([
 						if(node.schema === schema){
 							var entityAr = node.entity.split(";");
 							for(var i=0; i<entityAr.length; i++){
-								if(entity === entityAr[i])
+								if(entity === entityAr[i].trim())
 									return true;
 							}
 						}
@@ -971,6 +971,7 @@ define([
 					if(node.schema === schema){
 						var entityAr = node.entity.split(";");
 						for(var i=0; i<entityAr.length; i++){
+							entityAr[i] = entityAr[i].trim();
 							if(entity === entityAr[i]){
 								multipleEntityList = entityAr;
 								return true;
