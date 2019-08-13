@@ -580,7 +580,7 @@ define([
 				// Summary: returns the id of a node matching the authored name from the
 				//          authored or extra nodes.  If none is found, return null.
 				var id;
-				var regEx = new RegExp('^'+name+'$', 'i');
+				var regEx = new RegExp('^'+name+'$');
 				var gotIt = array.some(this.getNodes(), function(node){
 					console.log("node is", node);
 					id = node.ID;
