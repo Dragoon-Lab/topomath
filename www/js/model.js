@@ -1049,8 +1049,9 @@ define([
 				var nodeStatus = this.getCorrectness(id);
 				var score = this.getAssistanceScore(id);
 				var completeness = this.isComplete(id);
-				console.log("score complete status ", id, score, completeness, nodeStatus)
-				if(nodeStatus === "correct" && score === 0 && completeness)
+				var tweaked = this.isTweaked(id);
+				console.log("score complete status ", id, score, completeness, nodeStatus, tweaked)
+				if( (nodeStatus === "correct" && score === 0 && completeness) || (nodeStatus === "correct" && score === 1 && tweaked && completeness))
 					nodeStatus = "perfect";
 				return nodeStatus;
 			},
@@ -1291,6 +1292,9 @@ define([
 				// changing the logic of authoredID because a just created node is returned
 				// irrelevant
 				return authoredID && obj.authored.isNodeIrrelevant(authoredID);
+			},
+			isTweaked: function(id){
+				return this.getNode(id).tweaked ? true : false;
 			},
 			getCorrectAnswer : function(/*string*/ studentID, /*string*/ part){
 				var id = this.getAuthoredID(studentID);
