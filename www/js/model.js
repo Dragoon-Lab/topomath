@@ -580,7 +580,7 @@ define([
 				// Summary: returns the id of a node matching the authored name from the
 				//          authored or extra nodes.  If none is found, return null.
 				var id;
-				var regEx = new RegExp('^'+name+'$', 'i');
+				var regEx = new RegExp('^'+name+'$');
 				var gotIt = array.some(this.getNodes(), function(node){
 					console.log("node is", node);
 					id = node.ID;
@@ -755,11 +755,11 @@ define([
 						//there could be multiple entities
 						var entityList = node.entity.split(';');
 						for(var i=0; i<entityList.length; i++){
+							entityList[i] = entityList[i].trim();
 							if(entityList[i] == entity)
 								return true;
 						}
 					}
-					
 				});
 				return gotIt ? eqnDet : null;
 			},
@@ -956,7 +956,7 @@ define([
 						if(node.schema === schema){
 							var entityAr = node.entity.split(";");
 							for(var i=0; i<entityAr.length; i++){
-								if(entity === entityAr[i])
+								if(entity === entityAr[i].trim())
 									return true;
 							}
 						}
@@ -971,6 +971,7 @@ define([
 					if(node.schema === schema){
 						var entityAr = node.entity.split(";");
 						for(var i=0; i<entityAr.length; i++){
+							entityAr[i] = entityAr[i].trim();
 							if(entity === entityAr[i]){
 								multipleEntityList = entityAr;
 								return true;
@@ -1048,8 +1049,9 @@ define([
 				var nodeStatus = this.getCorrectness(id);
 				var score = this.getAssistanceScore(id);
 				var completeness = this.isComplete(id);
-				console.log("score complete status ", id, score, completeness, nodeStatus)
-				if(nodeStatus === "correct" && score === 0 && completeness)
+				var tweaked = this.isTweaked(id);
+				console.log("score complete status ", id, score, completeness, nodeStatus, tweaked)
+				if( (nodeStatus === "correct" && score === 0 && completeness) || (nodeStatus === "correct" && score === 1 && tweaked && completeness))
 					nodeStatus = "perfect";
 				return nodeStatus;
 			},
@@ -1290,6 +1292,9 @@ define([
 				// changing the logic of authoredID because a just created node is returned
 				// irrelevant
 				return authoredID && obj.authored.isNodeIrrelevant(authoredID);
+			},
+			isTweaked: function(id){
+				return this.getNode(id).tweaked ? true : false;
 			},
 			getCorrectAnswer : function(/*string*/ studentID, /*string*/ part){
 				var id = this.getAuthoredID(studentID);

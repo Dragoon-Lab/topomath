@@ -231,7 +231,8 @@ define([
 							type: "equation",
 							equation: this.getStudentEquation(curNodeEq, curNodeEqAr,localEqNodeIDCorresponder),
 							links: this.getUpdatedStudentLinks(this.authObj[prop].links, studLinkMap),
-							status: hasAlien ? wrongAuthStatus : rightAuthStatus
+							status: hasAlien ? wrongAuthStatus : rightAuthStatus,
+							tweaked: hasAlien ? true : false
 						}
 						authStudIDMap[curAuthID] = "id" + getNewID;
 						getNewID = getNewID + 1;
