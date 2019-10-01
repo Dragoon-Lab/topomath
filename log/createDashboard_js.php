@@ -516,7 +516,7 @@
 							} else if($newNode == null && $currentNode != null && strpos($currentNode->id, $newMessage['nodeID']) === false){
 								// case when no node exists and an out of order message. this issue has been fixed but still for fall 14 analysis it is needed
 								$newNode = new Node();
-								$newNode->name = $newMessage['node'];
+								$newNode->name = array_key_exists("node", $newMessage)?$newMessage['node']:"";
 								$newNode->id = $nodeID;
 								$newNode->openTimes = 0;
 								$newNode->nodeExist = true;
@@ -547,7 +547,7 @@
 									$newNode->openTimes = 1;
 									$newNode->nodeExist = true;
 								}
-							} else if($currentNode == null && count($upObject->nodes) == 0){
+							} else if($currentNode == null /*&& count($upObject->nodes) == 0*/){
 								//first message is out of order
 								$currentNode = new Node();
 								$currentNode->id = $newMessage['nodeID'];
