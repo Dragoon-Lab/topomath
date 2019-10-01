@@ -255,7 +255,14 @@ define([
 							console.log("updating node view for currentID")
 							myThis.updateNodeView(myThis._model.active.getNode(myThis.currentID));
 						}
-					
+						if(equation.value && !myThis.deleteNodeActivated &&  !myThis.validSlotNames){
+							myThis.applyDirectives([{
+								id: "crisisAlert",
+								attribute: "open",
+								value: "Enter valid names in variable slots"
+							}]);
+							return;
+						}
 						if(equation.value && !myThis.deleteNodeActivated &&  myThis.checkForSlotDuplicates(equation.value)){
 							myThis.applyDirectives([{
 								id: "crisisAlert",

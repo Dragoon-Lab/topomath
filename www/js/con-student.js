@@ -54,6 +54,7 @@ define([
 			this.variableUpdateBySystem = false;
 			this.deleteNodeActivated = false;
 			this.ambigiousSchemas = ["P2W","P3W","P4W","P5W","A2","A3","A4","M2","M3","M4"];
+			this.validSlotNames = true;
 		},
 		studentPM:{
 			process: function(nodeID, nodeType, value, validInput, message, attemptCount, correctAnswer){
