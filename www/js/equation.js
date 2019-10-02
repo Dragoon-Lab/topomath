@@ -103,6 +103,13 @@ define([
 						//In such situation convert name to id
 						var nodeId = subModel.getNodeIDByName(variable);
 						if(nodeId){
+							//There is a case where node exists but does not have an authored ID assigned
+							//Assign an authored ID before expression is substituted with node id
+							if(!subModel.getAuthoredID(nodeId)){
+								if(subModel.isAuthoredIDNotAssigned(authStudNameMap[variable]))
+									subModel.setAuthoredID(nodeId, authStudNameMap[variable]);
+									nodeList.push({ "id": nodeId, "variable":variable});
+							}
 							expr.substitute(variable,nodeId);
 							if(currentPriorList.length>0){
 								currentPriorList.some(function(eachPrior){
