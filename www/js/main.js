@@ -153,9 +153,12 @@ define([
 
 		} else {
 			console.log("Its a new problem");
-			var m = _session.isStudentMode ? "doesnt.exist" : "new.problem";
-			var box = new messageBox("errorMessageBox", "warn", _messages[m], true);
-			box.show();
+			//Schema Editor Mode new problems should not be shown any message
+			if(!_session.isEditorMode){
+				var m = _session.isStudentMode ? "doesnt.exist" : "new.problem";
+				var box = new messageBox("errorMessageBox", "warn", _messages[m], true);
+				box.show();
+			}
 			// Add message box in student mode
 		}
 		
