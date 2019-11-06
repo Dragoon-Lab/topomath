@@ -18,7 +18,7 @@ define([
 		_instance: null,
 		_model: null,
 		_colors:[
-			"#00ffff", "#f0e68c", "#add8e6", "#e0ffff", "#90ee90", "#ffb6c1",
+			"#4da6ff", "#f0e68c", "#add8e6", "#e0ffff", "#90ee90", "#ffb6c1",
 			"#ffffe0", "#00ff00", "#f5f5dc", "#0000ff", "#8b0000", "#ff8c00",
 			"#ffd700", "#9400d3", "#808000", "#c0c0c0", "#ffc0cb", "#ff0000",
 			"#ffff00", "#008b8b", "#008000", "#f0ffff", "#bdb76b", "#ffa500",
