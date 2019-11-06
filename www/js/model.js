@@ -285,6 +285,22 @@ define([
 						arr1.splice(ind, 1);
 				}
 				return arr1;
+			},
+			isOldVersion: function(){
+				//This function has to return true if the current model is old version
+				//By old version, the version where schemas were not present
+				//A valid new version problem will have a author node with a schema which is not the case with old version
+				var isOld = array.some(this.authored.getNodes(), function(node){
+					if(node && node.type === "equation"){
+						if(node.schema){
+							return false;
+						}
+						else{
+							return true;
+						}
+					}
+				});
+				return isOld;
 			}
 		};
 

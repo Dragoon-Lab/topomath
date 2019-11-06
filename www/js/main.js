@@ -96,6 +96,11 @@ define([
 		if(solutionGraph){
 			try{
 				_model.loadModel(solutionGraph);
+				//For old models (where schemas are not present we need to throw a message)
+				if(_model.isOldVersion()){
+					var box = new messageBox("errorMessageBox", "warn", _messages["old.version"], true);
+					box.show();
+				}
 			} catch(err){
 				if (!_session.isStudentMode) {
 					var errorMessage = new messageBox("errorMessageBox", "error", _messages["duplicate.nodes"] + error.message, true);

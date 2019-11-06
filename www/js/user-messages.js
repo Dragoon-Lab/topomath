@@ -50,7 +50,8 @@ define([], function(){
 		"new.problem": "A new problem has been created. If you were trying to load a pre-existing problem, please check the name of the problem you have entered.",
 		"duplicate.nodes": "Nodes in the problem have duplicate node ID. ",
 		"duplicate.nodes.student": "This problem could not be loaded. Please contact the problem's author.",
-		"solution.missing": "The solution of the model is incomplete.  Please contact the author."
+		"solution.missing": "The solution of the model is incomplete.  Please contact the author.",
+		"old.version": "Don't open the node editor. Don't drag nodes. Look but don't touch. This was made in an old version of TopoMath."
 	};
 
 	return {
