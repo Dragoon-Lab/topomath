@@ -46,6 +46,7 @@ define([
 			this.log("start-session", params);
 			this.isStudentMode = (params.m != "AUTHOR" && params.m != "SEDITOR");
 			this.isEditorMode = (params.m === "SEDITOR");
+			this.isAuthorMode = (params.m === "AUTHOR");
 		},
 
 		getModel: function(params){

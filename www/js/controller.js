@@ -255,6 +255,24 @@ define([
 							console.log("updating node view for currentID")
 							myThis.updateNodeView(myThis._model.active.getNode(myThis.currentID));
 						}
+						if(myThis._model.active.isAuthorMode() && !myThis.deleteNodeActivated){
+							if(!myThis._model.active.getSchema(myThis.currentID)){
+								myThis.applyDirectives([{
+									id: "crisisAlert",
+									attribute: "open",
+									value: "Please enter a valid Schema"
+								}]);
+								return;
+							}
+							if(!myThis._model.active.getEntities(myThis.currentID) || myThis._model.active.getEntities(myThis.currentID).trim() == ""){
+								myThis.applyDirectives([{
+									id: "crisisAlert",
+									attribute: "open",
+									value: "Please enter a valid Entity"
+								}]);
+								return;
+							}
+						}
 						if(equation.value && !myThis.deleteNodeActivated &&  !myThis.validSlotNames){
 							myThis.applyDirectives([{
 								id: "crisisAlert",

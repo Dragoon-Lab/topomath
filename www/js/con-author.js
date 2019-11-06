@@ -497,7 +497,7 @@ define([
 			//entities can only be alphanumerics and are separated by semi colons
 			var validInput = {status: true};
 			var entityDesc = "";
-			if(entity == ''){
+			if(entity.trim() == ''){
 				entity = null;
 			}
 			else{

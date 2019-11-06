@@ -233,6 +233,9 @@ define([
 			isStudentMode: function(){
 				return obj._session.isStudentMode;
 			},
+			isAuthorMode: function(){
+				return obj._session.isAuthorMode;
+			},
 			setStudentMode: function(value){
 				obj._session.isStudentMode = value;
 			},
@@ -631,6 +634,9 @@ define([
 			},
 			isStudentMode: function(){
 				return obj.isStudentMode();
+			},
+			isAuthorMode: function(){
+				return obj.isAuthorMode();
 			},
 			getDescriptions: function(){
 				// Summary: returns an array of all descriptions with
