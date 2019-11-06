@@ -497,6 +497,12 @@ define([
 			//entities can only be alphanumerics and are separated by semi colons
 			var validInput = {status: true};
 			var entityDesc = "";
+			//remove empty values from list of entities
+			var emptyEntityOb = this.removeEmptyEntityValues(entity);
+			if(emptyEntityOb.found){
+				registry.byId(this.controlMap.entity).set('value', emptyEntityOb.newStr);
+				return;
+			}
 			if(entity.trim() == ''){
 				entity = null;
 			}
@@ -505,7 +511,6 @@ define([
 				if( !(validEntityObj.correctness && validEntityObj.validValue != ""))
 					validInput = {status: false, entity: validEntityObj.validValue};
 				entityDesc = validEntityObj.validValue;
-
 			}
 			var returnObj = this.authorPM.process(this.currentID, "entity", entity, validInput);
 			this.applyDirectives(returnObj);
@@ -1336,6 +1341,24 @@ define([
 				}
 			}
 			return {validValue: entityDesc, correctness: correctness};
+		},
+		removeEmptyEntityValues: function(entity){
+			var entityStr = ""+entity;
+			var entityAr = entityStr.split(';');
+			var newEntityAr = [];
+			var returnEntObj = {found: false, newStr: ''};
+			for(var i=0;i<entityAr.length;i++){
+				if(entityAr[i].trim() === ""){
+					returnEntObj.found = true;
+				}
+				else
+					newEntityAr.push(entityAr[i]);
+			}
+			var newStr = newEntityAr.join(";");
+			if(entityAr.length > newEntityAr.length){
+				returnEntObj.newStr = newStr;
+			}
+			return returnEntObj;
 		},
 		/*activateDeleteNode
 		This function can be used for delete button specific checks
