@@ -1352,7 +1352,16 @@ define([
 				//		a student receives, based on suggestions by Robert Hausmann;
 				//		a score of 0 means that a student did not have any errors;
 				var authoredID = this.getAuthoredID(id);
-				return !authoredID || obj.authored.getAttemptCount(authoredID, "assistanceScore");
+				var attemptCount = !authoredID || obj.authored.getAttemptCount(authoredID, "assistanceScore");
+				if(this.getType(id) == "quantity"){
+					return attemptCount;
+				}
+				else if(this.getType(id) == "equation"){
+					//For equation nodes attempt counts are stored in student model for the fields schema and entity in updated topomath version
+					//Add these attempt counts to return a perfect assistance score
+					attemptCount = attemptCount + obj.student.getAttemptCount(id,"schema") + obj.student.getAttemptCount(id, "entity");
+					return attemptCount;
+				}
 			},
 			getCorrectness: function(/*string*/ studentID){
 				var node = this.getNode(studentID);

@@ -872,6 +872,15 @@ define([
 									}
 								}
 							}
+							//Before system gives out one of the slot values (system is throwing a right answer here)
+							//equation attempt count,status and assistance has to be updated if they have not been updated alerady (This issue has been causing icon bugs)
+							//because the feedback for slots is given after user reopens the editor 
+							var currentNodeAuthID = this._model.student.getAuthoredID(this.currentID);
+							if(this._model.authored.getStatus(currentNodeAuthID, "equation") != "demo"){
+								this._model.authored.setStatus(currentNodeAuthID, "equation", "demo");
+								this._model.authored.setAttemptCount(currentNodeAuthID, "equation", this._model.authored.getAttemptCount(currentNodeAuthID, "equation") + 1);
+								this._model.student.incrementAssistanceScore(this.currentID);
+							}
 							registry.byId("holder"+this.schema+this.currentID+slot_id).set("value", studName);
 							registry.byId("holder"+this.schema+this.currentID+slot_id).set("disabled", true);
 							this._model.student.setSlotStatus(this.currentID, slot_id, "demo");
