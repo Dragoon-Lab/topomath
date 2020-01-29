@@ -89,8 +89,6 @@ define([
 	var _feedback = _config.get("feedbackMode");
 	_config.set("giveParameters", query.gp);
 	_config.set("skipUnits", query.su);
-	_config.set("giveDescription", query.gd);
-
 	var _model = new model(_session, query.m, query.p, _config);
 	console.log(_model);
 

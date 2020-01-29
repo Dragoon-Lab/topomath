@@ -139,7 +139,6 @@ define([
 			this.description = "";
 			this._giveParams = this._config.get("giveParameters");
 			this._skipUnits = this._config.get("skipUnits");
-			this._giveDesc = this._config.get("giveDescription");
 		},
 
 		// A stub for connecting routine to draw new node.
