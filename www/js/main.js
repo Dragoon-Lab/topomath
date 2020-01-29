@@ -394,7 +394,12 @@ define([
 					textArea.select();
 					document.execCommand("Copy");
 					textArea.remove();
-					var errorMessage = new messageBox("errorMessageBox", "warn", "Equations Copied to Clipboard", true);
+					//New addition to copy equations
+					//Also Print the percentage of correct equations
+					//The score depends on give parameters and give schema flags too
+					//Please note here that default schema given is DRT
+					var greenNodeScore = Math.round(_model.student.getGreenScore(query));
+					var errorMessage = new messageBox("errorMessageBox", "warn", "Equations Copied to Clipboard<br/>Score = "+greenNodeScore+"%, That is, "+greenNodeScore+"% of your nodes were green or green with gold star", true);
 					errorMessage.show();
 				});
 			}

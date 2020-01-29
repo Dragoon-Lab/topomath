@@ -1475,8 +1475,63 @@ define([
 				var schemaValid = schemaStatusObj.status == "correct" || schemaStatusObj.status == "demo";
 				var entityValid = entityStatusObj.status == "correct" || entityStatusObj.status == "demo";
 				return schemaValid && entityValid;
+			},
+			getGreenScore: function(problemConditions){
+				//returns the percentage of the greens or stars from all the user solved nodes so far
+				//nodeDen is the denominator the score being computed. It comprises of all the nodes student attempted so far (which exludes given nodes)
+				$nodeDen = 0;
+				//nodeNum is the numerator or the nodes which are green so far
+				$nodeNum = 0;
+				$standardSchema = "DRT"; //This could change
+				$gp = problemConditions.gp; //give parameters
+				$gs = problemConditions.gs; // give schema
+				$su = problemConditions.su; //skip units
+				array.forEach(this.getNodes(), function(node){
+					if(node.type == "equation"){
+						//for equation nodes if givenschema is set and if it is a DRT then we do not count for denominator
+						if(!($gs && obj.authored.getNode(node.authoredID).schema == $standardschema) ){
+							$nodeDen++;
+							//Now count those equation nodes which have greens
+							//check status of all fields in an equation node to see if they point to green
+							if(obj.student.getStatus(node.ID,"schemas").status == "correct" && obj.student.getStatus(node.ID,"entity").status == "correct" && obj.student.getStatus(node.ID,"equation").status == "correct")
+								$nodeNum++;
+						}
+					}
+					else if(node.type == "quantity"){
+						//for quantity nodes if givenParameter is set and node type is parameter we ignore the node both in numerator and denominator
+						if(!($gp && node.variableType == "parameter")){
+							$nodeDen++;
+							if(obj.student.getStatus(node.ID,"variable").status == "correct" && obj.student.getStatus(node.ID,"variableType").status == "correct"){
+								//value status depends on if variable type is param or not
+								$valStatus = false;
+								if(node.variableType == "parameter"){
+									//now check value status
+									if(obj.student.getStatus(node.ID,"value").status == "correct")
+										$valStatus = true;
+								}
+								else{
+									$valStatus = true;
+								}
+								//if skip units is not set
+								$skipStatus = false;
+								if(!$su){
+									if(obj.student.getStatus(node.ID,"units").status == "correct")
+										$skipStatus = true;
+								}
+								else{
+									$skipStatus = true;
+								}
+								if($valStatus && $skipStatus)
+									$nodeNum++;
+							}
+						}
+					}
+				});
+				if($nodeDen != 0)
+					return ($nodeNum/$nodeDen)*100;
+				else
+					return 0;
 			}
-
 		}, both);
 
 		obj.constructor.apply(obj, arguments);
