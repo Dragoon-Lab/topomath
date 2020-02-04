@@ -563,14 +563,15 @@ define([
 			}, this);
 		},
 
-		detachConnections: function(nodeID){
+		detachConnections: function(nodeID, /*optional delete ignore list*/ deleteIgnoreList){
 			array.forEach(this._instance.getConnections(), function(connection){
 				if(connection.sourceId == nodeID || connection.targetId == nodeID){
 					try{
 						this._instance.detach(connection);
 						var lostNode = connection.sourceId === nodeID ? connection.targetId : connection.sourceId;
 						//if the updated connection points to an alien node (no authoredID), then delete the node automatically (topomath #543)
-						if(!this._model.getAuthoredID(lostNode)){
+						//except in one case where the equation still points to the alien node which can be compared with the deleteIgnoreList
+						if(!this._model.getAuthoredID(lostNode) && !deleteIgnoreList.includes(lostNode)){
 							this.deleteNode(lostNode);
 						}
 					}
@@ -587,7 +588,14 @@ define([
 		},
 
 		updateNodeConnections: function(from, to){
-			this.detachConnections(to);
+			//prepare a delete ignore list
+			//delete ignore list contains all the "from" nodes which are alien because these nodes have to be averted from being deleted automatically (#543) when connections are detached to these nodes
+			var deleteIgnoreList = [];
+			for(var i=0; i<from.length; i++){
+				if(!this._model.getAuthoredID(from[i].ID));
+					deleteIgnoreList.push(from[i].ID);
+			}
+			this.detachConnections(to, deleteIgnoreList);
 			this.setConnections(from, to);
 		},
 
