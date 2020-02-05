@@ -32,6 +32,8 @@ define([
 		"irrelevant": 0
 	};
 
+	var attemptCountCutoff = 2;
+
 	var descriptionTable = {
 		// Summary: This table is used for determining the proper response to a student's 'description' answer (see 
 		//		'Pedagogical_Module.docx' in the documentation)
@@ -63,7 +65,7 @@ define([
 				followUpTasks(obj, part, directiveObject);
 			}
 		},
-		firstFailure: {
+		keepTryingHint: {
 			feedback: function(obj, part){
 				directiveObject.state = directiveObject.message = "incorrect";
 				directiveObject.disable = directiveObject.displayNext = directiveObject.displayValue = false;
@@ -76,10 +78,10 @@ define([
 				followUpTasks(obj, part, directiveObject);
 			}
 		},
-		secondFailure:{
+		bottomUpHint:{
 			feedback: function(obj, part){
 				directiveObject.state = "demo";
-				directiveObject.message = "secondFailure";
+				directiveObject.message = "bottomUpHint";
 				directiveObject.disable = directiveObject.displayNext = directiveObject.displayValue = true;
 				followUpTasks(obj, part, directiveObject);
 			},
@@ -170,7 +172,7 @@ define([
 				followUpTasks(obj, part, directiveObject);
 			}
 		},
-		firstFailure: {
+		keepTryingHint: {
 			feedback: function(obj, part){
 				directiveObject.state = directiveObject.message = "incorrect";
 				directiveObject.disable = directiveObject.displayValue = false;
@@ -184,10 +186,10 @@ define([
 				followUpTasks(obj, part, directiveObject);
 			}
 		},
-		secondFailure:{
+		bottomUpHint:{
 			feedback: function(obj, part){
 				directiveObject.state = "demo"
-				directiveObject.message = "secondFailure";
+				directiveObject.message = "bottomUpHint";
 				directiveObject.disable = directiveObject.displayNext = directiveObject.displayValue = true;
 				followUpTasks(obj, part, directiveObject);
 			},
@@ -358,7 +360,7 @@ define([
 			// Retrieves the authoredID for the matching given model node
 			var authoredID = this.model.student.getAuthoredID(studentID);
 
-			if(interpretation === "secondFailure"){
+			if(interpretation === "bottomUpHint"){
 				answer = this.model.student.getCorrectAnswer(id, nodePart);
 			}
 
@@ -376,10 +378,10 @@ define([
 				if(answer === correctAnswer || correctAnswer === true || answer_temp1 == correctAnswer_temp1){
 					interpretation = "correct";
 				}else{
-					if(model.authored.getAttemptCount(authoredID, nodePart) > 0 ){
-						interpretation = "secondFailure";
+					if(model.authored.getAttemptCount(authoredID, nodePart) > 1 ){
+						interpretation = "bottomUpHint";
 					}else{
-						interpretation = "firstFailure";
+						interpretation = "keepTryingHint";
 					}
 				}
 				console.log("interpretation is", interpretation);
@@ -393,10 +395,10 @@ define([
 					else if(this.model.active.getType(studentID) === this.model.authored.getType(authoredID))
 						interpretation = "correct";
 					else
-						if(model.authored.getAttemptCount(authoredID, nodePart) > 0 )
-							interpretation = "secondFailure";
+						if(model.authored.getAttemptCount(authoredID, nodePart) > 1 )
+							interpretation = "bottomUpHint";
 						else
-							interpretation = "firstFailure";
+							interpretation = "keepTryingHint";
 					break;
 				case "variable":
 					interpret(this.model.authored.getVariable(authoredID));
@@ -446,7 +448,6 @@ define([
 			var actual_id = this.model.student.getAuthoredID(id);
 			console.log("actual id is", actual_id);
 			var equationEvaluation = ""; var interpretation = "";
-			console.log("actual id is",actual_id);
 			var givenAnswer = answer; //keeping a copy of answer for logging purposes.
 			// evaluation returns correct incorrect and partial, which is something that
 			// we want to use. in case it is partial we need to change the color
@@ -539,7 +540,7 @@ define([
 						}
 					}
 
-					if(equationEvaluation === "partial" && interpretation !== "secondFailure"){
+					if(equationEvaluation === "partial" && interpretation !== "bottomUpHint"){
 						var partialObj = [];
 						nodeEditorActionTable[equationEvaluation][this.feedbackMode](partialObj, nodePart, answer);
 						var variables = equation.getEquationVariables(this.model, id);
@@ -555,7 +556,7 @@ define([
 			}
 
 			if(returnObj[0].value && (interpretation === "lastFailure"
-				|| interpretation === "secondFailure")){
+				|| interpretation === "bottomUpHint")){
 				answer = this.model.student.getCorrectAnswer(id, nodePart);
 				/*TO DO : Add Equation*/
 				if(nodePart === "equation" && !answer.error){
@@ -611,7 +612,7 @@ define([
 				var logCorrectAnswer = this.model.student.getCorrectAnswer(id, nodePart);
 
 				if(nodePart === "equation")
-					if(interpretation == "firstFailure"){
+					if(interpretation == "keepTryingHint"){
 						var params = {
 							subModel: this.model.authored,
 							equation: logCorrectAnswer
@@ -658,7 +659,7 @@ define([
 			}
 
 			var obj = [];
-			if(status == "demo") status = "secondFailure";
+			if(status == "demo") status = "bottomUpHint";
 			else if(status == "") status = "defaultAction";
 			if(nodePart == "description"){
 				descriptionTable[status][this.feedbackMode](obj, nodePart);
