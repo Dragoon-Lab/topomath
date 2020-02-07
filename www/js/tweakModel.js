@@ -65,7 +65,7 @@ define([
 							this.studObj[snodesCount++] = {
 							ID: "id" + getNewID,
 							attemptCount: {
-								schema: 1,
+								schema: 0,
 								entity: 0,
 								variables: 0,
 							},
@@ -82,11 +82,12 @@ define([
 							units: this.authObj[prop].units,
 							value: this.authObj[prop].value,
 							variable: this.authObj[prop].variable,
-							variableType: this.authObj[prop].variableType
+							variableType: this.authObj[prop].variableType,
+							gifted: true
 						}
 						authStudIDMap[curAuthID] = "id" + getNewID;
 						getNewID = getNewID + 1;
-						this.updateAssistanceScore(curAuthID);
+						//this.updateAssistanceScore(curAuthID);
 						}
 					}
 				}
@@ -171,7 +172,8 @@ define([
 								selfEquation: curNodeEq,
 								status: {},
 								type: "quantity",
-								variable: curNodeEqAr[k]
+								variable: curNodeEqAr[k],
+								gifted: true
 							}
 							studLinkMap[authEqAr[k]] = "id"+getNewID;
 							localEqNodeIDCorresponder[curNodeEqAr[k]] = "id"+getNewID;
@@ -183,7 +185,7 @@ define([
 							this.studObj[snodesCount++] = {
 							ID: "id" + getNewID,
 							attemptCount: {
-								schema: 1,
+								schema: 0,
 								entity: 0,
 								variables: 0,
 							},
@@ -200,13 +202,14 @@ define([
 							units: getCurProps["units"],
 							value: getCurProps["value"],
 							variable: curNodeEqAr[k],
-							variableType: getCurProps["variableType"]
+							variableType: getCurProps["variableType"],
+							gifted: true
 							}	
 							authStudIDMap[authEqAr[k]] = "id" + getNewID;
 							studLinkMap[authEqAr[k]] = "id" + getNewID;
 							localEqNodeIDCorresponder[curNodeEqAr[k]] = "id"+getNewID;
 							getNewID = getNewID + 1;
-							this.updateAssistanceScore(authEqAr[k]);
+							//this.updateAssistanceScore(authEqAr[k]);
 						}
 						else if(nodeNameAlreadyExists.status){
 							localEqNodeIDCorresponder[curNodeEqAr[k]] = nodeNameAlreadyExists.authID;
@@ -232,11 +235,12 @@ define([
 							equation: this.getStudentEquation(curNodeEq, curNodeEqAr,localEqNodeIDCorresponder),
 							links: this.getUpdatedStudentLinks(this.authObj[prop].links, studLinkMap),
 							status: hasAlien ? wrongAuthStatus : rightAuthStatus,
-							tweaked: hasAlien ? true : false
+							tweaked: hasAlien ? true : false,
+							gifted: true
 						}
 						authStudIDMap[curAuthID] = "id" + getNewID;
 						getNewID = getNewID + 1;
-						this.updateAssistanceScore(curAuthID);		
+						//this.updateAssistanceScore(curAuthID);
 					}
 				}
 				}	

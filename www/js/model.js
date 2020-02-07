@@ -1066,15 +1066,20 @@ define([
 			*			                  incorrect - complete or incomplete node with atleast one incorrect answer
 			*			                  demo - complete or incomplete node with atleast one demo answer
 			*			                  null - node status value in the author mode
+			*			                  gifted - node status value when the nodes are given to students (gifted without them solving)
 			**/
 			getNodeStatus: function(id){
 				var nodeStatus = this.getCorrectness(id);
 				var score = this.getAssistanceScore(id);
 				var completeness = this.isComplete(id);
 				var tweaked = this.isTweaked(id);
+				var gifted = this.isGifted(id);
 				console.log("score complete status ", id, score, completeness, nodeStatus, tweaked)
 				if( (nodeStatus === "correct" && score === 0 && completeness) || (nodeStatus === "correct" && score === 1 && tweaked && completeness))
 					nodeStatus = "perfect";
+				if(gifted){
+					nodeStatus = "gifted-"+nodeStatus;
+				}
 				return nodeStatus;
 			},
 			setStatus: function(/*string*/ id, /*string*/ control, /*object*/ options){
@@ -1317,6 +1322,9 @@ define([
 			},
 			isTweaked: function(id){
 				return this.getNode(id).tweaked ? true : false;
+			},
+			isGifted: function(id){
+				return this.getNode(id).gifted ? true : false;
 			},
 			getCorrectAnswer : function(/*string*/ studentID, /*string*/ part){
 				var id = this.getAuthoredID(studentID);

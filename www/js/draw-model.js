@@ -46,6 +46,9 @@ define([
 			"incorrect" : " fa-times",
 			"correct" : " fa-check",
 			"perfect" : " fa-star",
+			"gifted-perfect" : " fa-gift perfect",
+			"gifted-incorrect": " fa-gift incorrect",
+			"gifted-demo": " fa-gift demo",
 			"": ""
 		},
 
@@ -233,7 +236,7 @@ define([
 			var nodeStatusClass = nodeStatus ? this._statusClassMap[nodeStatus] : "";
 			console.log("node status details", nodeStatus, nodeStatusClass);
 			if(this._model.isStudentMode() && this._feedbackMode != "nofeedback"){
-				var _feedbackTags = ['fa-check','fa-star','fa-times','fa-minus'];
+				var _feedbackTags = ['fa-check','fa-star','fa-times','fa-minus','fa-gift perfect', 'fa-gift incorrect', 'fa-gift demo'];
 				/*Updating tags each time model gets updated*/
 				array.forEach(_feedbackTags, function(t){
 					domClass.remove(domIDTags['topomathFeedback'], t);
