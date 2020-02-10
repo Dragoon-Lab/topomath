@@ -340,8 +340,8 @@ input[type=radio]{
 }
 .topomath-feedback.fa-gift.incorrect{
   color: rgb(153, 134, 9);
-  box-shadow: 2px 2px 2px red;
-  border-color: red;
+  box-shadow: 1px 1px 1px red;
+  border: 3px solid red;
 }
 .topomath-feedback.fa-gift.demo{
   color: rgb(153, 134, 9);
