@@ -1497,7 +1497,7 @@ define([
 				array.forEach(this.getNodes(), function(node){
 					if(node.type == "equation"){
 						//for equation nodes if givenschema is set and if it is a DRT then we do not count for denominator
-						if(!($gs && obj.authored.getNode(node.authoredID).schema == $standardschema) ){
+						if(!($gs && obj.authored.getNode(node.authoredID).schema == $standardSchema) ){
 							$nodeDen++;
 							//Now count those equation nodes which have greens
 							//check status of all fields in an equation node to see if they point to green
