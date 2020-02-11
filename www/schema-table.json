@@ -185,9 +185,9 @@
 			"Name": "$ per $",
 			"Equation": "C = R * O",
 			"Mapping": {
-				"C": "Change",
+				"C": "Change (in $s)",
 				"R": "Rate",
-				"O": "Original"
+				"O": "Original (in $s)"
 			},
 			"Comments": "Finance has a particular confusing kind of rate, which is \"dollar per dollar.\" It is so confusing, they you hardly ever see \"dollar per dollar\" as a unit. Instead, special names are used, such as tax, profit, loss, discount, interest, and so on. When you see such a term, use this schema. Example1: \"You made a 5% profit on $1200, so you got $60\" translates to Original=1200, Rate=0.1, Change=60. Example2: You got a $700 sweater at 20% discount, so you saved $140.\" Translates to Original=700, Rate=0.2, Change=140."
 		}
