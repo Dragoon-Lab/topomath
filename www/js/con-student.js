@@ -844,7 +844,9 @@ define([
 						var currentNodeAuthID = this._model.student.getAuthoredID(this.currentID);
 						var currentSlotAttemptCount = this._model.student.getAttemptCount(this.currentID, slot_id);
 						var currentEquationStatus = this._model.authored.getStatus(currentNodeAuthID, "equation");
-						if(this._model.student.getSlotStatus(this.currentID, slot_id) == "incorrect" && currentSlotAttemptCount >= this.attemptCountCutoff){ //if the current equation attempt count is greater than cutoff suggest the answer
+						var currentEquationAttemptCount = this._model.authored.getAttemptCount(currentNodeAuthID, "equation");
+						console.log("equation current details", currentSlotAttemptCount, currentEquationStatus, currentEquationAttemptCount);
+						if(this._model.student.getSlotStatus(this.currentID, slot_id) == "incorrect" && currentEquationStatus == "demo"){ //if the current equation attempt count is greater than cutoff suggest the answer
 							var studID = this._model.student.getNodeIDFor(original_Ar[i]);
 							var studName = this._model.student.getName(studID);
 							var slotAr = expression.getVariableStrings(registry.byId(this.controlMap.equation).value);
@@ -877,15 +879,6 @@ define([
 										tempName = tempName + "1";
 									}
 								}
-							}
-							//Before system gives out one of the slot values (system is throwing a right answer here)
-							//equation attempt count,status and assistance has to be updated if they have not been updated alerady (This issue has been causing icon bugs)
-							//because the feedback for slots is given after user reopens the editor 
-							var currentNodeAuthID = this._model.student.getAuthoredID(this.currentID);
-							if(this._model.authored.getStatus(currentNodeAuthID, "equation") != "demo"){
-								this._model.authored.setStatus(currentNodeAuthID, "equation", "demo");
-								this._model.authored.setAttemptCount(currentNodeAuthID, "equation", this._model.authored.getAttemptCount(currentNodeAuthID, "equation") + 1);
-								this._model.student.incrementAssistanceScore(this.currentID);
 							}
 							registry.byId("holder"+this.schema+this.currentID+slot_id).set("value", studName);
 							registry.byId("holder"+this.schema+this.currentID+slot_id).set("disabled", true);
