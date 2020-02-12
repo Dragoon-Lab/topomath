@@ -289,6 +289,15 @@ define([
 							}]);
 							return;
 						}
+						//Do a final syntax check on the variable slot names given
+						if(!myThis.verifyVariableSyntax()){
+							myThis.applyDirectives([{
+									id: "crisisAlert",
+									attribute: "open",
+									value: "Please enter a valid variable name (avoid special characters, alphanumerics allowed)"
+								}]);
+								return;
+						}
 
 						//if the equation is in the box but has not been checked(or entered) and deleteNode is not calling for this function or if equation is changed after validating in author mode
 						if((equation.value && !myThis.equationEntered && !myThis.deleteNodeActivated)|| (equation.displayedValue !== equation.value)){
@@ -1569,6 +1578,20 @@ define([
 				console.log(err.Error);
 				return false;
 			}
+		},
+		verifyVariableSyntax: function(){
+			if(this.equation !== ""){
+				for(var varKey in this.slotMap){
+					var currentComboBox = 'holder'+this.schema+this.currentID+this.slotMap[varKey];
+					var currentVal = registry.byId(currentComboBox).get("value");
+					console.log("syntax verification", currentVal);
+					if(!isNaN(currentVal) || !/^[a-zA-Z0-9]+$/.test(currentVal)){
+						console.log("syntax test failed");
+						return false;
+					}
+				}
+			}
+			return true;
 		}
 	});
 });
