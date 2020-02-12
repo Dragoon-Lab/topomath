@@ -1140,7 +1140,7 @@ define([
 				if(!validSchemaInput || !validEntityInput){
 					descAttempt = "red";
 				}
-				else if(entityAttempt >=2 || schemaAttempt >=2){
+				else if(entityAttempt > this.attemptCountCutoff || schemaAttempt > this.attemptCountCutoff){
 					descAttempt = "yellow";
 				}
 				else{
