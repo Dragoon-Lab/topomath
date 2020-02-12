@@ -376,13 +376,18 @@ define([
 			// earlier the assumption was that if solution has error then no graph will
 			// be shown.
 //			if(!solution.status.error){
-			if(timeStepSolution && timeStepSolution.hasOwnProperty('vars'))
-				solution.plotVariables = timeStepSolution.vars;
-			else
-				solution.plotVariables = solution.xvars.concat(solution.func);
+			try{
+				if(timeStepSolution && timeStepSolution.hasOwnProperty('vars'))
+					solution.plotVariables = timeStepSolution.vars;
+				else
+				solution.plotVariables = solution.xvars.concat(solution.func);	
+			}
+			catch(error){
+				//error needs to be logged. we still return the solution (Read comments above)
+				console.error(error);
+			}
 			console.log("solution for the system of equations ", solution);
 //			}
-
 			return solution;
 		},
 
