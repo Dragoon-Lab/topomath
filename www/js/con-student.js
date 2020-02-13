@@ -842,10 +842,8 @@ define([
 						//this.applyDirectives(this.studentPM.process(this.currentID, "variableSlot", slot_id, false, "the variable is incorrect", this));
 						//user might have updated slot but it is still wrong or he might have left it like that and re opened the editor
 						var currentNodeAuthID = this._model.student.getAuthoredID(this.currentID);
-						var currentSlotAttemptCount = this._model.student.getAttemptCount(this.currentID, slot_id);
 						var currentEquationStatus = this._model.authored.getStatus(currentNodeAuthID, "equation");
 						var currentEquationAttemptCount = this._model.authored.getAttemptCount(currentNodeAuthID, "equation");
-						console.log("equation current details", currentSlotAttemptCount, currentEquationStatus, currentEquationAttemptCount);
 						if(this._model.student.getSlotStatus(this.currentID, slot_id) == "incorrect" && currentEquationStatus == "demo"){ //if the current equation attempt count is greater than cutoff suggest the answer
 							var studID = this._model.student.getNodeIDFor(original_Ar[i]);
 							var studName = this._model.student.getName(studID);
@@ -883,25 +881,16 @@ define([
 							registry.byId("holder"+this.schema+this.currentID+slot_id).set("value", studName);
 							registry.byId("holder"+this.schema+this.currentID+slot_id).set("disabled", true);
 							this._model.student.setSlotStatus(this.currentID, slot_id, "demo");
-							this._model.student.setAttemptCount(this.currentID,slot_id,this._model.student.getAttemptCount(this.currentID, slot_id)+1);
 							style.set(dojo.byId("widget_holder"+this.schema+this.currentID+slot_id), 'backgroundColor', 'yellow');
 							this.variableUpdateBySystem = true;
 						}
-						else if(this._model.student.getSlotStatus(this.currentID, slot_id) == "incorrect" && currentSlotAttemptCount < this.attemptCountCutoff){
-							this._model.student.setSlotStatus(this.currentID, slot_id, "incorrect");
-							this._model.student.setAttemptCount(this.currentID,slot_id,this._model.student.getAttemptCount(this.currentID, slot_id)+1);
-							style.set(dojo.byId("widget_holder"+this.schema+this.currentID+slot_id), 'backgroundColor', 'red');
-							registry.byId("holder"+this.schema+this.currentID+slot_id).set("disabled", false);
-						}
 						else{
 							this._model.student.setSlotStatus(this.currentID, slot_id, "incorrect");
-							this._model.student.setAttemptCount(this.currentID,slot_id,this._model.student.getAttemptCount(this.currentID, slot_id)+1);
 							style.set(dojo.byId("widget_holder"+this.schema+this.currentID+slot_id), 'backgroundColor', 'red');
 							registry.byId("holder"+this.schema+this.currentID+slot_id).set("disabled", false);
 						}
 					}
 				}
-
 				//this._model.student.setEquation(this.currentID,);
 				//this.applyDirectives(this.studentPM.process(this.currentID, "equation", original_eq, original_eq, "equation value is correct"));
 			}
