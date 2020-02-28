@@ -233,6 +233,9 @@ define([
 			isStudentMode: function(){
 				return obj._session.isStudentMode;
 			},
+			isAuthorMode: function(){
+				return obj._session.isAuthorMode;
+			},
 			setStudentMode: function(value){
 				obj._session.isStudentMode = value;
 			},
@@ -285,6 +288,22 @@ define([
 						arr1.splice(ind, 1);
 				}
 				return arr1;
+			},
+			isOldVersion: function(){
+				//This function has to return true if the current model is old version
+				//By old version, the version where schemas were not present
+				//A valid new version problem will have a author node with a schema which is not the case with old version
+				var isOld = array.some(this.authored.getNodes(), function(node){
+					if(node && node.type === "equation"){
+						if(node.schema){
+							return false;
+						}
+						else{
+							return true;
+						}
+					}
+				});
+				return isOld;
 			}
 		};
 
@@ -615,6 +634,9 @@ define([
 			},
 			isStudentMode: function(){
 				return obj.isStudentMode();
+			},
+			isAuthorMode: function(){
+				return obj.isAuthorMode();
 			},
 			getDescriptions: function(){
 				// Summary: returns an array of all descriptions with
@@ -1044,15 +1066,20 @@ define([
 			*			                  incorrect - complete or incomplete node with atleast one incorrect answer
 			*			                  demo - complete or incomplete node with atleast one demo answer
 			*			                  null - node status value in the author mode
+			*			                  gifted - node status value when the nodes are given to students (gifted without them solving)
 			**/
 			getNodeStatus: function(id){
 				var nodeStatus = this.getCorrectness(id);
 				var score = this.getAssistanceScore(id);
 				var completeness = this.isComplete(id);
 				var tweaked = this.isTweaked(id);
+				var gifted = this.isGifted(id);
 				console.log("score complete status ", id, score, completeness, nodeStatus, tweaked)
 				if( (nodeStatus === "correct" && score === 0 && completeness) || (nodeStatus === "correct" && score === 1 && tweaked && completeness))
 					nodeStatus = "perfect";
+				if(gifted){
+					nodeStatus = "gifted-"+nodeStatus;
+				}
 				return nodeStatus;
 			},
 			setStatus: function(/*string*/ id, /*string*/ control, /*object*/ options){
@@ -1296,6 +1323,9 @@ define([
 			isTweaked: function(id){
 				return this.getNode(id).tweaked ? true : false;
 			},
+			isGifted: function(id){
+				return this.getNode(id).gifted ? true : false;
+			},
 			getCorrectAnswer : function(/*string*/ studentID, /*string*/ part){
 				var id = this.getAuthoredID(studentID);
 				var node = obj.authored.getNode(id);
@@ -1330,7 +1360,16 @@ define([
 				//		a student receives, based on suggestions by Robert Hausmann;
 				//		a score of 0 means that a student did not have any errors;
 				var authoredID = this.getAuthoredID(id);
-				return !authoredID || obj.authored.getAttemptCount(authoredID, "assistanceScore");
+				var attemptCount = !authoredID || obj.authored.getAttemptCount(authoredID, "assistanceScore");
+				if(this.getType(id) == "quantity"){
+					return attemptCount;
+				}
+				else if(this.getType(id) == "equation"){
+					//For equation nodes attempt counts are stored in student model for the fields schema and entity in updated topomath version
+					//Add these attempt counts to return a perfect assistance score
+					attemptCount = attemptCount + obj.student.getAttemptCount(id,"schema") + obj.student.getAttemptCount(id, "entity");
+					return attemptCount;
+				}
 			},
 			getCorrectness: function(/*string*/ studentID){
 				var node = this.getNode(studentID);
@@ -1444,8 +1483,63 @@ define([
 				var schemaValid = schemaStatusObj.status == "correct" || schemaStatusObj.status == "demo";
 				var entityValid = entityStatusObj.status == "correct" || entityStatusObj.status == "demo";
 				return schemaValid && entityValid;
+			},
+			getGreenScore: function(problemConditions){
+				//returns the percentage of the greens or stars from all the user solved nodes so far
+				//nodeDen is the denominator the score being computed. It comprises of all the nodes student attempted so far (which exludes given nodes)
+				$nodeDen = 0;
+				//nodeNum is the numerator or the nodes which are green so far
+				$nodeNum = 0;
+				$standardSchema = "DRT"; //This could change
+				$gp = problemConditions.gp; //give parameters
+				$gs = problemConditions.gs; // give schema
+				$su = problemConditions.su; //skip units
+				array.forEach(this.getNodes(), function(node){
+					if(node.type == "equation"){
+						//for equation nodes if givenschema is set and if it is a DRT then we do not count for denominator
+						if(!($gs && obj.authored.getNode(node.authoredID).schema == $standardSchema) ){
+							$nodeDen++;
+							//Now count those equation nodes which have greens
+							//check status of all fields in an equation node to see if they point to green
+							if(obj.student.getStatus(node.ID,"schemas").status == "correct" && obj.student.getStatus(node.ID,"entity").status == "correct" && obj.student.getStatus(node.ID,"equation").status == "correct")
+								$nodeNum++;
+						}
+					}
+					else if(node.type == "quantity"){
+						//for quantity nodes if givenParameter is set and node type is parameter we ignore the node both in numerator and denominator
+						if(!($gp && node.variableType == "parameter")){
+							$nodeDen++;
+							if(obj.student.getStatus(node.ID,"variable").status == "correct" && obj.student.getStatus(node.ID,"variableType").status == "correct"){
+								//value status depends on if variable type is param or not
+								$valStatus = false;
+								if(node.variableType == "parameter"){
+									//now check value status
+									if(obj.student.getStatus(node.ID,"value").status == "correct")
+										$valStatus = true;
+								}
+								else{
+									$valStatus = true;
+								}
+								//if skip units is not set
+								$skipStatus = false;
+								if(!$su){
+									if(obj.student.getStatus(node.ID,"units").status == "correct")
+										$skipStatus = true;
+								}
+								else{
+									$skipStatus = true;
+								}
+								if($valStatus && $skipStatus)
+									$nodeNum++;
+							}
+						}
+					}
+				});
+				if($nodeDen != 0)
+					return ($nodeNum/$nodeDen)*100;
+				else
+					return 0;
 			}
-
 		}, both);
 
 		obj.constructor.apply(obj, arguments);

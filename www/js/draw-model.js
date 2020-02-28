@@ -18,7 +18,7 @@ define([
 		_instance: null,
 		_model: null,
 		_colors:[
-			"#00ffff", "#f0e68c", "#add8e6", "#e0ffff", "#90ee90", "#ffb6c1",
+			"#4da6ff", "#f0e68c", "#add8e6", "#e0ffff", "#90ee90", "#ffb6c1",
 			"#ffffe0", "#00ff00", "#f5f5dc", "#0000ff", "#8b0000", "#ff8c00",
 			"#ffd700", "#9400d3", "#808000", "#c0c0c0", "#ffc0cb", "#ff0000",
 			"#ffff00", "#008b8b", "#008000", "#f0ffff", "#bdb76b", "#ffa500",
@@ -46,6 +46,9 @@ define([
 			"incorrect" : " fa-times",
 			"correct" : " fa-check",
 			"perfect" : " fa-star",
+			"gifted-perfect" : " fa-gift perfect",
+			"gifted-incorrect": " fa-gift incorrect",
+			"gifted-demo": " fa-gift demo",
 			"": ""
 		},
 
@@ -233,7 +236,7 @@ define([
 			var nodeStatusClass = nodeStatus ? this._statusClassMap[nodeStatus] : "";
 			console.log("node status details", nodeStatus, nodeStatusClass);
 			if(this._model.isStudentMode() && this._feedbackMode != "nofeedback"){
-				var _feedbackTags = ['fa-check','fa-star','fa-times','fa-minus'];
+				var _feedbackTags = ['fa-check','fa-star','fa-times','fa-minus','fa-gift perfect', 'fa-gift incorrect', 'fa-gift demo'];
 				/*Updating tags each time model gets updated*/
 				array.forEach(_feedbackTags, function(t){
 					domClass.remove(domIDTags['topomathFeedback'], t);
@@ -563,14 +566,17 @@ define([
 			}, this);
 		},
 
-		detachConnections: function(nodeID){
+		detachConnections: function(nodeID, /*optional delete ignore list*/ deleteIgnoreList){
 			array.forEach(this._instance.getConnections(), function(connection){
 				if(connection.sourceId == nodeID || connection.targetId == nodeID){
 					try{
 						this._instance.detach(connection);
 						var lostNode = connection.sourceId === nodeID ? connection.targetId : connection.sourceId;
-						//if the updated connection points to an alien node (no authoredID), then update the candelete field and delNodeTag which facilitates right click delete
-						this.updateDeleteLabel(lostNode);
+						//if the updated connection points to an alien node (no authoredID), then delete the node automatically (topomath #543)
+						//except in one case where the equation still points to the alien node which can be compared with the deleteIgnoreList
+						if(!this._model.getAuthoredID(lostNode) && !deleteIgnoreList.includes(lostNode)){
+							this.deleteNode(lostNode);
+						}
 					}
 					catch (err){
 						console.log("Error while detaching: " + err);
@@ -585,7 +591,14 @@ define([
 		},
 
 		updateNodeConnections: function(from, to){
-			this.detachConnections(to);
+			//prepare a delete ignore list
+			//delete ignore list contains all the "from" nodes which are alien because these nodes have to be averted from being deleted automatically (#543) when connections are detached to these nodes
+			var deleteIgnoreList = [];
+			for(var i=0; i<from.length; i++){
+				if(!this._model.getAuthoredID(from[i].ID));
+					deleteIgnoreList.push(from[i].ID);
+			}
+			this.detachConnections(to, deleteIgnoreList);
 			this.setConnections(from, to);
 		},
 
@@ -595,14 +608,6 @@ define([
 				array.forEach(arguments[1], lang.hitch(this, function(node){
 					if(node.name && node.description) this.addNodeDescription(node.id);
 				}));
-			}
-		},
-
-		updateDeleteLabel: function(lostNode){
-			//if the updated connection points to an alien node (no authoredID), then update the candelete field and delNodeTag which facilitates right click delete
-			if(!this._model.getAuthoredID(lostNode)){
-				this._model.setCanDelete(lostNode, true);
-				dijit.byId(lostNode+"delNodeTag").set("disabled", false);
 			}
 		}
 	});

@@ -255,7 +255,32 @@ define([
 							console.log("updating node view for currentID")
 							myThis.updateNodeView(myThis._model.active.getNode(myThis.currentID));
 						}
-					
+						if(myThis._model.active.isAuthorMode() && !myThis.deleteNodeActivated){
+							if(!myThis._model.active.getSchema(myThis.currentID)){
+								myThis.applyDirectives([{
+									id: "crisisAlert",
+									attribute: "open",
+									value: "Please enter a valid Schema"
+								}]);
+								return;
+							}
+							if(!myThis._model.active.getEntities(myThis.currentID) || myThis._model.active.getEntities(myThis.currentID).trim() == ""){
+								myThis.applyDirectives([{
+									id: "crisisAlert",
+									attribute: "open",
+									value: "Please enter a valid Entity"
+								}]);
+								return;
+							}
+						}
+						if(equation.value && !myThis.deleteNodeActivated &&  !myThis.validSlotNames){
+							myThis.applyDirectives([{
+								id: "crisisAlert",
+								attribute: "open",
+								value: "Enter valid names in variable slots"
+							}]);
+							return;
+						}
 						if(equation.value && !myThis.deleteNodeActivated &&  myThis.checkForSlotDuplicates(equation.value)){
 							myThis.applyDirectives([{
 								id: "crisisAlert",
@@ -263,6 +288,15 @@ define([
 								value: "The same variable cannot be used in multiple slots. Please correct the duplicate variable."
 							}]);
 							return;
+						}
+						//Do a final syntax check on the variable slot names given
+						if(!myThis.verifyVariableSyntax()){
+							myThis.applyDirectives([{
+									id: "crisisAlert",
+									attribute: "open",
+									value: "Please enter a valid variable name (avoid special characters, alphanumerics allowed)"
+								}]);
+								return;
 						}
 
 						//if the equation is in the box but has not been checked(or entered) and deleteNode is not calling for this function or if equation is changed after validating in author mode
@@ -1544,6 +1578,20 @@ define([
 				console.log(err.Error);
 				return false;
 			}
+		},
+		verifyVariableSyntax: function(){
+			if(this.equation !== ""){
+				for(var varKey in this.slotMap){
+					var currentComboBox = 'holder'+this.schema+this.currentID+this.slotMap[varKey];
+					var currentVal = registry.byId(currentComboBox).get("value");
+					console.log("syntax verification", currentVal);
+					if(!isNaN(currentVal) || !/^[a-zA-Z0-9]+$/.test(currentVal)){
+						console.log("syntax test failed");
+						return false;
+					}
+				}
+			}
+			return true;
 		}
 	});
 });

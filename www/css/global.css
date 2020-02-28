@@ -333,6 +333,21 @@ input[type=radio]{
   box-shadow: 2px 2px 2px darkolivegreen;
   border-color: green;
 }
+.topomath-feedback.fa-gift.perfect{
+  color: rgb(153, 134, 9);
+  box-shadow: 2px 2px 2px darkolivegreen;
+  border-color: green;
+}
+.topomath-feedback.fa-gift.incorrect{
+  color: rgb(153, 134, 9);
+  box-shadow: 1px 1px 1px red;
+  border: 3px solid red;
+}
+.topomath-feedback.fa-gift.demo{
+  color: rgb(153, 134, 9);
+  box-shadow: 2px 2px 2px orange;
+  border-color: orange;
+}
 .topomath-feedback.fa-times{
   color: red;
   box-shadow: 2px 2px 2px red;
@@ -344,7 +359,7 @@ input[type=radio]{
   border-color: orange;
 }
 
-.incomplete .topomath-feedback.fa-check, .incomplete .topomath-feedback.fa-minus{
+.incomplete .topomath-feedback.fa-check, .incomplete .topomath-feedback.fa-minus, .incomplete .topomath-feedback.fa-gift{
   color: white;
 }
 

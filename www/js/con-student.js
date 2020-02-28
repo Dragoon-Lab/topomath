@@ -54,13 +54,16 @@ define([
 			this.variableUpdateBySystem = false;
 			this.deleteNodeActivated = false;
 			this.ambigiousSchemas = ["P2W","P3W","P4W","P5W","A2","A3","A4","M2","M3","M4"];
+			this.validSlotNames = true;
+			this.attemptCountCutoff = 2; //This number indicates number of attempts student gets without system providing the answer
 		},
 		studentPM:{
 			process: function(nodeID, nodeType, value, validInput, message, attemptCount, correctAnswer){
 				var returnObj=[];
+				var attemptCountCutoff = 2; //This number indicates number of attempts student gets without system providing the answer
 				switch(nodeType){
 					case "schema":
-						if(validInput && attemptCount <= 1){
+						if(validInput && attemptCount <= attemptCountCutoff){
 							returnObj.push({id:"schemas", attribute:"status", value:"correct"});
 							registry.byId("entitySelectorStudent").set("disabled", false);
 							registry.byId("schemaSelector").set("disabled", true);
@@ -70,13 +73,13 @@ define([
 								registry.byId("entitySelectorStudent").set("disabled", true);
 							}
 							else{
-								if(attemptCount > 1 && correctAnswer){
+								if(attemptCount > attemptCountCutoff && correctAnswer){
 									returnObj.push({id:"schemas", attribute:"status", value:"demo"});
 									registry.byId("schemaSelector").set("value", correctAnswer);
 									registry.byId("entitySelectorStudent").set("disabled", false);
 									registry.byId("schemaSelector").set("disabled", true);	
 								}
-								else if(attemptCount != 2){
+								else if(attemptCount <= attemptCountCutoff){
 									returnObj.push({id:"schemas", attribute:"status", value:"incorrect"});
 									registry.byId("entitySelectorStudent").set("disabled", true);
 								}
@@ -85,7 +88,7 @@ define([
 						returnObj.push({id:"message", attribute:"append", value:message});
 						break;
 					case "entity":
-						if(validInput && attemptCount <=1){
+						if(validInput && attemptCount <= attemptCountCutoff){
 							returnObj.push({id:"entity", attribute:"status", value:"correct"});
 							registry.byId("entitySelectorStudent").set("disabled", true);
 						}else{
@@ -94,15 +97,14 @@ define([
 								//registry.byId("entitySelectorStudent").set("disabled", true);
 							}
 							else{
-								if(attemptCount == 1){
+								if(attemptCount <= attemptCountCutoff){
 									returnObj.push({id:"entity", attribute:"status", value:"incorrect"});	
 								}
-								else if(attemptCount > 1){
+								else if(attemptCount > attemptCountCutoff && correctAnswer){
 									returnObj.push({id:"entity", attribute:"status", value:"demo"});
 									registry.byId("entitySelectorStudent").set("value", correctAnswer);
 									registry.byId("entitySelectorStudent").set("disabled", true);
 								}
-								
 							}
 						}
 						returnObj.push({id:"message", attribute:"append", value:message});
@@ -540,6 +542,7 @@ define([
 				var validSchemaInput;
 				var validEntityInput;
 				var correctSchemaAnswer;
+				var correctEntityAnswer;
 				//for the schema select load schema options
 				this.loadSchemaOptions();
 				var schema = this._model.student.getSchema(nodeid);
@@ -575,11 +578,15 @@ define([
 					entVal = "";
 				registry.byId(this.controlMap.entity).set('value', entVal);
 				var entityStatus =  this._model.student.getStatus(this.currentID,"entity");
-				if( (entityStatus && entityStatus.status == "incorrect" ) || entityStatus == undefined || entityStatus.status == "")
+				if( (entityStatus && entityStatus.status == "incorrect" ) || entityStatus == undefined || entityStatus.status == ""){
 					validEntityInput = false;
-				else
+					correctEntityAnswer = this._model.student.getLegitEntity(this.schema);
+				}
+				else{
 					validEntityInput = true;
-				this.applyDirectives(this.studentPM.process(nodeid, "entity", entVal, validEntityInput, "", this._model.student.getAttemptCount(this.currentID, "entity"), this._model.student.getLegitEntity(this.schema) ));
+					correctEntityAnswer = entVal;
+				}
+				this.applyDirectives(this.studentPM.process(nodeid, "entity", entVal, validEntityInput, "", this._model.student.getAttemptCount(this.currentID, "entity"), correctEntityAnswer));
 				this.entity = entVal;
 				this.updateEquationDescription();	
 				this.updateEqnDelete();
@@ -833,7 +840,11 @@ define([
 					}
 					else{
 						//this.applyDirectives(this.studentPM.process(this.currentID, "variableSlot", slot_id, false, "the variable is incorrect", this));
-						if(this._model.student.getSlotStatus(this.currentID, slot_id) == "incorrect"){
+						//user might have updated slot but it is still wrong or he might have left it like that and re opened the editor
+						var currentNodeAuthID = this._model.student.getAuthoredID(this.currentID);
+						var currentEquationStatus = this._model.authored.getStatus(currentNodeAuthID, "equation");
+						var currentEquationAttemptCount = this._model.authored.getAttemptCount(currentNodeAuthID, "equation");
+						if(this._model.student.getSlotStatus(this.currentID, slot_id) == "incorrect" && currentEquationStatus == "demo"){ //if the current equation attempt count is greater than cutoff suggest the answer
 							var studID = this._model.student.getNodeIDFor(original_Ar[i]);
 							var studName = this._model.student.getName(studID);
 							var slotAr = expression.getVariableStrings(registry.byId(this.controlMap.equation).value);
@@ -880,7 +891,6 @@ define([
 						}
 					}
 				}
-
 				//this._model.student.setEquation(this.currentID,);
 				//this.applyDirectives(this.studentPM.process(this.currentID, "equation", original_eq, original_eq, "equation value is correct"));
 			}
@@ -1119,7 +1129,7 @@ define([
 				if(!validSchemaInput || !validEntityInput){
 					descAttempt = "red";
 				}
-				else if(entityAttempt >=2 || schemaAttempt >=2){
+				else if(entityAttempt > this.attemptCountCutoff || schemaAttempt > this.attemptCountCutoff){
 					descAttempt = "yellow";
 				}
 				else{

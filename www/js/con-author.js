@@ -28,11 +28,12 @@ define([
 	'dojo/NodeList-dom',
 	'dojo/html',
 	'dojo/query',
+	'dojo/dom-attr',
 	'./controller',
 	"./equation",
 	"./typechecker",
 	"dojo/domReady!"
-], function(array, declare, lang, style, keys, ready, on, memory, aspect, dom, domClass, domStyle, registry, domList, html, query, controller, equation, typechecker){
+], function(array, declare, lang, style, keys, ready, on, memory, aspect, dom, domClass, domStyle, registry, domList, html, query, domAttr, controller, equation, typechecker){
 
 	// Summary:
 	//			MVC for the node editor, for authors
@@ -138,6 +139,17 @@ define([
 						returnObj.push({id:"message", attribute:"append", value:message});
 						break;
 
+					case "varSlot":
+						var message = "A valid variable name has been entered";
+						if(!validInput){
+							if(value == "")
+								message = "Variable names cannot be empty";
+							else
+								message = "Please use only alphanumerics for variable names"
+						}
+						returnObj.push({id:"message", attribute:"append", value:message});
+						break;
+
 					case "entity":
 						var message = "a valid entity name has been entered";
 						if(!validInput.status){
@@ -174,6 +186,7 @@ define([
 			ready(this, "initAuthorHandles");
 			this.equation = "";
 			this.deleteNodeActivated = false;
+			this.validSlotNames = true;
 		},
 
 		resettableControls: ["variable","description","value","units","equation"],
@@ -484,7 +497,13 @@ define([
 			//entities can only be alphanumerics and are separated by semi colons
 			var validInput = {status: true};
 			var entityDesc = "";
-			if(entity == ''){
+			//remove empty values from list of entities
+			var emptyEntityOb = this.removeEmptyEntityValues(entity);
+			if(emptyEntityOb.found){
+				registry.byId(this.controlMap.entity).set('value', emptyEntityOb.newStr);
+				return;
+			}
+			if(entity.trim() == ''){
 				entity = null;
 			}
 			else{
@@ -492,7 +511,6 @@ define([
 				if( !(validEntityObj.correctness && validEntityObj.validValue != ""))
 					validInput = {status: false, entity: validEntityObj.validValue};
 				entityDesc = validEntityObj.validValue;
-
 			}
 			var returnObj = this.authorPM.process(this.currentID, "entity", entity, validInput);
 			this.applyDirectives(returnObj);
@@ -1290,6 +1308,22 @@ define([
 				}				
 			}
 		},
+		adjustSlotColors: function(currentCombo){
+			//slotFeedback mechanism for author Mode
+			var curWidgetHolderID = currentCombo.id;
+			var curWidgetID = domAttr.get(dom.byId(curWidgetHolderID), "widgetid");
+			var curSlotVal = dom.byId(curWidgetID).value;
+			if(curSlotVal == "" || !isNaN(curSlotVal)){
+				style.set(dojo.byId(curWidgetHolderID), "backgroundColor", "red");
+				this.applyDirectives(this.authorPM.process(this.currentID, "varSlot", curSlotVal, false));
+				this.validSlotNames = false;
+			}
+			else{
+				style.set(dojo.byId(curWidgetHolderID), "backgroundColor", "#2EFEF7");
+				this.applyDirectives(this.authorPM.process(this.currentID, "varSlot", curSlotVal, true));
+				this.validSlotNames = true;
+			}
+		},
 		processEntityString: function(entity){
 			var entityStr = ""+ entity;
 			var entityAr = entityStr.split(';');
@@ -1307,6 +1341,24 @@ define([
 				}
 			}
 			return {validValue: entityDesc, correctness: correctness};
+		},
+		removeEmptyEntityValues: function(entity){
+			var entityStr = ""+entity;
+			var entityAr = entityStr.split(';');
+			var newEntityAr = [];
+			var returnEntObj = {found: false, newStr: ''};
+			for(var i=0;i<entityAr.length;i++){
+				if(entityAr[i].trim() === ""){
+					returnEntObj.found = true;
+				}
+				else
+					newEntityAr.push(entityAr[i]);
+			}
+			var newStr = newEntityAr.join(";");
+			if(entityAr.length > newEntityAr.length){
+				returnEntObj.newStr = newStr;
+			}
+			return returnEntObj;
 		},
 		/*activateDeleteNode
 		This function can be used for delete button specific checks

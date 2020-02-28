@@ -103,6 +103,13 @@ define([
 						//In such situation convert name to id
 						var nodeId = subModel.getNodeIDByName(variable);
 						if(nodeId){
+							//There is a case where node exists but does not have an authored ID assigned
+							//Assign an authored ID before expression is substituted with node id
+							if(!subModel.getAuthoredID(nodeId)){
+								if(subModel.isAuthoredIDNotAssigned(authStudNameMap[variable]))
+									subModel.setAuthoredID(nodeId, authStudNameMap[variable]);
+									nodeList.push({ "id": nodeId, "variable":variable});
+							}
 							expr.substitute(variable,nodeId);
 							if(currentPriorList.length>0){
 								currentPriorList.some(function(eachPrior){
@@ -369,13 +376,18 @@ define([
 			// earlier the assumption was that if solution has error then no graph will
 			// be shown.
 //			if(!solution.status.error){
-			if(timeStepSolution && timeStepSolution.hasOwnProperty('vars'))
-				solution.plotVariables = timeStepSolution.vars;
-			else
-				solution.plotVariables = solution.xvars.concat(solution.func);
+			try{
+				if(timeStepSolution && timeStepSolution.hasOwnProperty('vars'))
+					solution.plotVariables = timeStepSolution.vars;
+				else
+				solution.plotVariables = solution.xvars.concat(solution.func);	
+			}
+			catch(error){
+				//error needs to be logged. we still return the solution (Read comments above)
+				console.error(error);
+			}
 			console.log("solution for the system of equations ", solution);
 //			}
-
 			return solution;
 		},
 

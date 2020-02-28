@@ -96,6 +96,11 @@ define([
 		if(solutionGraph){
 			try{
 				_model.loadModel(solutionGraph);
+				//For old models (where schemas are not present we need to throw a message)
+				if(_model.isOldVersion()){
+					var box = new messageBox("errorMessageBox", "warn", _messages["old.version"], true);
+					box.show();
+				}
 			} catch(err){
 				if (!_session.isStudentMode) {
 					var errorMessage = new messageBox("errorMessageBox", "error", _messages["duplicate.nodes"] + error.message, true);
@@ -153,9 +158,12 @@ define([
 
 		} else {
 			console.log("Its a new problem");
-			var m = _session.isStudentMode ? "doesnt.exist" : "new.problem";
-			var box = new messageBox("errorMessageBox", "warn", _messages[m], true);
-			box.show();
+			//Schema Editor Mode new problems should not be shown any message
+			if(!_session.isEditorMode){
+				var m = _session.isStudentMode ? "doesnt.exist" : "new.problem";
+				var box = new messageBox("errorMessageBox", "warn", _messages[m], true);
+				box.show();
+			}
 			// Add message box in student mode
 		}
 		
@@ -386,7 +394,12 @@ define([
 					textArea.select();
 					document.execCommand("Copy");
 					textArea.remove();
-					var errorMessage = new messageBox("errorMessageBox", "warn", "Equations Copied to Clipboard", true);
+					//New addition to copy equations
+					//Also Print the percentage of correct equations
+					//The score depends on give parameters and give schema flags too
+					//Please note here that default schema given is DRT
+					var greenNodeScore = Math.round(_model.student.getGreenScore(query));
+					var errorMessage = new messageBox("errorMessageBox", "warn", "Equations Copied to Clipboard<br/>Score = "+greenNodeScore+"%, That is, "+greenNodeScore+"% of your nodes were green or green with gold star", true);
 					errorMessage.show();
 				});
 			}
