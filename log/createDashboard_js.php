@@ -1,22 +1,22 @@
 <?php
 /*
-     Dragoon Project
-     Arizona State University
-     (c) 2014, Arizona Board of Regents for and on behalf of Arizona State University
-     
-     This file is a part of Dragoon
-     Dragoon is free software: you can redistribute it and/or modify
-     it under the terms of the GNU Lesser General Public License as published by
-     the Free Software Foundation, either version 3 of the License, or
-     (at your option) any later version.
-     
+	 Dragoon Project
+	 Arizona State University
+	 (c) 2014, Arizona Board of Regents for and on behalf of Arizona State University
+
+	 This file is a part of Dragoon
+	 Dragoon is free software: you can redistribute it and/or modify
+	 it under the terms of the GNU Lesser General Public License as published by
+	 the Free Software Foundation, either version 3 of the License, or
+	 (at your option) any later version.
+
      Dragoon is distributed in the hope that it will be useful,
-     but WITHOUT ANY WARRANTY; without even the implied warranty of
-     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-     GNU Lesser General Public License for more details.
-     
-     You should have received a copy of the GNU Lesser General Public License
-     along with Dragoon.  If not, see <http://www.gnu.org/licenses/>.
+	 but WITHOUT ANY WARRANTY; without even the implied warranty of
+	 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	 GNU Lesser General Public License for more details.
+
+	 You should have received a copy of the GNU Lesser General Public License
+	 along with Dragoon.  If not, see <http://www.gnu.org/licenses/>.
 */
 	include "logAnalysis.php";
 	include "logProblemObject.php";
@@ -31,7 +31,6 @@
 
 		function createDashboard($section, $mode, $activity, $user, $problem, $fromTime, $fromDate, $toTime, $toDate){
 			$query = $this->getQuery($section, $mode, $activity, $user, $problem, $fromTime, $fromDate, $toTime, $toDate);
-			//echo $query;
 			$result = $this->al->getResults($query);
 			$objects = null;
 			if($result->num_rows != 0)
@@ -43,7 +42,7 @@
 		function getQuery($section, $mode, $activity, $user, $problem, $fromDate, $toDate, $fromTime, $toTime){
 			$userString = "AND user = '".$user."' ";
 			$fromTimeString =  "AND time >= '".$fromDate.(!empty($fromTime)?(" ".$fromTime):"")."' ";
-			$toTimeString = "AND time <= '".(!empty($toDate)?$toDate:$fromDate).(!empty($toTime)?(" ".$toTime):"")."' ";
+			$toTimeString = "AND time <= '".$toDate.(!empty($toTime)?(" ".$toTime):"")."' ";
 			
 			$modeConnector = "=";
 			if(substr($mode, 0, 1) == "!"){
@@ -80,11 +79,11 @@
 				" AND method != 'runtime-error' ".
 				(!empty($user)?$userString:"").
 				(!empty($problem) ?$problemString:"").
-				(!empty($fromDate)?$toTimeString:"").
+				(!empty($toDate)?$toTimeString:"").
 				(!empty($mode)?$modeString:"").
 				(!empty($activity)?$activityString:"").
 			"ORDER BY user asc, problem asc, time asc, id asc;";
-		//	$queryString = "SELECT tid, mode, session.session_id, user, problem, time, method, message, `group` from session JOIN step ON session.session_id = step.session_id where method != 'client-message' AND mode != 'AUTHOR' AND user = 'cdluna' AND problem LIKE '%ps3-0%' ORDER BY user asc, problem asc, tid asc;";
+			//$queryString = "SELECT tid, session.session_id, mode, user, problem, time, method, message, folder from session JOIN step ON session.session_id = step.session_id where section = 'lms-CPI_Fall_2017' AND method != 'runtime-error' AND mode NOT LIKE '%AUTHOR' AND user = 'jarell13' ORDER BY user asc, problem asc, time asc, id asc;";
 			//echo $queryString;
 
 			return $queryString;
@@ -516,7 +515,7 @@
 							} else if($newNode == null && $currentNode != null && strpos($currentNode->id, $newMessage['nodeID']) === false){
 								// case when no node exists and an out of order message. this issue has been fixed but still for fall 14 analysis it is needed
 								$newNode = new Node();
-								$newNode->name = $newMessage['node'];
+								$newNode->name = array_key_exists("node", $newMessage)?$newMessage['node']:"";
 								$newNode->id = $nodeID;
 								$newNode->openTimes = 0;
 								$newNode->nodeExist = true;
@@ -535,7 +534,7 @@
 							//when some other property came and is not for the current node. this is primarily because some log messages just didnt reach the database
 							if($currentNode!=null && strpos($currentNode->id, $newMessage['nodeID']) === false){
 								$pushNodeBack = true;
-								$newNode = $upObject->getNodeFromName($newMessage['node']);
+								$newNode = (array_key_exists("node", $newMessage)?$upObject->getNodeFromName($newMessage['node']):null);
 								if($newNode != null && !($newNode->nodeExist)){
 									//the node was deleted and without the description for re creation did not reach. so just start from the value that you have.
 									$newNode->id = $newNode->id."|".$newMessage['nodeID'];
@@ -543,11 +542,11 @@
 								} else if($newNode == null) {
 									$newNode = new Node();
 									$newNode->id = $newMessage['nodeID'];
-									$newNode->name = $newMessage['node']; //has come after description so the node name will always be there.
+									$newNode->name = array_key_exists("node", $newMessage)?$newMessage['node']:"";
 									$newNode->openTimes = 1;
 									$newNode->nodeExist = true;
 								}
-							} else if($currentNode == null && count($upObject->nodes) == 0){
+							} else if($currentNode == null /*&& count($upObject->nodes) == 0*/){
 								//first message is out of order
 								$currentNode = new Node();
 								$currentNode->id = $newMessage['nodeID'];
