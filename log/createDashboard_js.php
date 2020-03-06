@@ -31,7 +31,6 @@
 
 		function createDashboard($section, $mode, $activity, $user, $problem, $fromTime, $fromDate, $toTime, $toDate){
 			$query = $this->getQuery($section, $mode, $activity, $user, $problem, $fromTime, $fromDate, $toTime, $toDate);
-			//echo $query;
 			$result = $this->al->getResults($query);
 			$objects = null;
 			if($result->num_rows != 0)
@@ -43,7 +42,7 @@
 		function getQuery($section, $mode, $activity, $user, $problem, $fromDate, $toDate, $fromTime, $toTime){
 			$userString = "AND user = '".$user."' ";
 			$fromTimeString =  "AND time >= '".$fromDate.(!empty($fromTime)?(" ".$fromTime):"")."' ";
-			$toTimeString = "AND time <= '".(!empty($toDate)?$toDate:$fromDate).(!empty($toTime)?(" ".$toTime):"")."' ";
+			$toTimeString = "AND time <= '".$toDate.(!empty($toTime)?(" ".$toTime):"")."' ";
 			
 			$modeConnector = "=";
 			if(substr($mode, 0, 1) == "!"){
@@ -80,7 +79,7 @@
 				" AND method != 'runtime-error' ".
 				(!empty($user)?$userString:"").
 				(!empty($problem) ?$problemString:"").
-				(!empty($fromDate)?$toTimeString:"").
+				(!empty($toDate)?$toTimeString:"").
 				(!empty($mode)?$modeString:"").
 				(!empty($activity)?$activityString:"").
 			"ORDER BY user asc, problem asc, time asc, id asc;";
