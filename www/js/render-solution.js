@@ -101,6 +101,7 @@ define([
 							this.extrapolateNaN(this.activeSolution);
 							this.activeSolution.status.message = "static.singular.matrix";
 							this.showMessage(this.activeSolution, "StaticTab", "error", false);
+							this.graph.isLineDashed["active"] = true;
 						}
 						if(this.isStudentMode){
 							var authorStaticVar =  this._model.student.getAuthoredID(this.staticVar);
@@ -110,6 +111,7 @@ define([
 								this.extrapolateNaN(this.authorStaticSolution);
 								this.authorStaticSolution.status.message = "static.singular.matrix";
 								this.showMessage(this.authorStaticSolution, "StaticTab", "error", false);
+								this.graph.isLineDashed["author"] = true;
 							}
 							this.graph.setSolution("authorStatic", this.authorStaticSolution);
 						}
