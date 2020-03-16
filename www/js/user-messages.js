@@ -14,7 +14,7 @@ define([], function(){
 		"inconsistent.system": ["The number of equations is greater than the number of variables, and the solver can not decide which equations to remove for calculating the solution"],
 		"under.determined.system": ["The number of equations is less than the number of unknown variables, so the system is not solvable."],
 		"overdetermined.no.solution": ["The number of equations is greater than the number of variables, and no single solution solves all of them."],
-		"static.singular.matrix": ["Some points for the static solution could not be calculated as the solution matrix was singular."],
+		"static.singular.matrix": ["Unable to calculate solutions for some values of the parameters.  Graphs are shown with interpolated values instead."],
 		"model.uninitialized": ["You have an unfinished equation node.  Please complete it or delete it."]
 	};
 
