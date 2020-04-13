@@ -4,9 +4,10 @@ define([
 	'dojo/ready',
 	'./controller',
 	'./pedagogical-module',
+	'./student-pm',
 	'./render-solution',
 	'./logging',
-], function(baseUnload, aspect, ready, controller, pm, solution, logging){
+], function(baseUnload, aspect, ready, controller, pm, studentPM, solution, logging){
 	var _logger = null;
 	/**
 	* non intrusive way for logging use aspect.after and log the events.
@@ -39,6 +40,10 @@ define([
 	}, true);
 
 	aspect.after(pm.prototype, "logSolutionStep", function(obj){
+		_logger.log("solution-step", obj);
+	}, true);
+
+	aspect.after(studentPM.prototype, "logSolutionStep", function(obj){
 		_logger.log("solution-step", obj);
 	}, true);
 

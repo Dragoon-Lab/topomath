@@ -439,7 +439,7 @@ define([
 			return returnObj;
 		},
 
-		processAnswer: function(/*string*/ id, /*string*/ nodePart, /*string | object*/ answer,/*string*/ answerString){
+		processAnswer: function(/*string*/ id, /*string*/ nodePart, /*string | object*/ answer,/*string*/ answerString, autoCreated){
 			// Summary: Pocesses a student's answers and returns if correct, 
 			//		incorrect, etc. and alerts the controller about what parts 
 			//		of the node editor should be active.
@@ -462,6 +462,7 @@ define([
 			var returnObj = [], currentStatus;
 			var givenID ;  // ID of the correct node, if it exists
 			var solutionGiven = false;
+			var nodeAutoCreated = autoCreated ? true: false;
 
 			var updateStatus = function(returnObj, model){
 				returnObj.forEach(function(i){
@@ -627,6 +628,9 @@ define([
 					correctValue: logCorrectAnswer,
 					pmInterpretation: interpretation
 				};
+			}
+			if(nodeAutoCreated){
+				logObj = lang.mixin({ autoCreated: "TRUE"},logObj);
 			}
 
 			var logObj = lang.mixin({

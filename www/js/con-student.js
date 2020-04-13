@@ -23,10 +23,11 @@ define([
 	"dojo/query",
 	'./controller',
 	"./pedagogical-module",
+	"./student-pm",
 	"./typechecker",
 	"./equation"
 ], function(aspect, array, declare, lang, dom, domClass, style, memory, ready,on,
- domConstruct, focusUtil, registry, tooltipDialog, popup, query, controller, PM, typechecker, expression) {
+ domConstruct, focusUtil, registry, tooltipDialog, popup, query, controller, PM, studentPM, typechecker, expression) {
 	/* Summary:	// Summary:
 	 //			MVC for the node editor, for students
 	 // Description:
@@ -42,10 +43,12 @@ define([
 	return declare(controller, {
 		_PM: null,
 		_assessment: null,
+		_studentPM: null,
 		constructor: function (mode, model) {
 			console.log("++++++++ In student constructor");
 			lang.mixin(this.widgetMap, this.controlMap);
 			this._PM = new PM(model, this._config.get("feedbackMode"), this._fixPosition);
+			this._studentPM = new studentPM(model);
 			ready(this, "populateSelections");
 			// used in equation done handler to handle scenario of new nodes created
 			// from demo nodes
@@ -57,145 +60,6 @@ define([
 			this.validSlotNames = true;
 			this.attemptCountCutoff = 2; //This number indicates number of attempts student gets without system providing the answer
 		},
-		studentPM:{
-			process: function(nodeID, nodeType, value, validInput, message, attemptCount, correctAnswer){
-				var returnObj=[];
-				var attemptCountCutoff = 2; //This number indicates number of attempts student gets without system providing the answer
-				switch(nodeType){
-					case "schema":
-						if(validInput && attemptCount <= attemptCountCutoff){
-							returnObj.push({id:"schemas", attribute:"status", value:"correct"});
-							registry.byId("entitySelectorStudent").set("disabled", false);
-							registry.byId("schemaSelector").set("disabled", true);
-						}else{
-							if(value == ""){
-								returnObj.push({id:"schemas", attribute:"status", value:""});
-								registry.byId("entitySelectorStudent").set("disabled", true);
-							}
-							else{
-								if(attemptCount > attemptCountCutoff && correctAnswer){
-									returnObj.push({id:"schemas", attribute:"status", value:"demo"});
-									registry.byId("schemaSelector").set("value", correctAnswer);
-									registry.byId("entitySelectorStudent").set("disabled", false);
-									registry.byId("schemaSelector").set("disabled", true);	
-								}
-								else if(attemptCount <= attemptCountCutoff){
-									returnObj.push({id:"schemas", attribute:"status", value:"incorrect"});
-									registry.byId("entitySelectorStudent").set("disabled", true);
-								}
-							}
-						}
-						returnObj.push({id:"message", attribute:"append", value:message});
-						break;
-					case "entity":
-						if(validInput && attemptCount <= attemptCountCutoff){
-							returnObj.push({id:"entity", attribute:"status", value:"correct"});
-							registry.byId("entitySelectorStudent").set("disabled", true);
-						}else{
-							if(value == ""){
-								returnObj.push({id:"entity", attribute:"status", value:""});
-								//registry.byId("entitySelectorStudent").set("disabled", true);
-							}
-							else{
-								if(attemptCount <= attemptCountCutoff){
-									returnObj.push({id:"entity", attribute:"status", value:"incorrect"});	
-								}
-								else if(attemptCount > attemptCountCutoff && correctAnswer){
-									returnObj.push({id:"entity", attribute:"status", value:"demo"});
-									registry.byId("entitySelectorStudent").set("value", correctAnswer);
-									registry.byId("entitySelectorStudent").set("disabled", true);
-								}
-							}
-						}
-						returnObj.push({id:"message", attribute:"append", value:message});
-						break;
-					case "equation":
-						if(validInput){
-							returnObj.push({id:"equation", attribute:"status", value:"correct"});
-						}else{
-							if(value == "")
-								returnObj.push({id:"equation", attribute:"status", value:""});
-							else
-								returnObj.push({id:"equation", attribute:"status", value:"incorrect"});
-						}
-						returnObj.push({id:"message", attribute:"append", value:message});
-						break;
-					case "description":
-						if(validInput && (attemptCount == "green")){
-							returnObj.push({id:"description", attribute:"status", value:"correct"});
-						}else{
-							if(value == "")
-								returnObj.push({id:"description", attribute:"status", value:""});
-							else if(attemptCount == "yellow")
-								returnObj.push({id:"description", attribute:"status", value:"demo"});
-							else if(attemptCount == "red")
-								returnObj.push({id:"description", attribute:"status", value:"incorrect"})
-						}
-						returnObj.push({id:"message", attribute:"append", value:message});
-						break;
-					case "qtyDescription":
-						console.log("in quantity description", value, validInput);
-						if(validInput){
-							if(value != "" && value != "defaultSelect"){
-								returnObj.push({id:"qtyDescription", attribute:"status", value:"correct"});
-								registry.byId("qtyDescriptionInputboxStudent").set("disabled", true);
-							}
-						}
-						else{
-							if(!value){
-								returnObj.push({id:"qtyDescription", attribute:"status", value:""});
-								registry.byId("qtyDescriptionInputboxStudent").set("disabled", false);
-							}
-						}
-						returnObj.push({id:"message", attribute:"append", value:message});
-						break;
-					case "variable":
-						if(validInput){
-							if(value != ""){
-								returnObj.push({id:"variable", attribute:"status", value:"correct"});	
-							}
-							returnObj.push({id:"message", attribute:"append", value:message});
-						}
-					break;
-					case "variableName":
-						console.log()
-						if(!nodeID && validInput){
-							returnObj.push({id:"message", attribute:"append", value:"node name is available for use"});
-							returnObj.push({id:"variable", attribute:"status", value:"correct"});
-						}else if(!validInput){
-							returnObj.push({id:"message", attribute:"append", value:"Please enter a valid name without using numbers"});
-							returnObj.push({id:"variable", attribute:"status", value:"incorrect"});
-						}else{
-							returnObj.push({id:"message", attribute:"append", value:"Node name is already in use"});
-							returnObj.push({id:"variable", attribute:"status", value:"incorrect"});
-						}
-						//console.log("return obj is",returnObj);
-						break;
-
-					/*
-					case "variableSlot":
-						var vsslotid = "holder"+extra.schema+nodeID+value;
-						console.log("vs slot", vsslotid)
-						extra.controlMap.currentSlot = vsslotid;
-						if(validInput){
-							returnObj.push({id:"currentSlot", attribute:"status", value:"correct"});
-						}else{
-							if(value == "")
-								returnObj.push({id:"currentSlot", attribute:"status", value:""});
-							else
-								returnObj.push({id:"currentSlot", attribute:"status", value:"incorrect"});
-						}
-						returnObj.push({id:"message", attribute:"append", value:message});
-						console.log("return obj for var slots", returnObj);
-						break;
-						*/
-					default:
-						throw new Error("Unknown type: "+ nodeType + ".");
-				}
-				return returnObj;
-			}
-		},
-
 		// A list of control map specific to students
 		resettableControls: ["equation"],
 		variableNodeControls: ["variable","value","units"],
@@ -269,7 +133,7 @@ define([
 		handleVariableName: function(name){
 			console.log("Handle variable Name ", name);
 			var nameID = this._model.student.getNodeIDByName(name);
-			this.applyDirectives(this.studentPM.process(nameID? !(nameID==this.currentID):null,'variableName',name, expression.isVariable(name)));
+			this.applyDirectives(this._studentPM.process(this.currentID,'variable',name, expression.isVariable(name),"","","",true));
 			if(!this._model.student.getNodeIDByName(name) && expression.isVariable(name)){
 				// check all nodes in the model for equations containing name of this node
 				// replace name of this node in equation with its ID
@@ -339,31 +203,31 @@ define([
 			if(schema == "defaultSelect"){
 				message = "Please choose a valid schema";
 				this._model.student.setAttemptCount(this.currentID, "schema", currentAttemptCount+1);
-				returnObj = this.studentPM.process(this.currentID, "schema", "", false, message,this._model.student.getAttemptCount(this.currentID,"schema"), correctAnswer);
+				returnObj = this._studentPM.process(this.currentID, "schema", "", false, message,this._model.student.getAttemptCount(this.currentID,"schema"), correctAnswer, true);
 			}
 			//case 1: the student has entered a schema that isn’t use in the author’s model
 			else if(!this._model.authored.hasSchema(schema)){
 				message = "The author’s model doesn’t uses any "+schema+" schemas.";
 				this._model.student.setAttemptCount(this.currentID, "schema", currentAttemptCount+1);
-				returnObj = this.studentPM.process(this.currentID, "schema", schema, false, message, this._model.student.getAttemptCount(this.currentID,"schema"), correctAnswer);
+				returnObj = this._studentPM.process(this.currentID, "schema", schema, false, message, this._model.student.getAttemptCount(this.currentID,"schema"), correctAnswer, true);
 			}else if(!(this._model.authored.getGivenSchemaCount(schema) > this._model.student.getGivenSchemaCount(schema))){
 			//case 2: the student has already entered a number of equations corresponding to all the 
 			//        equations in the author’s model that have this schema name
 				message = "You don’t need any more "+schema+" schema applications.";
 				this._model.student.setAttemptCount(this.currentID, "schema", currentAttemptCount+1);
-				returnObj = this.studentPM.process(this.currentID, "schema", schema, false, message, this._model.student.getAttemptCount(this.currentID,"schema"), correctAnswer);
+				returnObj = this._studentPM.process(this.currentID, "schema", schema, false, message, this._model.student.getAttemptCount(this.currentID,"schema"), correctAnswer, true);
 
 			}else{
 				message = "You have entered a valid schema.";
 				//this._model.student.setAttemptCount(this.currentID, "schema", currentAttemptCount+1);				
-				returnObj = this.studentPM.process(this.currentID, "schema", schema, true, message, this._model.student.getAttemptCount(this.currentID,"schema"));
+				var stillLog = this._model.student.getAttemptCount(this.currentID,"schema") > this.attemptCountCutoff ? false : true;
+				returnObj = this._studentPM.process(this.currentID, "schema", schema, true, message, this._model.student.getAttemptCount(this.currentID,"schema"), correctAnswer, stillLog);
 				this.schema = schema;
 			}
 			this.applyDirectives(returnObj);
 			this._model.student.setSchema(this.currentID,schema);
 			//change entity to default or to choose again
 			registry.byId(this.controlMap.entity).set("value", "defaultSelect");
-			this.updateEquationDescription();
 			this.updateEqnDelete();
 		},
 		/*handle entities for student node
@@ -378,25 +242,26 @@ define([
 			if(entity == "defaultSelect"){
 				message = "Please choose a valid entity";
 				this._model.student.setAttemptCount(this.currentID, "entity", currentAttemptCount+1);
-				returnObj = this.studentPM.process(this.currentID, "entity", "", false, message, this._model.student.getAttemptCount(this.currentID,"entity"), correctAnswer);
+				returnObj = this._studentPM.process(this.currentID, "entity", "", false, message, this._model.student.getAttemptCount(this.currentID,"entity"), correctAnswer, true);
 			}
 			//case 1: entity should not be a duplicate entry for a given schema
 			else if(this._model.student.isDuplicateSchemaInstance(this.schema, entity)){
 				message = "This entity already exists for given schema";
 				this._model.student.setAttemptCount(this.currentID, "entity", currentAttemptCount+1);
-				returnObj = this.studentPM.process(this.currentID, "entity", entity, false, message, this._model.student.getAttemptCount(this.currentID,"entity"), correctAnswer);
+				returnObj = this._studentPM.process(this.currentID, "entity", entity, false, message, this._model.student.getAttemptCount(this.currentID,"entity"), correctAnswer, true);
 			}
 			//case 2: schema and entity combo has to match from authors nodes
 			else if(!this._model.authored.isStudentEntityValid(this.schema, entity)){
 				message = "incorrect entity for the chosen schema";
 				this._model.student.setAttemptCount(this.currentID, "entity", currentAttemptCount+1);
-				returnObj = this.studentPM.process(this.currentID, "entity", entity, false, message, this._model.student.getAttemptCount(this.currentID,"entity"), correctAnswer);
+				returnObj = this._studentPM.process(this.currentID, "entity", entity, false, message, this._model.student.getAttemptCount(this.currentID,"entity"), correctAnswer, true);
 			}
 			//case 3: success
 			else{
 				message = "You have chosen a valid entity";
 				//this._model.student.setAttemptCount(this.currentID, "entity", currentAttemptCount+1);
-				returnObj = this.studentPM.process(this.currentID, "entity", entity, true, message,  this._model.student.getAttemptCount(this.currentID,"entity"));
+				var stillLog = this._model.student.getAttemptCount(this.currentID,"entity") > this.attemptCountCutoff ? false : true;
+				returnObj = this._studentPM.process(this.currentID, "entity", entity, true, message,  this._model.student.getAttemptCount(this.currentID,"entity"), correctAnswer, stillLog);
 				this.entity = entity;
 				this.updateSlotVariables();
 				this.updateEquation();
@@ -404,7 +269,7 @@ define([
 			this.applyDirectives(returnObj);
 			this._model.student.setEntities(this.currentID, entity);
 			this.updateEqnDelete();
-			this.updateEquationDescription();
+			this.updateEquationDescription(true);
 		},
 		/*
 		 *	 handle event on inputs box
@@ -559,7 +424,7 @@ define([
 					validSchemaInput = true;
 					correctSchemaAnswer = schema;
 				}
-				this.applyDirectives(this.studentPM.process(nodeid, "schema", schema, validSchemaInput, "", this._model.student.getAttemptCount(this.currentID, "schema"), correctSchemaAnswer));
+				this.applyDirectives(this._studentPM.process(nodeid, "schema", schema, validSchemaInput, "", this._model.student.getAttemptCount(this.currentID, "schema"), correctSchemaAnswer, false));
 				this.schema = schema;
 
 				//for the entity select load entities
@@ -586,9 +451,9 @@ define([
 					validEntityInput = true;
 					correctEntityAnswer = entVal;
 				}
-				this.applyDirectives(this.studentPM.process(nodeid, "entity", entVal, validEntityInput, "", this._model.student.getAttemptCount(this.currentID, "entity"), correctEntityAnswer));
+				this.applyDirectives(this._studentPM.process(nodeid, "entity", entVal, validEntityInput, "", this._model.student.getAttemptCount(this.currentID, "entity"), correctEntityAnswer, false));
 				this.entity = entVal;
-				this.updateEquationDescription();	
+				this.updateEquationDescription(false);
 				this.updateEqnDelete();
 				//set up equation
 				var eqVal = this._model.student.getEquation(nodeid);
@@ -635,7 +500,7 @@ define([
 				var studDesc = this._model.student.getDescription(this.currentID);
 				console.log("student desc is", studDesc);
 				if(!studDesc){
-					this.applyDirectives(this.studentPM.process(nodeid, "qtyDescription", "", "", ""));
+					this.applyDirectives(this._studentPM.process(nodeid, "qtyDescription", "", "", "", "", "", false));
 					qtyDescWidget.set("disabled", false);
 					qtyDescWidget.addOption({value: 'defaultSelect',label: 'choose a description'});
 				}
@@ -646,7 +511,7 @@ define([
 					if(rightSelfAr.includes(variable)){
 						if(studDesc){
 							qtyDescWidget.addOption({value: studDesc,label: studDesc});
-							this.applyDirectives(this.studentPM.process(nodeid, "qtyDescription", studDesc, studDesc, "A valid description has been entered",));
+							this.applyDirectives(this._studentPM.process(nodeid, "qtyDescription", studDesc, studDesc, "A valid description has been entered","",studDesc,false));
 							this._model.student.setDescription(nodeid, studDesc);
 							this.disableTypeValueUnits(false);
 						}
@@ -669,7 +534,7 @@ define([
 							var curDesc = authorModel.getDescription(this._model.student.getAuthoredID(nodeid));
 							qtyDescWidget.removeOption(qtyDescWidget.getOptions());
 							qtyDescWidget.addOption({value: curDesc,label: curDesc});
-							this.applyDirectives(this.studentPM.process(nodeid, "qtyDescription", curDesc, curDesc, "A valid description has been entered",));
+							this.applyDirectives(this._studentPM.process(nodeid, "qtyDescription", curDesc, curDesc, "A valid description has been entered","",curDesc,false));
 							this._model.student.setDescription(nodeid, curDesc);
 							this.disableTypeValueUnits(false);
 						}
@@ -680,7 +545,7 @@ define([
 						var curDesc = authorModel.getDescription(this._model.student.getAuthoredID(nodeid));
 						qtyDescWidget.removeOption(qtyDescWidget.getOptions());
 						qtyDescWidget.addOption({value: curDesc,label: curDesc});
-						this.applyDirectives(this.studentPM.process(nodeid, "qtyDescription", curDesc, curDesc, "A valid description has been entered",));
+						this.applyDirectives(this._studentPM.process(nodeid, "qtyDescription", curDesc, curDesc, "A valid description has been entered","",curDesc, false));
 						this._model.student.setDescription(nodeid, curDesc);
 						this.disableTypeValueUnits(false);
 					}
@@ -839,7 +704,6 @@ define([
 						}
 					}
 					else{
-						//this.applyDirectives(this.studentPM.process(this.currentID, "variableSlot", slot_id, false, "the variable is incorrect", this));
 						//user might have updated slot but it is still wrong or he might have left it like that and re opened the editor
 						var currentNodeAuthID = this._model.student.getAuthoredID(this.currentID);
 						var currentEquationStatus = this._model.authored.getStatus(currentNodeAuthID, "equation");
@@ -891,8 +755,6 @@ define([
 						}
 					}
 				}
-				//this._model.student.setEquation(this.currentID,);
-				//this.applyDirectives(this.studentPM.process(this.currentID, "equation", original_eq, original_eq, "equation value is correct"));
 			}
 		},
 
@@ -924,10 +786,10 @@ define([
 			var authoredID = this._model.student.getAuthoredID(id);
 			//console.log("update inp node auth id is", authoredID, this._model.student.getAuthoredID(id));
 			//console.log(id,descID,this._model.given.getName(descID));
-			var directives = this._PM.processAnswer(id, 'description', authoredID);
+			var directives = this._PM.processAnswer(id, 'description', authoredID,null,true);
 			if(!this._model.authored.isNodeIrrelevant(authoredID))
 				directives.push.apply(directives,
-						this._PM.processAnswer(id, 'variable', variable));
+						this._PM.processAnswer(id, 'variable', variable, null, true));
 			// Need to send to PM and update status, but don't actually
 			// apply directives since they are for a different node.
 			console.log("update input node directives are", directives);
@@ -1066,7 +928,7 @@ define([
 						this.updateNodeView(this._model.active.getNode(this.currentID));
 					}
 				}
-				this.applyDirectives(this.studentPM.process(this.currentID, "qtyDescription", description, description, "A valid description has been entered",));
+				this.applyDirectives(this._studentPM.process(this.currentID, "qtyDescription", description, description, "A valid description has been entered","",description, true));
 			}
 			this._model.student.setDescription(this.currentID, description);
 		},
@@ -1100,7 +962,7 @@ define([
 				this._model.student.setCanDelete(this.currentID,true);
 			}
 		},
-		updateEquationDescription: function(){
+		updateEquationDescription: function(/*log*/ logIt){
 			if(this.schema == 'defaultSelect' || this.schema == null)
 				this.schema = '';
 			//entity part of description is tricky to extract, so a seperate function processEntityString handles it
@@ -1136,7 +998,7 @@ define([
 					descAttempt = "green";
 				}
 			}
-			this.applyDirectives(this.studentPM.process(this.currentID, "description", description, description, "", descAttempt));
+			this.applyDirectives(this._studentPM.process(this.currentID, "description", description, description, "", descAttempt,"",logIt));
 		},
 		//Incase slot gets a red feedback, when user tries to further change it, update background color to white
 		adjustSlotColors: function(currentCombo){
@@ -1147,6 +1009,9 @@ define([
 						style.set(dojo.byId(curWidgetHolderID), "backgroundColor", "white");
 					}));
 			}
+		},
+		logSolutionStep: function(obj){
+			//stub for logging user solution step
 		}
 	});
 });
