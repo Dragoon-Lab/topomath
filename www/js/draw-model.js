@@ -570,13 +570,13 @@ define([
 			array.forEach(this._instance.getConnections(), function(connection){
 				if(connection.sourceId == nodeID || connection.targetId == nodeID){
 					try{
-						this._instance.detach(connection);
 						var lostNode = connection.sourceId === nodeID ? connection.targetId : connection.sourceId;
 						//if the updated connection points to an alien node (no authoredID), then delete the node automatically (topomath #543)
 						//except in one case where the equation still points to the alien node which can be compared with the deleteIgnoreList
 						if(!this._model.getAuthoredID(lostNode) && !deleteIgnoreList.includes(lostNode)){
 							this.deleteNode(lostNode);
 						}
+						this._instance.detach(connection);
 					}
 					catch (err){
 						console.log("Error while detaching: " + err);
