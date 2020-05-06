@@ -319,6 +319,12 @@
 					<div id="variableTypeQuestionMark" class="questionMark"></div>
 					<label>Type</label>
 				</span>
+				<select id="variableType" data-dojo-type="dijit/form/Select">
+					<option value='defaultSelect'>---Select---</option>
+					<option value='unknown'>Unknown</option>
+					<option value='parameter'>Parameter</option>
+				</select>
+				<!--
 				<input data-dojo-type="dijit/form/RadioButton" name="variableType" class="handleVariable" id="unknownType" value="unknown"/>
 				<label for="unknownType">Unknown</label>
 				<input data-dojo-type="dijit/form/RadioButton" name="variableType" class="handleVariable" id="parameterType" value="parameter"/>
@@ -326,7 +332,7 @@
 				<span id="variableTypeDynamicOption" style="display: none;">
 					<input data-dojo-type="dijit/form/RadioButton" name="variableType" class="handleVariable" id="dynamicType" value="dynamic"/>
 					<label for="dynamicType">Dynamic</label>
-				</span>
+				</span> -->
 			</div>
 
 			<div class="fieldgroup" id="valueUnitsContainer" style="display: block;">

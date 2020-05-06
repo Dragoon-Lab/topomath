@@ -86,6 +86,10 @@ define([
 				this.query = this.modules.qObject;
 				if(params.t.indexOf("lms") >= 0){
 					this.query.s = params.s;
+					if(params.td)
+						this.query.td=params.td;
+					if(params.fd)
+						this.query.fd=params.fd;
 				}
 			}else
 				this.query = params;

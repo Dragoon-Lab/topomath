@@ -198,7 +198,7 @@ define([
 
 		// A list of control map specific to students
 		resettableControls: ["equation"],
-		variableNodeControls: ["variable","value","units"],
+		variableNodeControls: ["variable","value","units","variableType"],
 		equationNodeControls: ["equation","schemas","entity"],
 		commonNodeControls: ["modelType","description"],
 		qtyElements: ["qtyDescriptionInputboxContainerStudent","variableTypeContainer","variableInputboxContainer", "unitsSelectorContainerStudent"],
@@ -239,9 +239,8 @@ define([
 			units: "unitsSelectorStudent",
 			modelType: "modelSelector",
 			value: "valueInputbox",
-			unknown: "unknownType",
-			parameter: "parameterType",
-			dynamic: "dynamicType",
+			variableType: "variableType",
+			//dynamic: "dynamicType",
 			schemas: "schemaSelector",
 			entity: "entitySelectorStudent",
 			schemaDisplay: "schemaDescriptionQuestionMark",
@@ -310,12 +309,12 @@ define([
 				// Log Error
 			//}
 		},
-		handleVariableType: function(e){
+		handleVariableType: function(varType){
 			// Summary : Sets variableType to Unknown/Parameter/Dynamic
 			// Value is not allowed when variableType is Unknown
 			// Value is handled when variableType is parameter or dynamic.
 			console.log("********************* in handleVariableType");
-			var _variableType = e.target.value;
+			var _variableType = varType;
 			this._model.student.setVariableType(this.currentID, _variableType);
 			this.variableTypeControls(this.currentID, _variableType);
 			this.applyDirectives(this._PM.processAnswer(this.currentID, 'variableType', _variableType));
@@ -505,6 +504,7 @@ define([
 					console.log("element",elem);
 					style.set(elem,"display","block");
 				});
+
 				//initially disable the type value and units which will be later handled in control settings based on state
 				this.disableTypeValueUnits(true);
 				
@@ -717,13 +717,24 @@ define([
 					style.set("unitsSelectorContainerStudent","display","none");
 				}
 
+				/*
 				var prevSelected = query("input[name='variableType']:checked")[0] ? query("input[name='variableType']:checked")[0].value : undefined;
 				if(prevSelected)
-					registry.byId(prevSelected+"Type").set('checked', false);
+					registry.byId(prevSelected+"Type").set('checked', false); */				
+				var varTypeSel = registry.byId(this.controlMap.variableType);
+				varTypeSel.removeOption(varTypeSel.getOptions());
+				var varTypes = ["unknown","parameter","dynamic"];
+				//var curVarType = this._model.student.getVariableType(nodeid);
+				if(!varType){
+					varTypeSel.addOption({label: "---Select---", value: "defaultValue"});
+				}
+				array.forEach(varTypes, function(unit){
+					varTypeSel.addOption({label: unit, value: unit});
+				});
 				if(varType){
-					registry.byId(varType+"Type").set('checked', true);
-					this.variableTypeControls(this.currentID, varType);
-				}			
+					varTypeSel.set('value', varType);
+				}
+				this.variableTypeControls(this.currentID, varType);
 				this.applyDirectives(nodeDirectives);
 				registry.byId(this.controlMap.variable).set("disabled",false);
 			}
@@ -1015,18 +1026,18 @@ define([
 		updateVariableTypeValue: function(value){
 			if(value == "unknown")
 				this._model.student.setValue(this.currentID, "");
-			registry.byId(value+"Type").set("checked", "checked");
+			registry.byId(this.controlMap.variableType).set('value', value);
 			this._model.student.setVariableType(this.currentID, value);
 		},
 
 		updateVariableTypeStatus: function(attribute, value){
 			if(attribute === "disabled" && value === true){
-				array.forEach(this._variableTypes, function(type){
-					registry.byId(type+"Type").set("disabled", true);
-				});
+				//array.forEach(this._variableTypes, function(type){
+				registry.byId(this.controlMap.variableType).set("disabled", true);
+				//});
 			} else if(attribute === "status"){
-				var selectedVariableType = query("input[name='variableType']:checked")[0].value;
-				registry.byId(selectedVariableType+"Type").set(attribute, value);
+				//var selectedVariableType = query("input[name='variableType']:checked")[0].value;
+				registry.byId(this.controlMap.variableType).set(attribute, value);
 			}
 		},
 		handleEquationDescription: function(description){
@@ -1073,9 +1084,11 @@ define([
 		disableTypeValueUnits: function(disable){
 			registry.byId(this.controlMap.value).set("disabled", disable);
 			registry.byId(this.controlMap.units).set("disabled", disable);
+			registry.byId(this.controlMap.variableType).set("disabled", disable);
+			/*
 			registry.byId(this.controlMap.unknown).set("disabled", disable);
 			registry.byId(this.controlMap.parameter).set("disabled", disable);
-			registry.byId(this.controlMap.dynamic).set("disabled", disable);
+			registry.byId(this.controlMap.dynamic).set("disabled", disable); */
 		},
 		getSlotVariablesList: function(){
 			return this._model.student.getAllVariables();

@@ -1078,7 +1078,13 @@ define([
 				if( (nodeStatus === "correct" && score === 0 && completeness) || (nodeStatus === "correct" && score === 1 && tweaked && completeness))
 					nodeStatus = "perfect";
 				if(gifted){
-					nodeStatus = "gifted-"+nodeStatus;
+					//if a gifted node turns out to be not a perfect node, ungift it and let user solve it and regular badges follow
+					if(nodeStatus == "perfect"){
+						nodeStatus = "gifted-"+nodeStatus;
+					}
+					else{
+						this.unGiftNode(id);
+					}
 				}
 				return nodeStatus;
 			},
@@ -1326,6 +1332,9 @@ define([
 			isGifted: function(id){
 				return this.getNode(id).gifted ? true : false;
 			},
+			unGiftNode: function(id){
+				this.getNode(id).gifted = false;
+			},
 			getCorrectAnswer : function(/*string*/ studentID, /*string*/ part){
 				var id = this.getAuthoredID(studentID);
 				var node = obj.authored.getNode(id);
@@ -1403,6 +1412,11 @@ define([
 					update("schemas");
 					update("entity");
 					update("equation");
+					//in case slots are not yet corrected, return incorrect even if the equation status is demo, refer to topomath issue "Inconsistent state with multiple yellow nodes #576"
+					var slotsCorrected = this.areSlotsDemo(studentID);
+					if(bestStatus == "demo" && this.getStatus(studentID,"equation").status == "demo" && !slotsCorrected){
+						bestStatus = "incorrect";
+					}
 				}
 				if(bestStatus == "partial"){
 					bestStatus = "incorrect";
@@ -1483,6 +1497,20 @@ define([
 				var schemaValid = schemaStatusObj.status == "correct" || schemaStatusObj.status == "demo";
 				var entityValid = entityStatusObj.status == "correct" || entityStatusObj.status == "demo";
 				return schemaValid && entityValid;
+			},
+			areSlotsDemo: function(nodeID){
+				var ret = false;
+				var statusObj = this.getNode(nodeID).status;
+				Object.keys(statusObj).some(function(key){
+					if(key!= "schemas" && key!= "entity" && key!= "description" && key!= "equation"){
+						console.log(key);
+						if(statusObj[key] == "demo"){
+							ret = true;
+							return true;
+						}
+					}
+				});
+				return ret;
 			},
 			getGreenScore: function(problemConditions){
 				//returns the percentage of the greens or stars from all the user solved nodes so far

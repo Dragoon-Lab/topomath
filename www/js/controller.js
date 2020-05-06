@@ -90,7 +90,7 @@ define([
 		// Controls that are select menus
 		// note that topomath author design has been updated, so updating selects and equationButtons array
 		//selects: ['description', 'units', 'inputs'],
-		selects: ['description', 'units'],
+		selects: ['description', 'units', 'variableType'],
 		
 		//equationButtons: ["plus", "minus", "times", "divide", "equals", "undo", "equationDone"],
 		equationButtons: [],
@@ -205,6 +205,7 @@ define([
 			 Previously, just set domNode.bgcolor but this approach didn't work
 			 for text boxes.   */
 			// console.log(">>>>>>>>>>>>> setting color ", this.domNode.id, " to ", value);
+			/*
 			if(this.domNode && this.domNode.firstChild &&
 				(this.domNode.firstChild.name == "variableType" ||
 				this.domNode.name == "variableType")){
@@ -213,9 +214,8 @@ define([
 					updateColor(registry.byId(type+"Type").domNode.firstChild.labels[0], "");
 				});
 				updateColor(this.domNode.firstChild.labels[0], colorMap[value]);
-			} else {
-				updateColor(this.domNode, colorMap[value]);
-			}
+			} else { */
+			updateColor(this.domNode, colorMap[value]);	
 		},
 
 		hideCloseNodeEditor: function(/* originical hide method*/ doHide){
@@ -503,16 +503,22 @@ define([
 				return this.disableHandlers || this.handleEquationDescription.apply(this, arguments);
 			}));
 
+			//event handler for new variable type select field
+			var varTypeSel = registry.byId(this.controlMap.variableType);
+			varTypeSel.on('Change', lang.hitch(this, function(){
+				return this.disableHandlers || this.handleVariableType.apply(this, arguments);
+			}));
 			/*
 			 *	 event handler for 'value' field
 			 *	 'handleValue' will be called in either Student or Author mode
 			 * */
-				var variableTypeToggle = dojo.query(".handleVariable");
+			/*
+			var variableTypeToggle = dojo.query(".handleVariable");
 				variableTypeToggle.forEach(function(toggleNode){
 				registry.byNode(toggleNode).on('click', lang.hitch(this, function(event){
 					return this.disableHandlers || this.handleVariableType(event);
 				}));
-			}, this);
+			}, this); */
 
 			var valueWidget = registry.byId(this.controlMap.value);
 			// This event gets fired if student hits TAB or input box
@@ -718,11 +724,12 @@ define([
 
 			// reset the variablte type radio button labels
 			if(this.nodeType == "quantity"){
+				/*
 				array.forEach(this._variableTypes, function(type){
 					var w = registry.byId(type+"Type")
 					w.set("status", "");
 					w.set("disabled", false);
-				});
+				});*/
 			}
 
 			for(control in this.genericDivMap)
@@ -799,6 +806,9 @@ define([
 				console.log('unit is', unit || "not set");
 				// Initial input in Units box
 				registry.byId(this.controlMap.units).set('value', unit || '');
+
+				var varType = model.getVariableType(nodeid);
+				registry.byId(this.controlMap.variableType).set('value', varType || '');
 
 			}
 			else if(this.nodeType == "equation"){
